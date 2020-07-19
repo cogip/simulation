@@ -79,34 +79,42 @@ class SerialController(QtCore.QObject):
         self.serial_port.port = uart_device
         self.serial_port.baudrate = 115200
 
+        self.commands = {
+            "waiting_calibration_mode": b"\n",
+            "menu_calibration_planner": b'pc\n',
+            "menu_calibration_speed_pid": b'cs\n',
+            "menu_calibration_pos_pid": b'cp\n',
+            "quit_menu": b'q\n',
+            "planner_go_to_next_position": b'n\n',
+            "speed_pid_linear_speed_charac": b'l\n',
+            "speed_pid_angular_speed_charac": b'a\n',
+            "pos_pid_speed_linear_kp": b'a\n'
+        }
+
+
     def quit(self):
         """Request to exit the thread as soon as possible.
         """
         self.exiting = True
 
-    @qtSlot()
-    def enter_shell(self):
-        """Qt slot used to enter the calibration shell
+    @qtSlot(str)
+    def slot_send_command(self, command):
+        bytes_to_send = self.commands.get(command)
+        if not bytes_to_send:
+            logger.warning(f"Unknown command: {command}")
+            return
+        self.signal_new_console_text.emit(f"==> write '{bytes_to_send.decode().strip()}'")
+        self.serial_port.write(bytes_to_send)
+
+    def process_output(self):
+        """Main loop executed in a thread.
+        Process the output of the serial port, parse the data and send corresponding information
         """
         # try:
         #     ptvsd.debug_this_thread()
         # except:
         #     pass
-        self.serial_port.write(b'\npc\n')
-        # self.serial_port.write(b'\ncs\n')
-        
-    @qtSlot()
-    def next_position(self):
-        """Qt slot used to trigger a robot movement (like going to the next position)
-        """
-        self.serial_port.write(b'n\n')
-        # self.serial_port.write(b'a\n')
-        self.signal_new_trigger.emit("trigger_move")
-        
-    def process_output(self):
-        """Main loop executed in a thread.
-        Process the output of the serial port, parse the data and send corresponding information
-        """
+
         # Open the serial port.
         # In simulation, it also starts the native firmware
         self.serial_port.open()
@@ -115,10 +123,10 @@ class SerialController(QtCore.QObject):
             line = self.serial_port.readline().rstrip()
             try:
                 if line == b"Press Enter to enter calibration mode...":
-                    self.signal_new_trigger.emit("trigger_wait_calib")
+                    self.signal_new_trigger.emit("trigger_waiting_calibration_mode")
                 elif line.startswith(b"platform: Start shell"):
-                    self.signal_new_trigger.emit("trigger_shell_started")
-                elif line == b"planner: Controller has reach final position.":
+                    self.signal_new_trigger.emit("trigger_menu_main")
+                elif line in [b"planner: Controller has reach final position.", b"ctrl: New mode: CTRL_MODE_STOP"]:
                     self.signal_new_trigger.emit("trigger_position_reached")
                 elif line.startswith(b"Position index: "):
                     self.signal_new_robot_position_number.emit(line.decode().rpartition(' ')[-1])
@@ -134,7 +142,7 @@ class SerialController(QtCore.QObject):
                             self.position_queue.put(new_position)
                             self.last_position = new_position
 
-                # self.signal_new_console_text.emit(msg.decode())
+                self.signal_new_console_text.emit(line.decode())
 
             except UnicodeDecodeError:
                 # Ignore the line in case of decoding error
