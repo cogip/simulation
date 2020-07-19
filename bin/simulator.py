@@ -122,11 +122,10 @@ if __name__ == '__main__':
     controller.signal_new_trigger.connect(automaton.new_trigger)
 
     # Connect Automaton signals to Controller slots
-    automaton.signal_enter_shell.connect(controller.enter_shell)
-    automaton.signal_next_position.connect(controller.next_position)
-    
-    # Connect Automaton signals to UI slots
-    automaton.signal_new_automaton_state.connect(win.new_controller_state)
+    automaton.signal_enter_new_state.connect(controller.slot_send_command)
+
+    # Connect Automaton signals to UI slots
+    automaton.signal_new_state.connect(win.new_controller_state)
 
     # Connect Controller signals to UI slots
     controller.signal_new_console_text.connect(win.log_text.append)

@@ -137,5 +137,5 @@ class Robot(QtCore.QObject):
             self.display.Context.UpdateCurrentViewer()
 
             self.signal_position_updated.emit(x, y, angle)
-            logger.info("position updated")
+            # logger.info("position updated")
             self.position_queue.task_done()

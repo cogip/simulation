@@ -18,7 +18,7 @@ required_packages = [
     "PyQt5==5.13.1",
     "sphinx==2.2.1",
     "autodoc==0.5.0",
-    "sphinxcontrib-drawio==0.0.2",
+    "sphinxcontrib-drawio==0.0.7",
     "sphinx-argparse==0.2.5",
     "python-dotenv==0.10.3"
 ]

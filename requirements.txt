@@ -1,8 +1,8 @@
-PyQt5==5.13.2
-sphinx==2.2.1
+#PyQt5==5.13.2
+sphinx==3.1.2
 autodoc==0.5.0
-sphinxcontrib-drawio==0.0.2
+sphinxcontrib-drawio==0.0.7
 sphinx-argparse==0.2.5
-python-dotenv==0.10.3
+python-dotenv==0.14.0
 ptvsd==4.3.2
 pyserial==3.4
