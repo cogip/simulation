@@ -14,8 +14,9 @@
 # This directory will contain venv, source, build and install directories
 ROOT_DIR=~/cogip/opencascade
 
-PYQT_VERSION=5.12.3
+#PYQT_VERSION=5.12.3
 #PYQT_VERSION=5.13.2
+PYQT_VERSION=5.15.0
 # Open CASCACE Community Edition: https://github.com/tpaviot/oce
 OCE_TAG=OCE-0.18.3 # Last OCE release
 # pythonocc: https://github.com/tpaviot/pythonocc-core
@@ -23,9 +24,9 @@ PYTHONOCC_TAG=0.18.2 # Simulation code requires python-occ>=0.18.2
 CMAKE_VERSION=3.16.1 # Master branch of pythonocc requires cmake>=3.14, not yet available in distros
 
 # Enable/disable installation steps
-CREATE_VENV=0
+CREATE_VENV=1
 INSTALL_CMAKE=0
-INSTALL_OCE=0
+INSTALL_OCE=1
 INSTALL_PYTHONOCC=1
 RUN_TESTS=1
 
