@@ -1,0 +1,6 @@
+[submodule "submodules/mcu-firmware"]
+	path = submodules/mcu-firmware
+	url = https://github.com/cogip/mcu-firmware.git
+[submodule "submodules/RIOT"]
+	path = submodules/RIOT
+	url = https://github.com/gdoffe/RIOT.git
