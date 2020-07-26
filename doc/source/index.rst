@@ -15,6 +15,8 @@ Signals and Slots Connections
 This diagram shows how the simulation classes are connected to each other using Qt Signals and Slots.
 This is not an UML diagram.
 
+THIS SCHEMA IS OUT-OF-DATE!
+
 .. drawio:: qt_connections.drawio
     :alt: Qt Signals and Slots Connections
     :align: center
@@ -36,11 +38,6 @@ Table Module
 Robot Module
 ------------
 .. automodule:: cogip.robot
-    :members:
-
-Automaton Module
-----------------
-.. automodule:: cogip.automaton
     :members:
 
 SerialController Module

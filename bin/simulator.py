@@ -1,13 +1,10 @@
 #!/usr/bin/env python3
 
-import os
 import sys
-import re
-import math
-import ptvsd
+# import ptvsd
 import argparse
+import faulthandler
 import shutil
-import dotenv
 import subprocess
 import psutil
 import serial.tools.list_ports
@@ -15,7 +12,7 @@ from pathlib import Path
 from queue import Queue
 from threading import Thread
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtWidgets
 
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv(), verbose=False)
@@ -24,14 +21,12 @@ if '__file__' in locals():
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from cogip import logger
-from cogip.config import Config
+from cogip.config import settings
 from cogip.table import Table
 from cogip.robot import Robot
 from cogip.mainwindow import MainWindow
-from cogip.automaton import Automaton
 from cogip.serialcontroller import SerialController
 
-import faulthandler
 
 def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
     arg_parser = argparse.ArgumentParser(description='Launch COGIP Simulator.')
@@ -43,27 +38,26 @@ def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
     )
     iodevice_group.add_argument(
         "-B", "--binary",
-        dest="native_binary", default=Config.NATIVE_BINARY,
+        dest="native_binary", default=settings.native_binary,
         help="Specify native board binary compiled in calibration mode"
     )
     return arg_parser
+
 
 if __name__ == '__main__':
     faulthandler.enable()
 
     # Virtual uart for native simulation
-    virtual_uart = Config.DEFAULT_UART
+    virtual_uart = settings.default_uart
 
-    # Run native mode by default
-    # Real mode used by default if an uart is found, use the first uart discovered 
+    # Run native mode by default
+    # Real mode used by default if an uart is found, use the first uart discovered
     default_uart = virtual_uart
-    logger.info(f"Discovering uarts:")
+    logger.info("Discovering uarts:")
     for info in serial.tools.list_ports.comports():
         logger.info(f"  - {info.device()}:")
         if default_uart == virtual_uart:
             default_uart = info.device()
-    else:
-        logger.info("  - no port found")
 
     if default_uart != virtual_uart:
         logger.info(f"Default uart: {default_uart}")
@@ -72,7 +66,7 @@ if __name__ == '__main__':
     arg_parser = get_argument_parser(default_uart)
     args = arg_parser.parse_args()
 
-    # Start socat redirecting native process stdin/stdout to virtual uart
+    # Start socat redirecting native process stdin/stdout to virtual uart
     if args.uart_device != virtual_uart:
         socat_process = None
     else:
@@ -82,8 +76,8 @@ if __name__ == '__main__':
             sys.exit(1)
         socat_args = [
             socat_path,
-            #"-v",
-            #"-v",
+            # "-v",
+            # "-v",
             f'PTY,link={virtual_uart},rawer,wait-slave',
             f'EXEC:"{args.native_binary}"'
         ]
@@ -92,54 +86,42 @@ if __name__ == '__main__':
 
     position_queue = Queue()
 
-    # Models must be loaded before QApplication init
-    table = Table(Config.TABLE_FILENAME)
-    robot = Robot(Config.ROBOT_FILENAME, position_queue)
+    # Models must be loaded before QApplication init
+    table = Table(settings.table_filename)
+    robot = Robot(settings.robot_filename, position_queue)
 
-    # Create automaton
-    automaton = Automaton()
-
-    # Create controller
+    # Create controller
     controller = SerialController(args.uart_device, position_queue)
 
-    # Create QApplication
+    # Create QApplication
     app = QtWidgets.QApplication(sys.argv)
 
-    # Create UI
+    # Create UI
     win = MainWindow()
 
-    # Add models to UI
+    # Add models to UI
     table.set_display(win.viewer._display)
     robot.set_display(win.viewer._display)
 
-    # Connect Robot signals to UI slots
+    # Connect Robot signals to UI slots
     robot.signal_position_updated.connect(win.new_robot_position)
 
-    # Connect UI signals to Automaton slots
-    win.trigger_signal.connect(automaton.new_trigger)
+    # Connect UI signals to Controller slots
+    win.signal_send_command.connect(controller.slot_new_command)
 
-    # Connect Controller signals to Automaton slots
-    controller.signal_new_trigger.connect(automaton.new_trigger)
-
-    # Connect Automaton signals to Controller slots
-    automaton.signal_enter_new_state.connect(controller.slot_send_command)
-
-    # Connect Automaton signals to UI slots
-    automaton.signal_new_state.connect(win.new_controller_state)
-
-    # Connect Controller signals to UI slots
+    # Connect Controller signals to UI slots
     controller.signal_new_console_text.connect(win.log_text.append)
-    controller.signal_new_robot_position_number.connect(win.pos_nb_text.setText)
+    controller.signal_new_menu.connect(win.load_menu)
 
-    # Move Robot to thread and start
+    # Move Robot to thread and start
     robot_thread = Thread(target=robot.update_position, daemon=True)
     robot_thread.start()
 
-    # Show UI
+    # Show UI
     win.show()
     win.raise_()
 
-    # Create controller thread and start it
+    # Create controller thread and start it
     # (open serial port)
     controller_thread = Thread(target=controller.process_output)
     controller_thread.start()
