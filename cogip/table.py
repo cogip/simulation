@@ -4,6 +4,7 @@ import OCC
 
 from cogip import logger
 
+
 class Table:
     """Table class
 
@@ -18,7 +19,7 @@ class Table:
             logger.error("Table class must be created before QApplication is started")
             return None
         table_shapes = OCC.Extend.DataExchange.read_iges_file(
-            filename=table_filename,
+            filename=str(table_filename),
             return_as_shapes=True,
             verbosity=False,
             visible_only=False)

@@ -1,14 +1,16 @@
-import os
+from pydantic import BaseSettings, FilePath
 
-class Config(object):
+
+class Config(BaseSettings):
     """Config class
 
     This class give default values for different parameters.
     These parameters can be also set as environment variables or in the `.env` file. 
     """
 
-    DEFAULT_UART = os.environ.get("DEFAULT_UART") or "/tmp/ptsCOGIP"
-    TABLE_FILENAME = os.environ.get("TABLE_FILENAME") or "../models/table2019.iges"
-    ROBOT_FILENAME = os.environ.get("ROBOT_FILENAME") or "../models/robot2019_simu.step"
-    NATIVE_BINARY = os.environ.get("SIMULATION_BINARY") or "../platforms/cogip2019-cortex-simulation/bin/cogip2019-cortex-native/cortex-simulation.elf"
-    # NATIVE_BINARY = os.environ.get("SIMULATION_BINARY") or "/home/eric/cogip/mcu-firmware-ygl-pid-calib-next/platforms/cogip2019-cortex-simulation/bin/cogip2019-cortex-native/cortex-simulation.elf"
+    default_uart: str = "/tmp/ptsCOGIP"
+    table_filename: FilePath = "../models/table2019.iges"
+    robot_filename: FilePath = "../models/robot2019_simu.step"
+    native_binary: FilePath = "submodules/mcu-firmware/applications/cogip2019-cortex/bin/cogip2019-cortex-native/cortex.elf"
+
+settings = Config()
