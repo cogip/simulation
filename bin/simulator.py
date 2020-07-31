@@ -12,7 +12,7 @@ from pathlib import Path
 from queue import Queue
 from threading import Thread
 
-from PyQt5 import QtWidgets
+from PySide2 import QtWidgets
 
 from dotenv import load_dotenv, find_dotenv
 load_dotenv(find_dotenv(), verbose=False)
@@ -22,10 +22,10 @@ if '__file__' in locals():
 
 from cogip import logger
 from cogip.config import settings
-from cogip.table import Table
-from cogip.robot import Robot
 from cogip.mainwindow import MainWindow
 from cogip.serialcontroller import SerialController
+from cogip.gameview import GameView
+from cogip.assetentity import AssetEntity
 
 
 def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
@@ -87,8 +87,8 @@ if __name__ == '__main__':
     position_queue = Queue()
 
     # Models must be loaded before QApplication init
-    table = Table(settings.table_filename)
-    robot = Robot(settings.robot_filename, position_queue)
+    # table = Table(settings.table_filename)
+    # robot = Robot(, position_queue)
 
     # Create controller
     controller = SerialController(args.uart_device, position_queue)
@@ -99,23 +99,33 @@ if __name__ == '__main__':
     # Create UI
     win = MainWindow()
 
-    # Add models to UI
-    table.set_display(win.viewer._display)
-    robot.set_display(win.viewer._display)
+    # Create game view
+    game_view = GameView()
+    win.setCentralWidget(game_view)
 
-    # Connect Robot signals to UI slots
-    robot.signal_position_updated.connect(win.new_robot_position)
+    # Create table entity
+    table_entity = AssetEntity(
+        asset_path=Path(settings.table_filename).resolve()
+    )
+    game_view.add_asset(table_entity)
+
+    # Create robot entity
+    robot_entity = AssetEntity(
+        asset_path=Path(settings.robot_filename).resolve(),
+        asset_name="Robot2019_Simu"
+    )
+    game_view.add_asset(robot_entity)
 
     # Connect UI signals to Controller slots
     win.signal_send_command.connect(controller.slot_new_command)
 
+    # Connect Controller signals to Robot slots
+    controller.signal_new_robot_position.connect(robot_entity.set_position)
+
     # Connect Controller signals to UI slots
     controller.signal_new_console_text.connect(win.log_text.append)
     controller.signal_new_menu.connect(win.load_menu)
-
-    # Move Robot to thread and start
-    robot_thread = Thread(target=robot.update_position, daemon=True)
-    robot_thread.start()
+    controller.signal_new_robot_position.connect(win.new_robot_position)
 
     # Show UI
     win.show()
