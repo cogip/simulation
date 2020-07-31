@@ -11,11 +11,11 @@ name = 'cogip-simulator'
 version = '1.0'
 release = '1.0.0'
 
-readme_filename =  cwd / "README.md"
+readme_filename = cwd / "README.md"
 long_description = readme_filename.open().read()
 
 required_packages = [
-    "PyQt5==5.13.1",
+    "PySide2==5.15.0",
     "sphinx==2.2.1",
     "autodoc==0.5.0",
     "pydantic==1.6.1",

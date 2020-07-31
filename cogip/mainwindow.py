@@ -1,13 +1,9 @@
 import re
 from typing import Dict, Optional, List, Tuple
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import pyqtSignal as qtSignal
-from PyQt5.QtCore import pyqtSlot as qtSlot
-
-import OCC.Display.backend
-OCC.Display.backend.load_backend("qt-pyqt5")
-import OCC.Display.qtDisplay
+from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2.QtCore import Signal as qtSignal
+from PySide2.QtCore import Slot as qtSlot
 
 from cogip.models import ShellMenu, PoseCurrent
 
@@ -76,13 +72,7 @@ class MainWindow(QtWidgets.QMainWindow):
         toolbar = self.addToolBar('Actions')
         toolbar.addAction(self.exit_action)
 
-        self.viewer = OCC.Display.qtDisplay.qtViewer3d(self)
-        self.viewer.setMinimumSize(640, 480)
-        self.viewer.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        self.viewer.InitDriver()
-        self.viewer.qApp = QtWidgets.QApplication.instance()
-        self.setCentralWidget(self.viewer)
-
+        # Console
         dock = QtWidgets.QDockWidget("Console")
         dock.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea)
         self.log_text = QtWidgets.QTextEdit()
@@ -141,7 +131,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     continue
                 cmd_widget = QtWidgets.QWidget()
                 cmd_layout = QtWidgets.QHBoxLayout()
-                cmd_layout.setContentsMargins(0,0,0,0)
+                cmd_layout.setContentsMargins(0, 0, 0, 0)
                 cmd_widget.setLayout(cmd_layout)
                 layout.addWidget(cmd_widget)
 
@@ -159,7 +149,7 @@ class MainWindow(QtWidgets.QMainWindow):
                             self.build_command(cmd, layout)
                     )
                 button.clicked.connect(
-                    lambda state, cmd=entry.cmd, layout=cmd_layout:
+                    lambda cmd=entry.cmd, layout=cmd_layout:
                         self.build_command(cmd, layout)
                 )
 
@@ -179,6 +169,7 @@ class MainWindow(QtWidgets.QMainWindow):
             cmd += f" {text}"
             i += 1
         self.signal_send_command.emit(cmd)
+
 
 def split_command(command: str) -> Tuple[str, List[str]]:
     result: List[str] = list()

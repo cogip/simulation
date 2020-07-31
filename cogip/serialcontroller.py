@@ -4,9 +4,9 @@ from serial import Serial
 from threading import Lock
 # import ptvsd # Used to debug with VS Code
 
-from PyQt5 import QtCore
-from PyQt5.QtCore import pyqtSignal as qtSignal
-from PyQt5.QtCore import pyqtSlot as qtSlot
+from PySide2 import QtCore
+from PySide2.QtCore import Signal as qtSignal
+from PySide2.QtCore import Slot as qtSlot
 from pydantic import ValidationError
 
 from cogip import logger
@@ -39,18 +39,11 @@ class SerialController(QtCore.QObject):
     #:      Connected to :class:`~cogip.mainwindow.MainWindow`.
     signal_new_menu = qtSignal(ShellMenu)
 
-    #: :obj:`qtSignal(float, float, float)`:
+    #: :obj:`qtSignal(PoseCurrent)`:
     #:      Qt signal emitted to update Robot position.
-    #:      Parameters are `x`, `y`, `angle`.
     #:
-    #:      Connected to :class:`~cogip.robot.Robot`.
-    signal_new_robot_position = qtSignal(float, float, float)
-
-    #: :obj:`qtSignal(str)`:
-    #:      Qt signal emitted when the next Robot position number is reached.
-    #:
-    #:      Connected to :class:`~cogip.mainwindow.MainWindow`.
-    signal_new_robot_position_number = qtSignal(str)
+    #:      Connected to :class:`~cogip.assetentity.AssetEntity`.
+    signal_new_robot_position = qtSignal(PoseCurrent)
 
     def __init__(self, uart_device: str, position_queue: Queue):
         """:class:`SerialController` constructor.
@@ -162,7 +155,8 @@ class SerialController(QtCore.QObject):
                     line = self.serial_port.readline().rstrip().decode(errors="ignore")
                     try:
                         pose = PoseCurrent.parse_raw(line)
-                        self.position_queue.put(pose)
+                        self.signal_new_robot_position.emit(pose)
+                        # self.position_queue.put(pose)
                         pose_found = True
                     except ValidationError:
                         pass
