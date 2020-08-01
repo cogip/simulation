@@ -1,3 +1,10 @@
+This repository uses Git LFS to store asset files for the robot and table.
+You should first install and initialize git-lfs:
+```bash
+sudo apt install git-lfs
+git lfs install
+```
+
 The simulation depends on a specific version of `mcu-firmware` which also depends on a specific version of `RIOT`. So to avoid struggle in finding the correct versions of the dependencies, we use git submodules to fix the versions of `mcu-firmware` and `RIOT`. 
 Do not forget to fetch the submodules after `git clone`:
 ```bash
