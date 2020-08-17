@@ -65,6 +65,8 @@ class GameView(QtWidgets.QWidget):
         # Create light
         self.light_entity = create_ligth_entity(20000, 20000, 20000)
         self.light_entity.setParent(self.root_entity)
+        self.light_entity2 = create_ligth_entity(20000, -20000, 20000)
+        self.light_entity2.setParent(self.root_entity)
 
     def add_asset(self, asset: AssetEntity) -> None:
         asset.setParent(self.root_entity)
