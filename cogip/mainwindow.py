@@ -18,6 +18,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     signal_send_command = qtSignal(str)
 
+    signal_add_obstacle = qtSignal()
+
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
@@ -62,15 +64,27 @@ class MainWindow(QtWidgets.QMainWindow):
         status_bar.addPermanentWidget(self.pos_mode_text, 0)
 
         # Actions
+        # https://commons.wikimedia.org/wiki/Comparison_of_icon_sets
         self.exit_action = QtWidgets.QAction(QtGui.QIcon.fromTheme("application-exit"), 'Exit', self)
         self.exit_action.setShortcut('Ctrl+Q')
         self.exit_action.setStatusTip('Exit application')
         self.exit_action.triggered.connect(self.close)
         file_menu.addAction(self.exit_action)
 
+        self.add_obstacle_action = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme("list-add"),
+            'Add obstacle',
+            self
+        )
+        self.add_obstacle_action.setShortcut('Ctrl+A')
+        self.add_obstacle_action.setStatusTip('Add obstacle')
+        self.add_obstacle_action.triggered.connect(self.add_obstacle)
+        file_menu.addAction(self.add_obstacle_action)
+
         # Toolbar
         toolbar = self.addToolBar('Actions')
         toolbar.addAction(self.exit_action)
+        toolbar.addAction(self.add_obstacle_action)
 
         # Console
         dock = QtWidgets.QDockWidget("Console")
@@ -81,6 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.addDockWidget(QtCore.Qt.BottomDockWidgetArea, dock)
         view_menu.addAction(dock.toggleViewAction())
 
+        # Command menu dock
         self.actions_dock = QtWidgets.QDockWidget("Actions")
         self.actions_dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
         self.actions_dock.setFeatures(QtWidgets.QDockWidget.NoDockWidgetFeatures)
@@ -169,6 +184,10 @@ class MainWindow(QtWidgets.QMainWindow):
             cmd += f" {text}"
             i += 1
         self.signal_send_command.emit(cmd)
+
+    @qtSlot()
+    def add_obstacle(self):
+        self.signal_add_obstacle.emit()
 
 
 def split_command(command: str) -> Tuple[str, List[str]]:
