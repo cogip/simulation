@@ -6,6 +6,7 @@ from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
 from cogip.assetentity import AssetEntity
+from cogip.obstacleentity import ObstacleEntity
 
 
 def create_ligth_entity(x: float, y: float, z: float) -> Qt3DCore.QEntity:
@@ -43,6 +44,10 @@ class GameView(QtWidgets.QWidget):
         layout.addWidget(self.container)
         self.setLayout(layout)
 
+        picking_settings = self.view.renderSettings().pickingSettings()
+        picking_settings.setPickMethod(Qt3DRender.QPickingSettings.PrimitivePicking)
+        picking_settings.setPickResultMode(Qt3DRender.QPickingSettings.NearestPick)
+
         # Create root entity
         self.root_entity = Qt3DCore.QEntity()
         self.view.setRootEntity(self.root_entity)
@@ -71,6 +76,17 @@ class GameView(QtWidgets.QWidget):
     def add_asset(self, asset: AssetEntity) -> None:
         asset.setParent(self.root_entity)
         asset.ready.connect(self.asset_ready)
+
+    @qtSlot()
+    def add_obstacle(
+            self,
+            x: int = 0,
+            y: int = 1000,
+            rotation: int = 0,
+            **kwargs) -> ObstacleEntity:
+        obstacle = ObstacleEntity(self.container, x, y, rotation, **kwargs)
+        obstacle.setParent(self.root_entity)
+        return obstacle
 
     def game_ready(self) -> bool:
         child_assets_not_ready = [

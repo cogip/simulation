@@ -119,6 +119,9 @@ if __name__ == '__main__':
     # Connect UI signals to Controller slots
     win.signal_send_command.connect(controller.slot_new_command)
 
+    # Connect UI signals to GameView slots
+    win.signal_add_obstacle.connect(game_view.add_obstacle)
+
     # Connect Controller signals to Robot slots
     controller.signal_new_robot_position.connect(robot_entity.set_position)
 
