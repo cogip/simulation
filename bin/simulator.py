@@ -26,6 +26,7 @@ from cogip.mainwindow import MainWindow
 from cogip.serialcontroller import SerialController
 from cogip.gameview import GameView
 from cogip.assetentity import AssetEntity
+from cogip.robotentity import RobotEntity
 
 
 def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
@@ -86,10 +87,6 @@ if __name__ == '__main__':
 
     position_queue = Queue()
 
-    # Models must be loaded before QApplication init
-    # table = Table(settings.table_filename)
-    # robot = Robot(, position_queue)
-
     # Create controller
     controller = SerialController(args.uart_device, position_queue)
 
@@ -105,12 +102,13 @@ if __name__ == '__main__':
 
     # Create table entity
     table_entity = AssetEntity(
-        asset_path=Path(settings.table_filename).resolve()
+        asset_path=Path(settings.table_filename).resolve(),
+        asset_name="Table2019"
     )
     game_view.add_asset(table_entity)
 
     # Create robot entity
-    robot_entity = AssetEntity(
+    robot_entity = RobotEntity(
         asset_path=Path(settings.robot_filename).resolve(),
         asset_name="Robot2019_Simu"
     )
