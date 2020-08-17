@@ -4,13 +4,14 @@ from typing import Union
 from PySide2 import QtCore, QtGui
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DRender import Qt3DRender
+from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
 from cogip import logger
 from cogip.models import PoseCurrent
 
 
-# tree.txt can be displayed with:
+# tree file can be displayed with:
 # dot -Tpdf <file>.tree.dot | okular -
 
 def traverse_tree(fd, entity, nextNodeNumber):
@@ -43,6 +44,9 @@ def traverse_tree(fd, entity, nextNodeNumber):
 
 
 class AssetEntity(Qt3DCore.QEntity):
+
+    ready = qtSignal()
+
     def __init__(self, asset_path: Union[Path, str], asset_name: str = None):
         super(AssetEntity, self).__init__()
 
@@ -61,27 +65,57 @@ class AssetEntity(Qt3DCore.QEntity):
             raise IsADirectoryError(f"'{self.asset_path}' is not a file")
 
         self.asset_name = asset_name
+        self.asset_entity = None
         self.transform_component = None
 
-        loader = Qt3DRender.QSceneLoader(self)
-        loader.statusChanged.connect(self.on_loader_status_changed)
-        loader.setObjectName(self.asset_path.name)
-        self.addComponent(loader)
-        loader.setSource(QtCore.QUrl(f"file:{self.asset_path}"))
+        self.loader = Qt3DRender.QSceneLoader(self)
+        self.loader.statusChanged.connect(self.on_loader_status_changed)
+        self.loader.setObjectName(self.asset_path.name)
+        self.addComponent(self.loader)
+        self.loader.setSource(QtCore.QUrl(f"file:{self.asset_path}"))
 
     @qtSlot(Qt3DRender.QSceneLoader.Status)
     def on_loader_status_changed(self, status: Qt3DRender.QSceneLoader.Status):
         if status != Qt3DRender.QSceneLoader.Ready:
             return
 
-        # In PyQt5 5.15.0
-        # Warning: QEntity.childNodes() can be called only once
-        #   The second time, it returns an empty list
-        #   => Use QEntity.children() instead
-        # Warning: QEntity.components() can be called only once
-        #   The second time, it returns an empty list
-        #   => No solution right now other than using PySide2
+        if self.asset_name:
+            # Find the asset entity
+            self.asset_entity = self.findChild(Qt3DCore.QEntity, self.asset_name)
+            if not self.asset_entity:
+                logger.warning(f"Entity '{self.asset_name}' not found in {self.asset_path}")
+            else:
+                # Set asset entity as the first child
+                self.asset_entity.setParent(self)
+                # Find the transform component of the asset entity
+                for comp in self.asset_entity.components():
+                    if isinstance(comp, Qt3DCore.QTransform):
+                        self.transform_component = comp
+                        break
 
+        # Remove unused entities and component
+        self.scene_entity = self.findChild(Qt3DCore.QEntity, "Scene")
+        self.scene_entity.setParent(None)
+        self.removeComponent(self.loader)
+
+        self.generate_graph()
+
+        self.post_init()
+
+        self.asset_ready = True
+
+        self.ready.emit()
+
+    @qtSlot(PoseCurrent)
+    def set_position(self, new_position: PoseCurrent) -> None:
+        if not self.transform_component:
+            return
+
+        self.transform_component.setTranslation(
+            QtGui.QVector3D(new_position.x, new_position.y, 0))
+        self.transform_component.setRotationZ(new_position.O)
+
+    def generate_graph(self):
         # Write tree file (graphviz format)
         tree_filename = self.asset_path.with_suffix(".tree.dot")
         with tree_filename.open(mode='w') as fd:
@@ -92,24 +126,5 @@ class AssetEntity(Qt3DCore.QEntity):
             traverse_tree(fd, self, root_node_number)
             fd.write("}\n")
 
-        if self.asset_name:
-            # Find the transform component of the entity
-            asset_entity = self.findChild(Qt3DCore.QEntity, self.asset_name)
-            if not asset_entity:
-                logger.warning(f"Entity '{self.asset_name} not found in {self.asset_path}")
-            else:
-                for comp in asset_entity.components():
-                    if isinstance(comp, Qt3DCore.QTransform):
-                        self.transform_component = comp
-                        break
-
-        self.asset_ready = True
-
-    @qtSlot(PoseCurrent)
-    def set_position(self, new_position: PoseCurrent) -> None:
-        if not self.transform_component:
-            return
-
-        self.transform_component.setTranslation(
-            QtGui.QVector3D(new_position.x, new_position.y, 0))
-        self.transform_component.setRotationZ(new_position.O)
+    def post_init(self):
+        pass
