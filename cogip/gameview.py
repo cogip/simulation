@@ -2,11 +2,13 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DExtras import Qt3DExtras
+from PySide2.QtCore import Signal as qtSignal
+from PySide2.QtCore import Slot as qtSlot
 
 from cogip.assetentity import AssetEntity
 
 
-def create_ligth_entity() -> Qt3DCore.QEntity:
+def create_ligth_entity(x: float, y: float, z: float) -> Qt3DCore.QEntity:
     light_entity = Qt3DCore.QEntity()
 
     light = Qt3DRender.QPointLight(light_entity)
@@ -17,13 +19,16 @@ def create_ligth_entity() -> Qt3DCore.QEntity:
     light_entity.addComponent(light)
 
     light_transform = Qt3DCore.QTransform(light_entity)
-    light_transform.setTranslation(QtGui.QVector3D(20000, 20000, 20000))
+    light_transform.setTranslation(QtGui.QVector3D(x, y, z))
     light_entity.addComponent(light_transform)
 
     return light_entity
 
 
 class GameView(QtWidgets.QWidget):
+
+    ready = qtSignal()
+
     def __init__(self):
         super(GameView, self).__init__()
 
@@ -31,7 +36,7 @@ class GameView(QtWidgets.QWidget):
         self.view = Qt3DExtras.Qt3DWindow()
         screen_size = self.view.screen().size()
         self.container = self.createWindowContainer(self.view)
-        self.container.setMinimumSize(QtCore.QSize(640, 480))
+        self.container.setMinimumSize(QtCore.QSize(1280, 960))
         self.container.setMaximumSize(screen_size)
         self.container.setFocusPolicy(QtCore.Qt.NoFocus)
         layout = QtWidgets.QHBoxLayout()
@@ -46,9 +51,9 @@ class GameView(QtWidgets.QWidget):
         self.camera_entity = self.view.camera()  # type: Qt3DRender.QCamera
         # QCameraLens::setPerspectiveProjection(float fieldOfView, float aspectRatio, float nearPlane, float farPlane)
         self.camera_entity.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 20000.0)
-        self.camera_entity.setUpVector(QtGui.QVector3D(-0.44, 0.81, 0.4))
-        self.camera_entity.setPosition(QtGui.QVector3D(3215, 3155, -3825))
-        self.camera_entity.setViewCenter(QtGui.QVector3D(0, 0, -1000))
+        self.camera_entity.setUpVector(QtGui.QVector3D(0, 0, 1))
+        self.camera_entity.setPosition(QtGui.QVector3D(3000, 3000, 3000))
+        self.camera_entity.setViewCenter(QtGui.QVector3D(0, 1000, 0))
 
         # Create camera controller entity
         self.camera_controller = Qt3DExtras.QOrbitCameraController(self.root_entity)
@@ -58,13 +63,19 @@ class GameView(QtWidgets.QWidget):
         # self.camera_controller.setLookSpeed(1000)  # default = 180
 
         # Create light
-        self.light_entity = create_ligth_entity()
+        self.light_entity = create_ligth_entity(20000, 20000, 20000)
         self.light_entity.setParent(self.root_entity)
 
     def add_asset(self, asset: AssetEntity) -> None:
         asset.setParent(self.root_entity)
+        asset.ready.connect(self.asset_ready)
 
     def game_ready(self) -> bool:
         child_assets_not_ready = [
             child for child in self.root_entity.findChildren(AssetEntity) if not child.asset_ready]
         return len(child_assets_not_ready) == 0
+
+    @qtSlot()
+    def asset_ready(self):
+        if self.game_ready():
+            self.ready.emit()
