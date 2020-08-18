@@ -6,12 +6,22 @@ from cogip.sensor import Sensor
 
 
 class RobotEntity(AssetEntity):
-    def __init__(self, asset_path: Union[Path, str], asset_name: str = None):
+    def __init__(
+            self,
+            asset_path: Union[Path, str],
+            asset_name: str = None,
+            enable_tof_sensors: bool = True):
         super(RobotEntity, self).__init__(asset_path, asset_name)
+        self.enable_tof_sensors = enable_tof_sensors
+        self.tof_sensors = []
 
     def post_init(self):
         super(RobotEntity, self).post_init()
 
+        if self.enable_tof_sensors:
+            self.add_tof_sensors()
+
+    def add_tof_sensors(self):
         sensors_properties = [
             {
                 "name": "Front sensor",
@@ -56,7 +66,6 @@ class RobotEntity(AssetEntity):
         ]
 
         # Add sensors
-        self.sensors = []
         for prop in sensors_properties:
             sensor = Sensor(asset_entity=self, **prop)
-            self.sensors.append(sensor)
+            self.tof_sensors.append(sensor)
