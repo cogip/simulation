@@ -3,4 +3,4 @@
 	url = https://github.com/cogip/mcu-firmware.git
 [submodule "submodules/RIOT"]
 	path = submodules/RIOT
-	url = https://github.com/gdoffe/RIOT.git
+	url = https://github.com/RIOT-OS/RIOT.git
