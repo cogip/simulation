@@ -50,9 +50,9 @@ def main():
     default_uart = virtual_uart
     logger.info("Discovering uarts:")
     for info in serial.tools.list_ports.comports():
-        logger.info(f"  - {info.device()}:")
+        logger.info(f"  - {info.device}:")
         if default_uart == virtual_uart:
-            default_uart = info.device()
+            default_uart = info.device
 
     if default_uart != virtual_uart:
         logger.info(f"Default uart: {default_uart}")
