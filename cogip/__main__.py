@@ -1,24 +1,18 @@
 #!/usr/bin/env python3
 
-import sys
-# import ptvsd
 import argparse
 import faulthandler
+from pathlib import Path
+import psutil
+from queue import Queue
 import shutil
 import subprocess
-import psutil
-import serial.tools.list_ports
-from pathlib import Path
-from queue import Queue
+import sys
 from threading import Thread
 
+import serial.tools.list_ports
+# import ptvsd
 from PySide2 import QtWidgets
-
-from dotenv import load_dotenv, find_dotenv
-load_dotenv(find_dotenv(), verbose=False)
-
-if '__file__' in locals():
-    sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from cogip import logger
 from cogip.config import settings
@@ -45,7 +39,7 @@ def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
     return arg_parser
 
 
-if __name__ == '__main__':
+def main():
     faulthandler.enable()
 
     # Virtual uart for native simulation
@@ -130,6 +124,7 @@ if __name__ == '__main__':
 
     # Show UI
     win.show()
+    # win.showFullScreen()
     win.raise_()
 
     # Create controller thread and start it
@@ -151,3 +146,7 @@ if __name__ == '__main__':
                 proc.kill()
 
     sys.exit(ret)
+
+
+if __name__ == '__main__':
+    main()
