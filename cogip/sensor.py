@@ -13,8 +13,9 @@ class Sensor(QtCore.QObject):
             asset_entity: AssetEntity,
             name: str,
             origin_x: int,
-            origin_y: int
-            ):
+            origin_y: int,
+            impact_radius: float = 50,
+            impact_color: QtCore.Qt.red = QtCore.Qt.red):
         super(Sensor, self).__init__()
 
         self.asset_entity = asset_entity
@@ -34,7 +35,7 @@ class Sensor(QtCore.QObject):
         self.asset_entity.asset_entity.addComponent(self.ray_caster)
 
         # Add impact entity
-        self.impact_entity = ImpactEntity()
+        self.impact_entity = ImpactEntity(radius=impact_radius, color=impact_color)
         self.impact_entity.setParent(self.asset_entity)
 
         self.timer = QtCore.QTimer()
