@@ -4,6 +4,8 @@ from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.QtCore import Slot as qtSlot
 
+from cogip.sensor import Sensor
+
 
 class ObstacleEntity(Qt3DCore.QEntity):
 
@@ -15,9 +17,11 @@ class ObstacleEntity(Qt3DCore.QEntity):
             rotation: int = 0,
             length: int = 200,
             width: int = 200,
-            height: int = 200):
+            height: int = 600):
 
         super(ObstacleEntity, self).__init__()
+
+        Sensor.add_obstacle(self)
 
         self.parent_widget = parent_widget
 

@@ -45,7 +45,8 @@ class GameView(QtWidgets.QWidget):
         self.setLayout(layout)
 
         picking_settings = self.view.renderSettings().pickingSettings()
-        picking_settings.setPickMethod(Qt3DRender.QPickingSettings.PrimitivePicking)
+        # picking_settings.setPickMethod(Qt3DRender.QPickingSettings.PrimitivePicking)
+        picking_settings.setPickMethod(Qt3DRender.QPickingSettings.TrianglePicking)
         picking_settings.setPickResultMode(Qt3DRender.QPickingSettings.NearestPick)
 
         # Create root entity
