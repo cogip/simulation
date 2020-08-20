@@ -144,18 +144,24 @@ class SerialController(QtCore.QObject):
             logger.debug("main_loop: try to acquire lock")
             with self.serial_lock:
                 logger.debug("main_loop: lock acquired")
-                self.serial_port.write(b"_pose\n")
 
-                pose_found = False
-                while not self.exiting and not pose_found:
-                    line = self.serial_port.readline().rstrip().decode(errors="ignore")
-                    try:
-                        pose = PoseCurrent.parse_raw(line)
-                        self.signal_new_robot_position.emit(pose)
-                        pose_found = True
-                    except ValidationError:
-                        pass
+                self.get_pose()
+
             logger.debug("main_loop: lock released")
 
         # Close the serial port before exiting the thread
         self.serial_port.close()
+
+    def get_pose(self):
+        self.serial_port.write(b"_pose\n")
+
+        pose_found = False
+        while not self.exiting and not pose_found:
+            line = self.serial_port.readline().rstrip().decode(errors="ignore")
+            try:
+                pose = PoseCurrent.parse_raw(line)
+                self.signal_new_robot_position.emit(pose)
+                pose_found = True
+            except ValidationError:
+                pass
+
