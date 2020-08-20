@@ -96,16 +96,12 @@ class SerialController(QtCore.QObject):
             self.serial_port.write(b"_help_json\n")
 
             while True:
-                logger.debug("ping1")
                 line = self.serial_port.readline().rstrip().decode(errors="ignore")
                 if line[0] == ">":
                     continue
                 try:
-                    logger.debug(f"ping2: {line}")
                     menu = ShellMenu.parse_raw(line)
-                    logger.debug("ping3")
                     self.signal_new_menu.emit(menu)
-                    logger.debug("ping4")
                     for entry in menu.entries:
                         if entry.cmd == "_pose":
                             self.menu_has_pose = True
@@ -156,7 +152,6 @@ class SerialController(QtCore.QObject):
                     try:
                         pose = PoseCurrent.parse_raw(line)
                         self.signal_new_robot_position.emit(pose)
-                        # self.position_queue.put(pose)
                         pose_found = True
                     except ValidationError:
                         pass
