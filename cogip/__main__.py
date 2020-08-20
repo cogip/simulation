@@ -116,6 +116,7 @@ def main():
 
     # Connect Controller signals to Robot slots
     controller.signal_new_robot_position.connect(robot_entity.set_position)
+    controller.signal_new_dyn_obstacles.connect(robot_entity.set_dyn_obstacles)
 
     # Connect Controller signals to UI slots
     controller.signal_new_console_text.connect(win.log_text.append)

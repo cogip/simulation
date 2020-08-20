@@ -10,7 +10,7 @@ from PySide2.QtCore import Slot as qtSlot
 from pydantic import ValidationError
 
 from cogip import logger
-from cogip.models import ShellMenu, PoseCurrent
+from cogip.models import ShellMenu, PoseCurrent, DynObstacleList
 
 
 class SerialController(QtCore.QObject):
@@ -42,8 +42,14 @@ class SerialController(QtCore.QObject):
     #: :obj:`qtSignal(PoseCurrent)`:
     #:      Qt signal emitted to update Robot position.
     #:
-    #:      Connected to :class:`~cogip.assetentity.AssetEntity`.
+    #:      Connected to :class:`~cogip.robotentity.RobotEntity`.
     signal_new_robot_position = qtSignal(PoseCurrent)
+
+    #: :obj:`qtSignal(DynObstacleList)`:
+    #:      Qt signal emitted to update dynamic obstacles.
+    #:
+    #:      Connected to :class:`~cogip.robotentity.RobotEntity`.
+    signal_new_dyn_obstacles = qtSignal(DynObstacleList)
 
     def __init__(self, uart_device: str, position_queue: Queue):
         """:class:`SerialController` constructor.
@@ -147,6 +153,8 @@ class SerialController(QtCore.QObject):
 
                 self.get_pose()
 
+                self.get_dyn_obstacles()
+
             logger.debug("main_loop: lock released")
 
         # Close the serial port before exiting the thread
@@ -165,3 +173,16 @@ class SerialController(QtCore.QObject):
             except ValidationError:
                 pass
 
+    def get_dyn_obstacles(self):
+        self.serial_port.write(b"_dyn_obstacles\n")
+
+        obstacles_found = False
+        while not self.exiting and not obstacles_found:
+            line = self.serial_port.readline().rstrip().decode(errors="ignore")
+            try:
+                dyn_obstacles = DynObstacleList.parse_raw(line)
+                if len(dyn_obstacles.__root__):
+                    self.signal_new_dyn_obstacles.emit(dyn_obstacles)
+                obstacles_found = True
+            except ValidationError:
+                pass
