@@ -23,8 +23,33 @@ class CtrlModeEnum(IntEnum):
     PASSTHROUGH = 5
 
 
-class PoseCurrent(BaseModel):
-    mode: CtrlModeEnum
-    O: float
+class HashableBaseModel(BaseModel):
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__dict__.values()))
+
+
+class Vertex(BaseModel):
     x: float
     y: float
+
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__dict__.values()))
+
+
+class PoseCurrent(Vertex):
+    mode: CtrlModeEnum
+    O: float
+
+
+class DynObstacle(BaseModel):
+    __root__: List[Vertex]
+
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__root__))
+
+
+class DynObstacleList(BaseModel):
+    __root__: List[DynObstacle]
+
+    def __hash__(self):
+        return hash((type(self),) + tuple(self.__root__))
