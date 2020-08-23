@@ -21,8 +21,6 @@ class ObstacleEntity(Qt3DCore.QEntity):
 
         super(ObstacleEntity, self).__init__()
 
-        Sensor.add_obstacle(self)
-
         self.parent_widget = parent_widget
 
         self.mesh = Qt3DExtras.QCuboidMesh()
@@ -46,8 +44,16 @@ class ObstacleEntity(Qt3DCore.QEntity):
 
         self.mesh.zExtentChanged.connect(self.updateZTranslation)
 
+        # Create a layer used by sensors to activate detection on the obstacles
+        self.layer = Qt3DRender.QLayer(self)
+        self.layer.setRecursive(True)
+        self.layer.setEnabled(True)
+        self.addComponent(self.layer)
+
         # Create properties dialog
         self.properties = ObstacleProperties(self.parent_widget, self)
+
+        Sensor.add_obstacle(self)
 
     @qtSlot(float)
     def updateZTranslation(self, zExtent: float):
