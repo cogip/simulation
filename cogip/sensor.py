@@ -1,8 +1,11 @@
 import math
 
+import sysv_ipc
+
 from PySide2 import QtCore, QtGui
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DRender import Qt3DRender
+from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.QtCore import Slot as qtSlot
 
 from cogip.assetentity import AssetEntity
@@ -90,6 +93,11 @@ class Sensor(QtCore.QObject):
 
 class ToFSensor(Sensor):
 
+    shm_key = None
+    shm_ptr = None
+    shm_data = None
+    nb_tof_sensors = 0
+
     def __init__(
             self,
             asset_entity: AssetEntity,
@@ -108,6 +116,11 @@ class ToFSensor(Sensor):
             direction_z=0,
             impact_radius=50,
             impact_color=QtCore.Qt.red)
+        self.sensor_id = ToFSensor.nb_tof_sensors
+        ToFSensor.nb_tof_sensors += 1
+        if ToFSensor.shm_data:
+            ToFSensor.shm_data[self.sensor_id] = 65535
+
         rotation = math.degrees(math.acos((origin_x / math.dist((0, 0), (origin_x, origin_y)))))
 
         self.entity = Qt3DCore.QEntity()
@@ -128,6 +141,26 @@ class ToFSensor(Sensor):
         self.transform.setRotationZ(rotation)
         self.entity.addComponent(self.transform)
 
+    @classmethod
+    def init_shm(cls):
+        cls.shm_ptr = sysv_ipc.SharedMemory(key=None, mode=0o666, flags=sysv_ipc.IPC_CREX, size=1024)
+        cls.shm_key = cls.shm_ptr.key
+        cls.shm_data = memoryview(cls.shm_ptr).cast('H')
+
+        for i in range(cls.nb_tof_sensors):
+            cls.shm_data[i] = 65535
+
+        # cls.shm_ptr.detach()
+        # cls.shm_ptr.remove()
+
+    @qtSlot()
+    def handle_hits(self):
+        super(ToFSensor, self).handle_hits()
+        if self.shm_data:
+            if self.hit:
+                ToFSensor.shm_data[self.sensor_id] = int(self.hit.distance())
+            else:
+                ToFSensor.shm_data[self.sensor_id] = 65535
 
 
 class LidarSensor(Sensor):
