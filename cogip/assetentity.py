@@ -113,7 +113,7 @@ class AssetEntity(Qt3DCore.QEntity):
 
         self.transform_component.setTranslation(
             QtGui.QVector3D(new_position.x, new_position.y, 0))
-        self.transform_component.setRotationZ(new_position.O)
+        self.transform_component.setRotationZ(new_position.O + 90)
 
     def generate_graph(self):
         # Write tree file (graphviz format)
