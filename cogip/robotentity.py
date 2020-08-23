@@ -111,10 +111,12 @@ class RobotEntity(AssetEntity):
             if len(dyn_obstacle.__root__) != 4:
                 continue
             p0, p1, p2, p3 = dyn_obstacle.__root__
+            # Compute obstacle size
             length = math.dist((p0.x, p0.y), (p1.x, p1.y))
             width = math.dist((p1.x, p1.y), (p2.x, p2.y))
-            pos_x = min(p0.x, p1.x) + length/2
-            pos_y = min(p0.y, p2.y) + width/2
+            # Compute the obstacle center position
+            pos_x = p0.x + (p2.x - p0.x)/2
+            pos_y = p0.y + (p2.y - p0.y)/2
             rotation = 90 + math.degrees(math.acos((p0.x-p1.x)/length))
 
             self.dyn_obstacle_entity = DynObstacleEntity(
