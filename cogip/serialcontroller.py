@@ -51,6 +51,8 @@ class SerialController(QtCore.QObject):
     #:      Connected to :class:`~cogip.robotentity.RobotEntity`.
     signal_new_dyn_obstacles = qtSignal(DynObstacleList)
 
+    max_parse_attemps = 20
+
     def __init__(self, uart_device: str, position_queue: Queue):
         """:class:`SerialController` constructor.
 
@@ -164,25 +166,37 @@ class SerialController(QtCore.QObject):
         self.serial_port.write(b"_pose\n")
 
         pose_found = False
-        while not self.exiting and not pose_found:
+        attempt = 0
+        while (not self.exiting and not pose_found
+                and attempt < SerialController.max_parse_attemps):
             line = self.serial_port.readline().rstrip().decode(errors="ignore")
+            if line[0] == ">":
+                continue
             try:
                 pose = PoseCurrent.parse_raw(line)
                 self.signal_new_robot_position.emit(pose)
                 pose_found = True
             except ValidationError:
-                pass
+                attempt += 1
+                self.signal_new_console_text.emit(line)
+                # print(f"parse failed: {line}")
 
     def get_dyn_obstacles(self):
         self.serial_port.write(b"_dyn_obstacles\n")
 
         obstacles_found = False
-        while not self.exiting and not obstacles_found:
+        attempt = 0
+        while (not self.exiting and not obstacles_found
+                and attempt < SerialController.max_parse_attemps):
             line = self.serial_port.readline().rstrip().decode(errors="ignore")
+            if line[0] == ">":
+                continue
             try:
                 dyn_obstacles = DynObstacleList.parse_raw(line)
-                if len(dyn_obstacles.__root__):
-                    self.signal_new_dyn_obstacles.emit(dyn_obstacles)
+                self.signal_new_dyn_obstacles.emit(dyn_obstacles)
                 obstacles_found = True
+                # print(dyn_obstacles)
             except ValidationError:
-                pass
+                attempt += 1
+                self.signal_new_console_text.emit(line)
+                # print(f"parse failed: {line}")
