@@ -104,7 +104,7 @@ def main():
     # Create robot entity
     robot_entity = RobotEntity(
         asset_path=Path(settings.robot_filename).resolve(),
-        asset_name="Robot2019_Simu"
+        asset_name="Robot2019"
     )
     game_view.add_asset(robot_entity)
 
