@@ -24,7 +24,7 @@ class RobotEntity(AssetEntity):
         self.enable_lidar_sensors = enable_lidar_sensors
         self.tof_sensors = []
         self.lidar_sensors = []
-        self.dyn_obstacle_entities = {}
+        self.dyn_obstacles_pool = []
 
     def post_init(self):
         super(RobotEntity, self).post_init()
@@ -100,14 +100,9 @@ class RobotEntity(AssetEntity):
     @qtSlot(DynObstacleList)
     def set_dyn_obstacles(self, dyn_obstacles: DynObstacleList) -> None:
         # Store new and already existing dyn obstacles
-        new_dyn_obstacle_entities = {}
+        current_dyn_obstacles = []
 
         for dyn_obstacle in dyn_obstacles.__root__:
-            if dyn_obstacle in self.dyn_obstacle_entities.keys():
-                new_dyn_obstacle_entities[dyn_obstacle] = self.dyn_obstacle_entities[dyn_obstacle]
-                del(self.dyn_obstacle_entities[dyn_obstacle])
-                continue
-
             if len(dyn_obstacle.__root__) != 4:
                 continue
             p0, p1, p2, p3 = dyn_obstacle.__root__
@@ -119,53 +114,52 @@ class RobotEntity(AssetEntity):
             pos_y = p0.y + (p2.y - p0.y)/2
             rotation = 90 + math.degrees(math.acos((p0.x-p1.x)/length))
 
-            self.dyn_obstacle_entity = DynObstacleEntity(
-                x=pos_x,
-                y=pos_y,
-                rotation=rotation,
-                length=length,
-                width=width
-            )
-            self.dyn_obstacle_entity.setParent(self.parentEntity())
+            if len(self.dyn_obstacles_pool):
+                dyn_obstacle = self.dyn_obstacles_pool.pop(0)
+                dyn_obstacle.setEnabled(True)
+            else:
+                dyn_obstacle = DynObstacleEntity()
+                dyn_obstacle.setParent(self.parentEntity())
 
-            new_dyn_obstacle_entities[dyn_obstacle] = self.dyn_obstacle_entity
+            dyn_obstacle.set_position(x=pos_x, y=pos_y, rotation=rotation)
+            dyn_obstacle.set_size(length=length, width=width)
 
-        # Delete remaining dyn obstacles
-        for dyn_obstacle_entitie in self.dyn_obstacle_entities:
-            dyn_obstacle_entitie.setParent(None)
-            del(dyn_obstacle_entitie)
-        self.dyn_obstacle_entities = new_dyn_obstacle_entities
+            current_dyn_obstacles.append(dyn_obstacle)
+
+        # Disable remaining dyn obstacles
+        while len(self.dyn_obstacles_pool):
+            dyn_obstacle = self.dyn_obstacles_pool.pop(0)
+            dyn_obstacle.setEnabled(False)
+            current_dyn_obstacles.append(dyn_obstacle)
+
+        self.dyn_obstacles_pool = current_dyn_obstacles
 
 
 class DynObstacleEntity(Qt3DCore.QEntity):
 
-    def __init__(
-            self,
-            x: int,
-            y: int,
-            rotation: int,
-            length: int,
-            width: int):
+    def __init__(self):
 
         super(DynObstacleEntity, self).__init__()
 
         self.mesh = Qt3DExtras.QCuboidMesh()
-        self.mesh.setXExtent(width)
-        self.mesh.setYExtent(length)
         self.mesh.setZExtent(600)
         self.addComponent(self.mesh)
 
         self.material = Qt3DExtras.QDiffuseSpecularMaterial(self)
-        # self.material.setAmbient(QtGui.QColor(QtCore.Qt.green))
-        self.material.setDiffuse(QtGui.QColor.fromRgb(0, 255, 0, 50))
-        self.material.setDiffuse(QtGui.QColor.fromRgb(0, 255, 0, 50))
-        self.material.setSpecular(QtGui.QColor.fromRgb(0, 255, 0, 50))
+        self.material.setDiffuse(QtGui.QColor.fromRgb(255, 0, 0, 100))
+        self.material.setDiffuse(QtGui.QColor.fromRgb(255, 0, 0, 100))
+        self.material.setSpecular(QtGui.QColor.fromRgb(255, 0, 0, 100))
         self.material.setShininess(1.0)
         self.material.setAlphaBlendingEnabled(True)
-
         self.addComponent(self.material)
 
         self.transform = Qt3DCore.QTransform(self)
+        self.addComponent(self.transform)
+
+    def set_position(self, x: int, y: int, rotation: int) -> None:
         self.transform.setTranslation(QtGui.QVector3D(x, y, self.mesh.zExtent()/2))
         self.transform.setRotationZ(rotation)
-        self.addComponent(self.transform)
+
+    def set_size(self, length: int, width: int) -> None:
+        self.mesh.setXExtent(width)
+        self.mesh.setYExtent(length)
