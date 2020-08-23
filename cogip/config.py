@@ -10,7 +10,7 @@ class Config(BaseSettings):
 
     default_uart: str = "/tmp/ptsCOGIP"
     table_filename: FilePath = "assets/table2019.dae"
-    robot_filename: FilePath = "assets/robot2019_simu.dae"
+    robot_filename: FilePath = "assets/robot2019.dae"
     native_binary: FilePath = "submodules/mcu-firmware/applications/cogip2019-cortex/bin/cogip2019-cortex-native/cortex.elf"
 
 
