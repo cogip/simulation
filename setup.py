@@ -25,7 +25,8 @@ required_packages = [
     "ptvsd==4.3.2",
     "sphinx==3.1.2",
     "sphinx-argparse==0.2.5",
-    "sphinxcontrib-drawio==0.0.7"
+    "sphinxcontrib-drawio==0.0.7",
+    "sysv-ipc==1.0.1"
 ]
 
 # cmdclass = {'build_doc': BuildDoc}

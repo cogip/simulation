@@ -71,8 +71,13 @@ class RobotEntity(AssetEntity):
 
         # Add sensors
         for prop in sensors_properties:
-            sensor = ToFSensor(asset_entity=self, **prop)
-            self.tof_sensors.append(sensor)
+            if prop:
+                sensor = ToFSensor(asset_entity=self, **prop)
+                self.tof_sensors.append(sensor)
+            else:
+                ToFSensor.nb_tof_sensors += 1
+                if ToFSensor.shm_data:
+                    ToFSensor.shm_data[ToFSensor.nb_tof_sensors] = 65535
 
     def add_lidar_sensors(self):
         radius = 65.0/2
