@@ -37,7 +37,7 @@ class GameView(QtWidgets.QWidget):
         self.view = Qt3DExtras.Qt3DWindow()
         screen_size = self.view.screen().size()
         self.container = self.createWindowContainer(self.view)
-        self.container.setMinimumSize(QtCore.QSize(1280, 960))
+        self.container.setMinimumSize(QtCore.QSize(800, 600))
         self.container.setMaximumSize(screen_size)
         self.container.setFocusPolicy(QtCore.Qt.NoFocus)
         layout = QtWidgets.QHBoxLayout()
