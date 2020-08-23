@@ -38,45 +38,35 @@ class RobotEntity(AssetEntity):
     def add_tof_sensors(self):
         sensors_properties = [
             {
-                "name": "Front sensor",
-                "origin_x": 177,
-                "origin_y": 0
-            },
-            {
-                "name": "Front left sensor",
+                "name": "Back left sensor",
                 "origin_x": 135,
-                "origin_y": 135
-            },
-            {
-                "name": "Left sensor",
-                "origin_x": 0,
-                "origin_y": 177
-            },
-            {
-                "name": "Back Left sensor",
-                "origin_x": -135,
                 "origin_y": 135
             },
             {
                 "name": "Back sensor",
-                "origin_x": -177,
-                "origin_y": 0
+                "origin_x": 0,
+                "origin_y": 177
             },
             {
                 "name": "Back right sensor",
                 "origin_x": -135,
+                "origin_y": 135
+            },
+            {
+                "name": "Front right sensor",
+                "origin_x": -135,
                 "origin_y": -135
             },
             {
-                "name": "Right sensor",
+                "name": "Front sensor",
                 "origin_x": 0,
                 "origin_y": -177
             },
             {
-                "name": "Front right",
+                "name": "Front left sensor",
                 "origin_x": 135,
                 "origin_y": -135
-            }
+            },
         ]
 
         # Add sensors
