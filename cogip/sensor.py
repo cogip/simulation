@@ -79,16 +79,9 @@ class Sensor(QtCore.QObject):
         for sensor in cls.all_sensors:
             sensor.add_obstacle_layer(obstacle)
 
-    # Create a QLayer containing the entity to be detected
-    # and add it to the ray caster
+    # Add the obstacle layer to the ray caster
     def add_obstacle_layer(self, obstacle: Qt3DCore.QEntity):
-        # It may be possible to reuse the same layer
-        # if it has arlready been added to the obstacle
-        layer = Qt3DRender.QLayer(obstacle)
-        layer.setRecursive(True)
-        layer.setEnabled(True)
-        obstacle.addComponent(layer)
-        self.ray_caster.addLayer(layer)
+        self.ray_caster.addLayer(obstacle.layer)
         # Activate if not already done
         self.ray_caster.trigger()
 
