@@ -1,3 +1,5 @@
+import math
+
 from PySide2 import QtCore, QtGui
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DRender import Qt3DRender
@@ -106,6 +108,26 @@ class ToFSensor(Sensor):
             direction_z=0,
             impact_radius=50,
             impact_color=QtCore.Qt.red)
+        rotation = math.degrees(math.acos((origin_x / math.dist((0, 0), (origin_x, origin_y)))))
+
+        self.entity = Qt3DCore.QEntity()
+        self.entity.setParent(self.asset_entity.asset_entity)
+
+        self.mesh = Qt3DExtras.QCuboidMesh()
+        self.mesh.setXExtent(10)
+        self.mesh.setYExtent(10)
+        self.mesh.setZExtent(10)
+        self.entity.addComponent(self.mesh)
+
+        self.material = Qt3DExtras.QPhongMaterial()
+        self.material.setDiffuse(QtGui.QColor(QtCore.Qt.red))
+        self.entity.addComponent(self.material)
+
+        self.transform = Qt3DCore.QTransform()
+        self.transform.setTranslation(QtGui.QVector3D(origin_x, origin_y, 60))
+        self.transform.setRotationZ(rotation)
+        self.entity.addComponent(self.transform)
+
 
 
 class LidarSensor(Sensor):
