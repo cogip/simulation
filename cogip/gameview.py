@@ -1,3 +1,7 @@
+from pathlib import Path
+
+from pydantic import ValidationError
+
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DRender import Qt3DRender
@@ -7,6 +11,7 @@ from PySide2.QtCore import Slot as qtSlot
 
 from cogip.assetentity import AssetEntity
 from cogip.obstacleentity import ObstacleEntity
+from cogip import models
 
 
 def create_ligth_entity(x: float, y: float, z: float) -> Qt3DCore.QEntity:
@@ -32,6 +37,8 @@ class GameView(QtWidgets.QWidget):
 
     def __init__(self):
         super(GameView, self).__init__()
+
+        self.obstacle_entities = []
 
         # Create the view and set it as the widget layout
         self.view = Qt3DExtras.Qt3DWindow()
@@ -85,9 +92,27 @@ class GameView(QtWidgets.QWidget):
             y: int = 1000,
             rotation: int = 0,
             **kwargs) -> ObstacleEntity:
-        obstacle = ObstacleEntity(self.container, x, y, rotation, **kwargs)
-        obstacle.setParent(self.root_entity)
-        return obstacle
+        obstacle_entity = ObstacleEntity(self.container, x, y, rotation, **kwargs)
+        obstacle_entity.setParent(self.root_entity)
+        self.obstacle_entities.append(obstacle_entity)
+        return obstacle_entity
+
+    @qtSlot(Path)
+    def load_obstacles(self, filename: Path):
+        try:
+            obstacle_models = models.ObstacleList.parse_file(filename)
+            for obstacle_model in obstacle_models:
+                self.add_obstacle(**obstacle_model.dict())
+        except ValidationError:
+            pass
+
+    @qtSlot(Path)
+    def save_obstacles(self, filename: Path):
+        obstacle_models = models.ObstacleList.parse_obj([])
+        for obstacle_entity in self.obstacle_entities:
+            obstacle_models.append(obstacle_entity.get_model())
+        with filename.open('w') as fd:
+            fd.write(obstacle_models.json(indent=2))
 
     def game_ready(self) -> bool:
         child_assets_not_ready = [

@@ -5,6 +5,7 @@ from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.QtCore import Slot as qtSlot
 
 from cogip.sensor import Sensor
+from cogip import models
 
 
 class ObstacleEntity(Qt3DCore.QEntity):
@@ -82,6 +83,16 @@ class ObstacleEntity(Qt3DCore.QEntity):
         self.properties.raise_()
         self.properties.activateWindow()
         ObstacleProperties.set_active_properties(self.properties)
+
+    def get_model(self) -> models.Obstacle:
+        return models.Obstacle(
+            x=self.transform.translation().x(),
+            y=self.transform.translation().y(),
+            rotation=self.transform.rotationZ(),
+            length=self.mesh.yExtent(),
+            width=self.mesh.xExtent(),
+            height=self.mesh.zExtent()
+        )
 
 
 class ObstacleProperties(QtWidgets.QDialog):
