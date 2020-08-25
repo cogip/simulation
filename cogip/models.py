@@ -53,3 +53,22 @@ class DynObstacleList(BaseModel):
 
     def __hash__(self):
         return hash((type(self),) + tuple(self.__root__))
+
+
+class Obstacle(BaseModel):
+    x: int = 0,
+    y: int = 1000,
+    rotation: int = 0,
+    length: int = 200,
+    width: int = 200,
+    height: int = 600
+
+
+class ObstacleList(BaseModel):
+    __root__: List[Obstacle]
+
+    def __iter__(self):
+        return iter(self.__root__)
+
+    def append(self, item):
+        self.__root__.append(item)

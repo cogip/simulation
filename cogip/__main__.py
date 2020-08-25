@@ -113,6 +113,8 @@ def main():
 
     # Connect UI signals to GameView slots
     win.signal_add_obstacle.connect(game_view.add_obstacle)
+    win.signal_load_obstacles.connect(game_view.load_obstacles)
+    win.signal_save_obstacles.connect(game_view.save_obstacles)
 
     # Connect Controller signals to Robot slots
     controller.signal_new_robot_position.connect(robot_entity.set_position)
