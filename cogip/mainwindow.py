@@ -6,7 +6,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
-from cogip.models import ShellMenu, PoseCurrent
+from cogip.models import ShellMenu, CtrlModeEnum, Pose
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -152,9 +152,9 @@ class MainWindow(QtWidgets.QMainWindow):
         actions_layout.addStretch()
         self.actions_dock.setWidget(actions_widget)
 
-    @qtSlot(PoseCurrent)
-    def new_robot_position(self, pose: PoseCurrent):
-        self.pos_mode_text.setText(pose.mode.name)
+    @qtSlot(Pose)
+    def new_robot_position(self, pose: Pose, mode: CtrlModeEnum):
+        self.pos_mode_text.setText(mode.name)
         self.pos_x_text.setText(str(pose.x))
         self.pos_y_text.setText(str(pose.y))
         self.pos_angle_text.setText(str(pose.O))

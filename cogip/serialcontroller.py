@@ -10,7 +10,7 @@ from PySide2.QtCore import Slot as qtSlot
 from pydantic import ValidationError
 
 from cogip import logger
-from cogip.models import ShellMenu, PoseCurrent, DynObstacleList
+from cogip.models import ShellMenu, CtrlModeEnum, Pose, Positions, DynObstacleList
 from cogip.sensor import ToFSensor
 
 
@@ -40,11 +40,17 @@ class SerialController(QtCore.QObject):
     #:      Connected to :class:`~cogip.mainwindow.MainWindow`.
     signal_new_menu = qtSignal(ShellMenu)
 
-    #: :obj:`qtSignal(PoseCurrent)`:
+    #: :obj:`qtSignal(Pose, CtrlModeEnum)`:
     #:      Qt signal emitted to update Robot position.
     #:
     #:      Connected to :class:`~cogip.robotentity.RobotEntity`.
-    signal_new_robot_position = qtSignal(PoseCurrent)
+    signal_new_robot_position = qtSignal(Pose, CtrlModeEnum)
+
+    #: :obj:`qtSignal(Pose)`:
+    #:      Qt signal emitted to update Robot final position.
+    #:
+    #:      Connected to :class:`~cogip.robotentity.RobotEntity`.
+    signal_new_robot_final_position = qtSignal(Pose, CtrlModeEnum)
 
     #: :obj:`qtSignal(DynObstacleList)`:
     #:      Qt signal emitted to update dynamic obstacles.
@@ -180,8 +186,9 @@ class SerialController(QtCore.QObject):
             if line[0] == ">":
                 continue
             try:
-                pose = PoseCurrent.parse_raw(line)
-                self.signal_new_robot_position.emit(pose)
+                positions = Positions.parse_raw(line)
+                self.signal_new_robot_position.emit(positions.pose_current, positions.mode)
+                self.signal_new_robot_final_position.emit(positions.pose_order, positions.mode)
                 pose_found = True
             except ValidationError:
                 attempt += 1
