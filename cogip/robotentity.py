@@ -18,16 +18,27 @@ class RobotEntity(AssetEntity):
             asset_path: Union[Path, str],
             asset_name: str = None,
             enable_tof_sensors: bool = True,
-            enable_lidar_sensors: bool = True):
+            enable_lidar_sensors: bool = True,
+            color: QtGui.QColor = None):
         super(RobotEntity, self).__init__(asset_path, asset_name)
         self.enable_tof_sensors = enable_tof_sensors
         self.enable_lidar_sensors = enable_lidar_sensors
+        self.color = color
         self.tof_sensors = []
         self.lidar_sensors = []
         self.dyn_obstacles_pool = []
 
     def post_init(self):
         super(RobotEntity, self).post_init()
+
+        if self.color:
+            self.material = Qt3DExtras.QDiffuseSpecularMaterial(self)
+            self.material.setDiffuse(self.color)
+            self.material.setDiffuse(self.color)
+            self.material.setSpecular(self.color)
+            self.material.setShininess(1.0)
+            self.material.setAlphaBlendingEnabled(True)
+            self.asset_entity.addComponent(self.material)
 
         if self.enable_tof_sensors:
             self.add_tof_sensors()

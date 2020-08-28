@@ -8,7 +8,7 @@ from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
 from cogip import logger
-from cogip.models import PoseCurrent
+from cogip.models import CtrlModeEnum, Pose
 
 
 # tree file can be displayed with:
@@ -106,11 +106,10 @@ class AssetEntity(Qt3DCore.QEntity):
 
         self.ready.emit()
 
-    @qtSlot(PoseCurrent)
-    def set_position(self, new_position: PoseCurrent) -> None:
+    @qtSlot(Pose)
+    def set_position(self, new_position: Pose, mode: CtrlModeEnum) -> None:
         if not self.transform_component:
             return
-
         self.transform_component.setTranslation(
             QtGui.QVector3D(new_position.x, new_position.y, 0))
         self.transform_component.setRotationZ(new_position.O + 90)

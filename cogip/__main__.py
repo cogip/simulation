@@ -12,7 +12,7 @@ from threading import Thread
 
 import serial.tools.list_ports
 # import ptvsd
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtGui
 
 from cogip import logger
 from cogip.config import settings
@@ -108,6 +108,17 @@ def main():
     )
     game_view.add_asset(robot_entity)
 
+    # Create robot entity
+    robot_final_entity = RobotEntity(
+        asset_path=Path(settings.robot_filename).resolve(),
+        # asset_name="Robot2019_Simu"
+        asset_name="Robot2019",
+        enable_tof_sensors=False,
+        enable_lidar_sensors=False,
+        color=QtGui.QColor.fromRgb(0, 255, 0, 50)
+    )
+    game_view.add_asset(robot_final_entity)
+
     # Connect UI signals to Controller slots
     win.signal_send_command.connect(controller.slot_new_command)
 
@@ -118,6 +129,7 @@ def main():
 
     # Connect Controller signals to Robot slots
     controller.signal_new_robot_position.connect(robot_entity.set_position)
+    controller.signal_new_robot_final_position.connect(robot_final_entity.set_position)
     controller.signal_new_dyn_obstacles.connect(robot_entity.set_dyn_obstacles)
 
     # Connect Controller signals to UI slots
