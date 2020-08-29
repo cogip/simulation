@@ -39,32 +39,41 @@ def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
     return arg_parser
 
 
-def main():
+def main(args=sys.argv):
     faulthandler.enable()
 
     # Virtual uart for native simulation
     virtual_uart = settings.default_uart
 
     # Run native mode by default
-    # Real mode used by default if an uart is found, use the first uart discovered
     default_uart = virtual_uart
-    logger.info("Discovering uarts:")
-    for info in serial.tools.list_ports.comports():
-        logger.info(f"  - {info.device}:")
-        if default_uart == virtual_uart:
-            default_uart = info.device
 
-    if default_uart != virtual_uart:
-        logger.info(f"Default uart: {default_uart}")
+    if "-B" not in args and "--binary" not in args:
+        # Real mode used by default if an uart is found,
+        # and if native firmware is not explicitly provided
+        # Use the first uart discovered
+        logger.info("Discovering uarts:")
+        for info in serial.tools.list_ports.comports():
+            logger.info(f"  - {info.device}:")
+            if default_uart == virtual_uart:
+                default_uart = info.device
+
+    logger.info(f"Using uart: {default_uart}")
 
     # Parse command line arguments
     arg_parser = get_argument_parser(default_uart)
     args = arg_parser.parse_args()
 
     # Start socat redirecting native process stdin/stdout to virtual uart
-    if args.uart_device != virtual_uart:
-        socat_process = None
-    else:
+    socat_process = None
+    if args.uart_device == virtual_uart:
+        if not Path(args.native_binary).exists():
+            logger.error(f"'{args.native_binary}' not found.")
+            sys.exit(1)
+        if not Path(args.native_binary).is_file():
+            logger.error(f"'{args.native_binary}' is not a file.")
+            sys.exit(1)
+
         socat_path = shutil.which("socat")
         if not socat_path:
             logger.error("'socat' not found.")
@@ -164,4 +173,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
