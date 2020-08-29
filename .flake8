@@ -6,5 +6,5 @@ exclude =
     tests,
     doc
 max-line-length = 127
-max-complexity = 10
+#max-complexity = 10
 #ignore = E226,E302,E41
