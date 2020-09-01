@@ -1,3 +1,4 @@
+import ctypes
 import math
 
 import sysv_ipc
@@ -11,6 +12,20 @@ from PySide2.QtCore import Slot as qtSlot
 from cogip.assetentity import AssetEntity
 from cogip.impactentity import ImpactEntity
 
+VL53L0X_NUMOF = 6
+
+
+# Define a structure class equivalent to the C struct:
+# struct {
+#     uint16_t tof[VL53L0X_NUMOF];
+#     uint16_t lidar[360]
+# }
+class ShmData(ctypes.Structure):
+    _fields_ = [
+        ('tof', ctypes.c_ushort * VL53L0X_NUMOF),
+        ('lidar', ctypes.c_ushort * 360)
+    ]
+
 
 class Sensor(QtCore.QObject):
 
@@ -20,6 +35,10 @@ class Sensor(QtCore.QObject):
     # Class attribute recording all sensors
     # Each added obstacle must be registered in all sensors
     all_sensors = []
+
+    shm_key = None
+    shm_ptr = None
+    shm_data = None
 
     def __init__(
             self,
@@ -90,12 +109,24 @@ class Sensor(QtCore.QObject):
         # Activate if not already done
         self.ray_caster.trigger()
 
+    @classmethod
+    def init_shm(cls):
+        cls.shm_ptr = sysv_ipc.SharedMemory(key=None, mode=0o666, flags=sysv_ipc.IPC_CREX, size=1024)
+        cls.shm_key = cls.shm_ptr.key
+        cls.shm_data = ShmData.from_buffer(cls.shm_ptr)
+
+        for i in range(VL53L0X_NUMOF):
+            cls.shm_data.tof[i] = 65535
+
+        for i in range(360):
+            cls.shm_data.lidar[i] = 65535
+
+        # cls.shm_ptr.detach()
+        # cls.shm_ptr.remove()
+
 
 class ToFSensor(Sensor):
 
-    shm_key = None
-    shm_ptr = None
-    shm_data = None
     nb_tof_sensors = 0
 
     def __init__(
@@ -116,10 +147,8 @@ class ToFSensor(Sensor):
             direction_z=0,
             impact_radius=50,
             impact_color=QtCore.Qt.red)
-        self.sensor_id = ToFSensor.nb_tof_sensors
+        self.tof_id = ToFSensor.nb_tof_sensors
         ToFSensor.nb_tof_sensors += 1
-        if ToFSensor.shm_data:
-            ToFSensor.shm_data[self.sensor_id] = 65535
 
         rotation = math.degrees(math.acos((origin_x / math.dist((0, 0), (origin_x, origin_y)))))
 
@@ -141,29 +170,19 @@ class ToFSensor(Sensor):
         self.transform.setRotationZ(rotation)
         self.entity.addComponent(self.transform)
 
-    @classmethod
-    def init_shm(cls):
-        cls.shm_ptr = sysv_ipc.SharedMemory(key=None, mode=0o666, flags=sysv_ipc.IPC_CREX, size=1024)
-        cls.shm_key = cls.shm_ptr.key
-        cls.shm_data = memoryview(cls.shm_ptr).cast('H')
-
-        for i in range(cls.nb_tof_sensors):
-            cls.shm_data[i] = 65535
-
-        # cls.shm_ptr.detach()
-        # cls.shm_ptr.remove()
-
     @qtSlot()
     def handle_hits(self):
         super(ToFSensor, self).handle_hits()
-        if self.shm_data:
+        if Sensor.shm_data:
             if self.hit:
-                ToFSensor.shm_data[self.sensor_id] = int(self.hit.distance())
+                Sensor.shm_data.tof[self.tof_id] = int(self.hit.distance())
             else:
-                ToFSensor.shm_data[self.sensor_id] = 65535
+                Sensor.shm_data.tof[self.tof_id] = 65535
 
 
 class LidarSensor(Sensor):
+
+    nb_lidar_sensors = 0
 
     def __init__(
             self,
@@ -185,3 +204,15 @@ class LidarSensor(Sensor):
             direction_z=0,
             impact_radius=20,
             impact_color=QtCore.Qt.blue)
+
+        self.lidar_id = LidarSensor.nb_lidar_sensors
+        LidarSensor.nb_lidar_sensors += 1
+
+    @qtSlot()
+    def handle_hits(self):
+        super(LidarSensor, self).handle_hits()
+        if Sensor.shm_data:
+            if self.hit:
+                Sensor.shm_data.lidar[self.lidar_id] = int(self.hit.distance())
+            else:
+                Sensor.shm_data.lidar[self.lidar_id] = 65535
