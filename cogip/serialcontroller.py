@@ -11,7 +11,7 @@ from pydantic import ValidationError
 
 from cogip import logger
 from cogip.models import ShellMenu, CtrlModeEnum, Pose, Positions, DynObstacleList
-from cogip.sensor import ToFSensor
+from cogip.sensor import Sensor
 
 
 class SerialController(QtCore.QObject):
@@ -172,8 +172,8 @@ class SerialController(QtCore.QObject):
         self.serial_port.close()
 
     def set_shm_key(self):
-        ToFSensor.init_shm()
-        self.serial_port.write(f"_set_shm_key {ToFSensor.shm_key}\n".encode())
+        Sensor.init_shm()
+        self.serial_port.write(f"_set_shm_key {Sensor.shm_key}\n".encode())
 
     def get_pose(self):
         self.serial_port.write(b"_pose\n")
