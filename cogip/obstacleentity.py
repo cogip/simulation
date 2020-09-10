@@ -2,6 +2,7 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DExtras import Qt3DExtras
+from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
 from cogip.sensor import Sensor
@@ -9,6 +10,8 @@ from cogip import models
 
 
 class ObstacleEntity(Qt3DCore.QEntity):
+
+    enable_controller = qtSignal(bool)
 
     def __init__(
             self,
@@ -38,10 +41,14 @@ class ObstacleEntity(Qt3DCore.QEntity):
         self.transform.setRotationZ(rotation)
         self.addComponent(self.transform)
 
-        self.picker = Qt3DRender.QObjectPicker(self)
+        self.picker = Qt3DRender.QObjectPicker()
         self.picker.setDragEnabled(True)
-        self.picker.clicked.connect(self.clicked_obstacle)
+        self.picker.pressed.connect(self.pressed_obstacle)
+        self.picker.released.connect(self.released_obstacle)
+        self.picker.moved.connect(self.moved_obstacle)
         self.addComponent(self.picker)
+
+        self.moving = False
 
         self.mesh.zExtentChanged.connect(self.updateZTranslation)
 
@@ -75,14 +82,27 @@ class ObstacleEntity(Qt3DCore.QEntity):
         self.transform.setTranslation(translation)
 
     @qtSlot(Qt3DRender.QPickEvent)
-    def clicked_obstacle(self, pick: Qt3DRender.QPickEvent):
-        if ObstacleProperties.active_properties:
-            ObstacleProperties.active_properties.close()
-        self.properties.restore_saved_geometry()
-        self.properties.show()
-        self.properties.raise_()
-        self.properties.activateWindow()
-        ObstacleProperties.set_active_properties(self.properties)
+    def pressed_obstacle(self, pick: Qt3DRender.QPickEvent):
+        print("pressed")
+        self.enable_controller.emit(False)
+
+    @qtSlot(Qt3DRender.QPickEvent)
+    def released_obstacle(self, pick: Qt3DRender.QPickEvent):
+        print("released")
+        if not self.moving:
+            if ObstacleProperties.active_properties:
+                ObstacleProperties.active_properties.close()
+            self.properties.restore_saved_geometry()
+            self.properties.show()
+            self.properties.raise_()
+            self.properties.activateWindow()
+            ObstacleProperties.set_active_properties(self.properties)
+        self.moving = False
+        self.enable_controller.emit(True)
+
+    @qtSlot(Qt3DRender.QPickEvent)
+    def moved_obstacle(self, pick: Qt3DRender.QPickEvent):
+        self.moving = True
 
     def get_model(self) -> models.Obstacle:
         return models.Obstacle(
@@ -93,6 +113,15 @@ class ObstacleEntity(Qt3DCore.QEntity):
             width=self.mesh.xExtent(),
             height=self.mesh.zExtent()
         )
+
+    @qtSlot(QtGui.QVector3D)
+    def new_move_delta(self, delta: QtGui.QVector3D):
+        self.move_delta = delta
+        if self.moving and delta:
+            new_translation = self.transform.translation() + delta
+            self.transform.setTranslation(new_translation)
+            self.properties.spin_x.setValue(new_translation.x())
+            self.properties.spin_y.setValue(new_translation.y())
 
 
 class ObstacleProperties(QtWidgets.QDialog):
