@@ -34,6 +34,7 @@ def create_ligth_entity(x: float, y: float, z: float) -> Qt3DCore.QEntity:
 class GameView(QtWidgets.QWidget):
 
     ready = qtSignal()
+    new_move_delta = qtSignal(QtGui.QVector3D)
 
     def __init__(self):
         super(GameView, self).__init__()
@@ -55,6 +56,7 @@ class GameView(QtWidgets.QWidget):
         # picking_settings.setPickMethod(Qt3DRender.QPickingSettings.PrimitivePicking)
         picking_settings.setPickMethod(Qt3DRender.QPickingSettings.TrianglePicking)
         picking_settings.setPickResultMode(Qt3DRender.QPickingSettings.NearestPick)
+        picking_settings.setPickResultMode(Qt3DRender.QPickingSettings.AllPicks)
 
         # Create root entity
         self.root_entity = Qt3DCore.QEntity()
@@ -81,6 +83,37 @@ class GameView(QtWidgets.QWidget):
         self.light_entity2 = create_ligth_entity(20000, -20000, 20000)
         self.light_entity2.setParent(self.root_entity)
 
+        # Add a plane mesh with object picker to help moving obstacles
+        # with mouse drag and drop
+        self.plane_entity = Qt3DCore.QEntity()
+        self.plane_entity.setParent(self.root_entity)
+
+        self.plane_mesh = Qt3DExtras.QPlaneMesh()
+        self.plane_mesh.setHeight(8000)
+        self.plane_mesh.setWidth(10000)
+        self.plane_entity.addComponent(self.plane_mesh)
+
+        self.plane_material = Qt3DExtras.QDiffuseSpecularMaterial()
+        self.plane_material.setDiffuse(QtGui.QColor.fromRgb(255, 0, 0, 0))
+        self.plane_material.setDiffuse(QtGui.QColor.fromRgb(255, 0, 0, 0))
+        self.plane_material.setSpecular(QtGui.QColor.fromRgb(255, 0, 0, 0))
+        self.plane_material.setShininess(1.0)
+        self.plane_material.setAlphaBlendingEnabled(True)
+        self.plane_entity.addComponent(self.plane_material)
+
+        self.plane_transform = Qt3DCore.QTransform()
+        self.plane_transform.setTranslation(QtGui.QVector3D(0, 1000, 0))
+        self.plane_transform.setRotationX(90)
+        self.plane_entity.addComponent(self.plane_transform)
+
+        self.plane_picker = Qt3DRender.QObjectPicker()
+        self.plane_picker.setDragEnabled(True)
+        self.plane_picker.pressed.connect(self.plane_pressed)
+        self.plane_picker.released.connect(self.plane_released)
+        self.plane_picker.moved.connect(self.plane_moved)
+        self.plane_entity.addComponent(self.plane_picker)
+        self.plane_intersection = None
+
     def add_asset(self, asset: AssetEntity) -> None:
         asset.setParent(self.root_entity)
         asset.ready.connect(self.asset_ready)
@@ -95,6 +128,8 @@ class GameView(QtWidgets.QWidget):
         obstacle_entity = ObstacleEntity(self.container, x, y, rotation, **kwargs)
         obstacle_entity.setParent(self.root_entity)
         self.obstacle_entities.append(obstacle_entity)
+        obstacle_entity.enable_controller.connect(self.camera_controller.setEnabled)
+        self.new_move_delta.connect(obstacle_entity.new_move_delta)
         return obstacle_entity
 
     @qtSlot(Path)
@@ -123,3 +158,20 @@ class GameView(QtWidgets.QWidget):
     def asset_ready(self):
         if self.game_ready():
             self.ready.emit()
+
+    @qtSlot(Qt3DRender.QPickEvent)
+    def plane_pressed(self, pick: Qt3DRender.QPickEvent):
+        self.plane_intersection = pick.worldIntersection()
+
+    @qtSlot(Qt3DRender.QPickEvent)
+    def plane_moved(self, pick: Qt3DRender.QPickEvent):
+        new_intersection = pick.worldIntersection()
+        delta = new_intersection - self.plane_intersection
+        delta.setZ(0)
+        self.new_move_delta.emit(delta)
+        self.plane_intersection = new_intersection
+
+    @qtSlot(Qt3DRender.QPickEvent)
+    def plane_released(self, pick: Qt3DRender.QPickEvent):
+        self.plane_intersection = None
+        self.new_move_delta.emit(None)
