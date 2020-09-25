@@ -1,0 +1,1036 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link href="../../../../assets/images/favicon.png" rel="shortcut icon"/>
+<meta content="mkdocs-1.1.2, mkdocs-material-5.5.12" name="generator"/>
+<title>gameview.py - COGIP Simulator</title>
+<link href="../../../../assets/stylesheets/main.4dd2dd8d.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&amp;display=fallback" rel="stylesheet"/>
+<style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+</head>
+<body dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#cogip.gameview">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header" data-md-component="header">
+<nav aria-label="Header" class="md-header-nav md-grid">
+<a aria-label="COGIP Simulator" class="md-header-nav__button md-logo" href="../../../.." title="COGIP Simulator">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
+</a>
+<label class="md-header-nav__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"></path></svg>
+</label>
+<div class="md-header-nav__title" data-md-component="header-title">
+<div class="md-header-nav__ellipsis">
+<span class="md-header-nav__topic md-ellipsis">
+            COGIP Simulator
+          </span>
+<span class="md-header-nav__topic md-ellipsis">
+            
+              gameview.py
+            
+          </span>
+</div>
+</div>
+<div class="md-header-nav__source">
+<a class="md-source" href="https://github.com/cogip/simulation/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    cogip/simulation
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="COGIP Simulator" class="md-nav__button md-logo" href="../../../.." title="COGIP Simulator">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
+</a>
+    COGIP Simulator
+  </label>
+<div class="md-nav__source">
+<a class="md-source" href="https://github.com/cogip/simulation/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    cogip/simulation
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../.." title="Overview">
+      Overview
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../install/" title="Installation">
+      Installation
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../usage/" title="Usage">
+      Usage
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4" id="nav-4" type="checkbox"/>
+<label class="md-nav__link" for="nav-4">
+      Developer's Doc
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Developer's Doc" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="nav-4">
+<span class="md-nav__icon md-icon"></span>
+        Developer's Doc
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../developers/" title="Introduction">
+      Introduction
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2" id="nav-4-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-4-2">
+      Modules
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Modules" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="nav-4-2">
+<span class="md-nav__icon md-icon"></span>
+        Modules
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../main/" title="__main__.py">
+      __main__.py
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-2" id="nav-4-2-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-4-2-2">
+      cogip
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="cogip" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="nav-4-2-2">
+<span class="md-nav__icon md-icon"></span>
+        cogip
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../assetentity/" title="assetentity.py">
+      assetentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../config/" title="config.py">
+      config.py
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+        gameview.py
+        <span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./" title="gameview.py">
+      gameview.py
+    </a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview">
+    cogip.gameview
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView">
+    GameView
+  </a>
+<nav aria-label="GameView" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.add_asset">
+    add_asset()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.add_obstacle">
+    add_obstacle()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.asset_ready">
+    asset_ready()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.load_obstacles">
+    load_obstacles()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.plane_moved">
+    plane_moved()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.plane_pressed">
+    plane_pressed()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.plane_released">
+    plane_released()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.save_obstacles">
+    save_obstacles()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.create_ligth_entity">
+    create_ligth_entity()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../impactentity/" title="impactentity.py">
+      impactentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../mainwindow/" title="mainwindow.py">
+      mainwindow.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../models/" title="models.py">
+      models.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../obstacleentity/" title="obstacleentity.py">
+      obstacleentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../robotentity/" title="robotentity.py">
+      robotentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../sensor/" title="sensor.py">
+      sensor.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../serialcontroller/" title="serialcontroller.py">
+      serialcontroller.py
+    </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview">
+    cogip.gameview
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView">
+    GameView
+  </a>
+<nav aria-label="GameView" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.add_asset">
+    add_asset()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.add_obstacle">
+    add_obstacle()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.asset_ready">
+    asset_ready()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.load_obstacles">
+    load_obstacles()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.plane_moved">
+    plane_moved()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.plane_pressed">
+    plane_pressed()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.plane_released">
+    plane_released()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.GameView.save_obstacles">
+    save_obstacles()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.gameview.create_ligth_entity">
+    create_ligth_entity()
+  </a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content">
+<article class="md-content__inner md-typeset">
+<a class="md-content__button md-icon" href="https://github.com/cogip/simulation/edit/master/docs/developers/modules/cogip/gameview.md" title="Edit this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"></path></svg>
+</a>
+<div class="doc doc-object doc-module">
+<h1 class="hidden-toc" href="#cogip.gameview" id="cogip.gameview" style="visibility: hidden; width: 0; height: 0;">
+</h1>
+<div class="doc doc-contents first">
+<div class="doc doc-children">
+<div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.gameview.GameView">
+<code>GameView</code>
+</h1>
+<div class="doc doc-contents">
+<p>The <code>GameView</code> class is a <a href="https://doc.qt.io/qtforpython/PySide2/QtWidgets/QWidget.html"><code>QWidget</code></a>
+containing a <a href="https://doc.qt.io/qtforpython/PySide2/Qt3DExtras/Qt3DWindow.html"><code>Qt3DWindow</code></a>
+used to display all the game element, like table, robot and obstacles.</p>
+<p>It also contains an horizontal plane entity with a invisible
+<a href="https://doc.qt.io/qtforpython/PySide2/Qt3DExtras/QPlaneMesh.html"><code>QPlaneMesh</code></a>.
+This plane is has a <a href="https://doc.qt.io/qtforpython/PySide2/Qt3DRender/QObjectPicker.html"><code>QObjectPicker</code></a>
+to detect mouse clicks, to help
+moving obstacles on the horizontal plane.</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ready</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>signal emitted when when all assets are ready</p>
+</td>
+</tr>
+<tr>
+<td><code>new_move_delta</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>signal emitted to <a href="../obstacleentity/#cogip.obstacleentity.ObstacleEntity"><code>ObstacleEntity</code></a>
+when a move is detected</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="doc doc-children">
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.gameview.GameView.__init__">
+<code class="highlight language-python">
+__init__<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-special"><code>special</code></small>
+</span>
+</h2>
+<div class="doc doc-contents">
+<p>Create all entities required in the view:</p>
+<ul>
+<li>the <code>Qt3DWindow</code> to display the scene</li>
+<li>the camera and its controller to move around the scene</li>
+<li>the lights to have a good lightning of the scene</li>
+<li>the plane entity to help moving obstacles</li>
+</ul>
+<details class="quote">
+<summary>Source code in <code>cogip/gameview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Create all entities required in the view:</span>
+
+<span class="sd">      - the `Qt3DWindow` to display the scene</span>
+<span class="sd">      - the camera and its controller to move around the scene</span>
+<span class="sd">      - the lights to have a good lightning of the scene</span>
+<span class="sd">      - the plane entity to help moving obstacles</span>
+<span class="sd">    """</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">GameView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">obstacle_entities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ObstacleEntity</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Create the view and set it as the widget layout</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">view</span> <span class="o">=</span> <span class="n">Qt3DExtras</span><span class="o">.</span><span class="n">Qt3DWindow</span><span class="p">()</span>
+    <span class="n">screen_size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">screen</span><span class="p">()</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">container</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">createWindowContainer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">setMinimumSize</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QSize</span><span class="p">(</span><span class="mi">800</span><span class="p">,</span> <span class="mi">600</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">setMaximumSize</span><span class="p">(</span><span class="n">screen_size</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="o">.</span><span class="n">setFocusPolicy</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">NoFocus</span><span class="p">)</span>
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QHBoxLayout</span><span class="p">()</span>
+    <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+
+    <span class="n">picking_settings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">renderSettings</span><span class="p">()</span><span class="o">.</span><span class="n">pickingSettings</span><span class="p">()</span>
+    <span class="c1"># picking_settings.setPickMethod(Qt3DRender.QPickingSettings.PrimitivePicking)</span>
+    <span class="n">picking_settings</span><span class="o">.</span><span class="n">setPickMethod</span><span class="p">(</span><span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QPickingSettings</span><span class="o">.</span><span class="n">TrianglePicking</span><span class="p">)</span>
+    <span class="c1"># picking_settings.setPickResultMode(Qt3DRender.QPickingSettings.NearestPick)</span>
+    <span class="n">picking_settings</span><span class="o">.</span><span class="n">setPickResultMode</span><span class="p">(</span><span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QPickingSettings</span><span class="o">.</span><span class="n">AllPicks</span><span class="p">)</span>
+
+    <span class="c1"># Create root entity</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">root_entity</span> <span class="o">=</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QEntity</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">setRootEntity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_entity</span><span class="p">)</span>
+
+    <span class="c1"># Init Camera</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">camera_entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="n">camera</span><span class="p">()</span>  <span class="c1"># type: Qt3DRender.QCamera</span>
+    <span class="c1"># QCameraLens::setPerspectiveProjection(float fieldOfView, float aspectRatio, float nearPlane, float farPlane)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">camera_entity</span><span class="o">.</span><span class="n">lens</span><span class="p">()</span><span class="o">.</span><span class="n">setPerspectiveProjection</span><span class="p">(</span><span class="mf">45.0</span><span class="p">,</span> <span class="mf">16.0</span> <span class="o">/</span> <span class="mf">9.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">20000.0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">camera_entity</span><span class="o">.</span><span class="n">setUpVector</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QVector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">camera_entity</span><span class="o">.</span><span class="n">setPosition</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QVector3D</span><span class="p">(</span><span class="mi">3000</span><span class="p">,</span> <span class="mi">3000</span><span class="p">,</span> <span class="mi">3000</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">camera_entity</span><span class="o">.</span><span class="n">setViewCenter</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QVector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="c1"># Create camera controller entity</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">camera_controller</span> <span class="o">=</span> <span class="n">Qt3DExtras</span><span class="o">.</span><span class="n">QOrbitCameraController</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_entity</span><span class="p">)</span>
+    <span class="c1"># self.camera_controller = Qt3DExtras.QFirstPersonCameraController(self.root_entity)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">camera_controller</span><span class="o">.</span><span class="n">setCamera</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_entity</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">camera_controller</span><span class="o">.</span><span class="n">setLinearSpeed</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>  <span class="c1"># default = 10</span>
+    <span class="c1"># self.camera_controller.setLookSpeed(1000)  # default = 180</span>
+
+    <span class="c1"># Create light</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">light_entity</span> <span class="o">=</span> <span class="n">create_ligth_entity</span><span class="p">(</span><span class="mi">20000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">light_entity</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_entity</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">light_entity2</span> <span class="o">=</span> <span class="n">create_ligth_entity</span><span class="p">(</span><span class="mi">20000</span><span class="p">,</span> <span class="o">-</span><span class="mi">20000</span><span class="p">,</span> <span class="mi">20000</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">light_entity2</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_entity</span><span class="p">)</span>
+
+    <span class="c1"># Add a plane mesh with object picker to help moving obstacles</span>
+    <span class="c1"># with mouse drag and drop</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_entity</span> <span class="o">=</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QEntity</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_entity</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_entity</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_mesh</span> <span class="o">=</span> <span class="n">Qt3DExtras</span><span class="o">.</span><span class="n">QPlaneMesh</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_mesh</span><span class="o">.</span><span class="n">setHeight</span><span class="p">(</span><span class="mi">8000</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_mesh</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_entity</span><span class="o">.</span><span class="n">addComponent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plane_mesh</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_material</span> <span class="o">=</span> <span class="n">Qt3DExtras</span><span class="o">.</span><span class="n">QDiffuseSpecularMaterial</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_material</span><span class="o">.</span><span class="n">setDiffuse</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="o">.</span><span class="n">fromRgb</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_material</span><span class="o">.</span><span class="n">setDiffuse</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="o">.</span><span class="n">fromRgb</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_material</span><span class="o">.</span><span class="n">setSpecular</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="o">.</span><span class="n">fromRgb</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_material</span><span class="o">.</span><span class="n">setShininess</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_material</span><span class="o">.</span><span class="n">setAlphaBlendingEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_entity</span><span class="o">.</span><span class="n">addComponent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plane_material</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_transform</span> <span class="o">=</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QTransform</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_transform</span><span class="o">.</span><span class="n">setTranslation</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QVector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_transform</span><span class="o">.</span><span class="n">setRotationX</span><span class="p">(</span><span class="mi">90</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_entity</span><span class="o">.</span><span class="n">addComponent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plane_transform</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_picker</span> <span class="o">=</span> <span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QObjectPicker</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_picker</span><span class="o">.</span><span class="n">setDragEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_picker</span><span class="o">.</span><span class="n">pressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plane_pressed</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_picker</span><span class="o">.</span><span class="n">released</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plane_released</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_picker</span><span class="o">.</span><span class="n">moved</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plane_moved</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_entity</span><span class="o">.</span><span class="n">addComponent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plane_picker</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_intersection</span> <span class="o">=</span> <span class="kc">None</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.gameview.GameView.add_asset">
+<code class="highlight language-python">
+add_asset<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Add an asset (like <a href="../assetentity/#cogip.assetentity.AssetEntity">TableEntity</a>
+or <a href="../robotentity/#cogip.robotentity.RobotEntity">RobotEntity</a>) in the 3D view.</p>
+<div class="admonition argument">
+<p class="admonition-title">Argument</p>
+<p>asset: The asset entity to add to the vew</p>
+</div>
+<details class="quote">
+<summary>Source code in <code>cogip/gameview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">add_asset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset</span><span class="p">:</span> <span class="n">AssetEntity</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Add an asset (like [TableEntity][cogip.assetentity.AssetEntity]</span>
+<span class="sd">    or [RobotEntity][cogip.robotentity.RobotEntity]) in the 3D view.</span>
+
+<span class="sd">    Argument:</span>
+<span class="sd">        asset: The asset entity to add to the vew</span>
+<span class="sd">    """</span>
+    <span class="n">asset</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_entity</span><span class="p">)</span>
+    <span class="n">asset</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_ready</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.gameview.GameView.add_obstacle">
+<code class="highlight language-python">
+add_obstacle<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Create a new obstacle in the 3D view.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td><code>int</code></td>
+<td>
+<p>X position</p>
+</td>
+<td><code>0</code></td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td><code>int</code></td>
+<td>
+<p>Y position</p>
+</td>
+<td><code>1000</code></td>
+</tr>
+<tr>
+<td><code>rotation</code></td>
+<td><code>int</code></td>
+<td>
+<p>Rotation</p>
+</td>
+<td><code>0</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ObstacleEntity</code></td>
+<td>
+<p>The obstacle entity</p>
+</td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/gameview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">add_obstacle</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">x</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="n">y</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">,</span>
+        <span class="n">rotation</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ObstacleEntity</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Create a new obstacle in the 3D view.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        x: X position</span>
+<span class="sd">        y: Y position</span>
+<span class="sd">        rotation: Rotation</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        The obstacle entity</span>
+<span class="sd">    """</span>
+    <span class="n">obstacle_entity</span> <span class="o">=</span> <span class="n">ObstacleEntity</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">container</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">rotation</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="n">obstacle_entity</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">root_entity</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">obstacle_entities</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obstacle_entity</span><span class="p">)</span>
+    <span class="n">obstacle_entity</span><span class="o">.</span><span class="n">enable_controller</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">camera_controller</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">new_move_delta</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">obstacle_entity</span><span class="o">.</span><span class="n">new_move_delta</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obstacle_entity</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.gameview.GameView.asset_ready">
+<code class="highlight language-python">
+asset_ready<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Emit a the <code>ready</code> Qt signal if all assets are ready
+(loading assets is done in background).</p>
+<details class="quote">
+<summary>Source code in <code>cogip/gameview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">asset_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Emit a the `ready` Qt signal if all assets are ready</span>
+<span class="sd">    (loading assets is done in background).</span>
+<span class="sd">    """</span>
+    <span class="n">child_assets_not_ready</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">child</span>
+        <span class="k">for</span> <span class="n">child</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">root_entity</span><span class="o">.</span><span class="n">findChildren</span><span class="p">(</span><span class="n">AssetEntity</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">child</span><span class="o">.</span><span class="n">asset_ready</span>
+    <span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">child_assets_not_ready</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.gameview.GameView.load_obstacles">
+<code class="highlight language-python">
+load_obstacles<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Load obstables from a JSON file.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filename</code></td>
+<td><code>Path</code></td>
+<td>
+<p>path of the JSON file</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/gameview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">Path</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">load_obstacles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Load obstables from a JSON file.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        filename: path of the JSON file</span>
+<span class="sd">    """</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">obstacle_models</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ObstacleList</span><span class="o">.</span><span class="n">parse_file</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">obstacle_model</span> <span class="ow">in</span> <span class="n">obstacle_models</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_obstacle</span><span class="p">(</span><span class="o">**</span><span class="n">obstacle_model</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
+    <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>
+        <span class="k">pass</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.gameview.GameView.plane_moved">
+<code class="highlight language-python">
+plane_moved<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pick</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Compute the translation on the plane entity between the
+current <code>moved</code> mouse event and the previous one.</p>
+<p>Emit the <code>new_move_delta</code> signal to update the corresponding asset's position.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/gameview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QPickEvent</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">plane_moved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pick</span><span class="p">:</span> <span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QPickEvent</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Compute the translation on the plane entity between the</span>
+<span class="sd">    current `moved` mouse event and the previous one.</span>
+
+<span class="sd">    Emit the `new_move_delta` signal to update the corresponding asset's position.</span>
+<span class="sd">    """</span>
+    <span class="n">new_intersection</span> <span class="o">=</span> <span class="n">pick</span><span class="o">.</span><span class="n">worldIntersection</span><span class="p">()</span>
+    <span class="n">delta</span> <span class="o">=</span> <span class="n">new_intersection</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">plane_intersection</span>
+    <span class="n">delta</span><span class="o">.</span><span class="n">setZ</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">new_move_delta</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">delta</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_intersection</span> <span class="o">=</span> <span class="n">new_intersection</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.gameview.GameView.plane_pressed">
+<code class="highlight language-python">
+plane_pressed<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pick</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Record the intersection between the mouse pointer and the plane entity,
+on the <code>pressed</code> mouse event, in world coordinate.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/gameview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QPickEvent</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">plane_pressed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pick</span><span class="p">:</span> <span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QPickEvent</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Record the intersection between the mouse pointer and the plane entity,</span>
+<span class="sd">    on the `pressed` mouse event, in world coordinate.</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_intersection</span> <span class="o">=</span> <span class="n">pick</span><span class="o">.</span><span class="n">worldIntersection</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.gameview.GameView.plane_released">
+<code class="highlight language-python">
+plane_released<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pick</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Emit the <code>new_move_delta</code> signal with <code>None</code> argument,
+on <code>released</code> mouse event, to notify that mouse button was released
+and no further moves will happen until next <code>pressed</code> mouse event.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/gameview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QPickEvent</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">plane_released</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pick</span><span class="p">:</span> <span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QPickEvent</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Emit the `new_move_delta` signal with `None` argument,</span>
+<span class="sd">    on `released` mouse event, to notify that mouse button was released</span>
+<span class="sd">    and no further moves will happen until next `pressed` mouse event.</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">plane_intersection</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">new_move_delta</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.gameview.GameView.save_obstacles">
+<code class="highlight language-python">
+save_obstacles<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Save obstables to a JSON file.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>filename</code></td>
+<td><code>Path</code></td>
+<td>
+<p>path of the JSON file</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/gameview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">Path</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">save_obstacles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">:</span> <span class="n">Path</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Save obstables to a JSON file.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        filename: path of the JSON file</span>
+<span class="sd">    """</span>
+    <span class="n">obstacle_models</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ObstacleList</span><span class="o">.</span><span class="n">parse_obj</span><span class="p">([])</span>
+    <span class="k">for</span> <span class="n">obstacle_entity</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">obstacle_entities</span><span class="p">:</span>
+        <span class="n">obstacle_models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obstacle_entity</span><span class="o">.</span><span class="n">get_model</span><span class="p">())</span>
+    <span class="k">with</span> <span class="n">filename</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">obstacle_models</span><span class="o">.</span><span class="n">json</span><span class="p">(</span><span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-function">
+<h1 class="doc doc-heading" id="cogip.gameview.create_ligth_entity">
+<code class="highlight language-python">
+create_ligth_entity<span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span> </code>
+</h1>
+<div class="doc doc-contents">
+<p>Create a ligth entity at the position specified in arguments.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td><code>float</code></td>
+<td>
+<p>X position</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td><code>float</code></td>
+<td>
+<p>Y position</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>z</code></td>
+<td><code>float</code></td>
+<td>
+<p>Z position</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>QEntity</code></td>
+<td>
+<p>The light entity</p>
+</td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/gameview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">create_ligth_entity</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QEntity</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Create a ligth entity at the position specified in arguments.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        x: X position</span>
+<span class="sd">        y: Y position</span>
+<span class="sd">        z: Z position</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        The light entity</span>
+<span class="sd">    """</span>
+
+    <span class="n">light_entity</span> <span class="o">=</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QEntity</span><span class="p">()</span>
+
+    <span class="n">light</span> <span class="o">=</span> <span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QPointLight</span><span class="p">(</span><span class="n">light_entity</span><span class="p">)</span>
+
+    <span class="n">light</span><span class="o">.</span><span class="n">setColor</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">white</span><span class="p">))</span>
+
+    <span class="n">light</span><span class="o">.</span><span class="n">setIntensity</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">light_entity</span><span class="o">.</span><span class="n">addComponent</span><span class="p">(</span><span class="n">light</span><span class="p">)</span>
+
+    <span class="n">light_transform</span> <span class="o">=</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QTransform</span><span class="p">(</span><span class="n">light_entity</span><span class="p">)</span>
+    <span class="n">light_transform</span><span class="o">.</span><span class="n">setTranslation</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QVector3D</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">))</span>
+    <span class="n">light_entity</span><span class="o">.</span><span class="n">addComponent</span><span class="p">(</span><span class="n">light_transform</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">light_entity</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+</div>
+</div>
+</main>
+<footer class="md-footer">
+<div class="md-footer-nav">
+<nav aria-label="Footer" class="md-footer-nav__inner md-grid">
+<a class="md-footer-nav__link md-footer-nav__link--prev" href="../config/" rel="prev" title="config.py">
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
+</div>
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                config.py
+              </div>
+</div>
+</a>
+<a class="md-footer-nav__link md-footer-nav__link--next" href="../impactentity/" rel="next" title="impactentity.py">
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
+                  Next
+                </span>
+                impactentity.py
+              </div>
+</div>
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"></path></svg>
+</div>
+</a>
+</nav>
+</div>
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+          Material for MkDocs
+        </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<script src="../../../../assets/javascripts/vendor.3636a4ec.min.js"></script>
+<script src="../../../../assets/javascripts/bundle.e9fe3281.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+<script>
+        app = initialize({
+          base: "../../../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../../../assets/javascripts/worker/search.5eca75d3.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+</body>
+</html>

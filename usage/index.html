@@ -1,0 +1,385 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link href="../assets/images/favicon.png" rel="shortcut icon"/>
+<meta content="mkdocs-1.1.2, mkdocs-material-5.5.12" name="generator"/>
+<title>Usage - COGIP Simulator</title>
+<link href="../assets/stylesheets/main.4dd2dd8d.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&amp;display=fallback" rel="stylesheet"/>
+<style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+</head>
+<body dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#usage">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header" data-md-component="header">
+<nav aria-label="Header" class="md-header-nav md-grid">
+<a aria-label="COGIP Simulator" class="md-header-nav__button md-logo" href=".." title="COGIP Simulator">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
+</a>
+<label class="md-header-nav__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"></path></svg>
+</label>
+<div class="md-header-nav__title" data-md-component="header-title">
+<div class="md-header-nav__ellipsis">
+<span class="md-header-nav__topic md-ellipsis">
+            COGIP Simulator
+          </span>
+<span class="md-header-nav__topic md-ellipsis">
+            
+              Usage
+            
+          </span>
+</div>
+</div>
+<div class="md-header-nav__source">
+<a class="md-source" href="https://github.com/cogip/simulation/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    cogip/simulation
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="COGIP Simulator" class="md-nav__button md-logo" href=".." title="COGIP Simulator">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
+</a>
+    COGIP Simulator
+  </label>
+<div class="md-nav__source">
+<a class="md-source" href="https://github.com/cogip/simulation/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    cogip/simulation
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href=".." title="Overview">
+      Overview
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../install/" title="Installation">
+      Installation
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+        Usage
+        <span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./" title="Usage">
+      Usage
+    </a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#command-line-options">
+    Command line options
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#native-mode">
+    Native Mode
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#robot-mode">
+    Robot Mode
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#environment-variables">
+    Environment Variables
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="nav-4" id="nav-4" type="checkbox"/>
+<label class="md-nav__link" for="nav-4">
+      Developer's Doc
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Developer's Doc" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="nav-4">
+<span class="md-nav__icon md-icon"></span>
+        Developer's Doc
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/developers/" title="Introduction">
+      Introduction
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2" id="nav-4-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-4-2">
+      Modules
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Modules" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="nav-4-2">
+<span class="md-nav__icon md-icon"></span>
+        Modules
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/main/" title="__main__.py">
+      __main__.py
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--nested">
+<input class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-2" id="nav-4-2-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-4-2-2">
+      cogip
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="cogip" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="nav-4-2-2">
+<span class="md-nav__icon md-icon"></span>
+        cogip
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/cogip/assetentity/" title="assetentity.py">
+      assetentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/cogip/config/" title="config.py">
+      config.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/cogip/gameview/" title="gameview.py">
+      gameview.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/cogip/impactentity/" title="impactentity.py">
+      impactentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/cogip/mainwindow/" title="mainwindow.py">
+      mainwindow.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/cogip/models/" title="models.py">
+      models.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/cogip/obstacleentity/" title="obstacleentity.py">
+      obstacleentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/cogip/robotentity/" title="robotentity.py">
+      robotentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/cogip/sensor/" title="sensor.py">
+      sensor.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../developers/modules/cogip/serialcontroller/" title="serialcontroller.py">
+      serialcontroller.py
+    </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#command-line-options">
+    Command line options
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#native-mode">
+    Native Mode
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#robot-mode">
+    Robot Mode
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#environment-variables">
+    Environment Variables
+  </a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content">
+<article class="md-content__inner md-typeset">
+<a class="md-content__button md-icon" href="https://github.com/cogip/simulation/edit/master/docs/usage.md" title="Edit this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"></path></svg>
+</a>
+<h1 id="usage">Usage</h1>
+<p>After installation and firmware compilation (see <a href="../install/">Install</a>), the simulator
+is launched with:</p>
+<pre><code class="bash">$ simulator
+</code></pre>
+<p>The simulator can be used with the native firmware or connected via serial port to the robot.</p>
+<p>By default, the serial ports are scanned, and if found, the first port will be used to try to connect to the robot (see <a href="#robot-mode">Robot Mode</a>).</p>
+<p>If no serial port is found, it will launch the default native firmware (see <a href="#native-mode">Native Mode</a>).</p>
+<h2 id="command-line-options">Command line options</h2>
+<pre><code class="bash">$ simulator --help
+usage: simulator [-h] [-D UART_DEVICE | -B NATIVE_BINARY]
+
+Launch COGIP Simulator.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -D UART_DEVICE, --device UART_DEVICE
+                        Specify UART device
+  -B NATIVE_BINARY, --binary NATIVE_BINARY
+                        Specify native board binary compiled in calibration mode
+</code></pre>
+<h2 id="native-mode">Native Mode</h2>
+<p>The default native firmware is:
+<code>submodules/mcu-firmware/applications/cogip2019-cortex/bin/cogip2019-cortex-native/cortex.elf</code></p>
+<p>It can be changed using:</p>
+<ul>
+<li>
+<p>the CLI option: <code>-B/--binary &lt;NATIVE_BINARY&gt;</code></p>
+</li>
+<li>
+<p>the environment variable: <code>NATIVE_BINARY</code></p>
+</li>
+</ul>
+<h2 id="robot-mode">Robot Mode</h2>
+<p>If a robot is connected to a serial port, the first port will be used by default.</p>
+<p>The default serial port can be modified using the environment variable <code>DEFAULT_UART</code>.</p>
+<p>To specify an other serial port, use the <code>-D/--device &lt;UART_DEVICE&gt;</code> CLI option.</p>
+<h2 id="environment-variables">Environment Variables</h2>
+<div class="admonition note">
+<p class="admonition-title">Environnement variables are case-insentive.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Environnement variables can be set in the <code>.env</code> file.</p>
+</div>
+<p>Environment variables are defined in the <a href="../developers/modules/cogip/config/#cogip.config.Settings"><code>Settings</code></a> class.</p>
+</article>
+</div>
+</div>
+</main>
+<footer class="md-footer">
+<div class="md-footer-nav">
+<nav aria-label="Footer" class="md-footer-nav__inner md-grid">
+<a class="md-footer-nav__link md-footer-nav__link--prev" href="../install/" rel="prev" title="Installation">
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
+</div>
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                Installation
+              </div>
+</div>
+</a>
+<a class="md-footer-nav__link md-footer-nav__link--next" href="../developers/developers/" rel="next" title="Introduction">
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
+                  Next
+                </span>
+                Introduction
+              </div>
+</div>
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"></path></svg>
+</div>
+</a>
+</nav>
+</div>
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+          Material for MkDocs
+        </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<script src="../assets/javascripts/vendor.3636a4ec.min.js"></script>
+<script src="../assets/javascripts/bundle.e9fe3281.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+<script>
+        app = initialize({
+          base: "..",
+          features: [],
+          search: Object.assign({
+            worker: "../assets/javascripts/worker/search.5eca75d3.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+</body>
+</html>

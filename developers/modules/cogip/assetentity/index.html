@@ -1,0 +1,862 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link href="../../../../assets/images/favicon.png" rel="shortcut icon"/>
+<meta content="mkdocs-1.1.2, mkdocs-material-5.5.12" name="generator"/>
+<title>assetentity.py - COGIP Simulator</title>
+<link href="../../../../assets/stylesheets/main.4dd2dd8d.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&amp;display=fallback" rel="stylesheet"/>
+<style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+</head>
+<body dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#cogip.assetentity">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header" data-md-component="header">
+<nav aria-label="Header" class="md-header-nav md-grid">
+<a aria-label="COGIP Simulator" class="md-header-nav__button md-logo" href="../../../.." title="COGIP Simulator">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
+</a>
+<label class="md-header-nav__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"></path></svg>
+</label>
+<div class="md-header-nav__title" data-md-component="header-title">
+<div class="md-header-nav__ellipsis">
+<span class="md-header-nav__topic md-ellipsis">
+            COGIP Simulator
+          </span>
+<span class="md-header-nav__topic md-ellipsis">
+            
+              assetentity.py
+            
+          </span>
+</div>
+</div>
+<div class="md-header-nav__source">
+<a class="md-source" href="https://github.com/cogip/simulation/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    cogip/simulation
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="COGIP Simulator" class="md-nav__button md-logo" href="../../../.." title="COGIP Simulator">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
+</a>
+    COGIP Simulator
+  </label>
+<div class="md-nav__source">
+<a class="md-source" href="https://github.com/cogip/simulation/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    cogip/simulation
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../.." title="Overview">
+      Overview
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../install/" title="Installation">
+      Installation
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../usage/" title="Usage">
+      Usage
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4" id="nav-4" type="checkbox"/>
+<label class="md-nav__link" for="nav-4">
+      Developer's Doc
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Developer's Doc" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="nav-4">
+<span class="md-nav__icon md-icon"></span>
+        Developer's Doc
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../developers/" title="Introduction">
+      Introduction
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2" id="nav-4-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-4-2">
+      Modules
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Modules" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="nav-4-2">
+<span class="md-nav__icon md-icon"></span>
+        Modules
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../main/" title="__main__.py">
+      __main__.py
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-2" id="nav-4-2-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-4-2-2">
+      cogip
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="cogip" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="nav-4-2-2">
+<span class="md-nav__icon md-icon"></span>
+        cogip
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+        assetentity.py
+        <span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./" title="assetentity.py">
+      assetentity.py
+    </a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity">
+    cogip.assetentity
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity">
+    AssetEntity
+  </a>
+<nav aria-label="AssetEntity" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity.generate_tree">
+    generate_tree()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity.on_loader_status_changed">
+    on_loader_status_changed()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity.post_init">
+    post_init()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity.set_position">
+    set_position()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.traverse_tree">
+    traverse_tree()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../config/" title="config.py">
+      config.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../gameview/" title="gameview.py">
+      gameview.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../impactentity/" title="impactentity.py">
+      impactentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../mainwindow/" title="mainwindow.py">
+      mainwindow.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../models/" title="models.py">
+      models.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../obstacleentity/" title="obstacleentity.py">
+      obstacleentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../robotentity/" title="robotentity.py">
+      robotentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../sensor/" title="sensor.py">
+      sensor.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../serialcontroller/" title="serialcontroller.py">
+      serialcontroller.py
+    </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity">
+    cogip.assetentity
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity">
+    AssetEntity
+  </a>
+<nav aria-label="AssetEntity" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity.generate_tree">
+    generate_tree()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity.on_loader_status_changed">
+    on_loader_status_changed()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity.post_init">
+    post_init()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.AssetEntity.set_position">
+    set_position()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.assetentity.traverse_tree">
+    traverse_tree()
+  </a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content">
+<article class="md-content__inner md-typeset">
+<a class="md-content__button md-icon" href="https://github.com/cogip/simulation/edit/master/docs/developers/modules/cogip/assetentity.md" title="Edit this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"></path></svg>
+</a>
+<div class="doc doc-object doc-module">
+<h1 class="hidden-toc" href="#cogip.assetentity" id="cogip.assetentity" style="visibility: hidden; width: 0; height: 0;">
+</h1>
+<div class="doc doc-contents first">
+<p>This module defines the base class <a href="#cogip.assetentity.AssetEntity">AssetEntity</a>
+used directly or inherited for specific assets.</p>
+<p>Asset entities are graphic element displayed on the 3D view and loaded from asset files.
+It's typically used for table and robot assets.</p>
+<p>Supported asset files are in <a href="https://en.wikipedia.org/wiki/COLLADA">Collada</a> format (<code>.dae</code>).
+Other formats could be also supported, but not tested
+(see <a href="https://github.com/assimp/assimp">Open Asset Import Library</a>).</p>
+<div class="doc doc-children">
+<div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.assetentity.AssetEntity">
+<code>AssetEntity</code>
+</h1>
+<div class="doc doc-contents">
+<p>Base class for asset entities</p>
+<p>This class inherits from <a href="https://doc.qt.io/qtforpython/PySide2/Qt3DCore/QEntity.html"><code>Qt3DCore.QEntity</code></a></p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ready</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal emitted when the asset entity is ready to be used</p>
+</td>
+</tr>
+<tr>
+<td><code>asset_ready</code></td>
+<td><code>bool</code></td>
+<td>
+<p><code>True</code> if the asset is ready</p>
+</td>
+</tr>
+<tr>
+<td><code>asset_entity</code></td>
+<td><code></code></td>
+<td>
+<p>first useful <code>QEntity</code> in the asset tree</p>
+</td>
+</tr>
+<tr>
+<td><code>transform_component</code></td>
+<td><code></code></td>
+<td>
+<p><code>QTransform</code> holding the asset's translation and orientation</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="doc doc-children">
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.assetentity.AssetEntity.__init__">
+<code class="highlight language-python">
+__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset_path</span><span class="p">,</span> <span class="n">asset_name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> </code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-special"><code>special</code></small>
+</span>
+</h2>
+<div class="doc doc-contents">
+<p>The constructor checks the asset's file and starts loading the entity.</p>
+<p>The entity load is asynchronous, a signal is emitted when it's done
+(see <a href="#cogip.assetentity.AssetEntity.on_loader_status_changed"><code>on_loader_status_changed</code></a>)</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>asset_path</code></td>
+<td><code>Union[pathlib.Path, str]</code></td>
+<td>
+<p>path of the asset file</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>asset_name</code></td>
+<td><code>str</code></td>
+<td>
+<p>asset name</p>
+</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/assetentity.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span> <span class="n">asset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    The constructor checks the asset's file and starts loading the entity.</span>
+
+<span class="sd">    The entity load is asynchronous, a signal is emitted when it's done</span>
+<span class="sd">    (see [`on_loader_status_changed`][cogip.assetentity.AssetEntity.on_loader_status_changed])</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        asset_path: path of the asset file</span>
+<span class="sd">        asset_name: asset name</span>
+<span class="sd">    """</span>
+
+    <span class="nb">super</span><span class="p">(</span><span class="n">AssetEntity</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">asset_ready</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span><span class="p">:</span> <span class="n">Path</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">asset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">asset_name</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">asset_entity</span><span class="p">:</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QEntity</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">transform_component</span><span class="p">:</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QTransform</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">asset_path</span><span class="p">,</span> <span class="n">Path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span> <span class="o">=</span> <span class="n">asset_path</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">asset_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">asset_path</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"'asset_path' argument must be of type 'str' or 'pathlib.Path'"</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"File not found '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span><span class="o">.</span><span class="n">is_file</span><span class="p">():</span>
+        <span class="k">raise</span> <span class="ne">IsADirectoryError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span><span class="si">}</span><span class="s2">' is not a file"</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">loader</span> <span class="o">=</span> <span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QSceneLoader</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">statusChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">on_loader_status_changed</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">setObjectName</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">addComponent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="o">.</span><span class="n">setSource</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QUrl</span><span class="p">(</span><span class="sa">f</span><span class="s2">"file:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span><span class="si">}</span><span class="s2">"</span><span class="p">))</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.assetentity.AssetEntity.generate_tree">
+<code class="highlight language-python">
+generate_tree<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Generated a tree of all entities and components starting from the main entity.</p>
+<p>The generated file is stored next to the asset file and it has the same name
+but with <code>.tree.dot</code> extension.</p>
+<p>It is a text file written in <a href="https://graphviz.org/">Graphviz</a> format.</p>
+<p>To read this file:</p>
+<pre><code class="bash">    sudo apt install graphviz okular
+    dot -Tpdf assets/robot2019.tree.dot | okular -
+</code></pre>
+<details class="quote">
+<summary>Source code in <code>cogip/assetentity.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">generate_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Generated a tree of all entities and components starting from the main entity.</span>
+
+<span class="sd">    The generated file is stored next to the asset file and it has the same name</span>
+<span class="sd">    but with `.tree.dot` extension.</span>
+
+<span class="sd">    It is a text file written in [Graphviz](https://graphviz.org/) format.</span>
+
+<span class="sd">    To read this file:</span>
+<span class="sd">    ```bash</span>
+<span class="sd">        sudo apt install graphviz okular</span>
+<span class="sd">        dot -Tpdf assets/robot2019.tree.dot | okular -</span>
+<span class="sd">    ```</span>
+<span class="sd">    """</span>
+
+    <span class="n">tree_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span><span class="o">.</span><span class="n">with_suffix</span><span class="p">(</span><span class="s2">".tree.dot"</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">tree_filename</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="s1">'w'</span><span class="p">)</span> <span class="k">as</span> <span class="n">fd</span><span class="p">:</span>
+        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'graph ""</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'{</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">'label="Entity tree"</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+        <span class="n">root_node_number</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">traverse_tree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root_node_number</span><span class="p">,</span> <span class="n">fd</span><span class="p">)</span>
+        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.assetentity.AssetEntity.on_loader_status_changed">
+<code class="highlight language-python">
+on_loader_status_changed<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>When the loader has finished, clean the entity tree,
+record the main <code>QEntity</code> and its <code>QTransform</code> component.</p>
+<p>Then it generated the dot tree
+(see <a href="#cogip.assetentity.AssetEntity.generate_tree"><code>generate_tree</code></a>),
+run the <a href="#cogip.assetentity.AssetEntity.post_init"><code>post_init</code></a> pass,
+and emit the <code>ready</code> signal.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status</code></td>
+<td><code>Status</code></td>
+<td>
+<p>current loader status</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/assetentity.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QSceneLoader</span><span class="o">.</span><span class="n">Status</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">on_loader_status_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status</span><span class="p">:</span> <span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QSceneLoader</span><span class="o">.</span><span class="n">Status</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    When the loader has finished, clean the entity tree,</span>
+<span class="sd">    record the main `QEntity` and its `QTransform` component.</span>
+
+<span class="sd">    Then it generated the dot tree</span>
+<span class="sd">    (see [`generate_tree`][cogip.assetentity.AssetEntity.generate_tree]),</span>
+<span class="sd">    run the [`post_init`][cogip.assetentity.AssetEntity.post_init] pass,</span>
+<span class="sd">    and emit the `ready` signal.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        status: current loader status</span>
+<span class="sd">    """</span>
+
+    <span class="k">if</span> <span class="n">status</span> <span class="o">!=</span> <span class="n">Qt3DRender</span><span class="o">.</span><span class="n">QSceneLoader</span><span class="o">.</span><span class="n">Ready</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">asset_name</span><span class="p">:</span>
+        <span class="c1"># Find the asset entity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">asset_entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QEntity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">asset_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">asset_entity</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Entity '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_name</span><span class="si">}</span><span class="s2">' not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">asset_path</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Set asset entity as the first child</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">asset_entity</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+            <span class="c1"># Find the transform component of the asset entity</span>
+            <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">asset_entity</span><span class="o">.</span><span class="n">components</span><span class="p">():</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">comp</span><span class="p">,</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QTransform</span><span class="p">):</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">transform_component</span> <span class="o">=</span> <span class="n">comp</span>
+                    <span class="k">break</span>
+
+    <span class="c1"># Remove unused entities and component</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">scene_entity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">findChild</span><span class="p">(</span><span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QEntity</span><span class="p">,</span> <span class="s2">"Scene"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">scene_entity</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">removeComponent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">loader</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">generate_tree</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">post_init</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">asset_ready</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.assetentity.AssetEntity.post_init">
+<code class="highlight language-python">
+post_init<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Post initialization method that can be overloaded.
+It it executed after entity and transform components are ready.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/assetentity.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">post_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Post initialization method that can be overloaded.</span>
+<span class="sd">    It it executed after entity and transform components are ready.</span>
+<span class="sd">    """</span>
+    <span class="k">pass</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.assetentity.AssetEntity.set_position">
+<code class="highlight language-python">
+set_position<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt slot called to set the entity's new position.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new_position</code></td>
+<td><code>Pose</code></td>
+<td>
+<p>new position</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td><code>CtrlModeEnum</code></td>
+<td>
+<p>unused</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/assetentity.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">Pose</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">set_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="n">Pose</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">CtrlModeEnum</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt slot called to set the entity's new position.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        new_position: new position</span>
+<span class="sd">        mode: unused</span>
+<span class="sd">    """</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_component</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">transform_component</span><span class="o">.</span><span class="n">setTranslation</span><span class="p">(</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QVector3D</span><span class="p">(</span><span class="n">new_position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">new_position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">transform_component</span><span class="o">.</span><span class="n">setRotationZ</span><span class="p">(</span><span class="n">new_position</span><span class="o">.</span><span class="n">O</span> <span class="o">+</span> <span class="mi">90</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-function">
+<h1 class="doc doc-heading" id="cogip.assetentity.traverse_tree">
+<code class="highlight language-python">
+traverse_tree<span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">next_node_nb</span><span class="p">,</span> <span class="n">fd</span><span class="p">)</span> </code>
+</h1>
+<div class="doc doc-contents">
+<p>Recursive function traversing all child entities and write its node
+and all its components to the .dot file.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>node</code></td>
+<td><code>QEntity</code></td>
+<td>
+<p>entity to traverse</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>next_node_nb</code></td>
+<td><code>int</code></td>
+<td>
+<p>next node number</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>fd</code></td>
+<td><code>TextIO</code></td>
+<td>
+<p>opened file descriptor used to write the tree</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Tuple[int, int]</code></td>
+<td>
+<p>tuple of current and next node numbers</p>
+</td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/assetentity.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">traverse_tree</span><span class="p">(</span><span class="n">node</span><span class="p">:</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QEntity</span><span class="p">,</span> <span class="n">next_node_nb</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">fd</span><span class="p">:</span> <span class="n">TextIO</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Recursive function traversing all child entities and write its node</span>
+<span class="sd">    and all its components to the .dot file.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        node: entity to traverse</span>
+<span class="sd">        next_node_nb: next node number</span>
+<span class="sd">        fd: opened file descriptor used to write the tree</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        tuple of current and next node numbers</span>
+<span class="sd">    """</span>
+
+    <span class="n">current_node_nb</span> <span class="o">=</span> <span class="n">next_node_nb</span>
+    <span class="n">next_node_nb</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># Insert current node in the tree</span>
+    <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"n</span><span class="si">%03d</span><span class="s2"> [label=</span><span class="se">\"</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\"</span><span class="s2">] ;</span><span class="se">\n</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span>
+        <span class="n">current_node_nb</span><span class="p">,</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">metaObject</span><span class="p">()</span><span class="o">.</span><span class="n">className</span><span class="p">(),</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">objectName</span><span class="p">()))</span>
+
+    <span class="c1"># Enumerate components</span>
+    <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">components</span><span class="p">():</span>
+        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"n</span><span class="si">%03d</span><span class="s2"> [shape=box,label=</span><span class="se">\"</span><span class="si">%s</span><span class="se">\n</span><span class="si">%s</span><span class="se">\"</span><span class="s2">] ;</span><span class="se">\n</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">next_node_nb</span><span class="p">,</span>
+            <span class="n">comp</span><span class="o">.</span><span class="n">metaObject</span><span class="p">()</span><span class="o">.</span><span class="n">className</span><span class="p">(),</span>
+            <span class="n">comp</span><span class="o">.</span><span class="n">objectName</span><span class="p">()))</span>
+        <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"n</span><span class="si">%03d</span><span class="s2"> -- n</span><span class="si">%03d</span><span class="s2"> [style=dotted];</span><span class="se">\n</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span>
+            <span class="n">current_node_nb</span><span class="p">,</span> <span class="n">next_node_nb</span><span class="p">))</span>
+        <span class="n">next_node_nb</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># Build tree for children</span>
+    <span class="k">for</span> <span class="n">child_node</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">children</span><span class="p">():</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">child_node</span><span class="p">,</span> <span class="n">Qt3DCore</span><span class="o">.</span><span class="n">QEntity</span><span class="p">):</span>
+            <span class="n">child_node_nb</span><span class="p">,</span> <span class="n">next_node_nb</span> <span class="o">=</span> <span class="n">traverse_tree</span><span class="p">(</span><span class="n">child_node</span><span class="p">,</span> <span class="n">next_node_nb</span><span class="p">,</span> <span class="n">fd</span><span class="p">)</span>
+            <span class="n">fd</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s2">"n</span><span class="si">%03d</span><span class="s2"> -- n</span><span class="si">%03d</span><span class="s2"> ;</span><span class="se">\n</span><span class="s2">"</span> <span class="o">%</span> <span class="p">(</span><span class="n">current_node_nb</span><span class="p">,</span> <span class="n">child_node_nb</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">current_node_nb</span><span class="p">,</span> <span class="n">next_node_nb</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+</div>
+</div>
+</main>
+<footer class="md-footer">
+<div class="md-footer-nav">
+<nav aria-label="Footer" class="md-footer-nav__inner md-grid">
+<a class="md-footer-nav__link md-footer-nav__link--prev" href="../../main/" rel="prev" title="__main__.py">
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
+</div>
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                __main__.py
+              </div>
+</div>
+</a>
+<a class="md-footer-nav__link md-footer-nav__link--next" href="../config/" rel="next" title="config.py">
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
+                  Next
+                </span>
+                config.py
+              </div>
+</div>
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"></path></svg>
+</div>
+</a>
+</nav>
+</div>
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+          Material for MkDocs
+        </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<script src="../../../../assets/javascripts/vendor.3636a4ec.min.js"></script>
+<script src="../../../../assets/javascripts/bundle.e9fe3281.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+<script>
+        app = initialize({
+          base: "../../../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../../../assets/javascripts/worker/search.5eca75d3.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+</body>
+</html>

@@ -1,0 +1,1022 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link href="../../../../assets/images/favicon.png" rel="shortcut icon"/>
+<meta content="mkdocs-1.1.2, mkdocs-material-5.5.12" name="generator"/>
+<title>mainwindow.py - COGIP Simulator</title>
+<link href="../../../../assets/stylesheets/main.4dd2dd8d.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&amp;display=fallback" rel="stylesheet"/>
+<style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+</head>
+<body dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#cogip.mainwindow">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header" data-md-component="header">
+<nav aria-label="Header" class="md-header-nav md-grid">
+<a aria-label="COGIP Simulator" class="md-header-nav__button md-logo" href="../../../.." title="COGIP Simulator">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
+</a>
+<label class="md-header-nav__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"></path></svg>
+</label>
+<div class="md-header-nav__title" data-md-component="header-title">
+<div class="md-header-nav__ellipsis">
+<span class="md-header-nav__topic md-ellipsis">
+            COGIP Simulator
+          </span>
+<span class="md-header-nav__topic md-ellipsis">
+            
+              mainwindow.py
+            
+          </span>
+</div>
+</div>
+<div class="md-header-nav__source">
+<a class="md-source" href="https://github.com/cogip/simulation/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    cogip/simulation
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="COGIP Simulator" class="md-nav__button md-logo" href="../../../.." title="COGIP Simulator">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
+</a>
+    COGIP Simulator
+  </label>
+<div class="md-nav__source">
+<a class="md-source" href="https://github.com/cogip/simulation/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    cogip/simulation
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../.." title="Overview">
+      Overview
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../install/" title="Installation">
+      Installation
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../usage/" title="Usage">
+      Usage
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4" id="nav-4" type="checkbox"/>
+<label class="md-nav__link" for="nav-4">
+      Developer's Doc
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Developer's Doc" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="nav-4">
+<span class="md-nav__icon md-icon"></span>
+        Developer's Doc
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../developers/" title="Introduction">
+      Introduction
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2" id="nav-4-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-4-2">
+      Modules
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Modules" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="nav-4-2">
+<span class="md-nav__icon md-icon"></span>
+        Modules
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../main/" title="__main__.py">
+      __main__.py
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-2" id="nav-4-2-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-4-2-2">
+      cogip
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="cogip" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="nav-4-2-2">
+<span class="md-nav__icon md-icon"></span>
+        cogip
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../assetentity/" title="assetentity.py">
+      assetentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../config/" title="config.py">
+      config.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../gameview/" title="gameview.py">
+      gameview.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../impactentity/" title="impactentity.py">
+      impactentity.py
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+        mainwindow.py
+        <span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./" title="mainwindow.py">
+      mainwindow.py
+    </a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow">
+    cogip.mainwindow
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow">
+    MainWindow
+  </a>
+<nav aria-label="MainWindow" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.add_obstacle">
+    add_obstacle()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.build_command">
+    build_command()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.load_menu">
+    load_menu()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.load_obstacles">
+    load_obstacles()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.new_robot_position">
+    new_robot_position()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.save_obstacles">
+    save_obstacles()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.split_command">
+    split_command()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../models/" title="models.py">
+      models.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../obstacleentity/" title="obstacleentity.py">
+      obstacleentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../robotentity/" title="robotentity.py">
+      robotentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../sensor/" title="sensor.py">
+      sensor.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../serialcontroller/" title="serialcontroller.py">
+      serialcontroller.py
+    </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow">
+    cogip.mainwindow
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow">
+    MainWindow
+  </a>
+<nav aria-label="MainWindow" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.add_obstacle">
+    add_obstacle()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.build_command">
+    build_command()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.load_menu">
+    load_menu()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.load_obstacles">
+    load_obstacles()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.new_robot_position">
+    new_robot_position()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.save_obstacles">
+    save_obstacles()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.split_command">
+    split_command()
+  </a>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content">
+<article class="md-content__inner md-typeset">
+<a class="md-content__button md-icon" href="https://github.com/cogip/simulation/edit/master/docs/developers/modules/cogip/mainwindow.md" title="Edit this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"></path></svg>
+</a>
+<div class="doc doc-object doc-module">
+<h1 class="hidden-toc" href="#cogip.mainwindow" id="cogip.mainwindow" style="visibility: hidden; width: 0; height: 0;">
+</h1>
+<div class="doc doc-contents first">
+<div class="doc doc-children">
+<div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.mainwindow.MainWindow">
+<code>MainWindow</code>
+</h1>
+<div class="doc doc-contents">
+<p>MainWindow class</p>
+<p>Build the main window of the simulator.</p>
+<p>It contains:</p>
+<ul>
+<li>a menu bar,</li>
+<li>a tool bar with buttons to add/load/save obstacles,</li>
+<li>a status bar with robot position and mode,</li>
+<li>a menu with commands available in the current firmware shell menu,</li>
+<li>a console recording the firmware output.</li>
+</ul>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>signal_send_command</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal to send a command to the firmware</p>
+</td>
+</tr>
+<tr>
+<td><code>signal_add_obstacle</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal to add an obstacle</p>
+</td>
+</tr>
+<tr>
+<td><code>signal_load_obstacles</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal to load obstacles</p>
+</td>
+</tr>
+<tr>
+<td><code>signal_save_obstacles</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal to save obstacles</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="doc doc-children">
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.__init__">
+<code class="highlight language-python">
+__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> </code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-special"><code>special</code></small>
+</span>
+</h2>
+<div class="doc doc-contents">
+<details class="quote">
+<summary>Source code in <code>cogip/mainwindow.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    """</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">MainWindow</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">menu_widgets</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s1">'COGIP Simulator'</span><span class="p">)</span>
+
+    <span class="c1"># Menu bar</span>
+    <span class="n">menubar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">menuBar</span><span class="p">()</span>
+    <span class="n">file_menu</span> <span class="o">=</span> <span class="n">menubar</span><span class="o">.</span><span class="n">addMenu</span><span class="p">(</span><span class="s1">'&amp;File'</span><span class="p">)</span>
+    <span class="n">obstacles_menu</span> <span class="o">=</span> <span class="n">menubar</span><span class="o">.</span><span class="n">addMenu</span><span class="p">(</span><span class="s1">'&amp;Obstacles'</span><span class="p">)</span>
+
+    <span class="c1"># Toolbars</span>
+    <span class="n">file_toolbar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addToolBar</span><span class="p">(</span><span class="s1">'File'</span><span class="p">)</span>
+    <span class="n">obstacles_toolbar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addToolBar</span><span class="p">(</span><span class="s1">'Obstacles'</span><span class="p">)</span>
+
+    <span class="c1"># Status bar</span>
+    <span class="n">status_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">statusBar</span><span class="p">()</span>
+
+    <span class="n">pos_x_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"X"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
+    <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="n">pos_x_label</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">pos_y_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Y"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
+    <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="n">pos_y_label</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">pos_angle_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Angle"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
+    <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="n">pos_angle_label</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">pos_mode_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Mode"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_mode_text</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_mode_text</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_mode_text</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
+    <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="n">pos_mode_label</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_mode_text</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># Actions</span>
+    <span class="c1"># Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons</span>
+
+    <span class="c1"># Exit action</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">exit_action</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="o">.</span><span class="n">fromTheme</span><span class="p">(</span><span class="s2">"application-exit"</span><span class="p">),</span>
+        <span class="s1">'Exit'</span><span class="p">,</span>
+        <span class="bp">self</span>
+    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">exit_action</span><span class="o">.</span><span class="n">setShortcut</span><span class="p">(</span><span class="s1">'Ctrl+Q'</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">exit_action</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s1">'Exit application'</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">exit_action</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">close</span><span class="p">)</span>
+    <span class="n">file_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exit_action</span><span class="p">)</span>
+    <span class="n">file_toolbar</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">exit_action</span><span class="p">)</span>
+
+    <span class="c1"># Add obstacle action</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_obstacle_action</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="o">.</span><span class="n">fromTheme</span><span class="p">(</span><span class="s2">"list-add"</span><span class="p">),</span>
+        <span class="s1">'Add obstacle'</span><span class="p">,</span>
+        <span class="bp">self</span>
+    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_obstacle_action</span><span class="o">.</span><span class="n">setShortcut</span><span class="p">(</span><span class="s1">'Ctrl+A'</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_obstacle_action</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s1">'Add obstacle'</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">add_obstacle_action</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add_obstacle</span><span class="p">)</span>
+    <span class="n">obstacles_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add_obstacle_action</span><span class="p">)</span>
+    <span class="n">obstacles_toolbar</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">add_obstacle_action</span><span class="p">)</span>
+
+    <span class="c1"># Open obstacles action</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">load_obstacles_action</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="o">.</span><span class="n">fromTheme</span><span class="p">(</span><span class="s2">"document-open"</span><span class="p">),</span>
+        <span class="s1">'Load obstacles'</span><span class="p">,</span>
+        <span class="bp">self</span>
+    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">load_obstacles_action</span><span class="o">.</span><span class="n">setShortcut</span><span class="p">(</span><span class="s1">'Ctrl+O'</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">load_obstacles_action</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s1">'Load obstacles'</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">load_obstacles_action</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_obstacles</span><span class="p">)</span>
+    <span class="n">obstacles_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_obstacles_action</span><span class="p">)</span>
+    <span class="n">obstacles_toolbar</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_obstacles_action</span><span class="p">)</span>
+
+    <span class="c1"># Save obstacles action</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">save_obstacles_action</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="o">.</span><span class="n">fromTheme</span><span class="p">(</span><span class="s2">"document-save"</span><span class="p">),</span>
+        <span class="s1">'Save obstacles'</span><span class="p">,</span>
+        <span class="bp">self</span>
+    <span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">save_obstacles_action</span><span class="o">.</span><span class="n">setShortcut</span><span class="p">(</span><span class="s1">'Ctrl+S'</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">save_obstacles_action</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s1">'Save obstacles'</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">save_obstacles_action</span><span class="o">.</span><span class="n">triggered</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_obstacles</span><span class="p">)</span>
+    <span class="n">obstacles_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_obstacles_action</span><span class="p">)</span>
+    <span class="n">obstacles_toolbar</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_obstacles_action</span><span class="p">)</span>
+
+    <span class="c1"># Console</span>
+    <span class="n">dock</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QDockWidget</span><span class="p">(</span><span class="s2">"Console"</span><span class="p">)</span>
+    <span class="n">dock</span><span class="o">.</span><span class="n">setAllowedAreas</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">BottomDockWidgetArea</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">log_text</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QTextEdit</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">log_text</span><span class="o">.</span><span class="n">setReadOnly</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">dock</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_text</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">addDockWidget</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">BottomDockWidgetArea</span><span class="p">,</span> <span class="n">dock</span><span class="p">)</span>
+    <span class="n">file_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">dock</span><span class="o">.</span><span class="n">toggleViewAction</span><span class="p">())</span>
+    <span class="n">obstacles_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">dock</span><span class="o">.</span><span class="n">toggleViewAction</span><span class="p">())</span>
+
+    <span class="c1"># Command menu dock</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QDockWidget</span><span class="p">(</span><span class="s2">"Actions"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span><span class="o">.</span><span class="n">setAllowedAreas</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">LeftDockWidgetArea</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span><span class="o">.</span><span class="n">setFeatures</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QDockWidget</span><span class="o">.</span><span class="n">NoDockWidgetFeatures</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">addDockWidget</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">LeftDockWidgetArea</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">current_menu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Set a default menu to allocate some space in the UI</span>
+    <span class="n">actions_widget</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">()</span>
+    <span class="n">actions_layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QVBoxLayout</span><span class="p">()</span>
+    <span class="n">actions_widget</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">actions_layout</span><span class="p">)</span>
+    <span class="n">actions_title</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"No menu loaded"</span><span class="p">)</span>
+    <span class="n">actions_title</span><span class="o">.</span><span class="n">setTextFormat</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">RichText</span><span class="p">)</span>
+    <span class="n">actions_title</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignHCenter</span><span class="p">)</span>
+    <span class="n">actions_title</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
+    <span class="n">actions_title</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">"font-weight: bold; color: blue"</span><span class="p">)</span>
+    <span class="n">actions_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">actions_title</span><span class="p">)</span>
+    <span class="n">actions_layout</span><span class="o">.</span><span class="n">addStretch</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="n">actions_widget</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.add_obstacle">
+<code class="highlight language-python">
+add_obstacle<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Receive signals from "Add obstacle" action.</p>
+<p>Emit the <code>signal_add_obstacle</code> signal.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/mainwindow.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">add_obstacle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Receive signals from "Add obstacle" action.</span>
+
+<span class="sd">    Emit the `signal_add_obstacle` signal.</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">signal_add_obstacle</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.build_command">
+<code class="highlight language-python">
+build_command<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">,</span> <span class="n">layout</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Build command to send to <a href="../serialcontroller/#cogip.serialcontroller.SerialController">SerialController</a>.</p>
+<p>It is built based on the command name given in arguments,
+and arguments strings fetched from the command button in the menu.</p>
+<p>Emit the <code>signal_send_command</code> signal with the full command string as argument.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cmd</code></td>
+<td><code>str</code></td>
+<td>
+<p>The command name</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>layout</code></td>
+<td><code>QHBoxLayout</code></td>
+<td>
+<p>The command button containing the command arguments</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/mainwindow.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">build_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QHBoxLayout</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Build command to send to [SerialController][cogip.serialcontroller.SerialController].</span>
+
+<span class="sd">    It is built based on the command name given in arguments,</span>
+<span class="sd">    and arguments strings fetched from the command button in the menu.</span>
+
+<span class="sd">    Emit the `signal_send_command` signal with the full command string as argument.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        cmd: The command name</span>
+<span class="sd">        layout: The command button containing the command arguments</span>
+<span class="sd">    """</span>
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">layout</span><span class="o">.</span><span class="n">count</span><span class="p">():</span>
+        <span class="n">edit</span> <span class="o">=</span> <span class="n">layout</span><span class="o">.</span><span class="n">itemAt</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">widget</span><span class="p">()</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="n">edit</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">text</span> <span class="o">==</span> <span class="s2">""</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">cmd</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">" </span><span class="si">{</span><span class="n">text</span><span class="si">}</span><span class="s2">"</span>
+        <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">signal_send_command</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">cmd</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.load_menu">
+<code class="highlight language-python">
+load_menu<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_menu</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Display the new menu sent by <a href="../serialcontroller/#cogip.serialcontroller.SerialController">SerialController</a>.</p>
+<p>Once a menu has been build once, it is cached and reused.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>new_menu</code></td>
+<td><code>ShellMenu</code></td>
+<td>
+<p>The new menu information sent by the firmware</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/mainwindow.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">ShellMenu</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">load_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_menu</span><span class="p">:</span> <span class="n">ShellMenu</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Display the new menu sent by [SerialController][cogip.serialcontroller.SerialController].</span>
+
+<span class="sd">    Once a menu has been build once, it is cached and reused.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        new_menu: The new menu information sent by the firmware</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_menu</span> <span class="o">==</span> <span class="n">new_menu</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">current_menu</span> <span class="o">=</span> <span class="n">new_menu</span><span class="o">.</span><span class="n">name</span>
+    <span class="n">widget</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">menu_widgets</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">new_menu</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">widget</span><span class="p">:</span>
+        <span class="n">widget</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">()</span>
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QVBoxLayout</span><span class="p">()</span>
+        <span class="n">widget</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+
+        <span class="n">title</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="n">new_menu</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">title</span><span class="o">.</span><span class="n">setTextFormat</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">RichText</span><span class="p">)</span>
+        <span class="n">title</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignHCenter</span><span class="p">)</span>
+        <span class="n">title</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
+        <span class="n">title</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">"font-weight: bold; color: blue"</span><span class="p">)</span>
+        <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">new_menu</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">cmd</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">'_'</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">cmd_widget</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">()</span>
+            <span class="n">cmd_layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QHBoxLayout</span><span class="p">()</span>
+            <span class="n">cmd_layout</span><span class="o">.</span><span class="n">setContentsMargins</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">cmd_widget</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">cmd_layout</span><span class="p">)</span>
+            <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">cmd_widget</span><span class="p">)</span>
+
+            <span class="n">desc</span><span class="p">,</span> <span class="n">args</span> <span class="o">=</span> <span class="n">split_command</span><span class="p">(</span><span class="n">entry</span><span class="o">.</span><span class="n">desc</span><span class="p">)</span>
+            <span class="n">button</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QPushButton</span><span class="p">(</span><span class="n">desc</span><span class="p">)</span>
+            <span class="n">cmd_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">button</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+                <span class="n">edit</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLineEdit</span><span class="p">()</span>
+                <span class="n">edit</span><span class="o">.</span><span class="n">setPlaceholderText</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+                <span class="n">edit</span><span class="o">.</span><span class="n">setToolTip</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+                <span class="n">cmd_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">edit</span><span class="p">)</span>
+                <span class="n">edit</span><span class="o">.</span><span class="n">returnPressed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+                    <span class="k">lambda</span> <span class="n">cmd</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">cmd</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">cmd_layout</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">build_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">layout</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="n">button</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span>
+                <span class="k">lambda</span> <span class="n">cmd</span><span class="o">=</span><span class="n">entry</span><span class="o">.</span><span class="n">cmd</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">cmd_layout</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">build_command</span><span class="p">(</span><span class="n">cmd</span><span class="p">,</span> <span class="n">layout</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">layout</span><span class="o">.</span><span class="n">addStretch</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">menu_widgets</span><span class="p">[</span><span class="n">new_menu</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">widget</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.load_obstacles">
+<code class="highlight language-python">
+load_obstacles<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Open a file dialog to select a file and load obstacles from it.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/mainwindow.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">load_obstacles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Open a file dialog to select a file and load obstacles from it.</span>
+<span class="sd">    """</span>
+    <span class="n">filename</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">getOpenFileName</span><span class="p">(</span>
+        <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">caption</span><span class="o">=</span><span class="s2">"Select file to load obstacles"</span><span class="p">,</span>
+        <span class="nb">dir</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="o">=</span><span class="s2">"JSON Files (*.json)"</span><span class="p">,</span>
+        <span class="c1"># Workaround a know Qt bug</span>
+        <span class="n">options</span><span class="o">=</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">DontUseNativeDialog</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signal_load_obstacles</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.new_robot_position">
+<code class="highlight language-python">
+new_robot_position<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pose</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Update information robot position in the status bar.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pose</code></td>
+<td><code>Pose</code></td>
+<td>
+<p>Position of the robot</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>mode</code></td>
+<td><code>CtrlModeEnum</code></td>
+<td>
+<p>Mode</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/mainwindow.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">Pose</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">new_robot_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pose</span><span class="p">:</span> <span class="n">Pose</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">CtrlModeEnum</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Update information robot position in the status bar.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        pose: Position of the robot</span>
+<span class="sd">        mode: Mode</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_mode_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">mode</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">O</span><span class="p">))</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.save_obstacles">
+<code class="highlight language-python">
+save_obstacles<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Open a file dialog to select a file and save obstacles in it.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/mainwindow.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">save_obstacles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Open a file dialog to select a file and save obstacles in it.</span>
+<span class="sd">    """</span>
+    <span class="n">filename</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">getSaveFileName</span><span class="p">(</span>
+        <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">caption</span><span class="o">=</span><span class="s2">"Select file to save obstacles"</span><span class="p">,</span>
+        <span class="nb">dir</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="o">=</span><span class="s2">"JSON Files (*.json)"</span><span class="p">,</span>
+        <span class="c1"># Workaround a know Qt bug</span>
+        <span class="n">options</span><span class="o">=</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">DontUseNativeDialog</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">signal_save_obstacles</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-function">
+<h1 class="doc doc-heading" id="cogip.mainwindow.split_command">
+<code class="highlight language-python">
+split_command<span class="p">(</span><span class="n">command</span><span class="p">)</span> </code>
+</h1>
+<div class="doc doc-contents">
+<p>Split the full command string to separate the name of the command
+and its arguments.</p>
+<p>The command is in the following format:</p>
+<pre><code>"command name &lt;arg1&gt; &lt;arg2&gt; ..."
+</code></pre>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>command</code></td>
+<td><code>str</code></td>
+<td>
+<p>The command string to split</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Returns:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Tuple[str, List[str]]</code></td>
+<td>
+<p>A tuple of the command name and a list of arguments</p>
+</td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/mainwindow.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">split_command</span><span class="p">(</span><span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Split the full command string to separate the name of the command</span>
+<span class="sd">    and its arguments.</span>
+
+<span class="sd">    The command is in the following format:</span>
+<span class="sd">    ```</span>
+<span class="sd">    "command name &lt;arg1&gt; &lt;arg2&gt; ..."</span>
+<span class="sd">    ```</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        command: The command string to split</span>
+
+<span class="sd">    Return:</span>
+<span class="sd">        A tuple of the command name and a list of arguments</span>
+<span class="sd">    """</span>
+    <span class="n">result</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="n">arg_match</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">"(&lt;[\d\w]+&gt;)"</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">arg_match</span><span class="p">:</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">arg</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="s2">""</span><span class="p">)</span>
+    <span class="n">command</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">command</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+</div>
+</div>
+</main>
+<footer class="md-footer">
+<div class="md-footer-nav">
+<nav aria-label="Footer" class="md-footer-nav__inner md-grid">
+<a class="md-footer-nav__link md-footer-nav__link--prev" href="../impactentity/" rel="prev" title="impactentity.py">
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
+</div>
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                impactentity.py
+              </div>
+</div>
+</a>
+<a class="md-footer-nav__link md-footer-nav__link--next" href="../models/" rel="next" title="models.py">
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
+                  Next
+                </span>
+                models.py
+              </div>
+</div>
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"></path></svg>
+</div>
+</a>
+</nav>
+</div>
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+          Material for MkDocs
+        </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<script src="../../../../assets/javascripts/vendor.3636a4ec.min.js"></script>
+<script src="../../../../assets/javascripts/bundle.e9fe3281.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+<script>
+        app = initialize({
+          base: "../../../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../../../assets/javascripts/worker/search.5eca75d3.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+</body>
+</html>
