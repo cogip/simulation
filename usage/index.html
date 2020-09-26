@@ -280,24 +280,24 @@
 <h1 id="usage">Usage</h1>
 <p>After installation and firmware compilation (see <a href="../install/">Install</a>), the simulator
 is launched with:</p>
-<pre><code class="bash">$ simulator
-</code></pre>
+<div class="codehilite"><pre><span></span><code>$ simulator
+</code></pre></div>
 <p>The simulator can be used with the native firmware or connected via serial port to the robot.</p>
 <p>By default, the serial ports are scanned, and if found, the first port will be used to try to connect to the robot (see <a href="#robot-mode">Robot Mode</a>).</p>
 <p>If no serial port is found, it will launch the default native firmware (see <a href="#native-mode">Native Mode</a>).</p>
 <h2 id="command-line-options">Command line options</h2>
-<pre><code class="bash">$ simulator --help
-usage: simulator [-h] [-D UART_DEVICE | -B NATIVE_BINARY]
+<div class="codehilite"><pre><span></span><code>$ simulator --help
+usage: simulator <span class="o">[</span>-h<span class="o">]</span> <span class="o">[</span>-D UART_DEVICE <span class="p">|</span> -B NATIVE_BINARY<span class="o">]</span>
 
 Launch COGIP Simulator.
 
 optional arguments:
-  -h, --help            show this help message and exit
+  -h, --help            show this <span class="nb">help</span> message and <span class="nb">exit</span>
   -D UART_DEVICE, --device UART_DEVICE
                         Specify UART device
   -B NATIVE_BINARY, --binary NATIVE_BINARY
                         Specify native board binary compiled in calibration mode
-</code></pre>
+</code></pre></div>
 <h2 id="native-mode">Native Mode</h2>
 <p>The default native firmware is:
 <code>submodules/mcu-firmware/applications/cogip2019-cortex/bin/cogip2019-cortex-native/cortex.elf</code></p>

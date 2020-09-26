@@ -325,33 +325,33 @@
 <h2 id="git-lfs">Git LFS</h2>
 <p>This repository uses Git LFS to store asset files for the robot and table.
 You should first install and initialize git-lfs:</p>
-<pre><code class="bash">sudo apt install git-lfs
+<div class="codehilite"><pre><span></span><code>sudo apt install git-lfs
 git lfs install
 git lfs pull
-</code></pre>
+</code></pre></div>
 <h2 id="git-submodules">Git Submodules</h2>
 <p>The simulation depends on the compatible version of <a href="https://github.com/cogip/mcu-firmware">cogip/mcu-firmware</a> which also depends on a specific version of <a href="https://github.com/RIOT-OS/RIOT">RIOT-OS/RIOT</a>. So to avoid struggle in finding the correct versions of the dependencies, we use git submodules to fix the versions of <code>mcu-firmware</code> and <code>RIOT</code>. 
 Do not forget to fetch the submodules after <code>git clone</code>:</p>
-<pre><code class="bash">git submodule update --init
-</code></pre>
+<div class="codehilite"><pre><span></span><code>git submodule update --init
+</code></pre></div>
 <h2 id="build-mcu-firmware">Build mcu-firmware</h2>
 <p>See <code>submodules/mcu-firmware/README.md</code> to setup the build environment.</p>
 <p>Use the following command to build the native version of the firmware:</p>
-<pre><code class="bash">make -C submodules/mcu-firmware/applications/cogip2019-cortex BOARD=cogip2019-cortex-native MCUFIRMWARE_OPTIONS=calibration
-</code></pre>
+<div class="codehilite"><pre><span></span><code>make -C submodules/mcu-firmware/applications/cogip2019-cortex <span class="nv">BOARD</span><span class="o">=</span>cogip2019-cortex-native <span class="nv">MCUFIRMWARE_OPTIONS</span><span class="o">=</span>calibration
+</code></pre></div>
 <p>The variable <code>QUIET=0</code> can be added to display compilation commands.</p>
 <h2 id="debian-packages">Debian packages</h2>
-<pre><code class="bash">sudo apt install socat
-</code></pre>
+<div class="codehilite"><pre><span></span><code>sudo apt install socat
+</code></pre></div>
 <h2 id="installation_1">Installation</h2>
 <div class="admonition note">
 <p class="admonition-title">Python 3.8 or more is required.</p>
 </div>
 <p>To setup a new environment, create a virtual env and install the package in dev mode:</p>
-<pre><code class="bash">python3.8 -m venv venv
-source venv/bin/activate
+<div class="codehilite"><pre><span></span><code>python3.8 -m venv venv
+<span class="nb">source</span> venv/bin/activate
 pip install -e .
-</code></pre>
+</code></pre></div>
 <h2 id="assets">Assets</h2>
 <p>The asset files for table and robot are loaded by default in <code>assets</code>.
 It can be adjusted using command line options (<code>bin/simulator.py --help</code> for more information).

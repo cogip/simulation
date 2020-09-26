@@ -220,6 +220,21 @@
 </nav>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.MenuEntry">
+    MenuEntry
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.Pose">
+    Pose
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.ShellMenu">
+    ShellMenu
+  </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.models.Vertex">
     Vertex
   </a>
@@ -318,6 +333,21 @@
 </nav>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.MenuEntry">
+    MenuEntry
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.Pose">
+    Pose
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.ShellMenu">
+    ShellMenu
+  </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.models.Vertex">
     Vertex
   </a>
@@ -356,7 +386,49 @@ an exception being raised if impossible.</p>
 <code>CtrlModeEnum</code>
 </h1>
 <div class="doc doc-contents">
-<p>An enumeration.</p>
+<p>Enum containing all internal modes of the robot</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>STOP</code></td>
+<td><code></code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>IDLE</code></td>
+<td><code></code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>BLOCKED</code></td>
+<td><code></code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>RUNNING</code></td>
+<td><code></code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>RUNNING_SPEED</code></td>
+<td><code></code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>PASSTHROUGH</code></td>
+<td><code></code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <div class="doc doc-children">
 </div>
 </div>
@@ -369,6 +441,26 @@ an exception being raised if impossible.</p>
 </span>
 </h1>
 <div class="doc doc-contents">
+<p>A dynamic obstacle created by the robot.</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>__root__</code></td>
+<td><code>List[cogip.models.Vertex]</code></td>
+<td>
+<p>List of the points composing the obstable</p>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="doc doc-children">
 <div class="doc doc-object doc-method">
 <h2 class="doc doc-heading" id="cogip.models.DynObstacle.__hash__">
@@ -379,11 +471,14 @@ __hash__<span class="p">(</span><span class="bp">self</span><span class="p">)</s
 </span>
 </h2>
 <div class="doc doc-contents">
-<p>Return hash(self).</p>
+<p>Hash function to allow this class to be used as a key in a dict.</p>
 <details class="quote">
 <summary>Source code in <code>cogip/models.py</code></summary>
 <div class="highlight">
 <pre><span></span><code><span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Hash function to allow this class to be used as a key in a dict.</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__root__</span><span class="p">))</span>
 </code></pre>
 </div>
@@ -401,6 +496,26 @@ __hash__<span class="p">(</span><span class="bp">self</span><span class="p">)</s
 </span>
 </h1>
 <div class="doc doc-contents">
+<p>List of dynamic obstacles.</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>__root__</code></td>
+<td><code>List[cogip.models.DynObstacle]</code></td>
+<td>
+<p>List of dynamic obstacles</p>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="doc doc-children">
 <div class="doc doc-object doc-method">
 <h2 class="doc doc-heading" id="cogip.models.DynObstacleList.__hash__">
@@ -411,17 +526,164 @@ __hash__<span class="p">(</span><span class="bp">self</span><span class="p">)</s
 </span>
 </h2>
 <div class="doc doc-contents">
-<p>Return hash(self).</p>
+<p>Hash function to allow this class to be used as a key in a dict.</p>
 <details class="quote">
 <summary>Source code in <code>cogip/models.py</code></summary>
 <div class="highlight">
 <pre><span></span><code><span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Hash function to allow this class to be used as a key in a dict.</span>
+<span class="sd">    """</span>
     <span class="k">return</span> <span class="nb">hash</span><span class="p">((</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">),)</span> <span class="o">+</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__root__</span><span class="p">))</span>
 </code></pre>
 </div>
 </details>
 </div>
 </div>
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.models.MenuEntry">
+<code>MenuEntry</code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-pydantic-model"><code>pydantic-model</code></small>
+</span>
+</h1>
+<div class="doc doc-contents">
+<p>Represents one entry in a firmware's shell menu</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>cmd</code></td>
+<td><code>str</code></td>
+<td>
+<p>Command name</p>
+</td>
+</tr>
+<tr>
+<td><code>desc</code></td>
+<td><code>str</code></td>
+<td>
+<p>Description of the command</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples:</strong></p>
+<p>The following line shows how to initialize this class from a JSON
+string received on the serial port:</p>
+<div class="codehilite">
+<pre><span></span><code><span class="n">MenuEntry</span><span class="o">.</span><span class="n">parse_raw</span><span class="p">(</span><span class="s2">"{</span><span class="se">\"</span><span class="s2">cmd</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">_pose</span><span class="se">\"</span><span class="s2">, </span><span class="se">\"</span><span class="s2">desc</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">Print current pose</span><span class="se">\"</span><span class="s2">}"</span><span class="p">)</span>
+</code></pre>
+</div>
+<div class="doc doc-children">
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.models.Pose">
+<code>Pose</code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-pydantic-model"><code>pydantic-model</code></small>
+</span>
+</h1>
+<div class="doc doc-contents">
+<p>A position of the robot.</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td><code>float</code></td>
+<td>
+<p>X position</p>
+</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td><code>float</code></td>
+<td>
+<p>Y postion</p>
+</td>
+</tr>
+<tr>
+<td><code>O</code></td>
+<td><code>float</code></td>
+<td>
+<p>angle</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="doc doc-children">
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.models.ShellMenu">
+<code>ShellMenu</code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-pydantic-model"><code>pydantic-model</code></small>
+</span>
+</h1>
+<div class="doc doc-contents">
+<p>Represents a firmware's shell menu.</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td><code>str</code></td>
+<td>
+<p>Name of the menu</p>
+</td>
+</tr>
+<tr>
+<td><code>entries</code></td>
+<td><code>List[cogip.models.MenuEntry]</code></td>
+<td>
+<p>List of the menu entries</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Examples:</strong></p>
+<p>The following line shows how to initialize this class from a JSON
+string received on the serial port:</p>
+<div class="codehilite">
+<pre><span></span><code><span class="n">ShellMenu</span><span class="o">.</span><span class="n">parse_raw</span><span class="p">(</span>
+    <span class="s2">"{</span><span class="se">\"</span><span class="s2">name</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">planner</span><span class="se">\"</span><span class="s2">,"</span>
+    <span class="s2">" </span><span class="se">\"</span><span class="s2">entries</span><span class="se">\"</span><span class="s2">: ["</span>
+    <span class="s2">"    {</span><span class="se">\"</span><span class="s2">cmd</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">_help_json</span><span class="se">\"</span><span class="s2">, </span><span class="se">\"</span><span class="s2">desc</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">Display available commands in JSON format</span><span class="se">\"</span><span class="s2">},"</span>
+    <span class="s2">"    {</span><span class="se">\"</span><span class="s2">cmd</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">_pose</span><span class="se">\"</span><span class="s2">, </span><span class="se">\"</span><span class="s2">desc</span><span class="se">\"</span><span class="s2">: </span><span class="se">\"</span><span class="s2">Print current pose</span><span class="se">\"</span><span class="s2">}</span>
+    <span class="s2">"]}"</span>
+<span class="p">)</span>
+</code></pre>
+</div>
+<div class="doc doc-children">
 </div>
 </div>
 </div>
@@ -433,6 +695,33 @@ __hash__<span class="p">(</span><span class="bp">self</span><span class="p">)</s
 </span>
 </h1>
 <div class="doc doc-contents">
+<p>Represents a point in 2D</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td><code>float</code></td>
+<td>
+<p>X position</p>
+</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td><code>float</code></td>
+<td>
+<p>Y postion</p>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="doc doc-children">
 <div class="doc doc-object doc-method">
 <h2 class="doc doc-heading" id="cogip.models.Vertex.__hash__">
