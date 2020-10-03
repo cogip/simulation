@@ -152,6 +152,11 @@
     </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="../dynobstacleentity/" title="dynobstacleentity.py">
+      dynobstacleentity.py
+    </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="../gameview/" title="gameview.py">
       gameview.py
     </a>
@@ -218,6 +223,21 @@
   </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.get_dyn_obstacles">
+    get_dyn_obstacles()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.get_pose">
+    get_pose()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.new_command">
+    new_command()
+  </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.serialcontroller.SerialController.process_output">
     process_output()
   </a>
@@ -225,6 +245,16 @@
 <li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.serialcontroller.SerialController.quit">
     quit()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.reload_menu">
+    reload_menu()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.set_shm_key">
+    set_shm_key()
   </a>
 </li>
 </ul>
@@ -273,6 +303,21 @@
   </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.get_dyn_obstacles">
+    get_dyn_obstacles()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.get_pose">
+    get_pose()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.new_command">
+    new_command()
+  </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.serialcontroller.SerialController.process_output">
     process_output()
   </a>
@@ -280,6 +325,16 @@
 <li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.serialcontroller.SerialController.quit">
     quit()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.reload_menu">
+    reload_menu()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.set_shm_key">
+    set_shm_key()
   </a>
 </li>
 </ul>
@@ -305,25 +360,76 @@
 <code>SerialController</code>
 </h1>
 <div class="doc doc-contents">
-<p>SerialController class</p>
 <p>This class controls the serial port used to communicate with the robot.
 Its main purpose is to get the shell menu to update the interface,
 get the robot position to update its position, and send the commands
 on the serial port.</p>
 <p>It runs in its own thread.</p>
-<p>Extracted information is sent via Qt signals to
-:class:<code>~cogip.mainwindow.MainWindow</code> and :class:<code>~cogip.robot.Robot</code></p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>signal_new_console_text</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal emitted to log messages in UI console</p>
+</td>
+</tr>
+<tr>
+<td><code>signal_new_menu</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal emitted to load a new menu</p>
+</td>
+</tr>
+<tr>
+<td><code>signal_new_robot_position</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal emitted to update robot position</p>
+</td>
+</tr>
+<tr>
+<td><code>signal_new_robot_position_to_reach</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal emitted to update robot position to reach</p>
+</td>
+</tr>
+<tr>
+<td><code>signal_new_dyn_obstacles</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal emitted to update dynamic obstacles</p>
+</td>
+</tr>
+<tr>
+<td><code>max_parse_attemps</code></td>
+<td><code>int</code></td>
+<td>
+<p>Maximum number of attemps to receive the expected data</p>
+</td>
+</tr>
+</tbody>
+</table>
 <div class="doc doc-children">
 <div class="doc doc-object doc-method">
 <h2 class="doc doc-heading" id="cogip.serialcontroller.SerialController.__init__">
 <code class="highlight language-python">
-__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uart_device</span><span class="p">,</span> <span class="n">position_queue</span><span class="p">)</span> </code>
+__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uart_device</span><span class="p">)</span> </code>
 <span class="doc doc-properties">
 <small class="doc doc-property doc-property-special"><code>special</code></small>
 </span>
 </h2>
 <div class="doc doc-contents">
-<p>:class:<code>SerialController</code> constructor.</p>
+<p>Class constructor.</p>
 <p><strong>Parameters:</strong></p>
 <table>
 <thead>
@@ -343,35 +449,20 @@ __init__<span class="p">(</span><span class="bp">self</span><span class="p">,</s
 </td>
 <td><em>required</em></td>
 </tr>
-<tr>
-<td><code>position_queue</code></td>
-<td><code>Queue</code></td>
-<td>
-<p>Queue containing robot position,
-filled by :class:<code>~cogip.serialcontroller.SerialController</code></p>
-</td>
-<td><em>required</em></td>
-</tr>
 </tbody>
 </table>
 <details class="quote">
 <summary>Source code in <code>cogip/serialcontroller.py</code></summary>
 <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uart_device</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">position_queue</span><span class="p">:</span> <span class="n">Queue</span><span class="p">):</span>
-    <span class="sd">""":class:`SerialController` constructor.</span>
+<pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">uart_device</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Class constructor.</span>
 
-<span class="sd">    Args:</span>
-<span class="sd">        uart_device (str): Serial port to open and control in this class.</span>
-<span class="sd">        position_queue (Queue):</span>
-<span class="sd">            Queue containing robot position,</span>
-<span class="sd">            filled by :class:`~cogip.serialcontroller.SerialController`</span>
+<span class="sd">    Arguments:</span>
+<span class="sd">        uart_device: Serial port to open and control in this class.</span>
 <span class="sd">    """</span>
 
-    <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">position_queue</span> <span class="o">=</span> <span class="n">position_queue</span>
-
-    <span class="c1"># Record last position to send a position only once</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">last_position</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">SerialController</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
     <span class="c1"># Set to true by the main thread to exit this thread after processing the current line</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">exiting</span> <span class="o">=</span> <span class="kc">False</span>
@@ -389,19 +480,148 @@ filled by :class:<code>~cogip.serialcontroller.SerialController</code></p>
 </div>
 </div>
 <div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.serialcontroller.SerialController.get_dyn_obstacles">
+<code class="highlight language-python">
+get_dyn_obstacles<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Get dynamic obstacles from the robot and send it to the robot entity.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/serialcontroller.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">get_dyn_obstacles</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Get dynamic obstacles from the robot and send it to the robot entity.</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">"_dyn_obstacles</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="n">obstacles_found</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">attempt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exiting</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">obstacles_found</span>
+            <span class="ow">and</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">SerialController</span><span class="o">.</span><span class="n">max_parse_attemps</span><span class="p">):</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"&gt;"</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dyn_obstacles</span> <span class="o">=</span> <span class="n">DynObstacleList</span><span class="o">.</span><span class="n">parse_raw</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_dyn_obstacles</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">dyn_obstacles</span><span class="p">)</span>
+            <span class="n">obstacles_found</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1"># print(dyn_obstacles)</span>
+        <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>
+            <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_console_text</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.serialcontroller.SerialController.get_pose">
+<code class="highlight language-python">
+get_pose<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Get position information from the robot and send it to the main window
+and to the robot entity.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/serialcontroller.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">get_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Get position information from the robot and send it to the main window</span>
+<span class="sd">    and to the robot entity.</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">"_pose</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+
+    <span class="n">pose_found</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">attempt</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exiting</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pose_found</span>
+            <span class="ow">and</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">SerialController</span><span class="o">.</span><span class="n">max_parse_attemps</span><span class="p">):</span>
+        <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"&gt;"</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">positions</span> <span class="o">=</span> <span class="n">Positions</span><span class="o">.</span><span class="n">parse_raw</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_robot_position</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">positions</span><span class="o">.</span><span class="n">pose_current</span><span class="p">,</span> <span class="n">positions</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_robot_position_to_reach</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">positions</span><span class="o">.</span><span class="n">pose_order</span><span class="p">,</span> <span class="n">positions</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
+            <span class="n">pose_found</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>
+            <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_console_text</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.serialcontroller.SerialController.new_command">
+<code class="highlight language-python">
+new_command<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Send a command to the robot.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>command</code></td>
+<td><code>str</code></td>
+<td>
+<p>Command to send</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/serialcontroller.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="nb">str</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">new_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Send a command to the robot.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        command: Command to send</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_console_text</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="sa">f</span><span class="s2">"==&gt; write '</span><span class="si">{</span><span class="n">command</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"new_cmd: try to acquire lock"</span><span class="p">)</span>
+    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_lock</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"new_cmd: lock acquired"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span><span class="o">+</span><span class="sa">b</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"new_cmd: lock released"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">reload_menu</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
 <h2 class="doc doc-heading" id="cogip.serialcontroller.SerialController.process_output">
 <code class="highlight language-python">
 process_output<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
 </h2>
 <div class="doc doc-contents">
-<p>Main loop executed in a thread.
-Process the output of the serial port, parse the data and send corresponding information</p>
+<p>Main loop executed in a thread.</p>
+<p>Process the output of the serial port,
+parse the data and send corresponding information</p>
 <details class="quote">
 <summary>Source code in <code>cogip/serialcontroller.py</code></summary>
 <div class="highlight">
 <pre><span></span><code><span class="k">def</span> <span class="nf">process_output</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="sd">"""Main loop executed in a thread.</span>
-<span class="sd">    Process the output of the serial port, parse the data and send corresponding information</span>
+    <span class="sd">"""</span>
+<span class="sd">    Main loop executed in a thread.</span>
+
+<span class="sd">    Process the output of the serial port,</span>
+<span class="sd">    parse the data and send corresponding information</span>
 <span class="sd">    """</span>
     <span class="c1"># try:</span>
     <span class="c1">#     ptvsd.debug_this_thread()</span>
@@ -459,9 +679,72 @@ quit<span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 <summary>Source code in <code>cogip/serialcontroller.py</code></summary>
 <div class="highlight">
 <pre><span></span><code><span class="k">def</span> <span class="nf">quit</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-    <span class="sd">"""Request to exit the thread as soon as possible.</span>
+    <span class="sd">"""</span>
+<span class="sd">    Request to exit the thread as soon as possible.</span>
 <span class="sd">    """</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">exiting</span> <span class="o">=</span> <span class="kc">True</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.serialcontroller.SerialController.reload_menu">
+<code class="highlight language-python">
+reload_menu<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Get the current menu from the robot and send it to the main window.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/serialcontroller.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">reload_menu</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Get the current menu from the robot and send it to the main window.</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">menu_has_pose</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"reload_menu: try to acquire lock"</span><span class="p">)</span>
+    <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_lock</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"reload_menu: lock acquired"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">"_help_json</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"&gt;"</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">menu</span> <span class="o">=</span> <span class="n">ShellMenu</span><span class="o">.</span><span class="n">parse_raw</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_menu</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">menu</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">menu</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">cmd</span> <span class="o">==</span> <span class="s2">"_pose"</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">menu_has_pose</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="k">break</span>
+                <span class="k">break</span>
+            <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_console_text</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"reload_menu: lock released"</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.serialcontroller.SerialController.set_shm_key">
+<code class="highlight language-python">
+set_shm_key<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Initialize the shared memory segment and send its key to the robot.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/serialcontroller.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">set_shm_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Initialize the shared memory segment and send its key to the robot.</span>
+<span class="sd">    """</span>
+    <span class="n">Sensor</span><span class="o">.</span><span class="n">init_shm</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">"_set_shm_key </span><span class="si">{</span><span class="n">Sensor</span><span class="o">.</span><span class="n">shm_key</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
 </code></pre>
 </div>
 </details>

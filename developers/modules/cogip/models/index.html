@@ -152,6 +152,11 @@
     </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="../dynobstacleentity/" title="dynobstacleentity.py">
+      dynobstacleentity.py
+    </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="../gameview/" title="gameview.py">
       gameview.py
     </a>
@@ -225,8 +230,37 @@
   </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.Obstacle">
+    Obstacle
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.ObstacleList">
+    ObstacleList
+  </a>
+<nav aria-label="ObstacleList" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.ObstacleList.__iter__">
+    __iter__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.ObstacleList.append">
+    append()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.models.Pose">
     Pose
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.Positions">
+    Positions
   </a>
 </li>
 <li class="md-nav__item">
@@ -338,8 +372,37 @@
   </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.Obstacle">
+    Obstacle
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.ObstacleList">
+    ObstacleList
+  </a>
+<nav aria-label="ObstacleList" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.ObstacleList.__iter__">
+    __iter__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.ObstacleList.append">
+    append()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.models.Pose">
     Pose
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.models.Positions">
+    Positions
   </a>
 </li>
 <li class="md-nav__item">
@@ -376,7 +439,7 @@
 </h1>
 <div class="doc doc-contents first">
 <p>This module contains all data models used in the simulator.</p>
-<p>The models are base on <a href="https://pydantic-docs.helpmanual.io/">Pydantic</a> models,
+<p>The models are based on <a href="https://pydantic-docs.helpmanual.io/">Pydantic</a> models,
 allowing them to be loaded from/exported to JSON strings/files.
 All values are automatically verified and converted to the expected data type,
 an exception being raised if impossible.</p>
@@ -456,7 +519,7 @@ an exception being raised if impossible.</p>
 <td><code>__root__</code></td>
 <td><code>List[cogip.models.Vertex]</code></td>
 <td>
-<p>List of the points composing the obstable</p>
+<p>List of the points composing the dynamic obstable</p>
 </td>
 </tr>
 </tbody>
@@ -590,6 +653,148 @@ string received on the serial port:</p>
 </div>
 </div>
 <div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.models.Obstacle">
+<code>Obstacle</code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-pydantic-model"><code>pydantic-model</code></small>
+</span>
+</h1>
+<div class="doc doc-contents">
+<p>Contains the properties of an obstacle added on the table.</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>x</code></td>
+<td><code>int</code></td>
+<td>
+<p>X position</p>
+</td>
+</tr>
+<tr>
+<td><code>y</code></td>
+<td><code>int</code></td>
+<td>
+<p>Y position</p>
+</td>
+</tr>
+<tr>
+<td><code>rotation</code></td>
+<td><code>int</code></td>
+<td>
+<p>Rotation</p>
+</td>
+</tr>
+<tr>
+<td><code>length</code></td>
+<td><code>int</code></td>
+<td>
+<p>Length</p>
+</td>
+</tr>
+<tr>
+<td><code>width</code></td>
+<td><code>int</code></td>
+<td>
+<p>Width</p>
+</td>
+</tr>
+<tr>
+<td><code>height</code></td>
+<td><code>int</code></td>
+<td>
+<p>Height</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="doc doc-children">
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.models.ObstacleList">
+<code>ObstacleList</code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-pydantic-model"><code>pydantic-model</code></small>
+</span>
+</h1>
+<div class="doc doc-contents">
+<p>List of obstacles.</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>__root__</code></td>
+<td><code>List[cogip.models.Obstacle]</code></td>
+<td>
+<p>List of obstacles</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="doc doc-children">
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.models.ObstacleList.__iter__">
+<code class="highlight language-python">
+__iter__<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-special"><code>special</code></small>
+</span>
+</h2>
+<div class="doc doc-contents">
+<p>Function a make the class iterable</p>
+<details class="quote">
+<summary>Source code in <code>cogip/models.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Function a make the class iterable</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__root__</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.models.ObstacleList.append">
+<code class="highlight language-python">
+append<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Add a obstacle to the list</p>
+<details class="quote">
+<summary>Source code in <code>cogip/models.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">append</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Add a obstacle to the list</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__root__</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-class">
 <h1 class="doc doc-heading" id="cogip.models.Pose">
 <code>Pose</code>
 <span class="doc doc-properties">
@@ -626,7 +831,54 @@ string received on the serial port:</p>
 <td><code>O</code></td>
 <td><code>float</code></td>
 <td>
-<p>angle</p>
+<p>Rotation</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="doc doc-children">
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.models.Positions">
+<code>Positions</code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-pydantic-model"><code>pydantic-model</code></small>
+</span>
+</h1>
+<div class="doc doc-contents">
+<p>This contains information about robot's position and mode.
+It is given by the firmware through the serial port.</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mode</code></td>
+<td><code>CtrlModeEnum</code></td>
+<td>
+<p>Current robot mode</p>
+</td>
+</tr>
+<tr>
+<td><code>pose_current</code></td>
+<td><code>Pose</code></td>
+<td>
+<p>Current robot position</p>
+</td>
+</tr>
+<tr>
+<td><code>pose_order</code></td>
+<td><code>Pose</code></td>
+<td>
+<p>Position to reach</p>
 </td>
 </tr>
 </tbody>
@@ -695,7 +947,7 @@ string received on the serial port:</p>
 </span>
 </h1>
 <div class="doc doc-contents">
-<p>Represents a point in 2D</p>
+<p>Represents a point in 2D coordinates.</p>
 <p><strong>Attributes:</strong></p>
 <table>
 <thead>

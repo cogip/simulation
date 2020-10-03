@@ -152,6 +152,11 @@
     </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="../dynobstacleentity/" title="dynobstacleentity.py">
+      dynobstacleentity.py
+    </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="../gameview/" title="gameview.py">
       gameview.py
     </a>
@@ -203,8 +208,28 @@
 <nav aria-label="RobotEntity" class="md-nav">
 <ul class="md-nav__list">
 <li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.robotentity.RobotEntity.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.robotentity.RobotEntity.add_lidar_sensors">
+    add_lidar_sensors()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.robotentity.RobotEntity.add_tof_sensors">
+    add_tof_sensors()
+  </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.robotentity.RobotEntity.post_init">
     post_init()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.robotentity.RobotEntity.set_dyn_obstacles">
+    set_dyn_obstacles()
   </a>
 </li>
 </ul>
@@ -258,8 +283,28 @@
 <nav aria-label="RobotEntity" class="md-nav">
 <ul class="md-nav__list">
 <li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.robotentity.RobotEntity.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.robotentity.RobotEntity.add_lidar_sensors">
+    add_lidar_sensors()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.robotentity.RobotEntity.add_tof_sensors">
+    add_tof_sensors()
+  </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.robotentity.RobotEntity.post_init">
     post_init()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.robotentity.RobotEntity.set_dyn_obstacles">
+    set_dyn_obstacles()
   </a>
 </li>
 </ul>
@@ -285,19 +330,230 @@
 <code>RobotEntity</code>
 </h1>
 <div class="doc doc-contents">
+<p>The robot entity displayed on the table.</p>
+<p>Used to display the robot and the position to reach.</p>
 <div class="doc doc-children">
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.robotentity.RobotEntity.__init__">
+<code class="highlight language-python">
+__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">asset_path</span><span class="p">,</span> <span class="n">asset_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">enable_tof_sensors</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">enable_lidar_sensors</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> </code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-special"><code>special</code></small>
+</span>
+</h2>
+<div class="doc doc-contents">
+<p>Class constructor.</p>
+<p>Inherits <a href="../assetentity/#cogip.assetentity.AssetEntity">AssetEntity</a>.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>asset_path</code></td>
+<td><code>Union[pathlib.Path, str]</code></td>
+<td>
+<p>Path of the asset file</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>asset_name</code></td>
+<td><code>str</code></td>
+<td>
+<p>Name of the entity to identity the usefull entity
+after load the asset file</p>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>enable_tof_sensors</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Enable the ToF sensors</p>
+</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>enable_lidar_sensors</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Enable the LIDAR sensors</p>
+</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td><code>color</code></td>
+<td><code>QColor</code></td>
+<td>
+<p>The color of the robot</p>
+</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/robotentity.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">asset_path</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">Path</span><span class="p">,</span> <span class="nb">str</span><span class="p">],</span>
+        <span class="n">asset_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">enable_tof_sensors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">enable_lidar_sensors</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">color</span><span class="p">:</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Class constructor.</span>
+
+<span class="sd">    Inherits [AssetEntity][cogip.assetentity.AssetEntity].</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        asset_path: Path of the asset file</span>
+<span class="sd">        asset_name: Name of the entity to identity the usefull entity</span>
+<span class="sd">            after load the asset file</span>
+<span class="sd">        enable_tof_sensors: Enable the ToF sensors</span>
+<span class="sd">        enable_lidar_sensors: Enable the LIDAR sensors</span>
+<span class="sd">        color: The color of the robot</span>
+<span class="sd">    """</span>
+    <span class="nb">super</span><span class="p">(</span><span class="n">RobotEntity</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">asset_path</span><span class="p">,</span> <span class="n">asset_name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">enable_tof_sensors</span> <span class="o">=</span> <span class="n">enable_tof_sensors</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">enable_lidar_sensors</span> <span class="o">=</span> <span class="n">enable_lidar_sensors</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">color</span> <span class="o">=</span> <span class="n">color</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tof_sensors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">lidar_sensors</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">dyn_obstacles_pool</span> <span class="o">=</span> <span class="p">[]</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.robotentity.RobotEntity.add_lidar_sensors">
+<code class="highlight language-python">
+add_lidar_sensors<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Add LIDAR sensors to the robot entity,
+one by degree around the top of the robot.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/robotentity.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">add_lidar_sensors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Add LIDAR sensors to the robot entity,</span>
+<span class="sd">    one by degree around the top of the robot.</span>
+<span class="sd">    """</span>
+
+    <span class="n">radius</span> <span class="o">=</span> <span class="mf">65.0</span><span class="o">/</span><span class="mi">2</span>
+
+    <span class="n">sensors_properties</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">angle</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">360</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">origin_x</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
+        <span class="n">origin_y</span> <span class="o">=</span> <span class="n">radius</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">angle</span><span class="p">))</span>
+        <span class="n">sensors_properties</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="p">{</span>
+                <span class="s2">"name"</span><span class="p">:</span> <span class="sa">f</span><span class="s2">"Lidar </span><span class="si">{</span><span class="n">angle</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="s2">"origin_x"</span><span class="p">:</span> <span class="n">origin_x</span><span class="p">,</span>
+                <span class="s2">"origin_y"</span><span class="p">:</span> <span class="n">origin_y</span><span class="p">,</span>
+                <span class="s2">"direction_x"</span><span class="p">:</span> <span class="n">origin_x</span><span class="p">,</span>
+                <span class="s2">"direction_y"</span><span class="p">:</span> <span class="n">origin_y</span><span class="p">,</span>
+            <span class="p">}</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Add sensors</span>
+    <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">sensors_properties</span><span class="p">:</span>
+        <span class="n">sensor</span> <span class="o">=</span> <span class="n">LidarSensor</span><span class="p">(</span><span class="n">asset_entity</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">prop</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lidar_sensors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sensor</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.robotentity.RobotEntity.add_tof_sensors">
+<code class="highlight language-python">
+add_tof_sensors<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Add ToF sensors to the robot entity.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/robotentity.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">add_tof_sensors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Add ToF sensors to the robot entity.</span>
+<span class="sd">    """</span>
+    <span class="n">sensors_properties</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Back left sensor"</span><span class="p">,</span>
+            <span class="s2">"origin_x"</span><span class="p">:</span> <span class="mi">135</span><span class="p">,</span>
+            <span class="s2">"origin_y"</span><span class="p">:</span> <span class="mi">135</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Back sensor"</span><span class="p">,</span>
+            <span class="s2">"origin_x"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">"origin_y"</span><span class="p">:</span> <span class="mi">177</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Back right sensor"</span><span class="p">,</span>
+            <span class="s2">"origin_x"</span><span class="p">:</span> <span class="o">-</span><span class="mi">135</span><span class="p">,</span>
+            <span class="s2">"origin_y"</span><span class="p">:</span> <span class="mi">135</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Front right sensor"</span><span class="p">,</span>
+            <span class="s2">"origin_x"</span><span class="p">:</span> <span class="o">-</span><span class="mi">135</span><span class="p">,</span>
+            <span class="s2">"origin_y"</span><span class="p">:</span> <span class="o">-</span><span class="mi">135</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Front sensor"</span><span class="p">,</span>
+            <span class="s2">"origin_x"</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s2">"origin_y"</span><span class="p">:</span> <span class="o">-</span><span class="mi">177</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+            <span class="s2">"name"</span><span class="p">:</span> <span class="s2">"Front left sensor"</span><span class="p">,</span>
+            <span class="s2">"origin_x"</span><span class="p">:</span> <span class="mi">135</span><span class="p">,</span>
+            <span class="s2">"origin_y"</span><span class="p">:</span> <span class="o">-</span><span class="mi">135</span>
+        <span class="p">},</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Add sensors</span>
+    <span class="k">for</span> <span class="n">prop</span> <span class="ow">in</span> <span class="n">sensors_properties</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">prop</span><span class="p">:</span>
+            <span class="n">sensor</span> <span class="o">=</span> <span class="n">ToFSensor</span><span class="p">(</span><span class="n">asset_entity</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">prop</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tof_sensors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sensor</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ToFSensor</span><span class="o">.</span><span class="n">nb_tof_sensors</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">ToFSensor</span><span class="o">.</span><span class="n">shm_data</span><span class="p">:</span>
+                <span class="n">ToFSensor</span><span class="o">.</span><span class="n">shm_data</span><span class="p">[</span><span class="n">ToFSensor</span><span class="o">.</span><span class="n">nb_tof_sensors</span><span class="p">]</span> <span class="o">=</span> <span class="mi">65535</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
 <div class="doc doc-object doc-method">
 <h2 class="doc doc-heading" id="cogip.robotentity.RobotEntity.post_init">
 <code class="highlight language-python">
 post_init<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
 </h2>
 <div class="doc doc-contents">
-<p>Post initialization method that can be overloaded.
-It it executed after entity and transform components are ready.</p>
+<p>Function called once the asset has been loaded.</p>
+<p>Set the color and enable sensors.</p>
 <details class="quote">
 <summary>Source code in <code>cogip/robotentity.py</code></summary>
 <div class="highlight">
 <pre><span></span><code><span class="k">def</span> <span class="nf">post_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Function called once the asset has been loaded.</span>
+
+<span class="sd">    Set the color and enable sensors.</span>
+<span class="sd">    """</span>
     <span class="nb">super</span><span class="p">(</span><span class="n">RobotEntity</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">post_init</span><span class="p">()</span>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">color</span><span class="p">:</span>
@@ -314,6 +570,92 @@ It it executed after entity and transform components are ready.</p>
 
     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">enable_lidar_sensors</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">add_lidar_sensors</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.robotentity.RobotEntity.set_dyn_obstacles">
+<code class="highlight language-python">
+set_dyn_obstacles<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dyn_obstacles</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Display the dynamic obstacles detected by the robot.</p>
+<p>Reuse already created dynamic obstacles to optimize performance
+and memory consumption.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>dyn_obstacles</code></td>
+<td><code>DynObstacleList</code></td>
+<td>
+<p>List of obstacles sent by the firmware throught the serial port</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/robotentity.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">DynObstacleList</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">set_dyn_obstacles</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dyn_obstacles</span><span class="p">:</span> <span class="n">DynObstacleList</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Display the dynamic obstacles detected by the robot.</span>
+
+<span class="sd">    Reuse already created dynamic obstacles to optimize performance</span>
+<span class="sd">    and memory consumption.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        dyn_obstacles: List of obstacles sent by the firmware throught the serial port</span>
+<span class="sd">    """</span>
+    <span class="c1"># Store new and already existing dyn obstacles</span>
+    <span class="n">current_dyn_obstacles</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">dyn_obstacle</span> <span class="ow">in</span> <span class="n">dyn_obstacles</span><span class="o">.</span><span class="n">__root__</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dyn_obstacle</span><span class="o">.</span><span class="n">__root__</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">p0</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span> <span class="o">=</span> <span class="n">dyn_obstacle</span><span class="o">.</span><span class="n">__root__</span>
+        <span class="c1"># Compute obstacle size</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">dist</span><span class="p">((</span><span class="n">p0</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p0</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="p">(</span><span class="n">p1</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p1</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
+        <span class="n">width</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">dist</span><span class="p">((</span><span class="n">p1</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p1</span><span class="o">.</span><span class="n">y</span><span class="p">),</span> <span class="p">(</span><span class="n">p2</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p2</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
+        <span class="c1"># Compute the obstacle center position</span>
+        <span class="n">pos_x</span> <span class="o">=</span> <span class="n">p0</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="p">(</span><span class="n">p2</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">p0</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+        <span class="n">pos_y</span> <span class="o">=</span> <span class="n">p0</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="p">(</span><span class="n">p2</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">p0</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+        <span class="n">rotation</span> <span class="o">=</span> <span class="mi">90</span> <span class="o">+</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">acos</span><span class="p">((</span><span class="n">p0</span><span class="o">.</span><span class="n">x</span><span class="o">-</span><span class="n">p1</span><span class="o">.</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="n">length</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dyn_obstacles_pool</span><span class="p">):</span>
+            <span class="n">dyn_obstacle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dyn_obstacles_pool</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">dyn_obstacle</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">dyn_obstacle</span> <span class="o">=</span> <span class="n">DynObstacleEntity</span><span class="p">()</span>
+            <span class="n">dyn_obstacle</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parentEntity</span><span class="p">())</span>
+
+        <span class="n">dyn_obstacle</span><span class="o">.</span><span class="n">set_position</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">pos_x</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">pos_y</span><span class="p">,</span> <span class="n">rotation</span><span class="o">=</span><span class="n">rotation</span><span class="p">)</span>
+        <span class="n">dyn_obstacle</span><span class="o">.</span><span class="n">set_size</span><span class="p">(</span><span class="n">length</span><span class="o">=</span><span class="n">length</span><span class="p">,</span> <span class="n">width</span><span class="o">=</span><span class="n">width</span><span class="p">)</span>
+
+        <span class="n">current_dyn_obstacles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dyn_obstacle</span><span class="p">)</span>
+
+    <span class="c1"># Disable remaining dyn obstacles</span>
+    <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dyn_obstacles_pool</span><span class="p">):</span>
+        <span class="n">dyn_obstacle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dyn_obstacles_pool</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">dyn_obstacle</span><span class="o">.</span><span class="n">setEnabled</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">current_dyn_obstacles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dyn_obstacle</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">dyn_obstacles_pool</span> <span class="o">=</span> <span class="n">current_dyn_obstacles</span>
 </code></pre>
 </div>
 </details>
