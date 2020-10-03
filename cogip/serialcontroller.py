@@ -1,5 +1,4 @@
 import time
-from queue import Queue
 from serial import Serial
 from threading import Lock
 # import ptvsd # Used to debug with VS Code
@@ -15,8 +14,7 @@ from cogip.sensor import Sensor
 
 
 class SerialController(QtCore.QObject):
-    """SerialController class
-
+    """
     This class controls the serial port used to communicate with the robot.
     Its main purpose is to get the shell menu to update the interface,
     get the robot position to update its position, and send the commands
@@ -24,57 +22,36 @@ class SerialController(QtCore.QObject):
 
     It runs in its own thread.
 
-    Extracted information is sent via Qt signals to
-    :class:`~cogip.mainwindow.MainWindow` and :class:`~cogip.robot.Robot`
+    Attributes:
+        signal_new_console_text:
+            Qt signal emitted to log messages in UI console
+        signal_new_menu:
+            Qt signal emitted to load a new menu
+        signal_new_robot_position:
+            Qt signal emitted to update robot position
+        signal_new_robot_position_to_reach:
+            Qt signal emitted to update robot position to reach
+        signal_new_dyn_obstacles:
+            Qt signal emitted to update dynamic obstacles
+        max_parse_attemps:
+            Maximum number of attemps to receive the expected data
     """
+    signal_new_console_text: qtSignal = qtSignal(str)
+    signal_new_menu: qtSignal = qtSignal(ShellMenu)
+    signal_new_robot_position: qtSignal = qtSignal(Pose, CtrlModeEnum)
+    signal_new_robot_position_to_reach: qtSignal = qtSignal(Pose, CtrlModeEnum)
+    signal_new_dyn_obstacles: qtSignal = qtSignal(DynObstacleList)
+    max_parse_attemps: int = 20
 
-    #: :obj:`qtSignal(str)`:
-    #:      Qt signal emitted to log messages in UI console.
-    #:
-    #:      Connected to :class:`~cogip.mainwindow.MainWindow`.
-    signal_new_console_text = qtSignal(str)
+    def __init__(self, uart_device: str):
+        """
+        Class constructor.
 
-    #: :obj:`qtSignal(ShellMenu)`:
-    #:      Qt signal emitted to load a new menu.
-    #:
-    #:      Connected to :class:`~cogip.mainwindow.MainWindow`.
-    signal_new_menu = qtSignal(ShellMenu)
-
-    #: :obj:`qtSignal(Pose, CtrlModeEnum)`:
-    #:      Qt signal emitted to update Robot position.
-    #:
-    #:      Connected to :class:`~cogip.robotentity.RobotEntity`.
-    signal_new_robot_position = qtSignal(Pose, CtrlModeEnum)
-
-    #: :obj:`qtSignal(Pose)`:
-    #:      Qt signal emitted to update Robot final position.
-    #:
-    #:      Connected to :class:`~cogip.robotentity.RobotEntity`.
-    signal_new_robot_final_position = qtSignal(Pose, CtrlModeEnum)
-
-    #: :obj:`qtSignal(DynObstacleList)`:
-    #:      Qt signal emitted to update dynamic obstacles.
-    #:
-    #:      Connected to :class:`~cogip.robotentity.RobotEntity`.
-    signal_new_dyn_obstacles = qtSignal(DynObstacleList)
-
-    max_parse_attemps = 20
-
-    def __init__(self, uart_device: str, position_queue: Queue):
-        """:class:`SerialController` constructor.
-
-        Args:
-            uart_device (str): Serial port to open and control in this class.
-            position_queue (Queue):
-                Queue containing robot position,
-                filled by :class:`~cogip.serialcontroller.SerialController`
+        Arguments:
+            uart_device: Serial port to open and control in this class.
         """
 
-        QtCore.QObject.__init__(self)
-        self.position_queue = position_queue
-
-        # Record last position to send a position only once
-        self.last_position = (-1, -1, -1)
+        super(SerialController, self).__init__()
 
         # Set to true by the main thread to exit this thread after processing the current line
         self.exiting = False
@@ -88,12 +65,19 @@ class SerialController(QtCore.QObject):
         self.serial_lock = Lock()
 
     def quit(self):
-        """Request to exit the thread as soon as possible.
+        """
+        Request to exit the thread as soon as possible.
         """
         self.exiting = True
 
     @qtSlot(str)
-    def slot_new_command(self, command: str):
+    def new_command(self, command: str):
+        """
+        Send a command to the robot.
+
+        Arguments:
+            command: Command to send
+        """
         self.signal_new_console_text.emit(f"==> write '{command}'")
         logger.debug("new_cmd: try to acquire lock")
         with self.serial_lock:
@@ -102,33 +86,12 @@ class SerialController(QtCore.QObject):
         logger.debug("new_cmd: lock released")
         self.reload_menu()
 
-    def reload_menu(self):
-        self.menu_has_pose = False
-
-        logger.debug("reload_menu: try to acquire lock")
-        with self.serial_lock:
-            logger.debug("reload_menu: lock acquired")
-            self.serial_port.write(b"_help_json\n")
-
-            while True:
-                line = self.serial_port.readline().rstrip().decode(errors="ignore")
-                if line[0] == ">":
-                    continue
-                try:
-                    menu = ShellMenu.parse_raw(line)
-                    self.signal_new_menu.emit(menu)
-                    for entry in menu.entries:
-                        if entry.cmd == "_pose":
-                            self.menu_has_pose = True
-                            break
-                    break
-                except ValidationError:
-                    self.signal_new_console_text.emit(line)
-        logger.debug("reload_menu: lock released")
-
     def process_output(self):
-        """Main loop executed in a thread.
-        Process the output of the serial port, parse the data and send corresponding information
+        """
+        Main loop executed in a thread.
+
+        Process the output of the serial port,
+        parse the data and send corresponding information
         """
         # try:
         #     ptvsd.debug_this_thread()
@@ -172,10 +135,44 @@ class SerialController(QtCore.QObject):
         self.serial_port.close()
 
     def set_shm_key(self):
+        """
+        Initialize the shared memory segment and send its key to the robot.
+        """
         Sensor.init_shm()
         self.serial_port.write(f"_set_shm_key {Sensor.shm_key}\n".encode())
 
+    def reload_menu(self):
+        """
+        Get the current menu from the robot and send it to the main window.
+        """
+        self.menu_has_pose = False
+
+        logger.debug("reload_menu: try to acquire lock")
+        with self.serial_lock:
+            logger.debug("reload_menu: lock acquired")
+            self.serial_port.write(b"_help_json\n")
+
+            while True:
+                line = self.serial_port.readline().rstrip().decode(errors="ignore")
+                if line[0] == ">":
+                    continue
+                try:
+                    menu = ShellMenu.parse_raw(line)
+                    self.signal_new_menu.emit(menu)
+                    for entry in menu.entries:
+                        if entry.cmd == "_pose":
+                            self.menu_has_pose = True
+                            break
+                    break
+                except ValidationError:
+                    self.signal_new_console_text.emit(line)
+        logger.debug("reload_menu: lock released")
+
     def get_pose(self):
+        """
+        Get position information from the robot and send it to the main window
+        and to the robot entity.
+        """
         self.serial_port.write(b"_pose\n")
 
         pose_found = False
@@ -188,7 +185,7 @@ class SerialController(QtCore.QObject):
             try:
                 positions = Positions.parse_raw(line)
                 self.signal_new_robot_position.emit(positions.pose_current, positions.mode)
-                self.signal_new_robot_final_position.emit(positions.pose_order, positions.mode)
+                self.signal_new_robot_position_to_reach.emit(positions.pose_order, positions.mode)
                 pose_found = True
             except ValidationError:
                 attempt += 1
@@ -196,6 +193,9 @@ class SerialController(QtCore.QObject):
                 # print(f"parse failed: {line}")
 
     def get_dyn_obstacles(self):
+        """
+        Get dynamic obstacles from the robot and send it to the robot entity.
+        """
         self.serial_port.write(b"_dyn_obstacles\n")
 
         obstacles_found = False

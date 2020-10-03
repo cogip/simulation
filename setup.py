@@ -15,17 +15,17 @@ readme_filename = cwd / "README.md"
 long_description = readme_filename.open().read()
 
 required_packages = [
-    "autodoc==0.5.0",
     "flake8==3.8.3",
+    "mkdocs==1.1.2",
+    "mkdocs-material==5.5.12",
+    "mkdocstrings==0.13.2",
     "psutil==5.7.2",
+    "ptvsd==4.3.2",
     "pydantic==1.6.1",
+    "pymdown-extensions==8.0",
     "pyserial==3.4",
     "PySide2==5.15.0",
     "python-dotenv==0.14.0",
-    "ptvsd==4.3.2",
-    "sphinx==3.1.2",
-    "sphinx-argparse==0.2.5",
-    "sphinxcontrib-drawio==0.0.7",
     "sysv-ipc==1.0.1"
 ]
 

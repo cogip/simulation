@@ -4,15 +4,21 @@ from typing import Union
 
 from PySide2.QtCore import Slot as qtSlot
 from PySide2 import QtGui
-from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DExtras import Qt3DExtras
 
 from cogip.assetentity import AssetEntity
+from cogip.dynobstacleentity import DynObstacleEntity
 from cogip.models import DynObstacleList
 from cogip.sensor import ToFSensor, LidarSensor
 
 
 class RobotEntity(AssetEntity):
+    """
+    The robot entity displayed on the table.
+
+    Used to display the robot and the position to reach.
+    """
+
     def __init__(
             self,
             asset_path: Union[Path, str],
@@ -20,6 +26,19 @@ class RobotEntity(AssetEntity):
             enable_tof_sensors: bool = True,
             enable_lidar_sensors: bool = True,
             color: QtGui.QColor = None):
+        """
+        Class constructor.
+
+        Inherits [AssetEntity][cogip.assetentity.AssetEntity].
+
+        Arguments:
+            asset_path: Path of the asset file
+            asset_name: Name of the entity to identity the usefull entity
+                after load the asset file
+            enable_tof_sensors: Enable the ToF sensors
+            enable_lidar_sensors: Enable the LIDAR sensors
+            color: The color of the robot
+        """
         super(RobotEntity, self).__init__(asset_path, asset_name)
         self.enable_tof_sensors = enable_tof_sensors
         self.enable_lidar_sensors = enable_lidar_sensors
@@ -29,6 +48,11 @@ class RobotEntity(AssetEntity):
         self.dyn_obstacles_pool = []
 
     def post_init(self):
+        """
+        Function called once the asset has been loaded.
+
+        Set the color and enable sensors.
+        """
         super(RobotEntity, self).post_init()
 
         if self.color:
@@ -47,6 +71,9 @@ class RobotEntity(AssetEntity):
             self.add_lidar_sensors()
 
     def add_tof_sensors(self):
+        """
+        Add ToF sensors to the robot entity.
+        """
         sensors_properties = [
             {
                 "name": "Back left sensor",
@@ -91,6 +118,11 @@ class RobotEntity(AssetEntity):
                     ToFSensor.shm_data[ToFSensor.nb_tof_sensors] = 65535
 
     def add_lidar_sensors(self):
+        """
+        Add LIDAR sensors to the robot entity,
+        one by degree around the top of the robot.
+        """
+
         radius = 65.0/2
 
         sensors_properties = []
@@ -115,6 +147,17 @@ class RobotEntity(AssetEntity):
 
     @qtSlot(DynObstacleList)
     def set_dyn_obstacles(self, dyn_obstacles: DynObstacleList) -> None:
+        """
+        Qt Slot
+
+        Display the dynamic obstacles detected by the robot.
+
+        Reuse already created dynamic obstacles to optimize performance
+        and memory consumption.
+
+        Arguments:
+            dyn_obstacles: List of obstacles sent by the firmware throught the serial port
+        """
         # Store new and already existing dyn obstacles
         current_dyn_obstacles = []
 
@@ -149,33 +192,3 @@ class RobotEntity(AssetEntity):
             current_dyn_obstacles.append(dyn_obstacle)
 
         self.dyn_obstacles_pool = current_dyn_obstacles
-
-
-class DynObstacleEntity(Qt3DCore.QEntity):
-
-    def __init__(self):
-
-        super(DynObstacleEntity, self).__init__()
-
-        self.mesh = Qt3DExtras.QCuboidMesh()
-        self.mesh.setZExtent(600)
-        self.addComponent(self.mesh)
-
-        self.material = Qt3DExtras.QDiffuseSpecularMaterial(self)
-        self.material.setDiffuse(QtGui.QColor.fromRgb(255, 0, 0, 100))
-        self.material.setDiffuse(QtGui.QColor.fromRgb(255, 0, 0, 100))
-        self.material.setSpecular(QtGui.QColor.fromRgb(255, 0, 0, 100))
-        self.material.setShininess(1.0)
-        self.material.setAlphaBlendingEnabled(True)
-        self.addComponent(self.material)
-
-        self.transform = Qt3DCore.QTransform(self)
-        self.addComponent(self.transform)
-
-    def set_position(self, x: int, y: int, rotation: int) -> None:
-        self.transform.setTranslation(QtGui.QVector3D(x, y, self.mesh.zExtent()/2))
-        self.transform.setRotationZ(rotation)
-
-    def set_size(self, length: int, width: int) -> None:
-        self.mesh.setXExtent(width)
-        self.mesh.setYExtent(length)

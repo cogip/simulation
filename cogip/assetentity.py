@@ -1,5 +1,17 @@
+"""
+This module defines the base class [AssetEntity][cogip.assetentity.AssetEntity]
+used directly or inherited for specific assets.
+
+Asset entities are graphic element displayed on the 3D view and loaded from asset files.
+It is typically used for table and robot assets.
+
+Supported asset files are in [Collada](https://en.wikipedia.org/wiki/COLLADA) format (`.dae`).
+Other formats could be also supported, but not tested
+(see [Open Asset Import Library](https://github.com/assimp/assimp)).
+"""
+
 from pathlib import Path
-from typing import Union
+from typing import TextIO, Tuple, Union
 
 from PySide2 import QtCore, QtGui
 from PySide2.Qt3DCore import Qt3DCore
@@ -11,46 +23,39 @@ from cogip import logger
 from cogip.models import CtrlModeEnum, Pose
 
 
-# tree file can be displayed with:
-# dot -Tpdf <file>.tree.dot | okular -
-
-def traverse_tree(fd, entity, nextNodeNumber):
-    myNodeNumber = nextNodeNumber
-    nextNodeNumber += 1
-
-    # Insert current node in the tree
-    fd.write("n%03d [label=\"%s\n%s\"] ;\n" % (
-          myNodeNumber,
-          entity.metaObject().className(),
-          entity.objectName()))
-
-    # Enumerate components
-    for comp in entity.components():
-        fd.write("n%03d [shape=box,label=\"%s\n%s\"] ;\n" % (
-              nextNodeNumber,
-              comp.metaObject().className(),
-              comp.objectName()))
-        fd.write("n%03d -- n%03d [style=dotted];\n" % (
-              myNodeNumber, nextNodeNumber))
-        nextNodeNumber += 1
-
-    # Build tree for children
-    for childNode in entity.children():
-        if isinstance(childNode, Qt3DCore.QEntity):
-            childNodeNumber, nextNodeNumber = traverse_tree(fd, childNode, nextNodeNumber)
-            fd.write("n%03d -- n%03d ;\n" % (myNodeNumber, childNodeNumber))
-
-    return myNodeNumber, nextNodeNumber
-
-
 class AssetEntity(Qt3DCore.QEntity):
+    """Base class for asset entities
 
-    ready = qtSignal()
+    This class inherits from [`Qt3DCore.QEntity`](https://doc.qt.io/qtforpython/PySide2/Qt3DCore/QEntity.html)
+
+    Attributes:
+        ready: Qt signal emitted when the asset entity is ready to be used
+        asset_ready: `True` if the asset is ready
+        asset_entity: first useful `QEntity` in the asset tree
+        transform_component: `QTransform` holding the asset's translation and orientation
+    """
+
+    ready: qtSignal = qtSignal()
 
     def __init__(self, asset_path: Union[Path, str], asset_name: str = None):
+        """
+        The constructor checks the asset's file and starts loading the entity.
+
+        The entity load is asynchronous, a signal is emitted when it is done
+        (see [`on_loader_status_changed`][cogip.assetentity.AssetEntity.on_loader_status_changed])
+
+        Arguments:
+            asset_path: path of the asset file
+            asset_name: asset name
+        """
+
         super(AssetEntity, self).__init__()
 
-        self.asset_ready = False
+        self.asset_ready: bool = False
+        self.asset_path: Path = None
+        self.asset_name: str = asset_name
+        self.asset_entity: Qt3DCore.QEntity = None
+        self.transform_component: Qt3DCore.QTransform = None
 
         if isinstance(asset_path, Path):
             self.asset_path = asset_path
@@ -64,10 +69,6 @@ class AssetEntity(Qt3DCore.QEntity):
         if not self.asset_path.is_file():
             raise IsADirectoryError(f"'{self.asset_path}' is not a file")
 
-        self.asset_name = asset_name
-        self.asset_entity = None
-        self.transform_component = None
-
         self.loader = Qt3DRender.QSceneLoader(self)
         self.loader.statusChanged.connect(self.on_loader_status_changed)
         self.loader.setObjectName(self.asset_path.name)
@@ -76,6 +77,19 @@ class AssetEntity(Qt3DCore.QEntity):
 
     @qtSlot(Qt3DRender.QSceneLoader.Status)
     def on_loader_status_changed(self, status: Qt3DRender.QSceneLoader.Status):
+        """
+        When the loader has finished, clean the entity tree,
+        record the main `QEntity` and its `QTransform` component.
+
+        Then it generated the dot tree
+        (see [`generate_tree`][cogip.assetentity.AssetEntity.generate_tree]),
+        run the [`post_init`][cogip.assetentity.AssetEntity.post_init] pass,
+        and emit the `ready` signal.
+
+        Arguments:
+            status: current loader status
+        """
+
         if status != Qt3DRender.QSceneLoader.Ready:
             return
 
@@ -98,7 +112,7 @@ class AssetEntity(Qt3DCore.QEntity):
         self.scene_entity.setParent(None)
         self.removeComponent(self.loader)
 
-        self.generate_graph()
+        self.generate_tree()
 
         self.post_init()
 
@@ -108,22 +122,90 @@ class AssetEntity(Qt3DCore.QEntity):
 
     @qtSlot(Pose)
     def set_position(self, new_position: Pose, mode: CtrlModeEnum) -> None:
+        """
+        Qt slot called to set the entity's new position.
+
+        Arguments:
+            new_position: new position
+            mode: unused
+        """
+
         if not self.transform_component:
             return
         self.transform_component.setTranslation(
             QtGui.QVector3D(new_position.x, new_position.y, 0))
         self.transform_component.setRotationZ(new_position.O + 90)
 
-    def generate_graph(self):
-        # Write tree file (graphviz format)
+    def generate_tree(self):
+        """
+        Generate a tree of all entities and components starting from the main entity.
+
+        The generated file is stored next to the asset file and it has the same name
+        but with `.tree.dot` extension.
+
+        It is a text file written in [Graphviz](https://graphviz.org/) format.
+
+        To read this file:
+        ```bash
+            sudo apt install graphviz okular
+            dot -Tpdf assets/robot2019.tree.dot | okular -
+        ```
+        """
+
         tree_filename = self.asset_path.with_suffix(".tree.dot")
         with tree_filename.open(mode='w') as fd:
             fd.write('graph ""\n')
             fd.write('{\n')
             fd.write('label="Entity tree"\n')
             root_node_number = 0
-            traverse_tree(fd, self, root_node_number)
+            traverse_tree(self, root_node_number, fd)
             fd.write("}\n")
 
     def post_init(self):
+        """
+        Post initialization method that can be overloaded.
+        It it executed after entity and transform components are ready.
+        """
         pass
+
+
+def traverse_tree(node: Qt3DCore.QEntity, next_node_nb: int, fd: TextIO) -> Tuple[int, int]:
+    """
+    Recursive function traversing all child entities and write its node
+    and all its components to the .dot file.
+
+    Arguments:
+        node: entity to traverse
+        next_node_nb: next node number
+        fd: opened file descriptor used to write the tree
+
+    Return:
+        tuple of current and next node numbers
+    """
+
+    current_node_nb = next_node_nb
+    next_node_nb += 1
+
+    # Insert current node in the tree
+    fd.write("n%03d [label=\"%s\n%s\"] ;\n" % (
+        current_node_nb,
+        node.metaObject().className(),
+        node.objectName()))
+
+    # Enumerate components
+    for comp in node.components():
+        fd.write("n%03d [shape=box,label=\"%s\n%s\"] ;\n" % (
+            next_node_nb,
+            comp.metaObject().className(),
+            comp.objectName()))
+        fd.write("n%03d -- n%03d [style=dotted];\n" % (
+            current_node_nb, next_node_nb))
+        next_node_nb += 1
+
+    # Build tree for children
+    for child_node in node.children():
+        if isinstance(child_node, Qt3DCore.QEntity):
+            child_node_nb, next_node_nb = traverse_tree(child_node, next_node_nb, fd)
+            fd.write("n%03d -- n%03d ;\n" % (current_node_nb, child_node_nb))
+
+    return current_node_nb, next_node_nb

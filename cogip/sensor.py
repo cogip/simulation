@@ -1,5 +1,6 @@
 import ctypes
 import math
+from typing import List, Optional
 
 import sysv_ipc
 
@@ -15,12 +16,18 @@ from cogip.impactentity import ImpactEntity
 VL53L0X_NUMOF = 6
 
 
-# Define a structure class equivalent to the C struct:
-# struct {
-#     uint16_t tof[VL53L0X_NUMOF];
-#     uint16_t lidar[360]
-# }
 class ShmData(ctypes.Structure):
+    """
+    Contains all sensors data shared with the firmware.
+
+    The equivalent C struct is:
+    ```c
+    struct {
+        uint16_t tof[VL53L0X_NUMOF];
+        uint16_t lidar[360]
+    }
+    ```
+    """
     _fields_ = [
         ('tof', ctypes.c_ushort * VL53L0X_NUMOF),
         ('lidar', ctypes.c_ushort * 360)
@@ -28,17 +35,28 @@ class ShmData(ctypes.Structure):
 
 
 class Sensor(QtCore.QObject):
+    """
+    Base class for all sensors.
 
-    # Class attribute recording all entities that should be detected
-    obstacles = []
+    The sensors are based on [QRayCaster](https://doc.qt.io/qtforpython/PySide2/Qt3DRender/QRayCaster.html).
+    It casts a ray and detects collisions with obstacles.
+    Detected collision is represented using a [ImpactEntity][cogip.impactentity.ImpactEntity] object.
 
-    # Class attribute recording all sensors
-    # Each added obstacle must be registered in all sensors
-    all_sensors = []
+    Attributes:
+        obstacles: Class attribute recording all entities that should be detected
+        all_sensors: Class attribute recording all sensors
+        hits_interval: Interval in seconds between each handling of collisions
+        shm_key: Key to the shared memory segment
+        shm_ptr: Pointer the shared memory segment
+        shm_data: Data class mapped on the shared memory segment
+    """
+    obstacles: List[Qt3DCore.QEntity] = []
+    all_sensors: List["Sensor"] = []
+    hits_interval: int = 50
 
-    shm_key = None
-    shm_ptr = None
-    shm_data = None
+    shm_key: Optional[str] = None
+    shm_ptr: Optional[sysv_ipc.SharedMemory] = None
+    shm_data: Optional[ShmData] = None
 
     def __init__(
             self,
@@ -52,6 +70,23 @@ class Sensor(QtCore.QObject):
             direction_z: int,
             impact_radius: float = 50,
             impact_color: QtCore.Qt.GlobalColor = QtCore.Qt.red):
+        """
+        Class constructor.
+
+        Origin and direction are relative to the parent entity (the robot).
+
+        Arguments:
+            asset_entity: Entity containing the sensor
+            name: Name of the sensor
+            origin_x: X origin of the ray caster
+            origin_y: Y origin of the ray caster
+            origin_z: Z origin of the ray caster
+            direction_x: X direction of the ray caster
+            direction_y: Y direction of the ray caster
+            direction_z: Z direction of the ray caster
+            impact_radius: Radius of the `ImpactEntity` representing the collision
+            impact_color: Color of the `ImpactEntity` representing the collision
+        """
         super(Sensor, self).__init__()
 
         Sensor.all_sensors.append(self)
@@ -78,12 +113,19 @@ class Sensor(QtCore.QObject):
         self.impact_entity = ImpactEntity(radius=impact_radius, color=impact_color)
         self.impact_entity.setParent(self.asset_entity)
 
+        # Use a timer to trigger collision handling
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.handle_hits)
-        self.timer.start(50)
+        self.timer.start(Sensor.hits_interval)
 
     @qtSlot()
     def handle_hits(self):
+        """
+        Qt Slot
+
+        Compute the distance with the closest detected obstacle
+        and display the impact entity at the collision point.
+        """
         distances = [
             hit
             for hit in self.ray_caster.hits()
@@ -99,18 +141,38 @@ class Sensor(QtCore.QObject):
 
     @classmethod
     def add_obstacle(cls, obstacle: Qt3DCore.QEntity):
+        """
+        Class method.
+
+        Register an obstacle added on the table.
+
+        Arguments:
+            obstacle: The obstacle to register
+        """
         cls.obstacles.append(obstacle)
         for sensor in cls.all_sensors:
             sensor.add_obstacle_layer(obstacle)
 
-    # Add the obstacle layer to the ray caster
     def add_obstacle_layer(self, obstacle: Qt3DCore.QEntity):
+        """
+        Add the obstacle layer to the ray caster.
+        This allows the obstacle to be detected by the ray caster.
+
+        Arguments:
+            obstacle: The obstacle to detect
+        """
         self.ray_caster.addLayer(obstacle.layer)
         # Activate if not already done
         self.ray_caster.trigger()
 
     @classmethod
     def init_shm(cls):
+        """
+        Class method.
+
+        Initialize the shared memory segment used to share
+        sensors data with the firmware.
+        """
         cls.shm_ptr = sysv_ipc.SharedMemory(key=None, mode=0o666, flags=sysv_ipc.IPC_CREX, size=1024)
         cls.shm_key = cls.shm_ptr.key
         cls.shm_data = ShmData.from_buffer(cls.shm_ptr)
@@ -126,7 +188,13 @@ class Sensor(QtCore.QObject):
 
 
 class ToFSensor(Sensor):
+    """
+    Specialized ToF sensor.
 
+    It is represented by a small red cube placed at the origin of the ray caster.
+
+    Its impact entity is represented by a small red sphere.
+    """
     nb_tof_sensors = 0
 
     def __init__(
@@ -135,7 +203,15 @@ class ToFSensor(Sensor):
             name: str,
             origin_x: int,
             origin_y: int):
+        """
+        Class constructor.
 
+        Arguments:
+            asset_entity: Entity containing the sensor
+            name: Name of the sensor
+            origin_x: X origin of the ray caster
+            origin_y: Y origin of the ray caster
+        """
         super(ToFSensor, self).__init__(
             asset_entity=asset_entity,
             name=name,
@@ -172,6 +248,9 @@ class ToFSensor(Sensor):
 
     @qtSlot()
     def handle_hits(self):
+        """
+        Store the distance of the closest obstacle in the shared memory segment.
+        """
         super(ToFSensor, self).handle_hits()
         if Sensor.shm_data:
             if self.hit:
@@ -181,6 +260,11 @@ class ToFSensor(Sensor):
 
 
 class LidarSensor(Sensor):
+    """
+    Specialized LIDAR sensor.
+
+    Its impact entity is represented by a small blue sphere.
+    """
 
     nb_lidar_sensors = 0
 
@@ -192,6 +276,17 @@ class LidarSensor(Sensor):
             origin_y: int,
             direction_x: int,
             direction_y: int):
+        """
+        Class constructor.
+
+        Arguments:
+            asset_entity: Entity containing the sensor
+            name: Name of the sensor
+            origin_x: X origin of the ray caster
+            origin_y: Y origin of the ray caster
+            direction_x: X direction of the ray caster
+            direction_y: Y direction of the ray caster
+        """
 
         super(LidarSensor, self).__init__(
             asset_entity=asset_entity,
@@ -210,6 +305,9 @@ class LidarSensor(Sensor):
 
     @qtSlot()
     def handle_hits(self):
+        """
+        Store the distance of the closest obstacle in the shared memory segment.
+        """
         super(LidarSensor, self).handle_hits()
         if Sensor.shm_data:
             if self.hit:
