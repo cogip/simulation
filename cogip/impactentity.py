@@ -4,8 +4,21 @@ from PySide2.Qt3DExtras import Qt3DExtras
 
 
 class ImpactEntity(Qt3DCore.QEntity):
+    """
+    `QEntity` used to visualize to points detected by sensors.
+
+    It is represented with [`QSphereMesh`](https://doc.qt.io/qtforpython/PySide2/Qt3DExtras/QSphereMesh.html),
+    its radius and color are configurable in the constructor.
+    """
 
     def __init__(self, radius: float = 50, color: QtCore.Qt.GlobalColor = QtCore.Qt.red):
+        """
+        Class constructor.
+
+        Arguments:
+            radius: Radius of the sphere
+            color: Color of the sphere
+        """
         super(ImpactEntity, self).__init__()
 
         self.mesh = Qt3DExtras.QSphereMesh()

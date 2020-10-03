@@ -10,6 +10,20 @@ from cogip import models
 
 
 class ObstacleEntity(Qt3DCore.QEntity):
+    """
+    An obstacle on the table.
+
+    It is represented as a cube ([QCuboidMesh](https://doc.qt.io/qtforpython/PySide2/Qt3DExtras/QCuboidMesh.html)).
+
+    When selected with a mouse click, a property window is displayed
+    to modify the obstacle properties.
+
+    The obstacle can also be moved using the mouse.
+
+    Attributes:
+        enable_controller: Qt signal used to disable the camera controller
+            when moving the obstacle using the mouse
+    """
 
     enable_controller = qtSignal(bool)
 
@@ -22,7 +36,18 @@ class ObstacleEntity(Qt3DCore.QEntity):
             length: int = 200,
             width: int = 200,
             height: int = 600):
+        """
+        Class constructor.
 
+        Arguments:
+            parent_widget: Parent widget
+            x: X position
+            y: Y position
+            rotation: Rotation
+            length: Length
+            width: Width
+            height: Height
+        """
         super(ObstacleEntity, self).__init__()
 
         self.parent_widget = parent_widget
@@ -65,30 +90,62 @@ class ObstacleEntity(Qt3DCore.QEntity):
 
     @qtSlot(float)
     def updateZTranslation(self, zExtent: float):
+        """
+        Qt Slot
+
+        Update the Z position based on the obstacle heigth.
+        This function is called each time the height is modified
+        to set the bottom on Z=0.
+        """
         translation = self.transform.translation()
         translation.setZ(zExtent/2)
         self.transform.setTranslation(translation)
 
     @qtSlot(int)
     def setXTranslation(self, x: int):
+        """
+        Qt Slot
+
+        Set the X position.
+        """
         translation = self.transform.translation()
         translation.setX(float(x))
         self.transform.setTranslation(translation)
 
     @qtSlot(int)
     def setYTranslation(self, y: int):
+        """
+        Qt Slot
+
+        Set the Y position.
+        """
         translation = self.transform.translation()
         translation.setY(float(y))
         self.transform.setTranslation(translation)
 
     @qtSlot(Qt3DRender.QPickEvent)
     def pressed_obstacle(self, pick: Qt3DRender.QPickEvent):
-        print("pressed")
+        """
+        Qt Slot
+
+        Slot called on a ```pressed``` mouse event on the obstacle.
+
+        Emit a signal to disable the camera controller before moving the obstacle.
+        """
         self.enable_controller.emit(False)
 
     @qtSlot(Qt3DRender.QPickEvent)
     def released_obstacle(self, pick: Qt3DRender.QPickEvent):
-        print("released")
+        """
+        Qt Slot
+
+        Slot called on a ```released``` mouse event on the obstacle.
+
+        If this event occurs juste after a ```pressed``` event, it is only a mouse click,
+        so display the property window.
+
+        Emit a signal to re-enable the camera controller after moving the obstacle.
+        """
         if not self.moving:
             if ObstacleProperties.active_properties:
                 ObstacleProperties.active_properties.close()
@@ -102,9 +159,24 @@ class ObstacleEntity(Qt3DCore.QEntity):
 
     @qtSlot(Qt3DRender.QPickEvent)
     def moved_obstacle(self, pick: Qt3DRender.QPickEvent):
+        """
+        Qt Slot
+
+        Slot called on a ```moved``` mouse event on the obstacle.
+
+        Just record that the obstacle is moving, the translation is computed
+        in the [GameView][cogip.gameview.GameView] object.
+        """
         self.moving = True
 
     def get_model(self) -> models.Obstacle:
+        """
+        Returns the [Obstacle][cogip.models.Obstacle] model.
+        Used to save the obstacles list.
+
+        Returns:
+            The obstacle model
+        """
         return models.Obstacle(
             x=self.transform.translation().x(),
             y=self.transform.translation().y(),
@@ -116,6 +188,14 @@ class ObstacleEntity(Qt3DCore.QEntity):
 
     @qtSlot(QtGui.QVector3D)
     def new_move_delta(self, delta: QtGui.QVector3D):
+        """
+        Qt Slot
+
+        Update the obstacle position.
+
+        Arguments:
+            delta: The difference between current and new position
+        """
         self.move_delta = delta
         if self.moving and delta:
             new_translation = self.transform.translation() + delta
@@ -125,11 +205,26 @@ class ObstacleEntity(Qt3DCore.QEntity):
 
 
 class ObstacleProperties(QtWidgets.QDialog):
+    """
+    The property window.
 
-    saved_geometry = None
-    active_properties = None
+    Each obstacle has its own property window.
+
+    Attributes:
+        saved_geometry: The position of the last displayed property window
+        active_geometry: The current property window displayed.
+    """
+    saved_geometry: QtCore.QRect = None
+    active_properties: "ObstacleProperties" = None
 
     def __init__(self, parent: QtWidgets.QWidget, obstacle_entity: ObstacleEntity):
+        """
+        Class constructor.
+
+        Arguments:
+            parent: The parent widget
+            obstacle_entity: The related obstacle entity
+        """
         super(ObstacleProperties, self).__init__(parent)
 
         self.obstacle_entity = obstacle_entity
@@ -207,17 +302,42 @@ class ObstacleProperties(QtWidgets.QDialog):
 
     @classmethod
     def set_saved_geometry(cls, geometry: QtCore.QRect):
+        """
+        Class method.
+
+        Save the position of the last displayed property window.
+
+        Arguments:
+            geometry: The postition to save
+        """
         cls.saved_geometry = geometry
 
     @classmethod
-    def set_active_properties(cls, properties):
+    def set_active_properties(cls, properties: "ObstacleProperties"):
+        """
+        Class method.
+
+        Set the current property window displayed.
+
+        Arguments:
+            properties: The current property
+        """
         cls.active_properties = properties
 
     def restore_saved_geometry(self):
+        """
+        Reuse the position of the last displayed property window for the current window.
+        """
         if ObstacleProperties.saved_geometry:
             self.setGeometry(ObstacleProperties.saved_geometry)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
+        """
+        Close the property windows.
+
+        Arguments:
+            event: The close event (unused)
+        """
         ObstacleProperties.set_saved_geometry(self.geometry())
         ObstacleProperties.set_active_properties(None)
         event.accept()

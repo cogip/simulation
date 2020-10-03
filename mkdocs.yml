@@ -1,0 +1,50 @@
+site_name: COGIP Simulator
+
+repo_name: cogip/simulation
+repo_url: https://github.com/cogip/simulation
+
+theme:
+  name: 'material'
+  language: en
+
+nav:
+  - Overview: index.md
+  - Installation: install.md
+  - Usage: usage.md
+  - Developer's Doc:
+    - Introduction: developers/developers.md
+    - Modules:
+      - __main__.py: developers/modules/main.md
+      - cogip:
+        - assetentity.py: developers/modules/cogip/assetentity.md
+        - config.py: developers/modules/cogip/config.md
+        - dynobstacleentity.py: developers/modules/cogip/dynobstacleentity.md
+        - gameview.py: developers/modules/cogip/gameview.md
+        - impactentity.py: developers/modules/cogip/impactentity.md
+        - mainwindow.py: developers/modules/cogip/mainwindow.md
+        - models.py: developers/modules/cogip/models.md
+        - obstacleentity.py: developers/modules/cogip/obstacleentity.md
+        - robotentity.py: developers/modules/cogip/robotentity.md
+        - sensor.py: developers/modules/cogip/sensor.md
+        - serialcontroller.py: developers/modules/cogip/serialcontroller.md
+
+plugins:
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          rendering:
+            show_source: true  
+          setup_commands:
+            - import sys
+            - from unittest.mock import MagicMock as mock
+            - sys.modules["Shiboken"] = mock()
+      watch:
+        - cogip
+
+  - search
+
+
+markdown_extensions:
+  - admonition
+  - codehilite

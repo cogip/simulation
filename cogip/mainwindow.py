@@ -12,18 +12,31 @@ from cogip.models import ShellMenu, CtrlModeEnum, Pose
 class MainWindow(QtWidgets.QMainWindow):
     """MainWindow class
 
-    Build the UI
+    Build the main window of the simulator.
+
+    It contains:
+
+      - a menu bar,
+      - a tool bar with buttons to add/load/save obstacles,
+      - a status bar with robot position and mode,
+      - a menu with commands available in the current firmware shell menu,
+      - a console recording the firmware output.
+
+    Attributes:
+        signal_send_command: Qt signal to send a command to the firmware
+        signal_add_obstacle: Qt signal to add an obstacle
+        signal_load_obstacles: Qt signal to load obstacles
+        signal_save_obstacles: Qt signal to save obstacles
     """
 
-    trigger_signal = qtSignal(str)
-
-    signal_send_command = qtSignal(str)
-
-    signal_add_obstacle = qtSignal()
-    signal_load_obstacles = qtSignal(Path)
-    signal_save_obstacles = qtSignal(Path)
+    signal_send_command: qtSignal = qtSignal(str)
+    signal_add_obstacle: qtSignal = qtSignal()
+    signal_load_obstacles: qtSignal = qtSignal(Path)
+    signal_save_obstacles: qtSignal = qtSignal(Path)
 
     def __init__(self, *args, **kwargs):
+        """
+        """
         super(MainWindow, self).__init__(*args, **kwargs)
 
         self.menu_widgets: Dict[str, QtWidgets.QWidget] = {}
@@ -154,6 +167,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @qtSlot(Pose)
     def new_robot_position(self, pose: Pose, mode: CtrlModeEnum):
+        """
+        Qt Slot
+
+        Update robot position information in the status bar.
+
+        Arguments:
+            pose: Position of the robot
+            mode: Mode
+        """
         self.pos_mode_text.setText(mode.name)
         self.pos_x_text.setText(str(pose.x))
         self.pos_y_text.setText(str(pose.y))
@@ -161,6 +183,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @qtSlot(ShellMenu)
     def load_menu(self, new_menu: ShellMenu):
+        """
+        Qt Slot
+
+        Display the new menu sent by [SerialController][cogip.serialcontroller.SerialController].
+
+        Once a menu has been build once, it is cached and reused.
+
+        Arguments:
+            new_menu: The new menu information sent by the firmware
+        """
         if self.current_menu == new_menu.name:
             return
         self.current_menu = new_menu.name
@@ -211,6 +243,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actions_dock.setWidget(widget)
 
     def build_command(self, cmd: str, layout: QtWidgets.QHBoxLayout):
+        """
+        Build command to send to [SerialController][cogip.serialcontroller.SerialController].
+
+        It is built based on the command name given in arguments,
+        and arguments strings fetched from the command button in the menu.
+
+        Emit the `signal_send_command` signal with the full command string as argument.
+
+        Arguments:
+            cmd: The command name
+            layout: The command button containing the command arguments
+        """
         i = 1
         while i < layout.count():
             edit = layout.itemAt(i).widget()
@@ -223,10 +267,22 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @qtSlot()
     def add_obstacle(self):
+        """
+        Qt Slot
+
+        Receive signals from "Add obstacle" action.
+
+        Emit the `signal_add_obstacle` signal.
+        """
         self.signal_add_obstacle.emit()
 
     @qtSlot()
     def load_obstacles(self):
+        """
+        Qt Slot
+
+        Open a file dialog to select a file and load obstacles from it.
+        """
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(
             parent=self,
             caption="Select file to load obstacles",
@@ -240,6 +296,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @qtSlot()
     def save_obstacles(self):
+        """
+        Qt Slot
+
+        Open a file dialog to select a file and save obstacles in it.
+        """
         filename, _ = QtWidgets.QFileDialog.getSaveFileName(
             parent=self,
             caption="Select file to save obstacles",
@@ -253,6 +314,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 def split_command(command: str) -> Tuple[str, List[str]]:
+    """
+    Split the full command string to separate the name of the command
+    and its arguments.
+
+    The command is in the following format:
+    ```
+    "command name <arg1> <arg2> ..."
+    ```
+
+    Arguments:
+        command: The command string to split
+
+    Return:
+        A tuple of the command name and a list of arguments
+    """
     result: List[str] = list()
     arg_match = re.findall(r"(<[\d\w]+>)", command)
     for arg in arg_match:

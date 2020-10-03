@@ -4,7 +4,6 @@ import argparse
 import faulthandler
 from pathlib import Path
 import psutil
-from queue import Queue
 import shutil
 import subprocess
 import sys
@@ -39,7 +38,13 @@ def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
     return arg_parser
 
 
-def main(args=sys.argv):
+def main():
+    """
+    Starts the simulator.
+
+    During installation of the simulator, `setuptools` is configured
+    to create the `simulator` script using this function as entrypoint.
+    """
     faulthandler.enable()
 
     # Virtual uart for native simulation
@@ -48,7 +53,7 @@ def main(args=sys.argv):
     # Run native mode by default
     default_uart = virtual_uart
 
-    if "-B" not in args and "--binary" not in args:
+    if "-B" not in sys.argv and "--binary" not in sys.argv:
         # Real mode used by default if an uart is found,
         # and if native firmware is not explicitly provided
         # Use the first uart discovered
@@ -88,10 +93,8 @@ def main(args=sys.argv):
         logger.info(f"Execute: {' '.join(socat_args)}")
         socat_process = subprocess.Popen(socat_args, executable=socat_path)
 
-    position_queue = Queue()
-
     # Create controller
-    controller = SerialController(args.uart_device, position_queue)
+    controller = SerialController(args.uart_device)
 
     # Create QApplication
     app = QtWidgets.QApplication(sys.argv)
@@ -129,7 +132,7 @@ def main(args=sys.argv):
     game_view.add_asset(robot_final_entity)
 
     # Connect UI signals to Controller slots
-    win.signal_send_command.connect(controller.slot_new_command)
+    win.signal_send_command.connect(controller.new_command)
 
     # Connect UI signals to GameView slots
     win.signal_add_obstacle.connect(game_view.add_obstacle)
@@ -138,7 +141,7 @@ def main(args=sys.argv):
 
     # Connect Controller signals to Robot slots
     controller.signal_new_robot_position.connect(robot_entity.set_position)
-    controller.signal_new_robot_final_position.connect(robot_final_entity.set_position)
+    controller.signal_new_robot_position_to_reach.connect(robot_final_entity.set_position)
     controller.signal_new_dyn_obstacles.connect(robot_entity.set_dyn_obstacles)
 
     # Connect Controller signals to UI slots
@@ -173,4 +176,4 @@ def main(args=sys.argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv)
+    main()
