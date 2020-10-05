@@ -6,7 +6,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
-from cogip.models import ShellMenu, CtrlModeEnum, Pose
+from cogip.models import ShellMenu, CtrlModeEnum, RobotState
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -55,28 +55,35 @@ class MainWindow(QtWidgets.QMainWindow):
         # Status bar
         status_bar = self.statusBar()
 
-        pos_x_label = QtWidgets.QLabel("X")
+        cycle_label = QtWidgets.QLabel("Cycle:")
+        self.cycle_text = QtWidgets.QLabel()
+        self.cycle_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.cycle_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        status_bar.addPermanentWidget(cycle_label, 0)
+        status_bar.addPermanentWidget(self.cycle_text, 0)
+
+        pos_x_label = QtWidgets.QLabel("X:")
         self.pos_x_text = QtWidgets.QLabel()
         self.pos_x_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.pos_x_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
         status_bar.addPermanentWidget(pos_x_label, 0)
         status_bar.addPermanentWidget(self.pos_x_text, 0)
 
-        pos_y_label = QtWidgets.QLabel("Y")
+        pos_y_label = QtWidgets.QLabel("Y:")
         self.pos_y_text = QtWidgets.QLabel()
         self.pos_y_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.pos_y_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
         status_bar.addPermanentWidget(pos_y_label, 0)
         status_bar.addPermanentWidget(self.pos_y_text, 0)
 
-        pos_angle_label = QtWidgets.QLabel("Angle")
+        pos_angle_label = QtWidgets.QLabel("Angle:")
         self.pos_angle_text = QtWidgets.QLabel()
         self.pos_angle_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.pos_angle_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
         status_bar.addPermanentWidget(pos_angle_label, 0)
         status_bar.addPermanentWidget(self.pos_angle_text, 0)
 
-        pos_mode_label = QtWidgets.QLabel("Mode")
+        pos_mode_label = QtWidgets.QLabel("Mode:")
         self.pos_mode_text = QtWidgets.QLabel()
         self.pos_mode_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.pos_mode_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
@@ -165,21 +172,21 @@ class MainWindow(QtWidgets.QMainWindow):
         actions_layout.addStretch()
         self.actions_dock.setWidget(actions_widget)
 
-    @qtSlot(Pose)
-    def new_robot_position(self, pose: Pose, mode: CtrlModeEnum):
+    @qtSlot(RobotState)
+    def new_robot_state(self, state: RobotState):
         """
         Qt Slot
 
         Update robot position information in the status bar.
 
         Arguments:
-            pose: Position of the robot
-            mode: Mode
+            state: Robot state
         """
-        self.pos_mode_text.setText(mode.name)
-        self.pos_x_text.setText(str(pose.x))
-        self.pos_y_text.setText(str(pose.y))
-        self.pos_angle_text.setText(str(pose.O))
+        self.pos_mode_text.setText(state.mode.name)
+        self.cycle_text.setText(f"{state.cycle or 0:>#6d}")
+        self.pos_x_text.setText(f"{state.pose_current.x:> #6.2f}")
+        self.pos_y_text.setText(f"{state.pose_current.y:> #6.2f}")
+        self.pos_angle_text.setText(f"{state.pose_current.O:> #4.2f}")
 
     @qtSlot(ShellMenu)
     def load_menu(self, new_menu: ShellMenu):

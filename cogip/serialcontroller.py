@@ -9,7 +9,7 @@ from PySide2.QtCore import Slot as qtSlot
 from pydantic import ValidationError
 
 from cogip import logger
-from cogip.models import ShellMenu, CtrlModeEnum, Pose, Positions, DynObstacleList
+from cogip.models import ShellMenu, RobotState, DynObstacleList
 from cogip.sensor import Sensor
 
 
@@ -27,10 +27,8 @@ class SerialController(QtCore.QObject):
             Qt signal emitted to log messages in UI console
         signal_new_menu:
             Qt signal emitted to load a new menu
-        signal_new_robot_position:
-            Qt signal emitted to update robot position
-        signal_new_robot_position_to_reach:
-            Qt signal emitted to update robot position to reach
+        signal_new_robot_state:
+            Qt signal emitted on robot state update
         signal_new_dyn_obstacles:
             Qt signal emitted to update dynamic obstacles
         max_parse_attemps:
@@ -38,8 +36,7 @@ class SerialController(QtCore.QObject):
     """
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(ShellMenu)
-    signal_new_robot_position: qtSignal = qtSignal(Pose, CtrlModeEnum)
-    signal_new_robot_position_to_reach: qtSignal = qtSignal(Pose, CtrlModeEnum)
+    signal_new_robot_state: qtSignal = qtSignal(RobotState)
     signal_new_dyn_obstacles: qtSignal = qtSignal(DynObstacleList)
     max_parse_attemps: int = 20
 
@@ -61,7 +58,7 @@ class SerialController(QtCore.QObject):
         self.serial_port.port = uart_device
         self.serial_port.baudrate = 115200
 
-        self.menu_has_pose = False
+        self.menu_has_state_cmd = False
         self.serial_lock = Lock()
 
     def quit(self):
@@ -119,7 +116,7 @@ class SerialController(QtCore.QObject):
 
         while not self.exiting:
             time.sleep(0.01)
-            if not self.menu_has_pose:
+            if not self.menu_has_state_cmd:
                 continue
             logger.debug("main_loop: try to acquire lock")
             with self.serial_lock:
@@ -145,7 +142,7 @@ class SerialController(QtCore.QObject):
         """
         Get the current menu from the robot and send it to the main window.
         """
-        self.menu_has_pose = False
+        self.menu_has_state_cmd = False
 
         logger.debug("reload_menu: try to acquire lock")
         with self.serial_lock:
@@ -160,8 +157,8 @@ class SerialController(QtCore.QObject):
                     menu = ShellMenu.parse_raw(line)
                     self.signal_new_menu.emit(menu)
                     for entry in menu.entries:
-                        if entry.cmd == "_pose":
-                            self.menu_has_pose = True
+                        if entry.cmd == "_state":
+                            self.menu_has_state_cmd = True
                             break
                     break
                 except ValidationError:
@@ -173,7 +170,7 @@ class SerialController(QtCore.QObject):
         Get position information from the robot and send it to the main window
         and to the robot entity.
         """
-        self.serial_port.write(b"_pose\n")
+        self.serial_port.write(b"_state\n")
 
         pose_found = False
         attempt = 0
@@ -183,9 +180,8 @@ class SerialController(QtCore.QObject):
             if line[0] == ">":
                 continue
             try:
-                positions = Positions.parse_raw(line)
-                self.signal_new_robot_position.emit(positions.pose_current, positions.mode)
-                self.signal_new_robot_position_to_reach.emit(positions.pose_order, positions.mode)
+                state = RobotState.parse_raw(line)
+                self.signal_new_robot_state.emit(state)
                 pose_found = True
             except ValidationError:
                 attempt += 1

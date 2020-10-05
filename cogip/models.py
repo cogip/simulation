@@ -8,7 +8,7 @@ an exception being raised if impossible.
 """
 
 from enum import IntEnum
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -25,7 +25,7 @@ class MenuEntry(BaseModel):
         The following line shows how to initialize this class from a JSON
         string received on the serial port:
         ```py
-        MenuEntry.parse_raw("{\\"cmd\\": \\"_pose\\", \\"desc\\": \\"Print current pose\\"}")
+        MenuEntry.parse_raw("{\\"cmd\\": \\"_state\\", \\"desc\\": \\"Print current state\\"}")
         ```
     """
     cmd: str
@@ -48,7 +48,7 @@ class ShellMenu(BaseModel):
             "{\\"name\\": \\"planner\\","
             " \\"entries\\": ["
             "    {\\"cmd\\": \\"_help_json\\", \\"desc\\": \\"Display available commands in JSON format\\"},"
-            "    {\\"cmd\\": \\"_pose\\", \\"desc\\": \\"Print current pose\\"}
+            "    {\\"cmd\\": \\"_state\\", \\"desc\\": \\"Print current state\\"}
             "]}"
         )
         ```
@@ -105,19 +105,38 @@ class Pose(Vertex):
     O: float
 
 
-class Positions(BaseModel):
+class Speed(BaseModel):
     """
-    This contains information about robot's position and mode.
+    A speed value.
+
+    Attributes:
+        distance: Linear speed
+        angle: Angular speed
+    """
+    distance: float
+    angle: float
+
+
+class RobotState(BaseModel):
+    """
+    This contains information about robot state,
+    like mode, cycle, positions and speed.
     It is given by the firmware through the serial port.
 
     Attributes:
         mode: Current robot mode
         pose_current: Current robot position
         pose_order: Position to reach
+        cycle: Current cycle
+        speed_current: Current speed
+        speed_order: Speed order
     """
     mode: CtrlModeEnum
     pose_current: Pose
     pose_order: Pose
+    cycle: Optional[int] = None
+    speed_current: Optional[Speed] = None
+    speed_order: Optional[Speed] = None
 
 
 class DynObstacle(BaseModel):

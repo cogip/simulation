@@ -123,7 +123,6 @@ def main():
     # Create robot entity
     robot_final_entity = RobotEntity(
         asset_path=Path(settings.robot_filename).resolve(),
-        # asset_name="Robot2019_Simu"
         asset_name="Robot2019",
         enable_tof_sensors=False,
         enable_lidar_sensors=False,
@@ -140,14 +139,14 @@ def main():
     win.signal_save_obstacles.connect(game_view.save_obstacles)
 
     # Connect Controller signals to Robot slots
-    controller.signal_new_robot_position.connect(robot_entity.set_position)
-    controller.signal_new_robot_position_to_reach.connect(robot_final_entity.set_position)
+    controller.signal_new_robot_state.connect(robot_entity.set_position)
+    controller.signal_new_robot_state.connect(robot_final_entity.set_position)
     controller.signal_new_dyn_obstacles.connect(robot_entity.set_dyn_obstacles)
 
     # Connect Controller signals to UI slots
     controller.signal_new_console_text.connect(win.log_text.append)
     controller.signal_new_menu.connect(win.load_menu)
-    controller.signal_new_robot_position.connect(win.new_robot_position)
+    controller.signal_new_robot_state.connect(win.new_robot_state)
 
     # Show UI
     win.show()

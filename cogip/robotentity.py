@@ -8,7 +8,7 @@ from PySide2.Qt3DExtras import Qt3DExtras
 
 from cogip.assetentity import AssetEntity
 from cogip.dynobstacleentity import DynObstacleEntity
-from cogip.models import DynObstacleList
+from cogip.models import DynObstacleList, RobotState
 from cogip.sensor import ToFSensor, LidarSensor
 
 
@@ -192,3 +192,19 @@ class RobotEntity(AssetEntity):
             current_dyn_obstacles.append(dyn_obstacle)
 
         self.dyn_obstacles_pool = current_dyn_obstacles
+
+    @qtSlot(RobotState)
+    def set_position(self, new_state: RobotState) -> None:
+        """
+        Qt slot called to set the robot's new position.
+
+        If sensors are disabled, we consider that this robot represents
+        the position to reach.
+
+        Arguments:
+            new_state: new robot state
+        """
+        state = new_state.copy()
+        if not self.enable_tof_sensors and not self.enable_lidar_sensors:
+            state.pose_current = new_state.pose_order
+        super(RobotEntity, self).set_position(state)
