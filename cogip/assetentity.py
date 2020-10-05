@@ -20,7 +20,7 @@ from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
 from cogip import logger
-from cogip.models import CtrlModeEnum, Pose
+from cogip.models import RobotState
 
 
 class AssetEntity(Qt3DCore.QEntity):
@@ -120,21 +120,20 @@ class AssetEntity(Qt3DCore.QEntity):
 
         self.ready.emit()
 
-    @qtSlot(Pose)
-    def set_position(self, new_position: Pose, mode: CtrlModeEnum) -> None:
+    @qtSlot(RobotState)
+    def set_position(self, new_state: RobotState) -> None:
         """
         Qt slot called to set the entity's new position.
 
         Arguments:
-            new_position: new position
-            mode: unused
+            new_state: new robot state
         """
 
         if not self.transform_component:
             return
         self.transform_component.setTranslation(
-            QtGui.QVector3D(new_position.x, new_position.y, 0))
-        self.transform_component.setRotationZ(new_position.O + 90)
+            QtGui.QVector3D(new_state.pose_current.x, new_state.pose_current.y, 0))
+        self.transform_component.setRotationZ(new_state.pose_current.O + 90)
 
     def generate_tree(self):
         """
