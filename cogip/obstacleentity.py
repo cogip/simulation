@@ -308,7 +308,7 @@ class ObstacleProperties(QtWidgets.QDialog):
         Save the position of the last displayed property window.
 
         Arguments:
-            geometry: The postition to save
+            geometry: The position to save
         """
         cls.saved_geometry = geometry
 

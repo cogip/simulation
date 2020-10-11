@@ -18,6 +18,7 @@ nav:
       - cogip:
         - assetentity.py: developers/modules/cogip/assetentity.md
         - config.py: developers/modules/cogip/config.md
+        - chartsview.py: developers/modules/cogip/chartsview.md
         - dynobstacleentity.py: developers/modules/cogip/dynobstacleentity.md
         - gameview.py: developers/modules/cogip/gameview.md
         - impactentity.py: developers/modules/cogip/impactentity.md
@@ -34,7 +35,7 @@ plugins:
       handlers:
         python:
           rendering:
-            show_source: true  
+            show_source: true
           setup_commands:
             - import sys
             - from unittest.mock import MagicMock as mock

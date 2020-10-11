@@ -22,4 +22,8 @@ The simulator provides a graphical interface, featuring:
 
   * visualization of obstacles detected in the firmware (in transparent red)
 
+  * charts window to vizualize calibration data
+
 ![GUI Overview](img/gui_overview.png)
+
+![Charts View](img/charts_view.png)
