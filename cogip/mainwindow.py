@@ -1,12 +1,15 @@
-import re
+from functools import partial
 from pathlib import Path
+import re
 from typing import Dict, Optional, List, Tuple
 
 from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
-from cogip.models import ShellMenu, CtrlModeEnum, RobotState
+from cogip.chartsview import ChartsView
+from cogip.gameview import GameView
+from cogip.models import ShellMenu, RobotState
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -43,10 +46,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.setWindowTitle('COGIP Simulator')
 
+        self.central_widget = QtWidgets.QWidget()
+        self.central_layout = QtWidgets.QHBoxLayout()
+        self.central_widget.setLayout(self.central_layout)
+        self.setCentralWidget(self.central_widget)
+
         # Menu bar
         menubar = self.menuBar()
         file_menu = menubar.addMenu('&File')
         obstacles_menu = menubar.addMenu('&Obstacles')
+        view_menu = menubar.addMenu('&View')
 
         # Toolbars
         file_toolbar = self.addToolBar('File')
@@ -151,26 +160,57 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(dock.toggleViewAction())
         obstacles_menu.addAction(dock.toggleViewAction())
 
-        # Command menu dock
-        self.actions_dock = QtWidgets.QDockWidget("Actions")
-        self.actions_dock.setAllowedAreas(QtCore.Qt.LeftDockWidgetArea)
-        self.actions_dock.setFeatures(QtWidgets.QDockWidget.NoDockWidgetFeatures)
-        self.addDockWidget(QtCore.Qt.LeftDockWidgetArea, self.actions_dock)
-
+        # Shell menu
         self.current_menu: Optional[str] = None
 
-        # Set a default menu to allocate some space in the UI
-        actions_widget = QtWidgets.QWidget()
-        actions_layout = QtWidgets.QVBoxLayout()
-        actions_widget.setLayout(actions_layout)
-        actions_title = QtWidgets.QLabel("No menu loaded")
-        actions_title.setTextFormat(QtCore.Qt.RichText)
-        actions_title.setAlignment(QtCore.Qt.AlignHCenter)
-        actions_title.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        actions_title.setStyleSheet("font-weight: bold; color: blue")
-        actions_layout.addWidget(actions_title)
-        actions_layout.addStretch()
-        self.actions_dock.setWidget(actions_widget)
+        self.menu_staked_widget = QtWidgets.QStackedWidget()
+        self.central_layout.insertWidget(0, self.menu_staked_widget, 1)
+
+        # Set a empty menu to allocate some space in the UI
+        empty_menu_widget = QtWidgets.QStackedWidget()
+        empty_menu_layout = QtWidgets.QVBoxLayout()
+        empty_menu_widget.setLayout(empty_menu_layout)
+        empty_menu_title = QtWidgets.QLabel("No menu loaded")
+        empty_menu_title.setTextFormat(QtCore.Qt.RichText)
+        empty_menu_title.setAlignment(QtCore.Qt.AlignHCenter)
+        empty_menu_title.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        empty_menu_title.setStyleSheet("font-weight: bold; color: blue")
+        empty_menu_layout.addWidget(empty_menu_title)
+        empty_menu_layout.addStretch()
+        self.menu_staked_widget.addWidget(empty_menu_widget)
+
+        # GameView widget
+        self.game_view = GameView()
+        self.central_layout.insertWidget(1, self.game_view, 10)
+
+        # Charts widget
+        self.charts_view = ChartsView(self)
+
+        # Add view action
+        self.view_charts_action = QtWidgets.QAction('Calibration Charts', self)
+        self.view_charts_action.setStatusTip('Display/Hide calibration charts')
+        self.view_charts_action.setCheckable(True)
+        self.view_charts_action.toggled.connect(self.charts_toggled)
+        self.charts_view.closed.connect(partial(self.view_charts_action.setChecked, False))
+        view_menu.addAction(self.view_charts_action)
+
+    @qtSlot(bool)
+    def charts_toggled(self, checked: bool):
+        """
+        Qt Slot
+
+        Show/hide the calibration charts.
+
+        Arguments:
+            checked: Show action has checked or unchecked
+        """
+        if checked:
+            self.charts_view.restore_saved_geometry()
+            self.charts_view.show()
+            self.charts_view.raise_()
+            self.charts_view.activateWindow()
+        else:
+            self.charts_view.close()
 
     @qtSlot(RobotState)
     def new_robot_state(self, state: RobotState):
@@ -245,9 +285,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
             layout.addStretch()
 
-        self.menu_widgets[new_menu.name] = widget
+            self.menu_widgets[new_menu.name] = widget
+            self.menu_staked_widget.addWidget(widget)
 
-        self.actions_dock.setWidget(widget)
+        self.menu_staked_widget.setCurrentWidget(widget)
 
     def build_command(self, cmd: str, layout: QtWidgets.QHBoxLayout):
         """

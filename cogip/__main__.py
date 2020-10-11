@@ -17,7 +17,6 @@ from cogip import logger
 from cogip.config import settings
 from cogip.mainwindow import MainWindow
 from cogip.serialcontroller import SerialController
-from cogip.gameview import GameView
 from cogip.assetentity import AssetEntity
 from cogip.robotentity import RobotEntity
 
@@ -102,23 +101,19 @@ def main():
     # Create UI
     win = MainWindow()
 
-    # Create game view
-    game_view = GameView()
-    win.setCentralWidget(game_view)
-
     # Create table entity
     table_entity = AssetEntity(
         asset_path=Path(settings.table_filename).resolve(),
         asset_name="Table2019"
     )
-    game_view.add_asset(table_entity)
+    win.game_view.add_asset(table_entity)
 
     # Create robot entity
     robot_entity = RobotEntity(
         asset_path=Path(settings.robot_filename).resolve(),
         asset_name="Robot2019"
     )
-    game_view.add_asset(robot_entity)
+    win.game_view.add_asset(robot_entity)
 
     # Create robot entity
     robot_final_entity = RobotEntity(
@@ -128,15 +123,15 @@ def main():
         enable_lidar_sensors=False,
         color=QtGui.QColor.fromRgb(0, 255, 0, 50)
     )
-    game_view.add_asset(robot_final_entity)
+    win.game_view.add_asset(robot_final_entity)
 
     # Connect UI signals to Controller slots
     win.signal_send_command.connect(controller.new_command)
 
     # Connect UI signals to GameView slots
-    win.signal_add_obstacle.connect(game_view.add_obstacle)
-    win.signal_load_obstacles.connect(game_view.load_obstacles)
-    win.signal_save_obstacles.connect(game_view.save_obstacles)
+    win.signal_add_obstacle.connect(win.game_view.add_obstacle)
+    win.signal_load_obstacles.connect(win.game_view.load_obstacles)
+    win.signal_save_obstacles.connect(win.game_view.save_obstacles)
 
     # Connect Controller signals to Robot slots
     controller.signal_new_robot_state.connect(robot_entity.set_position)
@@ -147,6 +142,9 @@ def main():
     controller.signal_new_console_text.connect(win.log_text.append)
     controller.signal_new_menu.connect(win.load_menu)
     controller.signal_new_robot_state.connect(win.new_robot_state)
+
+    # Connect Controller signals to ChartsView slots
+    controller.signal_new_robot_state.connect(win.charts_view.new_robot_state)
 
     # Show UI
     win.show()
