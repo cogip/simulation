@@ -368,13 +368,13 @@ Do not forget to fetch the submodules after <code>git clone</code>:</p>
 <div class="codehilite"><pre><span></span><code>git submodule update --init
 </code></pre></div>
 <h2 id="build-mcu-firmware">Build mcu-firmware</h2>
-<p>See <code>submodules/mcu-firmware/README.md</code> to setup the build environment.</p>
+<p>See the <code>Requirements</code> section of <code>submodules/mcu-firmware/README.md</code> to setup the build environment.</p>
 <p>Use the following command to build the native version of the firmware:</p>
 <div class="codehilite"><pre><span></span><code>make -C submodules/mcu-firmware/applications/cogip2019-cortex <span class="nv">BOARD</span><span class="o">=</span>cogip2019-cortex-native <span class="nv">MCUFIRMWARE_OPTIONS</span><span class="o">=</span>calibration
 </code></pre></div>
 <p>The variable <code>QUIET=0</code> can be added to display compilation commands.</p>
 <h2 id="debian-packages">Debian packages</h2>
-<div class="codehilite"><pre><span></span><code>sudo apt install python3.8 python3-venv socat
+<div class="codehilite"><pre><span></span><code>sudo apt install python3.8 python3.8-dev python3-venv libxcb-xinerama0 socat
 </code></pre></div>
 <h2 id="installation_1">Installation</h2>
 <div class="admonition note">
@@ -383,6 +383,7 @@ Do not forget to fetch the submodules after <code>git clone</code>:</p>
 <p>To setup a new environment, create a virtual env and install the package in dev mode:</p>
 <div class="codehilite"><pre><span></span><code>python3.8 -m venv venv
 <span class="nb">source</span> venv/bin/activate
+pip install wheel
 pip install -e .
 </code></pre></div>
 <p>This will install the simulator in developer mode and all its dependencies.</p>
