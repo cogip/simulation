@@ -151,6 +151,8 @@ class SerialController(QtCore.QObject):
 
             while True:
                 line = self.serial_port.readline().rstrip().decode(errors="ignore")
+                if len(line) == 0:
+                    continue
                 if line[0] == ">":
                     continue
                 try:
@@ -177,6 +179,8 @@ class SerialController(QtCore.QObject):
         while (not self.exiting and not pose_found
                 and attempt < SerialController.max_parse_attemps):
             line = self.serial_port.readline().rstrip().decode(errors="ignore")
+            if len(line) == 0:
+                continue
             if line[0] == ">":
                 continue
             try:
@@ -199,6 +203,8 @@ class SerialController(QtCore.QObject):
         while (not self.exiting and not obstacles_found
                 and attempt < SerialController.max_parse_attemps):
             line = self.serial_port.readline().rstrip().decode(errors="ignore")
+            if len(line) == 0:
+                continue
             if line[0] == ">":
                 continue
             try:
