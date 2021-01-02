@@ -88,7 +88,7 @@ def main():
             # "-v",
             # "-v",
             f'PTY,link={virtual_uart},rawer,wait-slave',
-            f'EXEC:"{args.native_binary}"'
+            f'EXEC:"{args.native_binary.resolve()}"'
         ]
         logger.info(f"Execute: {' '.join(socat_args)}")
         socat_process = subprocess.Popen(socat_args, executable=socat_path)
