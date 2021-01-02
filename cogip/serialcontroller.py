@@ -33,12 +33,15 @@ class SerialController(QtCore.QObject):
             Qt signal emitted to update dynamic obstacles
         max_parse_attemps:
             Maximum number of attemps to receive the expected data
+        last_cycle:
+            Record the last cycle to avoid sending the same data several times
     """
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(ShellMenu)
     signal_new_robot_state: qtSignal = qtSignal(RobotState)
     signal_new_dyn_obstacles: qtSignal = qtSignal(DynObstacleList)
     max_parse_attemps: int = 20
+    last_cycle: int = 0
 
     def __init__(self, uart_device: str):
         """
@@ -122,7 +125,7 @@ class SerialController(QtCore.QObject):
             with self.serial_lock:
                 logger.debug("main_loop: lock acquired")
 
-                self.get_pose()
+                self.get_state()
 
                 self.get_dyn_obstacles()
 
@@ -167,7 +170,7 @@ class SerialController(QtCore.QObject):
                     self.signal_new_console_text.emit(line)
         logger.debug("reload_menu: lock released")
 
-    def get_pose(self):
+    def get_state(self):
         """
         Get position information from the robot and send it to the main window
         and to the robot entity.
@@ -185,8 +188,11 @@ class SerialController(QtCore.QObject):
                 continue
             try:
                 state = RobotState.parse_raw(line)
-                self.signal_new_robot_state.emit(state)
                 pose_found = True
+                if state.cycle == self.last_cycle:
+                    continue
+                self.last_cycle = state.cycle
+                self.signal_new_robot_state.emit(state)
             except ValidationError:
                 attempt += 1
                 self.signal_new_console_text.emit(line)
