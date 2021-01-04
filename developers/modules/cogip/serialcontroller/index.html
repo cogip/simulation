@@ -180,6 +180,11 @@
     </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="../chartsview/" title="chartsview.py">
+      chartsview.py
+    </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="../dynobstacleentity/" title="dynobstacleentity.py">
       dynobstacleentity.py
     </a>
@@ -256,8 +261,8 @@
   </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.get_pose">
-    get_pose()
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.get_state">
+    get_state()
   </a>
 </li>
 <li class="md-nav__item">
@@ -336,8 +341,8 @@
   </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.get_pose">
-    get_pose()
+<a class="md-nav__link" href="#cogip.serialcontroller.SerialController.get_state">
+    get_state()
   </a>
 </li>
 <li class="md-nav__item">
@@ -418,17 +423,10 @@ on the serial port.</p>
 </td>
 </tr>
 <tr>
-<td><code>signal_new_robot_position</code></td>
+<td><code>signal_new_robot_state</code></td>
 <td><code>Signal</code></td>
 <td>
-<p>Qt signal emitted to update robot position</p>
-</td>
-</tr>
-<tr>
-<td><code>signal_new_robot_position_to_reach</code></td>
-<td><code>Signal</code></td>
-<td>
-<p>Qt signal emitted to update robot position to reach</p>
+<p>Qt signal emitted on robot state update</p>
 </td>
 </tr>
 <tr>
@@ -443,6 +441,13 @@ on the serial port.</p>
 <td><code>int</code></td>
 <td>
 <p>Maximum number of attemps to receive the expected data</p>
+</td>
+</tr>
+<tr>
+<td><code>last_cycle</code></td>
+<td><code>int</code></td>
+<td>
+<p>Record the last cycle to avoid sending the same data several times</p>
 </td>
 </tr>
 </tbody>
@@ -500,7 +505,7 @@ __init__<span class="p">(</span><span class="bp">self</span><span class="p">,</s
     <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">uart_device</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">baudrate</span> <span class="o">=</span> <span class="mi">115200</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">menu_has_pose</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">menu_has_state_cmd</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">serial_lock</span> <span class="o">=</span> <span class="n">Lock</span><span class="p">()</span>
 </code></pre>
 </div>
@@ -528,6 +533,8 @@ get_dyn_obstacles<span class="p">(</span><span class="bp">self</span><span class
     <span class="k">while</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exiting</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">obstacles_found</span>
             <span class="ow">and</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">SerialController</span><span class="o">.</span><span class="n">max_parse_attemps</span><span class="p">):</span>
         <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
         <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"&gt;"</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="k">try</span><span class="p">:</span>
@@ -544,9 +551,9 @@ get_dyn_obstacles<span class="p">(</span><span class="bp">self</span><span class
 </div>
 </div>
 <div class="doc doc-object doc-method">
-<h2 class="doc doc-heading" id="cogip.serialcontroller.SerialController.get_pose">
+<h2 class="doc doc-heading" id="cogip.serialcontroller.SerialController.get_state">
 <code class="highlight language-python">
-get_pose<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+get_state<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
 </h2>
 <div class="doc doc-contents">
 <p>Get position information from the robot and send it to the main window
@@ -554,25 +561,29 @@ and to the robot entity.</p>
 <details class="quote">
 <summary>Source code in <code>cogip/serialcontroller.py</code></summary>
 <div class="highlight">
-<pre><span></span><code><span class="k">def</span> <span class="nf">get_pose</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<pre><span></span><code><span class="k">def</span> <span class="nf">get_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
     <span class="sd">"""</span>
 <span class="sd">    Get position information from the robot and send it to the main window</span>
 <span class="sd">    and to the robot entity.</span>
 <span class="sd">    """</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">"_pose</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">b</span><span class="s2">"_state</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
 
     <span class="n">pose_found</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">attempt</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">while</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exiting</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">pose_found</span>
             <span class="ow">and</span> <span class="n">attempt</span> <span class="o">&lt;</span> <span class="n">SerialController</span><span class="o">.</span><span class="n">max_parse_attemps</span><span class="p">):</span>
         <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">continue</span>
         <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"&gt;"</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="k">try</span><span class="p">:</span>
-            <span class="n">positions</span> <span class="o">=</span> <span class="n">Positions</span><span class="o">.</span><span class="n">parse_raw</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_robot_position</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">positions</span><span class="o">.</span><span class="n">pose_current</span><span class="p">,</span> <span class="n">positions</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_robot_position_to_reach</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">positions</span><span class="o">.</span><span class="n">pose_order</span><span class="p">,</span> <span class="n">positions</span><span class="o">.</span><span class="n">mode</span><span class="p">)</span>
+            <span class="n">state</span> <span class="o">=</span> <span class="n">RobotState</span><span class="o">.</span><span class="n">parse_raw</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
             <span class="n">pose_found</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">cycle</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_cycle</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_cycle</span> <span class="o">=</span> <span class="n">state</span><span class="o">.</span><span class="n">cycle</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_robot_state</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
         <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>
             <span class="n">attempt</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_console_text</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
@@ -677,13 +688,13 @@ parse the data and send corresponding information</p>
 
     <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">exiting</span><span class="p">:</span>
         <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.01</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">menu_has_pose</span><span class="p">:</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">menu_has_state_cmd</span><span class="p">:</span>
             <span class="k">continue</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"main_loop: try to acquire lock"</span><span class="p">)</span>
         <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_lock</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"main_loop: lock acquired"</span><span class="p">)</span>
 
-            <span class="bp">self</span><span class="o">.</span><span class="n">get_pose</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">get_state</span><span class="p">()</span>
 
             <span class="bp">self</span><span class="o">.</span><span class="n">get_dyn_obstacles</span><span class="p">()</span>
 
@@ -730,7 +741,7 @@ reload_menu<span class="p">(</span><span class="bp">self</span><span class="p">)
     <span class="sd">"""</span>
 <span class="sd">    Get the current menu from the robot and send it to the main window.</span>
 <span class="sd">    """</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">menu_has_pose</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">menu_has_state_cmd</span> <span class="o">=</span> <span class="kc">False</span>
 
     <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"reload_menu: try to acquire lock"</span><span class="p">)</span>
     <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_lock</span><span class="p">:</span>
@@ -739,14 +750,16 @@ reload_menu<span class="p">(</span><span class="bp">self</span><span class="p">)
 
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serial_port</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="n">errors</span><span class="o">=</span><span class="s2">"ignore"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">continue</span>
             <span class="k">if</span> <span class="n">line</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"&gt;"</span><span class="p">:</span>
                 <span class="k">continue</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">menu</span> <span class="o">=</span> <span class="n">ShellMenu</span><span class="o">.</span><span class="n">parse_raw</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">signal_new_menu</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">menu</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">menu</span><span class="o">.</span><span class="n">entries</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">cmd</span> <span class="o">==</span> <span class="s2">"_pose"</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">menu_has_pose</span> <span class="o">=</span> <span class="kc">True</span>
+                    <span class="k">if</span> <span class="n">entry</span><span class="o">.</span><span class="n">cmd</span> <span class="o">==</span> <span class="s2">"_state"</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">menu_has_state_cmd</span> <span class="o">=</span> <span class="kc">True</span>
                         <span class="k">break</span>
                 <span class="k">break</span>
             <span class="k">except</span> <span class="n">ValidationError</span><span class="p">:</span>

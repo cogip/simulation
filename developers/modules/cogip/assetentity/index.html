@@ -237,6 +237,11 @@
     </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="../chartsview/" title="chartsview.py">
+      chartsview.py
+    </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="../dynobstacleentity/" title="dynobstacleentity.py">
       dynobstacleentity.py
     </a>
@@ -662,7 +667,7 @@ It it executed after entity and transform components are ready.</p>
 <div class="doc doc-object doc-method">
 <h2 class="doc doc-heading" id="cogip.assetentity.AssetEntity.set_position">
 <code class="highlight language-python">
-set_position<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> </code>
+set_position<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_state</span><span class="p">)</span> </code>
 </h2>
 <div class="doc doc-contents">
 <p>Qt slot called to set the entity's new position.</p>
@@ -678,18 +683,10 @@ set_position<span class="p">(</span><span class="bp">self</span><span class="p">
 </thead>
 <tbody>
 <tr>
-<td><code>new_position</code></td>
-<td><code>Pose</code></td>
+<td><code>new_state</code></td>
+<td><code>RobotState</code></td>
 <td>
-<p>new position</p>
-</td>
-<td><em>required</em></td>
-</tr>
-<tr>
-<td><code>mode</code></td>
-<td><code>CtrlModeEnum</code></td>
-<td>
-<p>unused</p>
+<p>new robot state</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -698,21 +695,20 @@ set_position<span class="p">(</span><span class="bp">self</span><span class="p">
 <details class="quote">
 <summary>Source code in <code>cogip/assetentity.py</code></summary>
 <div class="highlight">
-<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">Pose</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">set_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_position</span><span class="p">:</span> <span class="n">Pose</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">CtrlModeEnum</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">RobotState</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">set_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_state</span><span class="p">:</span> <span class="n">RobotState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="sd">"""</span>
 <span class="sd">    Qt slot called to set the entity's new position.</span>
 
 <span class="sd">    Arguments:</span>
-<span class="sd">        new_position: new position</span>
-<span class="sd">        mode: unused</span>
+<span class="sd">        new_state: new robot state</span>
 <span class="sd">    """</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">transform_component</span><span class="p">:</span>
         <span class="k">return</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">transform_component</span><span class="o">.</span><span class="n">setTranslation</span><span class="p">(</span>
-        <span class="n">QtGui</span><span class="o">.</span><span class="n">QVector3D</span><span class="p">(</span><span class="n">new_position</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">new_position</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">transform_component</span><span class="o">.</span><span class="n">setRotationZ</span><span class="p">(</span><span class="n">new_position</span><span class="o">.</span><span class="n">O</span> <span class="o">+</span> <span class="mi">90</span><span class="p">)</span>
+        <span class="n">QtGui</span><span class="o">.</span><span class="n">QVector3D</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="n">pose_current</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">new_state</span><span class="o">.</span><span class="n">pose_current</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">transform_component</span><span class="o">.</span><span class="n">setRotationZ</span><span class="p">(</span><span class="n">new_state</span><span class="o">.</span><span class="n">pose_current</span><span class="o">.</span><span class="n">O</span> <span class="o">+</span> <span class="mi">90</span><span class="p">)</span>
 </code></pre>
 </div>
 </details>

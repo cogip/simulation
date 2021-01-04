@@ -203,6 +203,11 @@
     </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="../cogip/chartsview/" title="chartsview.py">
+      chartsview.py
+    </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="../cogip/dynobstacleentity/" title="dynobstacleentity.py">
       dynobstacleentity.py
     </a>
@@ -357,7 +362,7 @@ to create the <code>simulator</code> script using this function as entrypoint.</
             <span class="c1"># "-v",</span>
             <span class="c1"># "-v",</span>
             <span class="sa">f</span><span class="s1">'PTY,link=</span><span class="si">{</span><span class="n">virtual_uart</span><span class="si">}</span><span class="s1">,rawer,wait-slave'</span><span class="p">,</span>
-            <span class="sa">f</span><span class="s1">'EXEC:"</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">native_binary</span><span class="si">}</span><span class="s1">"'</span>
+            <span class="sa">f</span><span class="s1">'EXEC:"</span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">native_binary</span><span class="o">.</span><span class="n">resolve</span><span class="p">()</span><span class="si">}</span><span class="s1">"'</span>
         <span class="p">]</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Execute: </span><span class="si">{</span><span class="s1">' '</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">socat_args</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
         <span class="n">socat_process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">socat_args</span><span class="p">,</span> <span class="n">executable</span><span class="o">=</span><span class="n">socat_path</span><span class="p">)</span>
@@ -371,52 +376,50 @@ to create the <code>simulator</code> script using this function as entrypoint.</
     <span class="c1"># Create UI</span>
     <span class="n">win</span> <span class="o">=</span> <span class="n">MainWindow</span><span class="p">()</span>
 
-    <span class="c1"># Create game view</span>
-    <span class="n">game_view</span> <span class="o">=</span> <span class="n">GameView</span><span class="p">()</span>
-    <span class="n">win</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="n">game_view</span><span class="p">)</span>
-
     <span class="c1"># Create table entity</span>
     <span class="n">table_entity</span> <span class="o">=</span> <span class="n">AssetEntity</span><span class="p">(</span>
         <span class="n">asset_path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">table_filename</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">(),</span>
         <span class="n">asset_name</span><span class="o">=</span><span class="s2">"Table2019"</span>
     <span class="p">)</span>
-    <span class="n">game_view</span><span class="o">.</span><span class="n">add_asset</span><span class="p">(</span><span class="n">table_entity</span><span class="p">)</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">game_view</span><span class="o">.</span><span class="n">add_asset</span><span class="p">(</span><span class="n">table_entity</span><span class="p">)</span>
 
     <span class="c1"># Create robot entity</span>
     <span class="n">robot_entity</span> <span class="o">=</span> <span class="n">RobotEntity</span><span class="p">(</span>
         <span class="n">asset_path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">robot_filename</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">(),</span>
         <span class="n">asset_name</span><span class="o">=</span><span class="s2">"Robot2019"</span>
     <span class="p">)</span>
-    <span class="n">game_view</span><span class="o">.</span><span class="n">add_asset</span><span class="p">(</span><span class="n">robot_entity</span><span class="p">)</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">game_view</span><span class="o">.</span><span class="n">add_asset</span><span class="p">(</span><span class="n">robot_entity</span><span class="p">)</span>
 
     <span class="c1"># Create robot entity</span>
     <span class="n">robot_final_entity</span> <span class="o">=</span> <span class="n">RobotEntity</span><span class="p">(</span>
         <span class="n">asset_path</span><span class="o">=</span><span class="n">Path</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">robot_filename</span><span class="p">)</span><span class="o">.</span><span class="n">resolve</span><span class="p">(),</span>
-        <span class="c1"># asset_name="Robot2019_Simu"</span>
         <span class="n">asset_name</span><span class="o">=</span><span class="s2">"Robot2019"</span><span class="p">,</span>
         <span class="n">enable_tof_sensors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">enable_lidar_sensors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">color</span><span class="o">=</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="o">.</span><span class="n">fromRgb</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">50</span><span class="p">)</span>
     <span class="p">)</span>
-    <span class="n">game_view</span><span class="o">.</span><span class="n">add_asset</span><span class="p">(</span><span class="n">robot_final_entity</span><span class="p">)</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">game_view</span><span class="o">.</span><span class="n">add_asset</span><span class="p">(</span><span class="n">robot_final_entity</span><span class="p">)</span>
 
     <span class="c1"># Connect UI signals to Controller slots</span>
     <span class="n">win</span><span class="o">.</span><span class="n">signal_send_command</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">controller</span><span class="o">.</span><span class="n">new_command</span><span class="p">)</span>
 
     <span class="c1"># Connect UI signals to GameView slots</span>
-    <span class="n">win</span><span class="o">.</span><span class="n">signal_add_obstacle</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">game_view</span><span class="o">.</span><span class="n">add_obstacle</span><span class="p">)</span>
-    <span class="n">win</span><span class="o">.</span><span class="n">signal_load_obstacles</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">game_view</span><span class="o">.</span><span class="n">load_obstacles</span><span class="p">)</span>
-    <span class="n">win</span><span class="o">.</span><span class="n">signal_save_obstacles</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">game_view</span><span class="o">.</span><span class="n">save_obstacles</span><span class="p">)</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">signal_add_obstacle</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">win</span><span class="o">.</span><span class="n">game_view</span><span class="o">.</span><span class="n">add_obstacle</span><span class="p">)</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">signal_load_obstacles</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">win</span><span class="o">.</span><span class="n">game_view</span><span class="o">.</span><span class="n">load_obstacles</span><span class="p">)</span>
+    <span class="n">win</span><span class="o">.</span><span class="n">signal_save_obstacles</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">win</span><span class="o">.</span><span class="n">game_view</span><span class="o">.</span><span class="n">save_obstacles</span><span class="p">)</span>
 
     <span class="c1"># Connect Controller signals to Robot slots</span>
-    <span class="n">controller</span><span class="o">.</span><span class="n">signal_new_robot_position</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">robot_entity</span><span class="o">.</span><span class="n">set_position</span><span class="p">)</span>
-    <span class="n">controller</span><span class="o">.</span><span class="n">signal_new_robot_position_to_reach</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">robot_final_entity</span><span class="o">.</span><span class="n">set_position</span><span class="p">)</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">signal_new_robot_state</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">robot_entity</span><span class="o">.</span><span class="n">set_position</span><span class="p">)</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">signal_new_robot_state</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">robot_final_entity</span><span class="o">.</span><span class="n">set_position</span><span class="p">)</span>
     <span class="n">controller</span><span class="o">.</span><span class="n">signal_new_dyn_obstacles</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">robot_entity</span><span class="o">.</span><span class="n">set_dyn_obstacles</span><span class="p">)</span>
 
     <span class="c1"># Connect Controller signals to UI slots</span>
     <span class="n">controller</span><span class="o">.</span><span class="n">signal_new_console_text</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">win</span><span class="o">.</span><span class="n">log_text</span><span class="o">.</span><span class="n">append</span><span class="p">)</span>
     <span class="n">controller</span><span class="o">.</span><span class="n">signal_new_menu</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">win</span><span class="o">.</span><span class="n">load_menu</span><span class="p">)</span>
-    <span class="n">controller</span><span class="o">.</span><span class="n">signal_new_robot_position</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">win</span><span class="o">.</span><span class="n">new_robot_position</span><span class="p">)</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">signal_new_robot_state</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">win</span><span class="o">.</span><span class="n">new_robot_state</span><span class="p">)</span>
+
+    <span class="c1"># Connect Controller signals to ChartsView slots</span>
+    <span class="n">controller</span><span class="o">.</span><span class="n">signal_new_robot_state</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">win</span><span class="o">.</span><span class="n">charts_view</span><span class="o">.</span><span class="n">new_robot_state</span><span class="p">)</span>
 
     <span class="c1"># Show UI</span>
     <span class="n">win</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>

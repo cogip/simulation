@@ -180,6 +180,11 @@
     </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="../chartsview/" title="chartsview.py">
+      chartsview.py
+    </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="../dynobstacleentity/" title="dynobstacleentity.py">
       dynobstacleentity.py
     </a>
@@ -236,6 +241,11 @@
   </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.charts_toggled">
+    charts_toggled()
+  </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.mainwindow.MainWindow.load_menu">
     load_menu()
   </a>
@@ -246,8 +256,8 @@
   </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.new_robot_position">
-    new_robot_position()
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.new_robot_state">
+    new_robot_state()
   </a>
 </li>
 <li class="md-nav__item">
@@ -341,6 +351,11 @@
   </a>
 </li>
 <li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.charts_toggled">
+    charts_toggled()
+  </a>
+</li>
+<li class="md-nav__item">
 <a class="md-nav__link" href="#cogip.mainwindow.MainWindow.load_menu">
     load_menu()
   </a>
@@ -351,8 +366,8 @@
   </a>
 </li>
 <li class="md-nav__item">
-<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.new_robot_position">
-    new_robot_position()
+<a class="md-nav__link" href="#cogip.mainwindow.MainWindow.new_robot_state">
+    new_robot_state()
   </a>
 </li>
 <li class="md-nav__item">
@@ -460,10 +475,16 @@ __init__<span class="p">(</span><span class="bp">self</span><span class="p">,</s
 
     <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s1">'COGIP Simulator'</span><span class="p">)</span>
 
+    <span class="bp">self</span><span class="o">.</span><span class="n">central_widget</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">central_layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QHBoxLayout</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">central_widget</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">central_layout</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setCentralWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">central_widget</span><span class="p">)</span>
+
     <span class="c1"># Menu bar</span>
     <span class="n">menubar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">menuBar</span><span class="p">()</span>
     <span class="n">file_menu</span> <span class="o">=</span> <span class="n">menubar</span><span class="o">.</span><span class="n">addMenu</span><span class="p">(</span><span class="s1">'&amp;File'</span><span class="p">)</span>
     <span class="n">obstacles_menu</span> <span class="o">=</span> <span class="n">menubar</span><span class="o">.</span><span class="n">addMenu</span><span class="p">(</span><span class="s1">'&amp;Obstacles'</span><span class="p">)</span>
+    <span class="n">view_menu</span> <span class="o">=</span> <span class="n">menubar</span><span class="o">.</span><span class="n">addMenu</span><span class="p">(</span><span class="s1">'&amp;View'</span><span class="p">)</span>
 
     <span class="c1"># Toolbars</span>
     <span class="n">file_toolbar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">addToolBar</span><span class="p">(</span><span class="s1">'File'</span><span class="p">)</span>
@@ -472,28 +493,35 @@ __init__<span class="p">(</span><span class="bp">self</span><span class="p">,</s
     <span class="c1"># Status bar</span>
     <span class="n">status_bar</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">statusBar</span><span class="p">()</span>
 
-    <span class="n">pos_x_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"X"</span><span class="p">)</span>
+    <span class="n">cycle_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Cycle:"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cycle_text</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cycle_text</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cycle_text</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
+    <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="n">cycle_label</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cycle_text</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">pos_x_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"X:"</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
     <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="n">pos_x_label</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="n">pos_y_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Y"</span><span class="p">)</span>
+    <span class="n">pos_y_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Y:"</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
     <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="n">pos_y_label</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="n">pos_angle_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Angle"</span><span class="p">)</span>
+    <span class="n">pos_angle_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Angle:"</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
     <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="n">pos_angle_label</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
     <span class="n">status_bar</span><span class="o">.</span><span class="n">addPermanentWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 
-    <span class="n">pos_mode_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Mode"</span><span class="p">)</span>
+    <span class="n">pos_mode_label</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"Mode:"</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_mode_text</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_mode_text</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignRight</span> <span class="o">|</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignVCenter</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">pos_mode_text</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
@@ -561,26 +589,39 @@ __init__<span class="p">(</span><span class="bp">self</span><span class="p">,</s
     <span class="n">file_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">dock</span><span class="o">.</span><span class="n">toggleViewAction</span><span class="p">())</span>
     <span class="n">obstacles_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="n">dock</span><span class="o">.</span><span class="n">toggleViewAction</span><span class="p">())</span>
 
-    <span class="c1"># Command menu dock</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QDockWidget</span><span class="p">(</span><span class="s2">"Actions"</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span><span class="o">.</span><span class="n">setAllowedAreas</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">LeftDockWidgetArea</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span><span class="o">.</span><span class="n">setFeatures</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QDockWidget</span><span class="o">.</span><span class="n">NoDockWidgetFeatures</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">addDockWidget</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">LeftDockWidgetArea</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span><span class="p">)</span>
-
+    <span class="c1"># Shell menu</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">current_menu</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-    <span class="c1"># Set a default menu to allocate some space in the UI</span>
-    <span class="n">actions_widget</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">()</span>
-    <span class="n">actions_layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QVBoxLayout</span><span class="p">()</span>
-    <span class="n">actions_widget</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">actions_layout</span><span class="p">)</span>
-    <span class="n">actions_title</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"No menu loaded"</span><span class="p">)</span>
-    <span class="n">actions_title</span><span class="o">.</span><span class="n">setTextFormat</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">RichText</span><span class="p">)</span>
-    <span class="n">actions_title</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignHCenter</span><span class="p">)</span>
-    <span class="n">actions_title</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
-    <span class="n">actions_title</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">"font-weight: bold; color: blue"</span><span class="p">)</span>
-    <span class="n">actions_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">actions_title</span><span class="p">)</span>
-    <span class="n">actions_layout</span><span class="o">.</span><span class="n">addStretch</span><span class="p">()</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="n">actions_widget</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">menu_staked_widget</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QStackedWidget</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">central_layout</span><span class="o">.</span><span class="n">insertWidget</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">menu_staked_widget</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># Set a empty menu to allocate some space in the UI</span>
+    <span class="n">empty_menu_widget</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QStackedWidget</span><span class="p">()</span>
+    <span class="n">empty_menu_layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QVBoxLayout</span><span class="p">()</span>
+    <span class="n">empty_menu_widget</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">empty_menu_layout</span><span class="p">)</span>
+    <span class="n">empty_menu_title</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QLabel</span><span class="p">(</span><span class="s2">"No menu loaded"</span><span class="p">)</span>
+    <span class="n">empty_menu_title</span><span class="o">.</span><span class="n">setTextFormat</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">RichText</span><span class="p">)</span>
+    <span class="n">empty_menu_title</span><span class="o">.</span><span class="n">setAlignment</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">AlignHCenter</span><span class="p">)</span>
+    <span class="n">empty_menu_title</span><span class="o">.</span><span class="n">setFrameStyle</span><span class="p">(</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Panel</span> <span class="o">|</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFrame</span><span class="o">.</span><span class="n">Sunken</span><span class="p">)</span>
+    <span class="n">empty_menu_title</span><span class="o">.</span><span class="n">setStyleSheet</span><span class="p">(</span><span class="s2">"font-weight: bold; color: blue"</span><span class="p">)</span>
+    <span class="n">empty_menu_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">empty_menu_title</span><span class="p">)</span>
+    <span class="n">empty_menu_layout</span><span class="o">.</span><span class="n">addStretch</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">menu_staked_widget</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">empty_menu_widget</span><span class="p">)</span>
+
+    <span class="c1"># GameView widget</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">game_view</span> <span class="o">=</span> <span class="n">GameView</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">central_layout</span><span class="o">.</span><span class="n">insertWidget</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">game_view</span><span class="p">,</span> <span class="mi">10</span><span class="p">)</span>
+
+    <span class="c1"># Charts widget</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">charts_view</span> <span class="o">=</span> <span class="n">ChartsView</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="c1"># Add view action</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">view_charts_action</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QAction</span><span class="p">(</span><span class="s1">'Calibration Charts'</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">view_charts_action</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s1">'Display/Hide calibration charts'</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">view_charts_action</span><span class="o">.</span><span class="n">setCheckable</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">view_charts_action</span><span class="o">.</span><span class="n">toggled</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">charts_toggled</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">charts_view</span><span class="o">.</span><span class="n">closed</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">partial</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view_charts_action</span><span class="o">.</span><span class="n">setChecked</span><span class="p">,</span> <span class="kc">False</span><span class="p">))</span>
+    <span class="n">view_menu</span><span class="o">.</span><span class="n">addAction</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">view_charts_action</span><span class="p">)</span>
 </code></pre>
 </div>
 </details>
@@ -683,6 +724,60 @@ and arguments strings fetched from the command button in the menu.</p>
 </div>
 </div>
 <div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.charts_toggled">
+<code class="highlight language-python">
+charts_toggled<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Show/hide the calibration charts.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>checked</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Show action has checked or unchecked</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/mainwindow.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="nb">bool</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">charts_toggled</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">checked</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Show/hide the calibration charts.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        checked: Show action has checked or unchecked</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">checked</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charts_view</span><span class="o">.</span><span class="n">restore_saved_geometry</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charts_view</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charts_view</span><span class="o">.</span><span class="n">raise_</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charts_view</span><span class="o">.</span><span class="n">activateWindow</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charts_view</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
 <h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.load_menu">
 <code class="highlight language-python">
 load_menu<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_menu</span><span class="p">)</span> </code>
@@ -772,9 +867,10 @@ load_menu<span class="p">(</span><span class="bp">self</span><span class="p">,</
 
         <span class="n">layout</span><span class="o">.</span><span class="n">addStretch</span><span class="p">()</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">menu_widgets</span><span class="p">[</span><span class="n">new_menu</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">menu_widgets</span><span class="p">[</span><span class="n">new_menu</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">menu_staked_widget</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
 
-    <span class="bp">self</span><span class="o">.</span><span class="n">actions_dock</span><span class="o">.</span><span class="n">setWidget</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">menu_staked_widget</span><span class="o">.</span><span class="n">setCurrentWidget</span><span class="p">(</span><span class="n">widget</span><span class="p">)</span>
 </code></pre>
 </div>
 </details>
@@ -814,9 +910,9 @@ load_obstacles<span class="p">(</span><span class="bp">self</span><span class="p
 </div>
 </div>
 <div class="doc doc-object doc-method">
-<h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.new_robot_position">
+<h2 class="doc doc-heading" id="cogip.mainwindow.MainWindow.new_robot_state">
 <code class="highlight language-python">
-new_robot_position<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pose</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> </code>
+new_robot_state<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> </code>
 </h2>
 <div class="doc doc-contents">
 <p>Qt Slot</p>
@@ -833,18 +929,10 @@ new_robot_position<span class="p">(</span><span class="bp">self</span><span clas
 </thead>
 <tbody>
 <tr>
-<td><code>pose</code></td>
-<td><code>Pose</code></td>
+<td><code>state</code></td>
+<td><code>RobotState</code></td>
 <td>
-<p>Position of the robot</p>
-</td>
-<td><em>required</em></td>
-</tr>
-<tr>
-<td><code>mode</code></td>
-<td><code>CtrlModeEnum</code></td>
-<td>
-<p>Mode</p>
+<p>Robot state</p>
 </td>
 <td><em>required</em></td>
 </tr>
@@ -853,21 +941,21 @@ new_robot_position<span class="p">(</span><span class="bp">self</span><span clas
 <details class="quote">
 <summary>Source code in <code>cogip/mainwindow.py</code></summary>
 <div class="highlight">
-<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">Pose</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">new_robot_position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pose</span><span class="p">:</span> <span class="n">Pose</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">CtrlModeEnum</span><span class="p">):</span>
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">RobotState</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">new_robot_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">RobotState</span><span class="p">):</span>
     <span class="sd">"""</span>
 <span class="sd">    Qt Slot</span>
 
 <span class="sd">    Update robot position information in the status bar.</span>
 
 <span class="sd">    Arguments:</span>
-<span class="sd">        pose: Position of the robot</span>
-<span class="sd">        mode: Mode</span>
+<span class="sd">        state: Robot state</span>
 <span class="sd">    """</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">pos_mode_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">mode</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">x</span><span class="p">))</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">pose</span><span class="o">.</span><span class="n">O</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_mode_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">mode</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cycle_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">cycle</span> <span class="ow">or</span> <span class="mi">0</span><span class="si">:</span><span class="s2">&gt;#6d</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_x_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">pose_current</span><span class="o">.</span><span class="n">x</span><span class="si">:</span><span class="s2">&gt; #6.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_y_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">pose_current</span><span class="o">.</span><span class="n">y</span><span class="si">:</span><span class="s2">&gt; #6.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">pos_angle_text</span><span class="o">.</span><span class="n">setText</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">state</span><span class="o">.</span><span class="n">pose_current</span><span class="o">.</span><span class="n">O</span><span class="si">:</span><span class="s2">&gt; #4.2f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 </code></pre>
 </div>
 </details>

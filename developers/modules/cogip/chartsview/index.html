@@ -1,0 +1,1124 @@
+
+<!DOCTYPE html>
+
+<html class="no-js" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1" name="viewport"/>
+<link href="../../../../assets/images/favicon.png" rel="shortcut icon"/>
+<meta content="mkdocs-1.1.2, mkdocs-material-5.5.12" name="generator"/>
+<title>chartsview.py - COGIP Simulator</title>
+<link href="../../../../assets/stylesheets/main.4dd2dd8d.min.css" rel="stylesheet"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,700%7CRoboto+Mono&amp;display=fallback" rel="stylesheet"/>
+<style>body,input{font-family:"Roboto",-apple-system,BlinkMacSystemFont,Helvetica,Arial,sans-serif}code,kbd,pre{font-family:"Roboto Mono",SFMono-Regular,Consolas,Menlo,monospace}</style>
+</head>
+<body dir="ltr">
+<input autocomplete="off" class="md-toggle" data-md-toggle="drawer" id="__drawer" type="checkbox"/>
+<input autocomplete="off" class="md-toggle" data-md-toggle="search" id="__search" type="checkbox"/>
+<label class="md-overlay" for="__drawer"></label>
+<div data-md-component="skip">
+<a class="md-skip" href="#cogip.chartsview">
+          Skip to content
+        </a>
+</div>
+<div data-md-component="announce">
+</div>
+<header class="md-header" data-md-component="header">
+<nav aria-label="Header" class="md-header-nav md-grid">
+<a aria-label="COGIP Simulator" class="md-header-nav__button md-logo" href="../../../.." title="COGIP Simulator">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
+</a>
+<label class="md-header-nav__button md-icon" for="__drawer">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"></path></svg>
+</label>
+<div class="md-header-nav__title" data-md-component="header-title">
+<div class="md-header-nav__ellipsis">
+<span class="md-header-nav__topic md-ellipsis">
+            COGIP Simulator
+          </span>
+<span class="md-header-nav__topic md-ellipsis">
+            
+              chartsview.py
+            
+          </span>
+</div>
+</div>
+<label class="md-header-nav__button md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"></path></svg>
+</label>
+<div class="md-search" data-md-component="search" role="dialog">
+<label class="md-search__overlay" for="__search"></label>
+<div class="md-search__inner" role="search">
+<form class="md-search__form" name="search">
+<input aria-label="Search" autocapitalize="off" autocomplete="off" autocorrect="off" class="md-search__input" data-md-component="search-query" data-md-state="active" name="query" placeholder="Search" spellcheck="false" type="text"/>
+<label class="md-search__icon md-icon" for="__search">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M9.5 3A6.5 6.5 0 0116 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 019.5 16 6.5 6.5 0 013 9.5 6.5 6.5 0 019.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"></path></svg>
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
+</label>
+<button aria-label="Clear" class="md-search__icon md-icon" data-md-component="search-reset" tabindex="-1" type="reset">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"></path></svg>
+</button>
+</form>
+<div class="md-search__output">
+<div class="md-search__scrollwrap" data-md-scrollfix="">
+<div class="md-search-result" data-md-component="search-result">
+<div class="md-search-result__meta">
+            Initializing search
+          </div>
+<ol class="md-search-result__list"></ol>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="md-header-nav__source">
+<a class="md-source" href="https://github.com/cogip/simulation/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    cogip/simulation
+  </div>
+</a>
+</div>
+</nav>
+</header>
+<div class="md-container" data-md-component="container">
+<main class="md-main" data-md-component="main">
+<div class="md-main__inner md-grid">
+<div class="md-sidebar md-sidebar--primary" data-md-component="navigation">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Navigation" class="md-nav md-nav--primary" data-md-level="0">
+<label class="md-nav__title" for="__drawer">
+<a aria-label="COGIP Simulator" class="md-nav__button md-logo" href="../../../.." title="COGIP Simulator">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 8a3 3 0 003-3 3 3 0 00-3-3 3 3 0 00-3 3 3 3 0 003 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"></path></svg>
+</a>
+    COGIP Simulator
+  </label>
+<div class="md-nav__source">
+<a class="md-source" href="https://github.com/cogip/simulation/" title="Go to repository">
+<div class="md-source__icon md-icon">
+<svg viewbox="0 0 448 512" xmlns="http://www.w3.org/2000/svg"><path d="M439.55 236.05L244 40.45a28.87 28.87 0 00-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 01-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 000 40.81l195.61 195.6a28.86 28.86 0 0040.8 0l194.69-194.69a28.86 28.86 0 000-40.81z"></path></svg>
+</div>
+<div class="md-source__repository">
+    cogip/simulation
+  </div>
+</a>
+</div>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../.." title="Overview">
+      Overview
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../install/" title="Installation">
+      Installation
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../../usage/" title="Usage">
+      Usage
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4" id="nav-4" type="checkbox"/>
+<label class="md-nav__link" for="nav-4">
+      Developer's Doc
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Developer's Doc" class="md-nav" data-md-level="1">
+<label class="md-nav__title" for="nav-4">
+<span class="md-nav__icon md-icon"></span>
+        Developer's Doc
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../../developers/" title="Introduction">
+      Introduction
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2" id="nav-4-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-4-2">
+      Modules
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="Modules" class="md-nav" data-md-level="2">
+<label class="md-nav__title" for="nav-4-2">
+<span class="md-nav__icon md-icon"></span>
+        Modules
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../../main/" title="__main__.py">
+      __main__.py
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active md-nav__item--nested">
+<input checked="" class="md-nav__toggle md-toggle" data-md-toggle="nav-4-2-2" id="nav-4-2-2" type="checkbox"/>
+<label class="md-nav__link" for="nav-4-2-2">
+      cogip
+      <span class="md-nav__icon md-icon"></span>
+</label>
+<nav aria-label="cogip" class="md-nav" data-md-level="3">
+<label class="md-nav__title" for="nav-4-2-2">
+<span class="md-nav__icon md-icon"></span>
+        cogip
+      </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="../assetentity/" title="assetentity.py">
+      assetentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../config/" title="config.py">
+      config.py
+    </a>
+</li>
+<li class="md-nav__item md-nav__item--active">
+<input class="md-nav__toggle md-toggle" data-md-toggle="toc" id="__toc" type="checkbox"/>
+<label class="md-nav__link md-nav__link--active" for="__toc">
+        chartsview.py
+        <span class="md-nav__icon md-icon"></span>
+</label>
+<a class="md-nav__link md-nav__link--active" href="./" title="chartsview.py">
+      chartsview.py
+    </a>
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview">
+    cogip.chartsview
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartsView">
+    ChartsView
+  </a>
+<nav aria-label="ChartsView" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartsView.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartsView.closeEvent">
+    closeEvent()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartsView.new_robot_state">
+    new_robot_state()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartsView.restore_saved_geometry">
+    restore_saved_geometry()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView">
+    ChartView
+  </a>
+<nav aria-label="ChartView" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.new_robot_state">
+    new_robot_state()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.recalculate_range_x">
+    recalculate_range_x()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.reset">
+    reset()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.save_values">
+    save_values()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.slider_changed">
+    slider_changed()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../dynobstacleentity/" title="dynobstacleentity.py">
+      dynobstacleentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../gameview/" title="gameview.py">
+      gameview.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../impactentity/" title="impactentity.py">
+      impactentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../mainwindow/" title="mainwindow.py">
+      mainwindow.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../models/" title="models.py">
+      models.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../obstacleentity/" title="obstacleentity.py">
+      obstacleentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../robotentity/" title="robotentity.py">
+      robotentity.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../sensor/" title="sensor.py">
+      sensor.py
+    </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="../serialcontroller/" title="serialcontroller.py">
+      serialcontroller.py
+    </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-sidebar md-sidebar--secondary" data-md-component="toc">
+<div class="md-sidebar__scrollwrap">
+<div class="md-sidebar__inner">
+<nav aria-label="Table of contents" class="md-nav md-nav--secondary">
+<label class="md-nav__title" for="__toc">
+<span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+<ul class="md-nav__list" data-md-scrollfix="">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview">
+    cogip.chartsview
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartsView">
+    ChartsView
+  </a>
+<nav aria-label="ChartsView" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartsView.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartsView.closeEvent">
+    closeEvent()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartsView.new_robot_state">
+    new_robot_state()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartsView.restore_saved_geometry">
+    restore_saved_geometry()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView">
+    ChartView
+  </a>
+<nav aria-label="ChartView" class="md-nav">
+<ul class="md-nav__list">
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.__init__">
+    __init__()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.new_robot_state">
+    new_robot_state()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.recalculate_range_x">
+    recalculate_range_x()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.reset">
+    reset()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.save_values">
+    save_values()
+  </a>
+</li>
+<li class="md-nav__item">
+<a class="md-nav__link" href="#cogip.chartsview.ChartView.slider_changed">
+    slider_changed()
+  </a>
+</li>
+</ul>
+</nav>
+</li>
+</ul>
+</nav>
+</div>
+</div>
+</div>
+<div class="md-content">
+<article class="md-content__inner md-typeset">
+<a class="md-content__button md-icon" href="https://github.com/cogip/simulation/edit/master/docs/developers/modules/cogip/chartsview.md" title="Edit this page">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20.71 7.04c.39-.39.39-1.04 0-1.41l-2.34-2.34c-.37-.39-1.02-.39-1.41 0l-1.84 1.83 3.75 3.75M3 17.25V21h3.75L17.81 9.93l-3.75-3.75L3 17.25z"></path></svg>
+</a>
+<div class="doc doc-object doc-module">
+<h1 class="hidden-toc" href="#cogip.chartsview" id="cogip.chartsview" style="visibility: hidden; width: 0; height: 0;">
+</h1>
+<div class="doc doc-contents first">
+<div class="doc doc-children">
+<div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.chartsview.ChartsView">
+<code>ChartsView</code>
+</h1>
+<div class="doc doc-contents">
+<p>ChartsView class</p>
+<p>Build the calibration charts window.</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>saved_geometry</code></td>
+<td><code>QRect</code></td>
+<td>
+<p>Saved window position</p>
+</td>
+</tr>
+<tr>
+<td><code>closed</code></td>
+<td><code>Signal</code></td>
+<td>
+<p>Qt signal emitted when the window is hidden</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="doc doc-children">
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.chartsview.ChartsView.__init__">
+<code class="highlight language-python">
+__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> </code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-special"><code>special</code></small>
+</span>
+</h2>
+<div class="doc doc-contents">
+<p>Class constructor.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>parent</code></td>
+<td><code>Optional[PySide2.QtWidgets.QWidget]</code></td>
+<td>
+<p>The parent widget</p>
+</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/chartsview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Class constructor.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        parent: The parent widget</span>
+<span class="sd">    """</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">setWindowTitle</span><span class="p">(</span><span class="s2">"Calibration Charts"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setModal</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setMinimumSize</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QSize</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">))</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QGridLayout</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">linear_speed_chart</span> <span class="o">=</span> <span class="n">ChartView</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"Linear Speed"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">linear_speed_chart</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.chartsview.ChartsView.closeEvent">
+<code class="highlight language-python">
+closeEvent<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Hide the window.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>event</code></td>
+<td><code>QCloseEvent</code></td>
+<td>
+<p>The close event (unused)</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/chartsview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">closeEvent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event</span><span class="p">:</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QCloseEvent</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Hide the window.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        event: The close event (unused)</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">saved_geometry</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">geometry</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">closed</span><span class="o">.</span><span class="n">emit</span><span class="p">()</span>
+    <span class="n">event</span><span class="o">.</span><span class="n">accept</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.chartsview.ChartsView.new_robot_state">
+<code class="highlight language-python">
+new_robot_state<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Send robot data to corresponding charts</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>state</code></td>
+<td><code>RobotState</code></td>
+<td>
+<p>New robot state</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/chartsview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="n">RobotState</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">new_robot_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">:</span> <span class="n">RobotState</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Send robot data to corresponding charts</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        state: New robot state</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">linear_speed_chart</span><span class="o">.</span><span class="n">new_robot_state</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">mode</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">cycle</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">speed_current</span><span class="p">,</span> <span class="n">state</span><span class="o">.</span><span class="n">speed_order</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.chartsview.ChartsView.restore_saved_geometry">
+<code class="highlight language-python">
+restore_saved_geometry<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Reuse the position of the last displayed property window for the current window.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/chartsview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">restore_saved_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Reuse the position of the last displayed property window for the current window.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">saved_geometry</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">setGeometry</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">saved_geometry</span><span class="p">)</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="doc doc-object doc-class">
+<h1 class="doc doc-heading" id="cogip.chartsview.ChartView">
+<code>ChartView</code>
+</h1>
+<div class="doc doc-contents">
+<p>ChartsView class</p>
+<p>Chart widget displaying a graph with a 'current' and an 'order' curve.</p>
+<p>It features a scrollbar, a zoom slider and a button to save the data in CVS format.</p>
+<p>The chart is reset after the robot mode has changed from RUNNING to an other value.</p>
+<p><strong>Attributes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>need_reset</code></td>
+<td><code>bool</code></td>
+<td>
+<p>True if the data must be reset on next state</p>
+</td>
+</tr>
+<tr>
+<td><code>slider_events_disabled</code></td>
+<td><code>bool</code></td>
+<td>
+<p>Do not recalculate range if False</p>
+</td>
+</tr>
+<tr>
+<td><code>default_range_max_x</code></td>
+<td><code>int</code></td>
+<td>
+<p>Default max X range value</p>
+</td>
+</tr>
+<tr>
+<td><code>default_range_max_y</code></td>
+<td><code>int</code></td>
+<td>
+<p>Default max Y range value</p>
+</td>
+</tr>
+<tr>
+<td><code>range_max_x</code></td>
+<td><code>int</code></td>
+<td>
+<p>Current max X range value</p>
+</td>
+</tr>
+<tr>
+<td><code>range_max_y</code></td>
+<td><code>int</code></td>
+<td>
+<p>Current max Y range value</p>
+</td>
+</tr>
+<tr>
+<td><code>zoom_max</code></td>
+<td><code>int</code></td>
+<td>
+<p>max zoom value</p>
+</td>
+</tr>
+</tbody>
+</table>
+<div class="doc doc-children">
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.chartsview.ChartView.__init__">
+<code class="highlight language-python">
+__init__<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span> </code>
+<span class="doc doc-properties">
+<small class="doc doc-property doc-property-special"><code>special</code></small>
+</span>
+</h2>
+<div class="doc doc-contents">
+<p>Class constructor.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>parent</code></td>
+<td><code></code></td>
+<td>
+<p>The parent widget</p>
+</td>
+<td><code>None</code></td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>Optional[str]</code></td>
+<td>
+<p>Name of the current chart</p>
+</td>
+<td><code>None</code></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/chartsview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Class constructor.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        parent: The parent widget</span>
+<span class="sd">        name: Name of the current chart</span>
+<span class="sd">    """</span>
+    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+
+    <span class="n">layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QVBoxLayout</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart_view</span> <span class="o">=</span> <span class="n">QtCharts</span><span class="o">.</span><span class="n">QChartView</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart_view</span><span class="o">.</span><span class="n">setRenderHint</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QPainter</span><span class="o">.</span><span class="n">Antialiasing</span><span class="p">)</span>
+    <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chart_view</span><span class="p">)</span>
+
+    <span class="n">sliders_widget</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QWidget</span><span class="p">()</span>
+    <span class="n">sliders_layout</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QGridLayout</span><span class="p">(</span><span class="n">sliders_widget</span><span class="p">)</span>
+    <span class="n">sliders_widget</span><span class="o">.</span><span class="n">setLayout</span><span class="p">(</span><span class="n">sliders_layout</span><span class="p">)</span>
+    <span class="n">layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="n">sliders_widget</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">scrollbar</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QScrollBar</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">scrollbar</span><span class="o">.</span><span class="n">setMinimum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">scrollbar</span><span class="o">.</span><span class="n">setMaximum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_range_max_x</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">scrollbar</span><span class="o">.</span><span class="n">setSliderPosition</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">scrollbar</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slider_changed</span><span class="p">)</span>
+    <span class="n">sliders_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">scrollbar</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">zoom</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QSlider</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">Qt</span><span class="o">.</span><span class="n">Horizontal</span><span class="p">,</span> <span class="n">minimum</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">maximum</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">zoom</span><span class="o">.</span><span class="n">setMinimum</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">zoom</span><span class="o">.</span><span class="n">setMaximum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zoom_max</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">zoom</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">zoom</span><span class="o">.</span><span class="n">valueChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">slider_changed</span><span class="p">)</span>
+    <span class="n">sliders_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zoom</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">save_button</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QPushButton</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">save_button</span><span class="o">.</span><span class="n">setIcon</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="o">.</span><span class="n">fromTheme</span><span class="p">(</span><span class="s2">"document-save"</span><span class="p">))</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">save_button</span><span class="o">.</span><span class="n">setStatusTip</span><span class="p">(</span><span class="s1">'Save values'</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">save_button</span><span class="o">.</span><span class="n">clicked</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_values</span><span class="p">)</span>
+    <span class="n">sliders_layout</span><span class="o">.</span><span class="n">addWidget</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">save_button</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span> <span class="o">=</span> <span class="n">QtCharts</span><span class="o">.</span><span class="n">QChart</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span> <span class="o">=</span> <span class="n">QtCharts</span><span class="o">.</span><span class="n">QLineSeries</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> Current"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">addSeries</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="p">)</span>
+    <span class="n">pen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="o">.</span><span class="n">pen</span><span class="p">()</span>
+    <span class="n">pen</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span> <span class="o">=</span> <span class="n">QtCharts</span><span class="o">.</span><span class="n">QLineSeries</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> Order"</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">addSeries</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="p">)</span>
+    <span class="n">pen</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="o">.</span><span class="n">pen</span><span class="p">()</span>
+    <span class="n">pen</span><span class="o">.</span><span class="n">setWidth</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="o">.</span><span class="n">setPen</span><span class="p">(</span><span class="n">pen</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">createDefaultAxes</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisX</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="p">)</span><span class="o">.</span><span class="n">setMin</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisX</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="p">)</span><span class="o">.</span><span class="n">setMin</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisX</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="p">)</span><span class="o">.</span><span class="n">setTickInterval</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisY</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="p">)</span><span class="o">.</span><span class="n">setMin</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisY</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="p">)</span><span class="o">.</span><span class="n">setMin</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisY</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="p">)</span><span class="o">.</span><span class="n">setMax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_range_max_y</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisY</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="p">)</span><span class="o">.</span><span class="n">setMax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_range_max_y</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart_view</span><span class="o">.</span><span class="n">setChart</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">recalculate_range_x</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.chartsview.ChartView.new_robot_state">
+<code class="highlight language-python">
+new_robot_state<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">,</span> <span class="n">cycle</span><span class="p">,</span> <span class="n">current</span><span class="p">,</span> <span class="n">order</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Add a new point on the chart view.</p>
+<p><strong>Parameters:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Type</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>mode</code></td>
+<td><code>CtrlModeEnum</code></td>
+<td>
+<p>Current mode</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>cycle</code></td>
+<td><code>int</code></td>
+<td>
+<p>Current cycle</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>current</code></td>
+<td><code>Optional[float]</code></td>
+<td>
+<p>Current value</p>
+</td>
+<td><em>required</em></td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td><code>Optional[float]</code></td>
+<td>
+<p>Order value</p>
+</td>
+<td><em>required</em></td>
+</tr>
+</tbody>
+</table>
+<details class="quote">
+<summary>Source code in <code>cogip/chartsview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">new_robot_state</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="n">CtrlModeEnum</span><span class="p">,</span> <span class="n">cycle</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+        <span class="n">current</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span> <span class="n">order</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">"""</span>
+<span class="sd">    Add a new point on the chart view.</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        mode: Current mode</span>
+<span class="sd">        cycle: Current cycle</span>
+<span class="sd">        current: Current value</span>
+<span class="sd">        order: Order value</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">mode</span> <span class="o">==</span> <span class="n">CtrlModeEnum</span><span class="o">.</span><span class="n">STOP</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">need_reset</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">need_reset</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">need_reset</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">range_max_x</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_max_x</span><span class="p">,</span> <span class="n">cycle</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">current</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cycle</span><span class="p">,</span> <span class="n">current</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">range_max_y</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_max_y</span><span class="p">,</span> <span class="n">current</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">order</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cycle</span><span class="p">,</span> <span class="n">order</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">range_max_y</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_max_y</span><span class="p">,</span> <span class="n">order</span><span class="o">.</span><span class="n">distance</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisY</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="p">)</span><span class="o">.</span><span class="n">setMax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_max_y</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisY</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="p">)</span><span class="o">.</span><span class="n">setMax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_max_y</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">recalculate_range_x</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.chartsview.ChartView.recalculate_range_x">
+<code class="highlight language-python">
+recalculate_range_x<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Given the current zoom and current position of the scrollbar,
+compute the X min/max range and the slider position.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/chartsview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">recalculate_range_x</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Given the current zoom and current position of the scrollbar,</span>
+<span class="sd">    compute the X min/max range and the slider position.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">slider_events_disabled</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">slider_events_disabled</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">span</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_max_x</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">zoom</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+    <span class="n">span</span> <span class="o">=</span> <span class="n">span</span> <span class="o">+</span> <span class="n">span</span> <span class="o">%</span> <span class="mi">2</span>
+    <span class="n">scroll_min</span> <span class="o">=</span> <span class="n">span</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">scroll_max</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_max_x</span> <span class="o">-</span> <span class="n">span</span> <span class="o">/</span> <span class="mi">2</span>
+
+    <span class="n">scroll</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">scrollbar</span><span class="o">.</span><span class="n">value</span><span class="p">()</span>
+    <span class="n">scroll</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">scroll_min</span><span class="p">,</span> <span class="n">scroll</span><span class="p">)</span>
+    <span class="n">scroll</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">scroll_max</span><span class="p">,</span> <span class="n">scroll</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">scrollbar</span><span class="o">.</span><span class="n">setMinimum</span><span class="p">(</span><span class="n">scroll_min</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">scrollbar</span><span class="o">.</span><span class="n">setMaximum</span><span class="p">(</span><span class="n">scroll_max</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">scrollbar</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">scroll</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisX</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="p">)</span><span class="o">.</span><span class="n">setMax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_max_x</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisX</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="p">)</span><span class="o">.</span><span class="n">setMax</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_max_x</span><span class="p">)</span>
+
+    <span class="n">span</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">range_max_x</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">zoom</span><span class="o">.</span><span class="n">sliderPosition</span><span class="p">())</span>
+    <span class="n">span</span> <span class="o">=</span> <span class="n">span</span> <span class="o">+</span> <span class="n">span</span> <span class="o">%</span> <span class="mi">2</span>
+
+    <span class="n">x_min</span> <span class="o">=</span> <span class="n">scroll</span> <span class="o">-</span> <span class="n">span</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">x_max</span> <span class="o">=</span> <span class="n">scroll</span> <span class="o">+</span> <span class="n">span</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisX</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="p">)</span><span class="o">.</span><span class="n">setRange</span><span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">chart</span><span class="o">.</span><span class="n">axisX</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="p">)</span><span class="o">.</span><span class="n">setRange</span><span class="p">(</span><span class="n">x_min</span><span class="p">,</span> <span class="n">x_max</span><span class="p">)</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">slider_events_disabled</span> <span class="o">=</span> <span class="kc">False</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.chartsview.ChartView.reset">
+<code class="highlight language-python">
+reset<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Reset the chart</p>
+<details class="quote">
+<summary>Source code in <code>cogip/chartsview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Reset the chart</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">range_max_x</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_range_max_x</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">range_max_y</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_range_max_y</span>
+
+    <span class="bp">self</span><span class="o">.</span><span class="n">recalculate_range_x</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.chartsview.ChartView.save_values">
+<code class="highlight language-python">
+save_values<span class="p">(</span><span class="bp">self</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Open a file dialog to select a file and save chart values in it.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/chartsview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">()</span>
+<span class="k">def</span> <span class="nf">save_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Open a file dialog to select a file and save chart values in it.</span>
+<span class="sd">    """</span>
+    <span class="n">filename</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">getSaveFileName</span><span class="p">(</span>
+        <span class="n">parent</span><span class="o">=</span><span class="bp">self</span><span class="p">,</span>
+        <span class="n">caption</span><span class="o">=</span><span class="sa">f</span><span class="s2">"Select file to save </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2"> values"</span><span class="p">,</span>
+        <span class="nb">dir</span><span class="o">=</span><span class="s2">""</span><span class="p">,</span>
+        <span class="nb">filter</span><span class="o">=</span><span class="s2">"CSV Files (*.csv)"</span><span class="p">,</span>
+        <span class="c1"># Workaround a know Qt bug</span>
+        <span class="n">options</span><span class="o">=</span><span class="n">QtWidgets</span><span class="o">.</span><span class="n">QFileDialog</span><span class="o">.</span><span class="n">DontUseNativeDialog</span>
+    <span class="p">)</span>
+    <span class="k">if</span> <span class="n">filename</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">Path</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s2">"w"</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s2">""</span><span class="p">)</span> <span class="k">as</span> <span class="n">csv_file</span><span class="p">:</span>
+            <span class="n">writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">DictWriter</span><span class="p">(</span><span class="n">csv_file</span><span class="p">,</span> <span class="n">fieldnames</span><span class="o">=</span><span class="p">[</span><span class="s2">"cycle"</span><span class="p">,</span> <span class="s2">"order"</span><span class="p">,</span> <span class="s2">"current"</span><span class="p">])</span>
+            <span class="n">writer</span><span class="o">.</span><span class="n">writeheader</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">order</span><span class="p">,</span> <span class="n">current</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">serie_order</span><span class="o">.</span><span class="n">points</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">serie_current</span><span class="o">.</span><span class="n">points</span><span class="p">()):</span>
+                <span class="n">writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">({</span><span class="s2">"cycle"</span><span class="p">:</span> <span class="nb">int</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">x</span><span class="p">()),</span> <span class="s2">"order"</span><span class="p">:</span> <span class="n">order</span><span class="o">.</span><span class="n">y</span><span class="p">(),</span> <span class="s2">"current"</span><span class="p">:</span> <span class="n">current</span><span class="o">.</span><span class="n">y</span><span class="p">()})</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+<div class="doc doc-object doc-method">
+<h2 class="doc doc-heading" id="cogip.chartsview.ChartView.slider_changed">
+<code class="highlight language-python">
+slider_changed<span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> </code>
+</h2>
+<div class="doc doc-contents">
+<p>Qt Slot</p>
+<p>Function called when the scrollbar and zoom has changed.</p>
+<details class="quote">
+<summary>Source code in <code>cogip/chartsview.py</code></summary>
+<div class="highlight">
+<pre><span></span><code><span class="nd">@qtSlot</span><span class="p">(</span><span class="nb">int</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">slider_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">int</span><span class="p">):</span>
+    <span class="sd">"""</span>
+<span class="sd">    Qt Slot</span>
+
+<span class="sd">    Function called when the scrollbar and zoom has changed.</span>
+<span class="sd">    """</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">recalculate_range_x</span><span class="p">()</span>
+</code></pre>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</article>
+</div>
+</div>
+</main>
+<footer class="md-footer">
+<div class="md-footer-nav">
+<nav aria-label="Footer" class="md-footer-nav__inner md-grid">
+<a class="md-footer-nav__link md-footer-nav__link--prev" href="../config/" rel="prev" title="config.py">
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"></path></svg>
+</div>
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
+                  Previous
+                </span>
+                config.py
+              </div>
+</div>
+</a>
+<a class="md-footer-nav__link md-footer-nav__link--next" href="../dynobstacleentity/" rel="next" title="dynobstacleentity.py">
+<div class="md-footer-nav__title">
+<div class="md-ellipsis">
+<span class="md-footer-nav__direction">
+                  Next
+                </span>
+                dynobstacleentity.py
+              </div>
+</div>
+<div class="md-footer-nav__button md-icon">
+<svg viewbox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"></path></svg>
+</div>
+</a>
+</nav>
+</div>
+<div class="md-footer-meta md-typeset">
+<div class="md-footer-meta__inner md-grid">
+<div class="md-footer-copyright">
+        
+        Made with
+        <a href="https://squidfunk.github.io/mkdocs-material/" rel="noopener" target="_blank">
+          Material for MkDocs
+        </a>
+</div>
+</div>
+</div>
+</footer>
+</div>
+<script src="../../../../assets/javascripts/vendor.3636a4ec.min.js"></script>
+<script src="../../../../assets/javascripts/bundle.e9fe3281.min.js"></script><script id="__lang" type="application/json">{"clipboard.copy": "Copy to clipboard", "clipboard.copied": "Copied to clipboard", "search.config.lang": "en", "search.config.pipeline": "trimmer, stopWordFilter", "search.config.separator": "[\\s\\-]+", "search.result.placeholder": "Type to start searching", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents"}</script>
+<script>
+        app = initialize({
+          base: "../../../..",
+          features: [],
+          search: Object.assign({
+            worker: "../../../../assets/javascripts/worker/search.5eca75d3.min.js"
+          }, typeof search !== "undefined" && search)
+        })
+      </script>
+</body>
+</html>
