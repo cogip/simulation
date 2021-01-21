@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 
 from setuptools import setup, find_packages
-# from sphinx.setup_command import BuildDoc
-# import sphinx
 from pathlib import Path
 
 cwd = Path(__file__).resolve().parent
 
-name = 'cogip-simulator'
+name = 'cogip-simulation'
 version = '1.0'
 release = '1.0.0'
 
@@ -29,33 +27,19 @@ required_packages = [
     "sysv-ipc==1.0.1"
 ]
 
-# cmdclass = {'build_doc': BuildDoc}
-
-# sphinx.build_main(['setup.py', '-b', 'html', 'doc/source', 'doc/build'])
-
 setup(
     name=name,
     version=release,
-    description='COGIP Simulator',
+    description='COGIP Simulation Tools',
     author='COGIP Team',
-    author_email='',
-    url='https://github.com/cogip/',
+    author_email='cogip35@gmail.com',
+    url='https://github.com/cogip/simulation',
     long_description=long_description,
     long_description_content_type='text/markdown',
     python_requires='>=3.7',
     install_requires=required_packages,
     packages=find_packages(),
-    entry_points = {
-        'console_scripts': ['simulator=cogip.__main__:main'],
-    },
-    # cmdclass=cmdclass,
-    # command_options={
-    #     'build_doc': {
-    #         'project': ('setup.py', name),
-    #         'version': ('setup.py', version),
-    #         'release': ('setup.py', release),
-    #         'source_dir': ('setup.py', 'doc/source'),
-    #         'build_dir': ('setup.py', 'doc/build')
-    #     }
-    # },
+    entry_points={
+        'console_scripts': ['simulator=cogip.tools.simulator.__main__:main'],
+    }
 )

@@ -10,7 +10,7 @@ from pydantic import ValidationError
 
 from cogip import logger
 from cogip.models import ShellMenu, RobotState, DynObstacleList
-from cogip.sensor import Sensor
+from cogip.entities.sensor import Sensor
 
 
 class SerialController(QtCore.QObject):
