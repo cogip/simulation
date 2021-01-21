@@ -7,7 +7,7 @@ class ImpactEntity(Qt3DCore.QEntity):
     """
     `QEntity` used to visualize to points detected by sensors.
 
-    It is represented with [`QSphereMesh`](https://doc.qt.io/qtforpython/PySide2/Qt3DExtras/QSphereMesh.html),
+    It is represented with [`QSphereMesh`](https://doc.qt.io/qtforpython-5/PySide2/Qt3DExtras/QSphereMesh.html),
     its radius and color are configurable in the constructor.
     """
 

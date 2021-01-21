@@ -1,6 +1,6 @@
-# Usage
+# Simulator
 
-After installation and firmware compilation (see [Install](install.md)), the simulator
+After installation and firmware compilation (see [Install](../install.md)), the simulator
 is launched with:
 ```bash
 $ simulator

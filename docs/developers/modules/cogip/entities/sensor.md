@@ -1,4 +1,4 @@
-::: cogip.impactentity
+::: cogip.entities.sensor
     rendering:
       show_source: true
       show_root_heading: no

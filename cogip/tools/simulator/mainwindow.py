@@ -7,8 +7,8 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
-from cogip.chartsview import ChartsView
-from cogip.gameview import GameView
+from cogip.widgets.chartsview import ChartsView
+from cogip.widgets.gameview import GameView
 from cogip.models import ShellMenu, RobotState
 
 
@@ -233,7 +233,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Qt Slot
 
-        Display the new menu sent by [SerialController][cogip.serialcontroller.SerialController].
+        Display the new menu sent by [SerialController][cogip.tools.simulator.serialcontroller.SerialController].
 
         Once a menu has been build once, it is cached and reused.
 
@@ -292,7 +292,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def build_command(self, cmd: str, layout: QtWidgets.QHBoxLayout):
         """
-        Build command to send to [SerialController][cogip.serialcontroller.SerialController].
+        Build command to send to [SerialController][cogip.tools.simulator.serialcontroller.SerialController].
 
         It is built based on the command name given in arguments,
         and arguments strings fetched from the command button in the menu.

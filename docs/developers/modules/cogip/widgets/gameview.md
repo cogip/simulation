@@ -1,4 +1,4 @@
-::: cogip.mainwindow
+::: cogip.widgets.gameview
     rendering:
       show_source: true
       show_root_heading: no
