@@ -1,8 +1,12 @@
 # Overview
 
-The COGIP simulator is a tool developed by the COGIP robotic team.
-It is used during development and debuging of its robot [firmware](https://github.com/cogip/mcu-firmware).
+The COGIP simulation project provides a set of simulation utilities developed by the COGIP robotic team.
+It is used during development and debugging of its robot [firmware](https://github.com/cogip/mcu-firmware) and other test platforms.
 This robot is developed for [Eurobot](https://www.eurobot.org/), French robotic contest.
+
+## Tools
+
+### Simulator
 
 The simulator provides a graphical interface, featuring:
 
@@ -22,8 +26,8 @@ The simulator provides a graphical interface, featuring:
 
   * visualization of obstacles detected in the firmware (in transparent red)
 
-  * charts window to vizualize calibration data
+  * charts window to visualize calibration data
 
-![GUI Overview](img/gui_overview.png)
+![GUI Overview](img/simulator/gui_overview.png)
 
-![Charts View](img/charts_view.png)
+![Charts View](img/simulator/charts_view.png)

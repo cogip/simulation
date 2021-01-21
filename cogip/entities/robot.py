@@ -6,10 +6,10 @@ from PySide2.QtCore import Slot as qtSlot
 from PySide2 import QtGui
 from PySide2.Qt3DExtras import Qt3DExtras
 
-from cogip.assetentity import AssetEntity
-from cogip.dynobstacleentity import DynObstacleEntity
+from cogip.entities.asset import AssetEntity
+from cogip.entities.dynobstacle import DynObstacleEntity
+from cogip.entities.sensor import ToFSensor, LidarSensor
 from cogip.models import DynObstacleList, RobotState
-from cogip.sensor import ToFSensor, LidarSensor
 
 
 class RobotEntity(AssetEntity):
@@ -29,7 +29,7 @@ class RobotEntity(AssetEntity):
         """
         Class constructor.
 
-        Inherits [AssetEntity][cogip.assetentity.AssetEntity].
+        Inherits [AssetEntity][cogip.entities.asset.AssetEntity].
 
         Arguments:
             asset_path: Path of the asset file

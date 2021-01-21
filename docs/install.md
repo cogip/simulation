@@ -5,6 +5,7 @@
 Linux only.
 
 Tested on Ubuntu 20.04.
+The firmware compiled in native mode is not compatible with Ubuntu 20.10.
 
 Any Linux distribution with Python 3.8 properly installed should be compatible.
 
@@ -20,7 +21,7 @@ git lfs pull
 
 ## Git Submodules
 
-The simulation depends on the compatible version of [cogip/mcu-firmware](https://github.com/cogip/mcu-firmware) which also depends on a specific version of [RIOT-OS/RIOT](https://github.com/RIOT-OS/RIOT). So to avoid struggle in finding the correct versions of the dependencies, we use git submodules to fix the versions of `mcu-firmware` and `RIOT`. 
+The simulation tools depend on the compatible version of [cogip/mcu-firmware](https://github.com/cogip/mcu-firmware) which also depends on a specific version of [RIOT-OS/RIOT](https://github.com/RIOT-OS/RIOT). So to avoid struggle in finding the correct versions of the dependencies, we use git submodules to fix the versions of `mcu-firmware` and `RIOT`.
 Do not forget to fetch the submodules after `git clone`:
 ```bash
 git submodule update --init
@@ -56,14 +57,14 @@ pip install wheel
 pip install -e .
 ```
 
-This will install the simulator in developer mode and all its dependencies.
+This will install the simulation tools in developer mode and all the dependencies.
 
 ## Assets
 
 The asset files for table and robot are loaded by default in `assets`.
-It can be adjusted using command line options (`bin/simulator.py --help` for more information).
+It can be adjusted using command line options (`simulator --help` for more information).
 The asset format currently supported is Collada (`.dae`).
 
-## Launch
+## Launch the tools
 
 Run `simulator` to launch the simulator.

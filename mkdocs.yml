@@ -6,28 +6,37 @@ repo_url: https://github.com/cogip/simulation
 theme:
   name: 'material'
   language: en
+  # palette:
+  #   scheme: slate
+  #   primary: blue grey
 
 nav:
   - Overview: index.md
   - Installation: install.md
-  - Usage: usage.md
+  - Usage:
+    - usage/simulator.md
   - Developer's Doc:
     - Introduction: developers/developers.md
     - Modules:
-      - __main__.py: developers/modules/main.md
       - cogip:
-        - assetentity.py: developers/modules/cogip/assetentity.md
+        - tools:
+          - simulator:
+            - __main__.py: developers/modules/cogip/tools/simulator/main.md
+            - mainwindow.py: developers/modules/cogip/tools/simulator/mainwindow.md
+            - serialcontroller.py: developers/modules/cogip/tools/simulator/serialcontroller.md
+        - entities:
+          - asset.py: developers/modules/cogip/entities/asset.md
+          - dynobstacle.py: developers/modules/cogip/entities/dynobstacle.md
+          - impact.py: developers/modules/cogip/entities/impact.md
+          - obstacle.py: developers/modules/cogip/entities/obstacle.md
+          - robot.py: developers/modules/cogip/entities/robot.md
+          - sensor.py: developers/modules/cogip/entities/sensor.md
+        - widgets:
+          - chartsview.py: developers/modules/cogip/widgets/chartsview.md
+          - gameview.py: developers/modules/cogip/widgets/gameview.md
+        - models:
+          - models.py: developers/modules/cogip/models/models.md
         - config.py: developers/modules/cogip/config.md
-        - chartsview.py: developers/modules/cogip/chartsview.md
-        - dynobstacleentity.py: developers/modules/cogip/dynobstacleentity.md
-        - gameview.py: developers/modules/cogip/gameview.md
-        - impactentity.py: developers/modules/cogip/impactentity.md
-        - mainwindow.py: developers/modules/cogip/mainwindow.md
-        - models.py: developers/modules/cogip/models.md
-        - obstacleentity.py: developers/modules/cogip/obstacleentity.md
-        - robotentity.py: developers/modules/cogip/robotentity.md
-        - sensor.py: developers/modules/cogip/sensor.md
-        - serialcontroller.py: developers/modules/cogip/serialcontroller.md
 
 plugins:
   - mkdocstrings:

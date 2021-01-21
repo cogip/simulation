@@ -1,4 +1,4 @@
-::: cogip.models
+::: cogip.models.models
     rendering:
       show_source: true
       show_root_heading: no

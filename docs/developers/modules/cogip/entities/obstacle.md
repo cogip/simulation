@@ -1,4 +1,4 @@
-::: cogip.sensor
+::: cogip.entities.obstacle
     rendering:
       show_source: true
       show_root_heading: no

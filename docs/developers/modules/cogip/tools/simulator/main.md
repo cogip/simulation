@@ -1,4 +1,4 @@
-::: cogip.obstacleentity
+::: cogip.tools.simulator.__main__
     rendering:
       show_source: true
       show_root_heading: no

@@ -10,26 +10,26 @@ from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
-from cogip.assetentity import AssetEntity
-from cogip.obstacleentity import ObstacleEntity
+from cogip.entities.asset import AssetEntity
+from cogip.entities.obstacle import ObstacleEntity
 from cogip import models
 
 
 class GameView(QtWidgets.QWidget):
     """
-    The `GameView` class is a [`QWidget`](https://doc.qt.io/qtforpython/PySide2/QtWidgets/QWidget.html)
-    containing a [`Qt3DWindow`](https://doc.qt.io/qtforpython/PySide2/Qt3DExtras/Qt3DWindow.html)
+    The `GameView` class is a [`QWidget`](https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QWidget.html)
+    containing a [`Qt3DWindow`](https://doc.qt.io/qtforpython-5/PySide2/Qt3DExtras/Qt3DWindow.html)
     used to display all the game element, like table, robot and obstacles.
 
     It also contains an horizontal plane entity with a invisible
-    [`QPlaneMesh`](https://doc.qt.io/qtforpython/PySide2/Qt3DExtras/QPlaneMesh.html).
-    This plane is has a [`QObjectPicker`](https://doc.qt.io/qtforpython/PySide2/Qt3DRender/QObjectPicker.html)
+    [`QPlaneMesh`](https://doc.qt.io/qtforpython-5/PySide2/Qt3DExtras/QPlaneMesh.html).
+    This plane is has a [`QObjectPicker`](https://doc.qt.io/qtforpython-5/PySide2/Qt3DRender/QObjectPicker.html)
     to detect mouse clicks, to help
     moving obstacles on the horizontal plane.
 
     Attributes:
         ready: signal emitted when when all assets are ready
-        new_move_delta: signal emitted to [`ObstacleEntity`][cogip.obstacleentity.ObstacleEntity]
+        new_move_delta: signal emitted to [`ObstacleEntity`][cogip.entities.obstacle.ObstacleEntity]
             when a move is detected
     """
 
@@ -117,8 +117,8 @@ class GameView(QtWidgets.QWidget):
 
     def add_asset(self, asset: AssetEntity) -> None:
         """
-        Add an asset (like [TableEntity][cogip.assetentity.AssetEntity]
-        or [RobotEntity][cogip.robotentity.RobotEntity]) in the 3D view.
+        Add an asset (like [TableEntity][cogip.entities.asset.AssetEntity]
+        or [RobotEntity][cogip.entities.robot.RobotEntity]) in the 3D view.
 
         Argument:
             asset: The asset entity to add to the vew

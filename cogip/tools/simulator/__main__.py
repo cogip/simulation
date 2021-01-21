@@ -15,10 +15,11 @@ from PySide2 import QtWidgets, QtGui
 
 from cogip import logger
 from cogip.config import settings
-from cogip.mainwindow import MainWindow
-from cogip.serialcontroller import SerialController
-from cogip.assetentity import AssetEntity
-from cogip.robotentity import RobotEntity
+from cogip.entities.asset import AssetEntity
+from cogip.entities.robot import RobotEntity
+
+from .mainwindow import MainWindow
+from .serialcontroller import SerialController
 
 
 def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
@@ -41,7 +42,7 @@ def main():
     """
     Starts the simulator.
 
-    During installation of the simulator, `setuptools` is configured
+    During installation of the simulation tools, `setuptools` is configured
     to create the `simulator` script using this function as entrypoint.
     """
     faulthandler.enable()

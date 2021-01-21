@@ -1,4 +1,4 @@
-::: cogip.robotentity
+::: cogip.tools.simulator.mainwindow
     rendering:
       show_source: true
       show_root_heading: no

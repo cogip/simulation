@@ -5,15 +5,15 @@ from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
-from cogip.sensor import Sensor
 from cogip import models
+from cogip.entities.sensor import Sensor
 
 
 class ObstacleEntity(Qt3DCore.QEntity):
     """
     An obstacle on the table.
 
-    It is represented as a cube ([QCuboidMesh](https://doc.qt.io/qtforpython/PySide2/Qt3DExtras/QCuboidMesh.html)).
+    It is represented as a cube ([QCuboidMesh](https://doc.qt.io/qtforpython-5/PySide2/Qt3DExtras/QCuboidMesh.html)).
 
     When selected with a mouse click, a property window is displayed
     to modify the obstacle properties.
@@ -165,13 +165,13 @@ class ObstacleEntity(Qt3DCore.QEntity):
         Slot called on a ```moved``` mouse event on the obstacle.
 
         Just record that the obstacle is moving, the translation is computed
-        in the [GameView][cogip.gameview.GameView] object.
+        in the [GameView][cogip.widgets.gameview.GameView] object.
         """
         self.moving = True
 
     def get_model(self) -> models.Obstacle:
         """
-        Returns the [Obstacle][cogip.models.Obstacle] model.
+        Returns the [Obstacle][cogip.models.models.Obstacle] model.
         Used to save the obstacles list.
 
         Returns:
