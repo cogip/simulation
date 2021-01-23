@@ -4,7 +4,7 @@ This documentation provides information for developers who would like to contrib
 to the project.
 It tries to explain how modules are organised and how `PySide2` and `Qt3D` are used.
 
-The simulator is developped in Python 3.8+, using [`Pyside2`](https://doc.qt.io/qtforpython/contents.html), the Qt for Python package.
+The simulation tools are developped in Python 3.8+, using [`Pyside2`](https://doc.qt.io/qtforpython/contents.html), the Qt for Python package.
 
 The 3D view is based on the [`Qt3D framework`](https://doc.qt.io/qt-5/qt3d-overview.html).
 To have a better understanding of the code, it is important to understand Qt concepts
