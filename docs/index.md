@@ -31,3 +31,11 @@ The simulator provides a graphical interface, featuring:
 ![GUI Overview](img/simulator/gui_overview.png)
 
 ![Charts View](img/simulator/charts_view.png)
+
+### Lidar USB View
+
+This tool displays a graphical view to render data provided by a HLS-LFCD2 Lidar connected to USB port.
+
+![View with unfiltered data](img/lidarusb/lidarusb_unfiltered.png)
+
+![View with filtered data](img/lidarusb/lidarusb_filtered.png)

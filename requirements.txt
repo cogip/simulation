@@ -7,3 +7,4 @@ pyserial==3.5
 PySide2==5.15.0
 python-dotenv==0.14.0
 sysv-ipc==1.0.1
+typer==0.3.2
