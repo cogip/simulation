@@ -103,11 +103,11 @@ class SerialController(QtCore.QObject):
         self.serial_port.open()
 
         # Initialization loop
-        logger.debug("Waiting for calibration mode")
+        logger.debug("Waiting for shell mode")
         exit_loop = False
         while not self.exiting and not exit_loop:
             line = self.serial_port.readline().rstrip().decode(errors="ignore")
-            if line == "Press Enter to enter calibration mode...":
+            if line == "Press Enter to cancel planner start...":
                 exit_loop = True
             self.signal_new_console_text.emit(line)
 
@@ -139,7 +139,7 @@ class SerialController(QtCore.QObject):
         Initialize the shared memory segment and send its key to the robot.
         """
         Sensor.init_shm()
-        self.serial_port.write(f"_set_shm_key {Sensor.shm_key}\n".encode())
+        self.serial_port.write(f"_set_shmem_key {Sensor.shm_key}\n".encode())
 
     def reload_menu(self):
         """
