@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     default_uart: str = "/tmp/ptsCOGIP"
     table_filename: FilePath = "assets/table2019.dae"
     robot_filename: FilePath = "assets/robot2019.dae"
-    native_binary: Path = "submodules/mcu-firmware/applications/cogip2019-cortex/bin/cogip2019-cortex-native/cortex.elf"
+    native_binary: Path = "submodules/mcu-firmware/applications/cup2019/bin/cogip-native/cortex.elf"
 
 
 settings = Settings()
