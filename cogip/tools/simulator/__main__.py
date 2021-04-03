@@ -32,7 +32,7 @@ def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
     )
     iodevice_group.add_argument(
         "-B", "--binary",
-        dest="native_binary", default=settings.native_binary,
+        dest="native_binary", default=settings.native_binary, type=Path,
         help="Specify native board binary compiled in calibration mode"
     )
     return arg_parser
