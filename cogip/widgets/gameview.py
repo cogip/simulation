@@ -12,7 +12,7 @@ from PySide2.QtCore import Slot as qtSlot
 
 from cogip.entities.asset import AssetEntity
 from cogip.entities.obstacle import ObstacleEntity
-from cogip import models
+from cogip.models import models
 
 
 class GameView(QtWidgets.QWidget):
