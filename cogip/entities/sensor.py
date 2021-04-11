@@ -91,6 +91,8 @@ class Sensor(QtCore.QObject):
 
         Sensor.all_sensors.append(self)
 
+        self.origin_x = origin_x
+        self.origin_y = origin_y
         self.asset_entity = asset_entity
         self.name = name
         self.distance = None
@@ -311,6 +313,8 @@ class LidarSensor(Sensor):
         super(LidarSensor, self).handle_hits()
         if Sensor.shm_data:
             if self.hit:
-                Sensor.shm_data.lidar[self.lidar_id] = int(self.hit.distance())
+                dist = self.hit.distance()
+                dist += math.dist((0, 0), (self.origin_x, self.origin_y))
+                Sensor.shm_data.lidar[self.lidar_id] = int(dist)
             else:
                 Sensor.shm_data.lidar[self.lidar_id] = 65535
