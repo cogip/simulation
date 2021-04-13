@@ -144,9 +144,11 @@ class DynObstacle(BaseModel):
     A dynamic obstacle created by the robot.
 
     Attributes:
-        __root__: List of the points composing the dynamic obstable
+        points: List of the points composing the dynamic obstable
+        angle: Orientation of the obstacle
     """
-    __root__: List[Vertex]
+    points: List[Vertex]
+    angle: float
 
     def __hash__(self):
         """
