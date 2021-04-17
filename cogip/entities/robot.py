@@ -127,7 +127,8 @@ class RobotEntity(AssetEntity):
 
         sensors_properties = []
 
-        for angle in range(0, 360):
+        for i in range(0, 360):
+            angle = (360 - i) % 360
             origin_x = radius * math.sin(math.radians(180 - angle))
             origin_y = radius * math.cos(math.radians(180 - angle))
             sensors_properties.append(
