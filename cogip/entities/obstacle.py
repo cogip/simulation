@@ -33,9 +33,9 @@ class ObstacleEntity(Qt3DCore.QEntity):
             x: int = 0,
             y: int = 1000,
             rotation: int = 0,
-            length: int = 200,
-            width: int = 200,
-            height: int = 600):
+            length: int = 400,
+            width: int = 400,
+            height: int = 350):
         """
         Class constructor.
 
@@ -72,6 +72,20 @@ class ObstacleEntity(Qt3DCore.QEntity):
         self.picker.released.connect(self.released_obstacle)
         self.picker.moved.connect(self.moved_obstacle)
         self.addComponent(self.picker)
+
+        self.beacon_entity = Qt3DCore.QEntity(self)
+        self.beacon_mesh = Qt3DExtras.QCylinderMesh(self.beacon_entity)
+        self.beacon_mesh.setLength(80)
+        self.beacon_mesh.setRadius(35)
+        self.beacon_entity.addComponent(self.beacon_mesh)
+
+        self.beacon_material = Qt3DExtras.QPhongMaterial(self.beacon_entity)
+        self.beacon_entity.addComponent(self.beacon_material)
+
+        self.beacon_transform = Qt3DCore.QTransform(self.beacon_entity)
+        self.beacon_transform.setTranslation(QtGui.QVector3D(0, 0, self.mesh.zExtent() / 2 + self.beacon_mesh.length() / 2))
+        self.beacon_transform.setRotationX(90)
+        self.beacon_entity.addComponent(self.beacon_transform)
 
         self.moving = False
 
