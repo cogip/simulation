@@ -156,7 +156,7 @@ class SerialController(QtCore.QObject):
                 line = self.serial_port.readline().rstrip().decode(errors="ignore")
                 if len(line) == 0:
                     continue
-                if line[0] == ">":
+                if line[0] in [">", "_"]:
                     continue
                 try:
                     menu = ShellMenu.parse_raw(line)
@@ -184,7 +184,7 @@ class SerialController(QtCore.QObject):
             line = self.serial_port.readline().rstrip().decode(errors="ignore")
             if len(line) == 0:
                 continue
-            if line[0] == ">":
+            if line[0] in [">", "_"]:
                 continue
             try:
                 state = RobotState.parse_raw(line)
@@ -211,7 +211,7 @@ class SerialController(QtCore.QObject):
             line = self.serial_port.readline().rstrip().decode(errors="ignore")
             if len(line) == 0:
                 continue
-            if line[0] == ">":
+            if line[0] in [">", "_"]:
                 continue
             try:
                 dyn_obstacles = DynObstacleList.parse_raw(line)
