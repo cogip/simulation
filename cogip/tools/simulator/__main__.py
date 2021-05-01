@@ -35,6 +35,11 @@ def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
         dest="native_binary", default=settings.native_binary, type=Path,
         help="Specify native board binary compiled in calibration mode"
     )
+    iodevice_group.add_argument(
+        "-r", "--remote",
+        dest="remote", default=None,
+        help="Remote device providing the serial port connected to the robot"
+    )
     arg_parser.add_argument(
         "-n", "--no-wait",
         dest="no_wait", action='store_true',
@@ -77,24 +82,36 @@ def main():
     # Start socat redirecting native process stdin/stdout to virtual uart
     socat_process = None
     if args.uart_device == virtual_uart:
-        if not args.native_binary.exists():
-            logger.error(f"'{args.native_binary}' not found.")
-            sys.exit(1)
-        if not args.native_binary.is_file():
-            logger.error(f"'{args.native_binary}' is not a file.")
-            sys.exit(1)
-
         socat_path = shutil.which("socat")
         if not socat_path:
             logger.error("'socat' not found.")
             sys.exit(1)
-        socat_args = [
-            socat_path,
-            # "-v",
-            # "-v",
-            f'PTY,link={virtual_uart},rawer,wait-slave',
-            f'EXEC:"{args.native_binary.resolve()}"'
-        ]
+
+        if args.remote:
+            picocom_path = shutil.which("picocom")
+            if not picocom_path:
+                logger.error("'picocom' not found.")
+                sys.exit(1)
+
+            socat_args = [
+                socat_path,
+                f'PTY,link={virtual_uart},rawer,wait-slave',
+                f'EXEC:"ssh {args.remote} {picocom_path} -q --imap lfcrlf -b 115200 /dev/ttyACM0"'
+            ]
+        else:
+            if not args.native_binary.exists():
+                logger.error(f"'{args.native_binary}' not found.")
+                sys.exit(1)
+            if not args.native_binary.is_file():
+                logger.error(f"'{args.native_binary}' is not a file.")
+                sys.exit(1)
+
+            socat_args = [
+                socat_path,
+                f'PTY,link={virtual_uart},rawer,wait-slave',
+                f'EXEC:"{args.native_binary.resolve()}"'
+            ]
+
         logger.info(f"Execute: {' '.join(socat_args)}")
         socat_process = subprocess.Popen(socat_args, executable=socat_path)
 
