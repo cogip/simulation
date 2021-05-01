@@ -35,6 +35,11 @@ def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
         dest="native_binary", default=settings.native_binary, type=Path,
         help="Specify native board binary compiled in calibration mode"
     )
+    arg_parser.add_argument(
+        "-n", "--no-wait",
+        dest="no_wait", action='store_true',
+        help="Don't wait for the firmware start sequence"
+    )
     return arg_parser
 
 
@@ -94,7 +99,7 @@ def main():
         socat_process = subprocess.Popen(socat_args, executable=socat_path)
 
     # Create controller
-    controller = SerialController(args.uart_device)
+    controller = SerialController(args.uart_device, no_wait=args.no_wait)
 
     # Create QApplication
     app = QtWidgets.QApplication(sys.argv)
