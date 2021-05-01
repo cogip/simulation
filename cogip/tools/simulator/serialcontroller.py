@@ -43,7 +43,7 @@ class SerialController(QtCore.QObject):
     max_parse_attemps: int = 20
     last_cycle: int = 0
 
-    def __init__(self, uart_device: str):
+    def __init__(self, uart_device: str, no_wait: bool = False):
         """
         Class constructor.
 
@@ -52,6 +52,7 @@ class SerialController(QtCore.QObject):
         """
 
         super(SerialController, self).__init__()
+        self.no_wait = no_wait
 
         # Set to true by the main thread to exit this thread after processing the current line
         self.exiting = False
@@ -102,16 +103,17 @@ class SerialController(QtCore.QObject):
         # In simulation, it also starts the native firmware
         self.serial_port.open()
 
-        # Initialization loop
-        logger.debug("Waiting for shell mode")
-        exit_loop = False
-        while not self.exiting and not exit_loop:
-            line = self.serial_port.readline().rstrip().decode(errors="ignore")
-            if line == "Press Enter to cancel planner start...":
-                exit_loop = True
-            self.signal_new_console_text.emit(line)
+        if not self.no_wait:
+            # Initialization loop
+            logger.debug("Waiting for shell mode")
+            exit_loop = False
+            while not self.exiting and not exit_loop:
+                line = self.serial_port.readline().rstrip().decode(errors="ignore")
+                if line == "Press Enter to cancel planner start...":
+                    exit_loop = True
+                self.signal_new_console_text.emit(line)
 
-        self.serial_port.write(b"\n")
+            self.serial_port.write(b"\n")
 
         self.reload_menu()
 
