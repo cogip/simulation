@@ -8,7 +8,7 @@ an exception being raised if impossible.
 """
 
 from enum import IntEnum
-from typing import List, Optional
+from typing import List, Optional, Union
 
 from pydantic import BaseModel
 
@@ -139,9 +139,9 @@ class RobotState(BaseModel):
     speed_order: Optional[Speed] = None
 
 
-class DynObstacle(BaseModel):
+class DynObstacleRect(BaseModel):
     """
-    A dynamic obstacle created by the robot.
+    A dynamic rectangle obstacle created by the robot.
 
     Attributes:
         points: List of the points composing the dynamic obstable
@@ -155,6 +155,29 @@ class DynObstacle(BaseModel):
         Hash function to allow this class to be used as a key in a dict.
         """
         return hash((type(self),) + tuple(self.__root__))
+
+
+class DynRoundObstacle(BaseModel):
+    """
+    A dynamic round obstacle created by the robot.
+
+    Attributes:
+        x: Center X position
+        y: Center Y position
+        radius: Radius of the obstacle
+    """
+    x: float
+    y: float
+    radius: float
+
+    def __hash__(self):
+        """
+        Hash function to allow this class to be used as a key in a dict.
+        """
+        return hash((type(self),) + tuple(self.__root__))
+
+
+DynObstacle = Union[DynRoundObstacle, DynObstacleRect]
 
 
 class DynObstacleList(BaseModel):

@@ -3,9 +3,9 @@ from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DExtras import Qt3DExtras
 
 
-class DynObstacleEntity(Qt3DCore.QEntity):
+class DynRectObstacleEntity(Qt3DCore.QEntity):
     """
-    A dynamic obstacle detected by the robot.
+    A dynamic rectangle obstacle detected by the robot.
 
     Represented as a transparent red cube.
     """
@@ -14,7 +14,7 @@ class DynObstacleEntity(Qt3DCore.QEntity):
         """
         Class constructor.
         """
-        super(DynObstacleEntity, self).__init__()
+        super().__init__()
 
         self.mesh = Qt3DExtras.QCuboidMesh()
         self.mesh.setZExtent(600)
@@ -53,3 +53,46 @@ class DynObstacleEntity(Qt3DCore.QEntity):
         """
         self.mesh.setXExtent(width)
         self.mesh.setYExtent(length)
+
+
+class DynCircleObstacleEntity(Qt3DCore.QEntity):
+    """
+    A dynamic circle obstacle detected by the robot.
+
+    Represented as a transparent red cylinder.
+    """
+
+    def __init__(self):
+        """
+        Class constructor.
+        """
+        super().__init__()
+
+        self.mesh = Qt3DExtras.QCylinderMesh()
+        self.mesh.setLength(600)
+        self.mesh.setRadius(400)
+        self.addComponent(self.mesh)
+
+        self.material = Qt3DExtras.QDiffuseSpecularMaterial(self)
+        self.material.setDiffuse(QtGui.QColor.fromRgb(255, 0, 0, 100))
+        self.material.setDiffuse(QtGui.QColor.fromRgb(255, 0, 0, 100))
+        self.material.setSpecular(QtGui.QColor.fromRgb(255, 0, 0, 100))
+        self.material.setShininess(1.0)
+        self.material.setAlphaBlendingEnabled(True)
+        self.addComponent(self.material)
+
+        self.transform = Qt3DCore.QTransform(self)
+        self.transform.setRotationX(90)
+        self.addComponent(self.transform)
+
+    def set_position(self, x: int, y: int, radius: int) -> None:
+        """
+        Set the position and size of the dynamic obstacle.
+
+        Arguments:
+            x: Center X position
+            y: Center Y position
+            radius: Obstacle radius
+        """
+        self.transform.setTranslation(QtGui.QVector3D(x, y, self.mesh.length()/2))
+        self.mesh.setRadius(radius)

@@ -1,3 +1,4 @@
+from cogip.models.models import DynObstacleRect
 import math
 from pathlib import Path
 from typing import Union
@@ -7,7 +8,7 @@ from PySide2 import QtGui
 from PySide2.Qt3DExtras import Qt3DExtras
 
 from cogip.entities.asset import AssetEntity
-from cogip.entities.dynobstacle import DynObstacleEntity
+from cogip.entities.dynobstacle import DynRectObstacleEntity, DynCircleObstacleEntity
 from cogip.entities.sensor import ToFSensor, LidarSensor
 from cogip.models import DynObstacleList, RobotState
 
@@ -45,7 +46,8 @@ class RobotEntity(AssetEntity):
         self.color = color
         self.tof_sensors = []
         self.lidar_sensors = []
-        self.dyn_obstacles_pool = []
+        self.rect_obstacles_pool = []
+        self.round_obstacles_pool = []
 
     def post_init(self):
         """
@@ -160,39 +162,60 @@ class RobotEntity(AssetEntity):
             dyn_obstacles: List of obstacles sent by the firmware throught the serial port
         """
         # Store new and already existing dyn obstacles
-        current_dyn_obstacles = []
+        current_rect_obstacles = []
+        current_round_obstacles = []
 
         for dyn_obstacle in dyn_obstacles.__root__:
-            if len(dyn_obstacle.points) != 4:
-                continue
-            p0, p1, p2, p3 = dyn_obstacle.points
-            # Compute obstacle size
-            length = math.dist((p0.x, p0.y), (p1.x, p1.y))
-            width = math.dist((p1.x, p1.y), (p2.x, p2.y))
-            # Compute the obstacle center position
-            pos_x = (p0.x + p2.x) / 2
-            pos_y = (p0.y + p2.y) / 2
-            rotation = math.degrees(dyn_obstacle.angle)
+            if isinstance(dyn_obstacle, DynObstacleRect):
+                # Rectangle obstacle
+                if len(dyn_obstacle.points) != 4:
+                    continue
+                p0, p1, p2, p3 = dyn_obstacle.points
+                # Compute obstacle size
+                length = math.dist((p0.x, p0.y), (p1.x, p1.y))
+                width = math.dist((p1.x, p1.y), (p2.x, p2.y))
+                # Compute the obstacle center position
+                pos_x = (p0.x + p2.x) / 2
+                pos_y = (p0.y + p2.y) / 2
+                rotation = math.degrees(dyn_obstacle.angle)
 
-            if len(self.dyn_obstacles_pool):
-                dyn_obstacle = self.dyn_obstacles_pool.pop(0)
-                dyn_obstacle.setEnabled(True)
+                if len(self.rect_obstacles_pool):
+                    dyn_obstacle = self.rect_obstacles_pool.pop(0)
+                    dyn_obstacle.setEnabled(True)
+                else:
+                    dyn_obstacle = DynRectObstacleEntity()
+                    dyn_obstacle.setParent(self.parentEntity())
+
+                dyn_obstacle.set_position(x=pos_x, y=pos_y, rotation=rotation)
+                dyn_obstacle.set_size(length=length, width=width)
+
+                current_rect_obstacles.append(dyn_obstacle)
             else:
-                dyn_obstacle = DynObstacleEntity()
-                dyn_obstacle.setParent(self.parentEntity())
+                # Round obstacle
+                if len(self.round_obstacles_pool):
+                    obstacle = self.round_obstacles_pool.pop(0)
+                    obstacle.setEnabled(True)
+                else:
+                    obstacle = DynCircleObstacleEntity()
+                    obstacle.setParent(self.parentEntity())
 
-            dyn_obstacle.set_position(x=pos_x, y=pos_y, rotation=rotation)
-            dyn_obstacle.set_size(length=length, width=width)
+                obstacle.set_position(x=dyn_obstacle.x, y=dyn_obstacle.y, radius=dyn_obstacle.radius)
 
-            current_dyn_obstacles.append(dyn_obstacle)
+                current_round_obstacles.append(obstacle)
 
         # Disable remaining dyn obstacles
-        while len(self.dyn_obstacles_pool):
-            dyn_obstacle = self.dyn_obstacles_pool.pop(0)
+        while len(self.rect_obstacles_pool):
+            dyn_obstacle = self.rect_obstacles_pool.pop(0)
             dyn_obstacle.setEnabled(False)
-            current_dyn_obstacles.append(dyn_obstacle)
+            current_rect_obstacles.append(dyn_obstacle)
 
-        self.dyn_obstacles_pool = current_dyn_obstacles
+        while len(self.round_obstacles_pool):
+            dyn_obstacle = self.round_obstacles_pool.pop(0)
+            dyn_obstacle.setEnabled(False)
+            current_round_obstacles.append(dyn_obstacle)
+
+        self.rect_obstacles_pool = current_rect_obstacles
+        self.round_obstacles_pool = current_round_obstacles
 
     @qtSlot(RobotState)
     def set_position(self, new_state: RobotState) -> None:
