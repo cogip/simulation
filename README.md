@@ -6,7 +6,7 @@ git lfs install
 git lfs pull
 ```
 
-The simulation depends on a specific version of `mcu-firmware` which also depends on a specific version of `RIOT`. So to avoid struggle in finding the correct versions of the dependencies, we use git submodules to fix the versions of `mcu-firmware` and `RIOT`. 
+The simulation depends on a specific version of `mcu-firmware` which also depends on a specific version of `RIOT`. So to avoid struggle in finding the correct versions of the dependencies, we use git submodules to fix the versions of `mcu-firmware` and `RIOT`.
 Do not forget to fetch the submodules after `git clone`:
 ```bash
 git submodule update --init
@@ -22,7 +22,7 @@ pip install -e .
 Use the following command to build the native version of the firmware:
 
 ```bash
-make -C submodules/mcu-firmware/applications/cogip2019-cortex BOARD=cogip2019-cortex-native MCUFIRMWARE_OPTIONS=calibration
+make -C submodules/mcu-firmware/applications/cup2019 BOARD=cogip-native
 ```
 
 The variable `QUIET=0` can be added to display compilation commands.
