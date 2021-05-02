@@ -33,7 +33,7 @@ def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
     iodevice_group.add_argument(
         "-B", "--binary",
         dest="native_binary", default=settings.native_binary, type=Path,
-        help="Specify native board binary compiled in calibration mode"
+        help="Specify native binary compiled with shell menus enabled"
     )
     iodevice_group.add_argument(
         "-r", "--remote",
@@ -43,7 +43,7 @@ def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
     arg_parser.add_argument(
         "-n", "--no-wait",
         dest="no_wait", action='store_true',
-        help="Don't wait for the firmware start sequence"
+        help="Do not wait for the firmware start sequence"
     )
     return arg_parser
 

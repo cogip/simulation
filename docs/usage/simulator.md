@@ -6,18 +6,18 @@ is launched with:
 $ simulator
 ```
 
-The simulator can be used with the native firmware or connected via serial port to the robot.
+The simulator can be used with the native firmware or connected via serial port to the robot (locally or on a remote device).
 
-By default, the serial ports are scanned, and if found, the first port will be used to try to connect to the robot (see [Robot Mode](#robot-mode)).
+By default, the serial ports are scanned, and if found, the first port will be used to try to connect to the robot (see [Monitoring Mode](#monitor-mode)).
 
-If no serial port is found, it will launch the default native firmware (see [Native Mode](#native-mode)).
+If no serial port is found, it will launch the default native firmware (see [Simulation Mode](#simulation-mode)).
 
 
 ## Command line options
 
 ```bash
 $ simulator --help
-usage: simulator [-h] [-D UART_DEVICE | -B NATIVE_BINARY]
+usage: simulator [-h] [-D UART_DEVICE | -B NATIVE_BINARY | -r REMOTE] [-n]
 
 Launch COGIP Simulator.
 
@@ -26,13 +26,16 @@ optional arguments:
   -D UART_DEVICE, --device UART_DEVICE
                         Specify UART device
   -B NATIVE_BINARY, --binary NATIVE_BINARY
-                        Specify native board binary compiled in calibration mode
+                        Specify native binary compiled with shell menus enabled
+  -r REMOTE, --remote REMOTE
+                        Remote device providing the serial port connected to the robot
+  -n, --no-wait         Do not wait for the firmware start sequence
 ```
 
-## Native Mode
+## Simulation Mode
 
 The default native firmware is:
-`submodules/mcu-firmware/applications/cogip2019-cortex/bin/cogip2019-cortex-native/cortex.elf`
+`submodules/mcu-firmware/applications/cup2019/bin/cogip-native/cortex.elf`
 
 It can be changed using:
 
@@ -42,13 +45,22 @@ It can be changed using:
 
 Using these options will disable serial port scan.
 
-## Robot Mode
+## Monitoring Mode
 
 If a robot is connected to a serial port, the first port will be used by default.
 
 The default serial port can be modified using the environment variable `DEFAULT_UART`.
 
 To specify an other serial port, use the `-D/--device <UART_DEVICE>` CLI option.
+
+## Remote Mode
+
+If a robot is connected to a serial port on a remote device, use `-r/--remote <REMOTE>`
+to specify this device.
+
+The argument must identify a device that can be connected using `ssh` without password.
+
+`picocom` must be installed on the remote device. Serial port must be `/dev/ttyACM0`.
 
 ## Environment Variables
 
