@@ -39,3 +39,8 @@ This tool displays a graphical view to render data provided by a HLS-LFCD2 Lidar
 ![View with unfiltered data](img/lidarusb/lidarusb_unfiltered.png)
 
 ![View with filtered data](img/lidarusb/lidarusb_filtered.png)
+
+### Lidar Platform View
+
+Using the same interface as Lidar USB View, this tools displays Lida data provided by the real platform
+through RIOT shell commands.
