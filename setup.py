@@ -19,7 +19,7 @@ required_packages = [
     "mkdocstrings==0.14.0",
     "psutil==5.7.2",
     "ptvsd==4.3.2",
-    "pydantic==1.7.3",
+    "pydantic==1.7.4",
     "pymdown-extensions==8.1",
     "pyserial==3.5",
     "PySide2==5.15.0",
