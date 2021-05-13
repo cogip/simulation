@@ -1,9 +1,9 @@
+from typing import List
+
 from PySide2 import QtCore, QtWidgets, QtGui
 
-from cogip.tools.lidarusb import datastruct
 
-
-class TableModel(QtCore.QAbstractTableModel):
+class LidarTableModel(QtCore.QAbstractTableModel):
     """
     Model class providing access to data to update the table view.
     """
@@ -12,11 +12,21 @@ class TableModel(QtCore.QAbstractTableModel):
 
     def __init__(
             self,
-            lidar_data: datastruct.LidarData,
+            distance_values: List[int],
+            intensity_values: List[int],
             distance_color: QtGui.QColor,
             intensity_color: QtGui.QColor):
+        """Class constructor
+
+        Arguments:
+            distance_values: distance values list
+            intensity_values: intensity values list
+            distance_color: distance color
+            intensity_color: intensity color
+        """
         super().__init__()
-        self.lidar_data = lidar_data
+        self.distance_values = distance_values
+        self.intensity_values = intensity_values
         self.distance_color = distance_color
         self.intensity_color = intensity_color
 
@@ -45,9 +55,9 @@ class TableModel(QtCore.QAbstractTableModel):
             if column == 0:
                 return row
             if column == 1:
-                return self.lidar_data.distance(row)
+                return self.distance_values[row]
             if column == 2:
-                return self.lidar_data.intensity(row)
+                return self.intensity_values[row]
             return None
 
         return None

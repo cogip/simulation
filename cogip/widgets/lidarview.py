@@ -1,12 +1,14 @@
+from typing import List
+
 from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtCharts import QtCharts
+from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
 
-from cogip.tools.lidarusb import datastruct
-from cogip.tools.lidarusb.tablemodel import TableModel
+from cogip.utils.lidartablemodel import LidarTableModel
 
 
-class LidarWidget(QtWidgets.QWidget):
+class LidarView(QtWidgets.QWidget):
     """
     This class is a widget that provides the graphic view and instantiates the polar chart,
     sliders and the table view.
@@ -16,21 +18,43 @@ class LidarWidget(QtWidgets.QWidget):
         max_distance: max value of the distance range (use on the chart)
         max_intensity: max value of the intensity range (use on the chart)
         enable_plain_area: whether to display a line or an plain area for distance values
+        new_filer: Qt signal emitted when the filter value is modified
     """
     min_distance: int = 100
     max_distance: int = 5000
     max_intensity: int = 12000
     enable_plain_area: bool = True
+    new_filter: qtSignal(int) = qtSignal(int)
 
-    def __init__(self, parent=None):
+    def __init__(
+            self,
+            table_model: LidarTableModel,
+            distance_values: List[int],
+            intensity_values: List[int],
+            distance_color: QtGui.QColor,
+            intensity_color: QtGui.QColor,
+            parent=None):
         """
         Class constructor.
 
         Arguments:
+            table_model: table model object
+            distance_values: distance values list
+            intensity_values: intensity values list
+            distance_color: distance color
+            intensity_color: intensity color
             parent: The parent widget
         """
         super().__init__(parent)
-        self.lidar_data = datastruct.LidarData()
+
+        self.table_model = table_model
+        self.distance_values = distance_values
+        self.intensity_values = intensity_values
+        self.distance_color = distance_color
+        self.intensity_color = intensity_color
+
+        self.first_index = self.table_model.createIndex(0, 1)
+        self.last_index = self.table_model.createIndex(359, 2)
 
         layout = QtWidgets.QHBoxLayout(self)
 
@@ -79,19 +103,16 @@ class LidarWidget(QtWidgets.QWidget):
             self.chart.addSeries(self.distance_area_serie)
             self.distance_area_serie.attachAxis(self.degree_axis)
             self.distance_area_serie.attachAxis(self.distance_axis)
-            distance_color = self.distance_area_serie.color()
         else:
             self.chart.addSeries(self.distance_serie)
             self.distance_serie.attachAxis(self.degree_axis)
             self.distance_serie.attachAxis(self.distance_axis)
-            distance_color = self.distance_serie.color()
 
         self.intensity_serie = QtCharts.QLineSeries(name="Intensity")
         self.intensity_serie.replace([QtCore.QPointF(i, 0) for i in range(360)])
         self.chart.addSeries(self.intensity_serie)
         self.intensity_serie.attachAxis(self.degree_axis)
         self.intensity_serie.attachAxis(self.intensity_axis)
-        intensity_color = self.intensity_serie.pen().color()
 
         # Add a grid for sliders
         sliders_layout = QtWidgets.QGridLayout()
@@ -114,10 +135,10 @@ class LidarWidget(QtWidgets.QWidget):
         distance_zoom.setStyleSheet(
             "QSlider::handle:horizontal {"
             "    border-radius: 5px; border: 2px solid #FFFFFF; width: 20px; margin: -5px 0;"
-            f"   background: {hex(distance_color.rgb()).replace('0x', '#')}"
+            f"   background: {hex(self.distance_color.rgb()).replace('0x', '#')}"
             "}"
             "QSlider::sub-page:horizontal {"
-            f"   background: {hex(distance_color.rgb()).replace('0x', '#')};"
+            f"   background: {hex(self.distance_color.rgb()).replace('0x', '#')};"
             "}"
         )
         sliders_layout.addWidget(distance_zoom, 0, 3)
@@ -133,17 +154,16 @@ class LidarWidget(QtWidgets.QWidget):
         intensity_zoom.setStyleSheet(
             "QSlider::handle:horizontal {"
             "    border-radius: 5px; border: 2px solid #FFFFFF; width: 20px; margin: -5px 0;"
-            f"   background: {hex(intensity_color.rgb()).replace('0x', '#')};"
+            f"   background: {hex(self.intensity_color.rgb()).replace('0x', '#')};"
             "}"
             "QSlider::sub-page:horizontal {"
-            f"   background: {hex(intensity_color.rgb()).replace('0x', '#')};"
+            f"   background: {hex(self.intensity_color.rgb()).replace('0x', '#')};"
             "}"
         )
         sliders_layout.addWidget(intensity_zoom, 1, 3)
 
         # Distance filter slider
         filter_check = QtWidgets.QCheckBox()
-        filter_check.setChecked(True)
         filter_check.stateChanged.connect(self.filter_check_changed)
         sliders_layout.addWidget(filter_check, 2, 0)
         self.filter_label = QtWidgets.QLabel("Distance filter:")
@@ -157,8 +177,9 @@ class LidarWidget(QtWidgets.QWidget):
         self.filter_slider.setValue(500)
         sliders_layout.addWidget(self.filter_slider, 2, 3)
 
-        # Create the table model
-        self.table_model = TableModel(self.lidar_data, distance_color, intensity_color)
+        filter_check.setChecked(False)
+        self.filter_value.setEnabled(False)
+        self.filter_slider.setEnabled(False)
 
         # Create the table view
         table_view = QtWidgets.QTableView()
@@ -167,20 +188,6 @@ class LidarWidget(QtWidgets.QWidget):
         table_view.resizeColumnsToContents()
         table_view.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Maximum)
         layout.addWidget(table_view)
-
-        # ** Don't use MVC for charts since it is not fast enough
-        # ** (keep code in comments because it is still interesting for later use)
-        # distance_mapper = QtCharts.QVXYModelMapper(self)
-        # distance_mapper.setXColumn(0)
-        # distance_mapper.setYColumn(1)
-        # distance_mapper.setSeries(self.distance_serie)
-        # distance_mapper.setModel(self.table_model)
-
-        # intensity_mapper = QtCharts.QVXYModelMapper(self)
-        # intensity_mapper.setXColumn(0)
-        # intensity_mapper.setYColumn(2)
-        # intensity_mapper.setSeries(self.intensity_serie)
-        # intensity_mapper.setModel(self.table_model)
 
     @qtSlot(int)
     def distance_zoom_changed(self, value: int):
@@ -219,7 +226,7 @@ class LidarWidget(QtWidgets.QWidget):
             value: new value
         """
         self.filter_value.setText(str(value))
-        self.lidar_data.filter_value = value
+        self.new_filter.emit(value)
 
     @qtSlot(int)
     def filter_check_changed(self, state: int):
@@ -234,33 +241,17 @@ class LidarWidget(QtWidgets.QWidget):
         enabled = state != 0
         self.filter_value.setEnabled(enabled)
         self.filter_slider.setEnabled(enabled)
-        if enabled:
-            self.lidar_data.filter_value = self.filter_slider.value()
-        else:
-            self.lidar_data.filter_value = 0
 
-    @qtSlot(bytes)
-    def new_frame(self, frame_bytes: bytes) -> None:
+        self.new_filter.emit(self.filter_slider.value() if enabled else 0)
+
+    @qtSlot()
+    def update_data(self) -> None:
         """
         Qt Slot
 
-        Function called when a new frame is available.
-
-        Arguments:
-            frame_bytes: new frame data
+        Function called to update data on chart and table.
         """
-        frame_data = datastruct.FrameData.from_buffer_copy(frame_bytes)
+        self.table_model.dataChanged.emit(self.first_index, self.last_index, [QtCore.Qt.DisplayRole])
 
-        # Update frame in Lidar data
-        self.lidar_data.set_frame(frame_data.index, frame_data)
-        angle_start = frame_data.index * 6
-
-        # Update table
-        index1 = self.table_model.createIndex(angle_start, 1)
-        index2 = self.table_model.createIndex(angle_start + 6, 2)
-        self.table_model.dataChanged.emit(index1, index2, [QtCore.Qt.DisplayRole])
-
-        # Update chart (the full chart at once when all frames are updated)
-        if frame_data.index == 59:
-            self.distance_serie.replace(self.lidar_data.get_distance_points())
-            self.intensity_serie.replace(self.lidar_data.get_intensity_points())
+        self.distance_serie.replace([QtCore.QPointF(i, self.distance_values[i]) for i in range(360)])
+        self.intensity_serie.replace([QtCore.QPointF(i, self.intensity_values[i]) for i in range(360)])

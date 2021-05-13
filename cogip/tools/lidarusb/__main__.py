@@ -3,14 +3,17 @@
 import sys
 from threading import Thread
 
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtGui
 import serial.tools.list_ports
 import typer
 
 from cogip import logger
 from cogip.config import settings
+from cogip.tools.lidarusb.dataproxy import DataProxy
 from cogip.tools.lidarusb.lidarserial import LidarSerial
-from cogip.tools.lidarusb.lidarwidget import LidarWidget
+from cogip.tools.lidarusb.mainwindow import MainWindow
+from cogip.utils.lidartablemodel import LidarTableModel
+from cogip.widgets.lidarview import LidarView
 
 
 def get_default_uart() -> str:
@@ -27,20 +30,38 @@ def get_default_uart() -> str:
 
 
 def main_opt(uart: str = typer.Argument(get_default_uart, help="The UART port to use")):
+    distance_color = QtGui.QColor.fromRgbF(0.125490, 0.623529, 0.874510, 1.000000)
+    intensity_color = QtGui.QColor.fromRgbF(0.600000, 0.792157, 0.325490, 1.000000)
+
+    distance_values = [0 for i in range(360)]
+    intensity_values = [0 for i in range(360)]
+
+    table_model = LidarTableModel(distance_values, intensity_values, distance_color, intensity_color)
+
+    data_proxy = DataProxy(distance_values, intensity_values)
+
     # Create controller
     controller = LidarSerial(uart)
 
     # Create QApplication
     app = QtWidgets.QApplication(sys.argv)
 
-    # Create UI
-    main_window = QtWidgets.QMainWindow()
-    main_window.setWindowTitle("Lidar USB Viewer")
-    lidar_widget = LidarWidget()
-    main_window.setCentralWidget(lidar_widget)
+    # Create main widget
+    lidar_view = LidarView(
+        table_model,
+        distance_values, intensity_values,
+        distance_color, intensity_color
+    )
+
+    # Create main window
+    main_window = MainWindow(lidar_view)
 
     # Connect signals and slots
-    controller.new_frame.connect(lidar_widget.new_frame)
+    main_window.start_action.triggered.connect(controller.start_lidar)
+    main_window.pause_action.triggered.connect(controller.stop_lidar)
+    lidar_view.new_filter.connect(data_proxy.set_filter)
+    controller.new_data.connect(data_proxy.new_data)
+    data_proxy.update_data.connect(lidar_view.update_data)
 
     # Show UI
     main_window.show()

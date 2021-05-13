@@ -3,6 +3,7 @@ import time
 
 from PySide2 import QtCore
 from PySide2.QtCore import Signal as qtSignal
+from PySide2.QtCore import Slot as qtSlot
 
 
 class LidarSerial(QtCore.QObject):
@@ -19,7 +20,7 @@ class LidarSerial(QtCore.QObject):
             Qt signal emitted when a new frame is available
     """
 
-    new_frame: qtSignal = qtSignal(bytes)
+    new_data: qtSignal = qtSignal(bytes)
 
     def __init__(self, uart_device: str):
         """
@@ -39,6 +40,20 @@ class LidarSerial(QtCore.QObject):
         Request to exit the thread as soon as possible.
         """
         self.exiting = True
+
+    @qtSlot()
+    def start_lidar(self):
+        """
+        Start Lidar.
+        """
+        self.serial_port.write(b"b")
+
+    @qtSlot()
+    def stop_lidar(self):
+        """
+        Stop Lidar.
+        """
+        self.serial_port.write(b"e")
 
     def process_output(self):
         """
@@ -76,6 +91,6 @@ class LidarSerial(QtCore.QObject):
                 print(f"Indexes {index * 6:3d}-{index * 6 + 6:3d}: bad checksum")
                 continue
 
-            self.new_frame.emit(frame_bytes)
+            self.new_data.emit(frame_bytes)
 
         self.serial_port.write(b'e')
