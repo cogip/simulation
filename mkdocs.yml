@@ -16,6 +16,7 @@ nav:
   - Usage:
     - usage/simulator.md
     - usage/lidarusb.md
+    - usage/lidarpf.md
   - Developer's Doc:
     - Introduction: developers/developers.md
     - Modules:
@@ -30,6 +31,11 @@ nav:
             - dataproxy.py: developers/modules/cogip/tools/lidarusb/dataproxy.md
             - lidarserial.py: developers/modules/cogip/tools/lidarusb/lidarserial.md
             - mainwindow.py: developers/modules/cogip/tools/lidarusb/mainwindow.md
+          - lidarpf:
+            - __main__.py: developers/modules/cogip/tools/lidarpf/main.md
+            - dataproxy.py: developers/modules/cogip/tools/lidarpf/dataproxy.md
+            - lidarserial.py: developers/modules/cogip/tools/lidarpf/lidarserial.md
+            - mainwindow.py: developers/modules/cogip/tools/lidarpf/mainwindow.md
         - entities:
           - asset.py: developers/modules/cogip/entities/asset.md
           - dynobstacle.py: developers/modules/cogip/entities/dynobstacle.md
