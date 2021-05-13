@@ -1,4 +1,4 @@
-::: cogip.tools.lidarusb.datastruct
+::: cogip.utils.lidartablemodel
     rendering:
       show_source: true
       show_root_heading: no

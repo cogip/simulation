@@ -27,11 +27,9 @@ nav:
             - serialcontroller.py: developers/modules/cogip/tools/simulator/serialcontroller.md
           - lidarusb:
             - __main__.py: developers/modules/cogip/tools/lidarusb/main.md
-            - datastruct.py: developers/modules/cogip/tools/lidarusb/datastruct.md
+            - dataproxy.py: developers/modules/cogip/tools/lidarusb/dataproxy.md
             - lidarserial.py: developers/modules/cogip/tools/lidarusb/lidarserial.md
-            - lidarwidget.py: developers/modules/cogip/tools/lidarusb/lidarwidget.md
-            - tablemodel.py: developers/modules/cogip/tools/lidarusb/tablemodel.md
-
+            - mainwindow.py: developers/modules/cogip/tools/lidarusb/mainwindow.md
         - entities:
           - asset.py: developers/modules/cogip/entities/asset.md
           - dynobstacle.py: developers/modules/cogip/entities/dynobstacle.md
@@ -42,8 +40,11 @@ nav:
         - widgets:
           - chartsview.py: developers/modules/cogip/widgets/chartsview.md
           - gameview.py: developers/modules/cogip/widgets/gameview.md
+          - lidarview.py: developers/modules/cogip/widgets/lidarview.md
         - models:
           - models.py: developers/modules/cogip/models/models.md
+        - utils:
+          - lidartablemodel: developers/modules/cogip/utils/lidartablemodel.md
         - config.py: developers/modules/cogip/config.md
 
 plugins:
