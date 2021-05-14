@@ -13,16 +13,19 @@ readme_filename = cwd / "README.md"
 long_description = readme_filename.open().read()
 
 required_packages = [
-    "flake8==3.8.3",
+    "click==7.1.2",
+    "flake8==3.9.2",
+    "Jinja2==2.11.3",
+    "MarkupSafe==1.1.1",
     "mkdocs==1.1.2",
     "mkdocs-material==6.2.5",
-    "mkdocstrings==0.14.0",
+    "mkdocstrings==0.15.0",
     "psutil==5.7.2",
     "ptvsd==4.3.2",
-    "pydantic==1.7.3",
+    "pydantic==1.8.2",
     "pymdown-extensions==8.1",
     "pyserial==3.5",
-    "PySide2==5.15.0",
+    "PySide2==5.15.1",
     "python-dotenv==0.14.0",
     "sysv-ipc==1.0.1",
     "typer==0.3.2"
