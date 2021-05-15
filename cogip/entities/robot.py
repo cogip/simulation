@@ -167,29 +167,17 @@ class RobotEntity(AssetEntity):
 
         for dyn_obstacle in dyn_obstacles.__root__:
             if isinstance(dyn_obstacle, DynObstacleRect):
-                # Rectangle obstacle
-                if len(dyn_obstacle.points) != 4:
-                    continue
-                p0, p1, p2, p3 = dyn_obstacle.points
-                # Compute obstacle size
-                length = math.dist((p0.x, p0.y), (p1.x, p1.y))
-                width = math.dist((p1.x, p1.y), (p2.x, p2.y))
-                # Compute the obstacle center position
-                pos_x = (p0.x + p2.x) / 2
-                pos_y = (p0.y + p2.y) / 2
-                rotation = math.degrees(dyn_obstacle.angle)
-
                 if len(self.rect_obstacles_pool):
-                    dyn_obstacle = self.rect_obstacles_pool.pop(0)
-                    dyn_obstacle.setEnabled(True)
+                    obstacle = self.rect_obstacles_pool.pop(0)
+                    obstacle.setEnabled(True)
                 else:
-                    dyn_obstacle = DynRectObstacleEntity()
-                    dyn_obstacle.setParent(self.parentEntity())
+                    obstacle = DynRectObstacleEntity()
+                    obstacle.setParent(self.parentEntity())
 
-                dyn_obstacle.set_position(x=pos_x, y=pos_y, rotation=rotation)
-                dyn_obstacle.set_size(length=length, width=width)
+                obstacle.set_position(x=dyn_obstacle.x, y=dyn_obstacle.y, rotation=dyn_obstacle.angle)
+                obstacle.set_size(length=dyn_obstacle.length_y, width=dyn_obstacle.length_x)
 
-                current_rect_obstacles.append(dyn_obstacle)
+                current_rect_obstacles.append(obstacle)
             else:
                 # Round obstacle
                 if len(self.round_obstacles_pool):
