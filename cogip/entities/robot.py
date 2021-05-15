@@ -218,7 +218,7 @@ class RobotEntity(AssetEntity):
         self.round_obstacles_pool = current_round_obstacles
 
     @qtSlot(RobotState)
-    def set_position(self, new_state: RobotState) -> None:
+    def new_robot_state(self, new_state: RobotState) -> None:
         """
         Qt slot called to set the robot's new position.
 
@@ -231,4 +231,4 @@ class RobotEntity(AssetEntity):
         state = new_state.copy()
         if not self.enable_tof_sensors and not self.enable_lidar_sensors:
             state.pose_current = new_state.pose_order
-        super(RobotEntity, self).set_position(state)
+        super(RobotEntity, self).new_robot_state(state)

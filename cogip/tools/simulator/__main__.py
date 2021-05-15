@@ -157,8 +157,8 @@ def main():
     win.signal_save_obstacles.connect(win.game_view.save_obstacles)
 
     # Connect Controller signals to Robot slots
-    controller.signal_new_robot_state.connect(robot_entity.set_position)
-    controller.signal_new_robot_state.connect(robot_final_entity.set_position)
+    controller.signal_new_robot_state.connect(robot_entity.new_robot_state)
+    controller.signal_new_robot_state.connect(robot_final_entity.new_robot_state)
     controller.signal_new_dyn_obstacles.connect(robot_entity.set_dyn_obstacles)
 
     # Connect Controller signals to UI slots

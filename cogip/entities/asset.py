@@ -121,7 +121,7 @@ class AssetEntity(Qt3DCore.QEntity):
         self.ready.emit()
 
     @qtSlot(RobotState)
-    def set_position(self, new_state: RobotState) -> None:
+    def new_robot_state(self, new_state: RobotState) -> None:
         """
         Qt slot called to set the entity's new position.
 
