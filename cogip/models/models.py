@@ -148,11 +148,17 @@ class DynObstacleRect(BaseModel):
     A dynamic rectangle obstacle created by the robot.
 
     Attributes:
-        points: List of the points composing the dynamic obstable
+        x: X coordinate of the obstacle center
+        y: Y coordinate of the obstacle center
         angle: Orientation of the obstacle
+        length_x: length along X axis
+        length_y: length along Y axis
     """
-    points: List[Vertex]
+    x: float
+    y: float
     angle: float
+    length_x: float
+    length_y: float
 
     def __hash__(self):
         """
