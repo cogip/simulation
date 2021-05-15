@@ -12,6 +12,7 @@ from PySide2.QtCore import Slot as qtSlot
 
 from cogip.entities.asset import AssetEntity
 from cogip.entities.obstacle import ObstacleEntity
+from cogip.entities.path import PathEntity
 from cogip.models import models
 
 
@@ -65,6 +66,8 @@ class GameView(QtWidgets.QWidget):
         # Create root entity
         self.root_entity = Qt3DCore.QEntity()
         self.view.setRootEntity(self.root_entity)
+
+        self.path: PathEntity = PathEntity(parent=self.root_entity)
 
         # Init Camera
         self.camera_entity: Qt3DRender.QCamera = self.view.camera()
@@ -239,6 +242,19 @@ class GameView(QtWidgets.QWidget):
         """
         self.plane_intersection = None
         self.new_move_delta.emit(None)
+
+    @qtSlot(models.RobotState)
+    def new_robot_state(self, new_state: models.RobotState) -> None:
+        """
+        Qt slot called when robot state is updated.
+        Update computed path.
+
+        Arguments:
+            new_state: new robot state
+        """
+        for vertex in new_state.path:
+            vertex.z = 20
+        self.path.set_points(new_state.path)
 
 
 def create_ligth_entity(x: float, y: float, z: float) -> Qt3DCore.QEntity:
