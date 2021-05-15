@@ -132,6 +132,7 @@ class RobotState(BaseModel):
         cycle: Current cycle
         speed_current: Current speed
         speed_order: Speed order
+        path: Computed path
     """
     mode: CtrlModeEnum
     pose_current: Pose
@@ -139,6 +140,7 @@ class RobotState(BaseModel):
     cycle: Optional[int] = None
     speed_current: Optional[Speed] = None
     speed_order: Optional[Speed] = None
+    path: List[Vertex] = []
 
 
 class DynObstacleRect(BaseModel):
