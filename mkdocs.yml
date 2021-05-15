@@ -42,6 +42,7 @@ nav:
           - impact.py: developers/modules/cogip/entities/impact.md
           - line.py: developers/modules/cogip/entities/line.md
           - obstacle.py: developers/modules/cogip/entities/obstacle.md
+          - path.py: developers/modules/cogip/entities/path.md
           - robot.py: developers/modules/cogip/entities/robot.md
           - sensor.py: developers/modules/cogip/entities/sensor.md
         - widgets:
