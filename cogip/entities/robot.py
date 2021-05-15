@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Union
 
 from PySide2.QtCore import Slot as qtSlot
-from PySide2 import QtGui
+from PySide2 import QtCore, QtGui
 from PySide2.Qt3DExtras import Qt3DExtras
 
 from cogip.entities.asset import AssetEntity
@@ -18,7 +18,12 @@ class RobotEntity(AssetEntity):
     The robot entity displayed on the table.
 
     Used to display the robot and the position to reach.
+
+    Attributes:
+        sensors_update_interval: Interval in seconds between each sensors update
     """
+
+    sensors_update_interval: int = 5
 
     def __init__(
             self,
@@ -48,6 +53,10 @@ class RobotEntity(AssetEntity):
         self.lidar_sensors = []
         self.rect_obstacles_pool = []
         self.round_obstacles_pool = []
+
+        # Use a timer to trigger sensors update
+        self.sensor_timer = QtCore.QTimer()
+        self.sensor_timer.start(RobotEntity.sensors_update_interval)
 
     def post_init(self):
         """
@@ -113,6 +122,7 @@ class RobotEntity(AssetEntity):
         for prop in sensors_properties:
             if prop:
                 sensor = ToFSensor(asset_entity=self, **prop)
+                self.sensor_timer.timeout.connect(sensor.update_hit)
                 self.tof_sensors.append(sensor)
             else:
                 ToFSensor.nb_tof_sensors += 1
@@ -146,6 +156,7 @@ class RobotEntity(AssetEntity):
         # Add sensors
         for prop in sensors_properties:
             sensor = LidarSensor(asset_entity=self, **prop)
+            self.sensor_timer.timeout.connect(sensor.update_hit)
             self.lidar_sensors.append(sensor)
 
     @qtSlot(DynObstacleList)
