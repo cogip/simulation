@@ -40,6 +40,7 @@ nav:
           - asset.py: developers/modules/cogip/entities/asset.md
           - dynobstacle.py: developers/modules/cogip/entities/dynobstacle.md
           - impact.py: developers/modules/cogip/entities/impact.md
+          - line.py: developers/modules/cogip/entities/line.md
           - obstacle.py: developers/modules/cogip/entities/obstacle.md
           - robot.py: developers/modules/cogip/entities/robot.md
           - sensor.py: developers/modules/cogip/entities/sensor.md
