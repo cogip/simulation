@@ -80,14 +80,16 @@ class CtrlModeEnum(IntEnum):
 
 class Vertex(BaseModel):
     """
-    Represents a point in 2D coordinates.
+    Represents a point in 2D/3D coordinates.
 
     Attributes:
         x: X position
-        y: Y postion
+        y: Y position
+        z: Z position (optional)
     """
     x: float
     y: float
+    z: float = 0.0
 
     def __hash__(self):
         return hash((type(self),) + tuple(self.__dict__.values()))
