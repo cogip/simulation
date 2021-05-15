@@ -129,8 +129,6 @@ class SerialController(QtCore.QObject):
 
                 self.get_state()
 
-                self.get_dyn_obstacles()
-
             logger.debug("main_loop: lock released")
 
         # Close the serial port before exiting the thread
@@ -195,31 +193,6 @@ class SerialController(QtCore.QObject):
                     continue
                 self.last_cycle = state.cycle
                 self.signal_new_robot_state.emit(state)
-            except ValidationError:
-                attempt += 1
-                self.signal_new_console_text.emit(line)
-                # print(f"parse failed: {line}")
-
-    def get_dyn_obstacles(self):
-        """
-        Get dynamic obstacles from the robot and send it to the robot entity.
-        """
-        self.serial_port.write(b"_dyn_obstacles\n")
-
-        obstacles_found = False
-        attempt = 0
-        while (not self.exiting and not obstacles_found
-                and attempt < SerialController.max_parse_attemps):
-            line = self.serial_port.readline().rstrip().decode(errors="ignore")
-            if len(line) == 0:
-                continue
-            if line[0] in [">", "_"]:
-                continue
-            try:
-                dyn_obstacles = DynObstacleList.parse_raw(line)
-                self.signal_new_dyn_obstacles.emit(dyn_obstacles)
-                obstacles_found = True
-                # print(dyn_obstacles)
             except ValidationError:
                 attempt += 1
                 self.signal_new_console_text.emit(line)
