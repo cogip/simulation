@@ -220,3 +220,6 @@ class RobotEntity(AssetEntity):
         if not self.enable_tof_sensors and not self.enable_lidar_sensors:
             state.pose_current = new_state.pose_order
         super(RobotEntity, self).new_robot_state(state)
+
+        if state.obstacles:
+            self.set_dyn_obstacles(state.obstacles)

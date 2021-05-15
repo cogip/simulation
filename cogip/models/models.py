@@ -119,30 +119,6 @@ class Speed(BaseModel):
     angle: float
 
 
-class RobotState(BaseModel):
-    """
-    This contains information about robot state,
-    like mode, cycle, positions and speed.
-    It is given by the firmware through the serial port.
-
-    Attributes:
-        mode: Current robot mode
-        pose_current: Current robot position
-        pose_order: Position to reach
-        cycle: Current cycle
-        speed_current: Current speed
-        speed_order: Speed order
-        path: Computed path
-    """
-    mode: CtrlModeEnum
-    pose_current: Pose
-    pose_order: Pose
-    cycle: Optional[int] = None
-    speed_current: Optional[Speed] = None
-    speed_order: Optional[Speed] = None
-    path: List[Vertex] = []
-
-
 class DynObstacleRect(BaseModel):
     """
     A dynamic rectangle obstacle created by the robot.
@@ -204,6 +180,31 @@ class DynObstacleList(BaseModel):
         Hash function to allow this class to be used as a key in a dict.
         """
         return hash((type(self),) + tuple(self.__root__))
+
+
+class RobotState(BaseModel):
+    """
+    This contains information about robot state,
+    like mode, cycle, positions, speed, path and obstacles.
+    It is given by the firmware through the serial port.
+
+    Attributes:
+        mode: Current robot mode
+        pose_current: Current robot position
+        pose_order: Position to reach
+        cycle: Current cycle
+        speed_current: Current speed
+        speed_order: Speed order
+        path: Computed path
+    """
+    mode: CtrlModeEnum
+    pose_current: Pose
+    pose_order: Pose
+    cycle: Optional[int] = None
+    speed_current: Optional[Speed] = None
+    speed_order: Optional[Speed] = None
+    path: List[Vertex] = []
+    obstacles: DynObstacleList
 
 
 class Obstacle(BaseModel):
