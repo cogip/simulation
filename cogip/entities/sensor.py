@@ -45,14 +45,12 @@ class Sensor(QtCore.QObject):
     Attributes:
         obstacles: Class attribute recording all entities that should be detected
         all_sensors: Class attribute recording all sensors
-        hits_interval: Interval in seconds between each handling of collisions
         shm_key: Key to the shared memory segment
         shm_ptr: Pointer the shared memory segment
         shm_data: Data class mapped on the shared memory segment
     """
     obstacles: List[Qt3DCore.QEntity] = []
     all_sensors: List["Sensor"] = []
-    hits_interval: int = 50
 
     shm_key: Optional[str] = None
     shm_ptr: Optional[sysv_ipc.SharedMemory] = None
@@ -115,30 +113,30 @@ class Sensor(QtCore.QObject):
         self.impact_entity = ImpactEntity(radius=impact_radius, color=impact_color)
         self.impact_entity.setParent(self.asset_entity)
 
-        # Use a timer to trigger collision handling
-        self.timer = QtCore.QTimer()
-        self.timer.timeout.connect(self.handle_hits)
-        self.timer.start(Sensor.hits_interval)
-
     @qtSlot()
-    def handle_hits(self):
+    def update_hit(self):
         """
         Qt Slot
 
-        Compute the distance with the closest detected obstacle
-        and display the impact entity at the collision point.
+        Compute the distance with the closest detected obstacle.
         """
         distances = [
             hit
             for hit in self.ray_caster.hits()
             if hit.distance() != 0.0
         ]
+        self.hit = None
         if len(distances):
             self.hit = min(distances, key=lambda x: x.distance())
+
+    def update_impact(self):
+        """
+        Display the impact entity at the collision point.
+        """
+        if self.hit:
             self.impact_entity.setEnabled(True)
             self.impact_entity.transform.setTranslation(self.hit.worldIntersection())
         else:
-            self.hit = None
             self.impact_entity.setEnabled(False)
 
     @classmethod
@@ -249,16 +247,17 @@ class ToFSensor(Sensor):
         self.entity.addComponent(self.transform)
 
     @qtSlot()
-    def handle_hits(self):
+    def update_hit(self):
         """
         Store the distance of the closest obstacle in the shared memory segment.
         """
-        super(ToFSensor, self).handle_hits()
+        super(ToFSensor, self).update_hit()
         if Sensor.shm_data:
             if self.hit:
                 Sensor.shm_data.tof[self.tof_id] = int(self.hit.distance())
             else:
                 Sensor.shm_data.tof[self.tof_id] = 65535
+        self.update_impact()
 
 
 class LidarSensor(Sensor):
@@ -306,15 +305,15 @@ class LidarSensor(Sensor):
         LidarSensor.nb_lidar_sensors += 1
 
     @qtSlot()
-    def handle_hits(self):
+    def update_hit(self):
         """
         Store the distance of the closest obstacle in the shared memory segment.
         """
-        super(LidarSensor, self).handle_hits()
+        super(LidarSensor, self).update_hit()
         if Sensor.shm_data:
+            dist = 65535
             if self.hit:
                 dist = self.hit.distance()
                 dist += math.dist((0, 0), (self.origin_x, self.origin_y))
-                Sensor.shm_data.lidar[self.lidar_id] = int(dist)
-            else:
-                Sensor.shm_data.lidar[self.lidar_id] = 65535
+            Sensor.shm_data.lidar[self.lidar_id] = int(dist)
+        self.update_impact()
