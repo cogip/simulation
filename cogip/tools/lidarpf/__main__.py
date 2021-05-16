@@ -60,6 +60,7 @@ def main_opt(uart: str = typer.Argument(get_default_uart, help="The UART port to
     main_window.start_action.triggered.connect(controller.start_lidar)
     main_window.pause_action.triggered.connect(controller.stop_lidar)
     lidar_view.new_filter.connect(controller.set_filter)
+    lidar_view.new_intensity_threshold.connect(controller.set_intensity_threshold)
     controller.new_data.connect(data_proxy.new_data)
     data_proxy.update_data.connect(lidar_view.update_data)
 

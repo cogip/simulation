@@ -23,7 +23,7 @@ class LidarSerial(QtCore.QObject):
             Qt signal emitted when a new data is available
     """
 
-    new_data: qtSignal = qtSignal(list)
+    new_data: qtSignal = qtSignal(LidarData)
     max_parse_attemps: int = 1
 
     def __init__(self, uart_device: str):
@@ -94,6 +94,17 @@ class LidarSerial(QtCore.QObject):
         """
         with self.serial_lock:
             self.serial_port.write(f"filter {filter}\n".encode())
+
+    @qtSlot(int)
+    def set_intensity_threshold(self, threshold: int):
+        """
+        Set intensity threshold.
+
+        Arguments:
+            threshold: New intensity threshold.
+        """
+        with self.serial_lock:
+            self.serial_port.write(f"intensity_threshold {threshold}\n".encode())
 
     def get_data(self):
         """
