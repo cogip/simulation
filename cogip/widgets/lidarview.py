@@ -18,13 +18,17 @@ class LidarView(QtWidgets.QWidget):
         max_distance: max value of the distance range (use on the chart)
         max_intensity: max value of the intensity range (use on the chart)
         enable_plain_area: whether to display a line or an plain area for distance values
+        max_intensity_threshold: max value of the intensity threshold slider
         new_filer: Qt signal emitted when the filter value is modified
+        new_intensity_threshold: Qt signal emitted when the filter intensity threshold is modified
     """
     min_distance: int = 100
     max_distance: int = 5000
     max_intensity: int = 12000
     enable_plain_area: bool = True
+    max_intensity_threshold: int = 20000
     new_filter: qtSignal(int) = qtSignal(int)
+    new_intensity_threshold: qtSignal(int) = qtSignal(int)
 
     def __init__(
             self,
@@ -181,6 +185,18 @@ class LidarView(QtWidgets.QWidget):
         self.filter_value.setEnabled(False)
         self.filter_slider.setEnabled(False)
 
+        # Intensity threshold slider
+        self.intensity_threshold_label = QtWidgets.QLabel("Intensity threshold:")
+        sliders_layout.addWidget(self.intensity_threshold_label, 3, 1)
+        self.intensity_threshold_value = QtWidgets.QLabel()
+        sliders_layout.addWidget(self.intensity_threshold_value, 3, 2)
+        self.intensity_threshold_slider = QtWidgets.QSlider(
+            QtCore.Qt.Horizontal, minimum=0, maximum=self.max_intensity_threshold
+        )
+        self.intensity_threshold_slider.valueChanged.connect(self.intensity_threshold_slider_changed)
+        self.intensity_threshold_slider.setValue(0)
+        sliders_layout.addWidget(self.intensity_threshold_slider, 3, 3)
+
         # Create the table view
         table_view = QtWidgets.QTableView()
         table_view.setModel(self.table_model)
@@ -243,6 +259,19 @@ class LidarView(QtWidgets.QWidget):
         self.filter_slider.setEnabled(enabled)
 
         self.new_filter.emit(self.filter_slider.value() if enabled else 0)
+
+    @qtSlot(int)
+    def intensity_threshold_slider_changed(self, value: int):
+        """
+        Qt Slot
+
+        Function called when the intensity threshold value slider has changed.
+
+        Arguments:
+            value: new value
+        """
+        self.intensity_threshold_value.setText(str(value))
+        self.new_intensity_threshold.emit(value)
 
     @qtSlot()
     def update_data(self) -> None:
