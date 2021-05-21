@@ -99,7 +99,6 @@ class GameView(QtWidgets.QWidget):
 
         self.plane_material = Qt3DExtras.QDiffuseSpecularMaterial()
         self.plane_material.setDiffuse(QtGui.QColor.fromRgb(255, 0, 0, 0))
-        self.plane_material.setDiffuse(QtGui.QColor.fromRgb(255, 0, 0, 0))
         self.plane_material.setSpecular(QtGui.QColor.fromRgb(255, 0, 0, 0))
         self.plane_material.setShininess(1.0)
         self.plane_material.setAlphaBlendingEnabled(True)
@@ -117,6 +116,35 @@ class GameView(QtWidgets.QWidget):
         self.plane_picker.moved.connect(self.plane_moved)
         self.plane_entity.addComponent(self.plane_picker)
         self.plane_intersection = None
+
+        # Add a plane to display the ground image
+        self.ground_entity = Qt3DCore.QEntity()
+        self.ground_entity.setParent(self.root_entity)
+
+        self.ground_mesh = Qt3DExtras.QPlaneMesh()
+        self.ground_mesh.setHeight(2000)
+        self.ground_mesh.setWidth(3000)
+        self.ground_entity.addComponent(self.ground_mesh)
+
+        self.ground_material = Qt3DExtras.QNormalDiffuseSpecularMapMaterial()
+        self.ground_image1 = Qt3DRender.QTextureImage()
+        self.ground_image2 = Qt3DRender.QTextureImage()
+        self.ground_image3 = Qt3DRender.QTextureImage()
+        self.ground_source = QtCore.QUrl("file:assets/ground.jpg")
+        self.ground_image1.setSource(self.ground_source)
+        self.ground_image2.setSource(self.ground_source)
+        self.ground_image3.setSource(self.ground_source)
+        self.ground_material.diffuse().addTextureImage(self.ground_image1)
+        self.ground_material.normal().addTextureImage(self.ground_image2)
+        self.ground_material.specular().addTextureImage(self.ground_image3)
+        self.ground_material.setShininess(1.0)
+        self.ground_material.setAmbient("white")
+        self.ground_entity.addComponent(self.ground_material)
+
+        self.ground_transform = Qt3DCore.QTransform()
+        self.ground_transform.setTranslation(QtGui.QVector3D(0, 1000, 0))
+        self.ground_transform.setRotationX(90)
+        self.ground_entity.addComponent(self.ground_transform)
 
     def add_asset(self, asset: AssetEntity) -> None:
         """

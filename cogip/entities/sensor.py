@@ -99,11 +99,10 @@ class Sensor(QtCore.QObject):
         self.ray_caster.setEnabled(False)  # Start casting only when the first obstacle is registered
         self.ray_caster.setLength(0)  # Infinite
         self.ray_caster.setRunMode(Qt3DRender.QAbstractRayCaster.Continuous)
-        # self.ray_caster.setRunMode(Qt3DRender.QAbstractRayCaster.SingleShot)
         self.ray_caster.setFilterMode(Qt3DRender.QAbstractRayCaster.AcceptAnyMatchingLayers)
         self.ray_caster.setOrigin(QtGui.QVector3D(float(origin_x), float(origin_y), float(origin_z)))
         self.ray_caster.setDirection(QtGui.QVector3D(direction_x, direction_y, direction_z))
-        self.asset_entity.asset_entity.addComponent(self.ray_caster)
+        self.asset_entity.addComponent(self.ray_caster)
 
         # Add layers for obstacles already present
         for obstacle in self.obstacles:
@@ -111,7 +110,7 @@ class Sensor(QtCore.QObject):
 
         # Add impact entity
         self.impact_entity = ImpactEntity(radius=impact_radius, color=impact_color)
-        self.impact_entity.setParent(self.asset_entity)
+        self.impact_entity.setParent(self.asset_entity.parentEntity())
 
     @qtSlot()
     def update_hit(self):
@@ -229,7 +228,7 @@ class ToFSensor(Sensor):
         rotation = math.degrees(math.acos((origin_x / math.dist((0, 0), (origin_x, origin_y)))))
 
         self.entity = Qt3DCore.QEntity()
-        self.entity.setParent(self.asset_entity.asset_entity)
+        self.entity.setParent(self.asset_entity)
 
         self.mesh = Qt3DExtras.QCuboidMesh()
         self.mesh.setXExtent(10)
@@ -294,7 +293,7 @@ class LidarSensor(Sensor):
             name=name,
             origin_x=origin_x,
             origin_y=origin_y,
-            origin_z=400,
+            origin_z=360,
             direction_x=direction_x,
             direction_y=direction_y,
             direction_z=0,

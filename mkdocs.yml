@@ -45,6 +45,7 @@ nav:
           - path.py: developers/modules/cogip/entities/path.md
           - robot.py: developers/modules/cogip/entities/robot.md
           - sensor.py: developers/modules/cogip/entities/sensor.md
+          - table.py: developers/modules/cogip/entities/table.md
         - widgets:
           - chartsview.py: developers/modules/cogip/widgets/chartsview.md
           - gameview.py: developers/modules/cogip/widgets/gameview.md

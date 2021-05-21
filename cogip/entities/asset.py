@@ -11,16 +11,13 @@ Other formats could be also supported, but not tested
 """
 
 from pathlib import Path
-from typing import TextIO, Tuple, Union
+from typing import TextIO, Tuple
 
-from PySide2 import QtCore, QtGui
+from PySide2 import QtCore
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.QtCore import Signal as qtSignal
 from PySide2.QtCore import Slot as qtSlot
-
-from cogip import logger
-from cogip.models import RobotState
 
 
 class AssetEntity(Qt3DCore.QEntity):
@@ -37,7 +34,7 @@ class AssetEntity(Qt3DCore.QEntity):
 
     ready: qtSignal = qtSignal()
 
-    def __init__(self, asset_path: Union[Path, str], asset_name: str = None):
+    def __init__(self, asset_path: Path, scale: float = 1.0):
         """
         The constructor checks the asset's file and starts loading the entity.
 
@@ -46,23 +43,18 @@ class AssetEntity(Qt3DCore.QEntity):
 
         Arguments:
             asset_path: path of the asset file
-            asset_name: asset name
+            scale: scale to apply to the entity after load
         """
 
-        super(AssetEntity, self).__init__()
+        super().__init__()
 
         self.asset_ready: bool = False
-        self.asset_path: Path = None
-        self.asset_name: str = asset_name
+        self.asset_path: Path = asset_path
+        self.scale: float = scale
         self.asset_entity: Qt3DCore.QEntity = None
-        self.transform_component: Qt3DCore.QTransform = None
 
-        if isinstance(asset_path, Path):
-            self.asset_path = asset_path
-        elif isinstance(asset_path, str):
-            self.asset_path = Path(asset_path)
-        else:
-            raise TypeError("'asset_path' argument must be of type 'str' or 'pathlib.Path'")
+        self.transform_component = Qt3DCore.QTransform()
+        self.addComponent(self.transform_component)
 
         if not self.asset_path.exists():
             raise FileNotFoundError(f"File not found '{self.asset_path}'")
@@ -93,47 +85,15 @@ class AssetEntity(Qt3DCore.QEntity):
         if status != Qt3DRender.QSceneLoader.Ready:
             return
 
-        if self.asset_name:
-            # Find the asset entity
-            self.asset_entity = self.findChild(Qt3DCore.QEntity, self.asset_name)
-            if not self.asset_entity:
-                logger.warning(f"Entity '{self.asset_name}' not found in {self.asset_path}")
-            else:
-                # Set asset entity as the first child
-                self.asset_entity.setParent(self)
-                # Find the transform component of the asset entity
-                for comp in self.asset_entity.components():
-                    if isinstance(comp, Qt3DCore.QTransform):
-                        self.transform_component = comp
-                        break
-
-        # Remove unused entities and component
-        self.scene_entity = self.findChild(Qt3DCore.QEntity, "Scene")
-        self.scene_entity.setParent(None)
         self.removeComponent(self.loader)
 
-        self.generate_tree()
-
         self.post_init()
+
+        self.generate_tree()
 
         self.asset_ready = True
 
         self.ready.emit()
-
-    @qtSlot(RobotState)
-    def new_robot_state(self, new_state: RobotState) -> None:
-        """
-        Qt slot called to set the entity's new position.
-
-        Arguments:
-            new_state: new robot state
-        """
-
-        if not self.transform_component:
-            return
-        self.transform_component.setTranslation(
-            QtGui.QVector3D(new_state.pose_current.x, new_state.pose_current.y, 0))
-        self.transform_component.setRotationZ(new_state.pose_current.O + 90)
 
     def generate_tree(self):
         """
