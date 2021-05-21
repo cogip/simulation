@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from pydantic import BaseSettings, FilePath
+from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -9,18 +9,11 @@ class Settings(BaseSettings):
     These parameters can be also set as environment variables or in the `.env` file.
 
     Attributes:
-        default_uart: Serial port used by default
-            (default: "/tmp/ptsCOGIP")
-        table_filename: Name of the file containing the table asset
-            (default: "assets/table2019.dae")
-        robot_filename: Name of the file containing the robot asset
-            (default: "assets/robot2019.dae")
+        default_uart: Serial port used by default (default: "/tmp/ptsCOGIP")
         native_binary: `mcu_firmware` compiled in native mode
     """
 
     default_uart: str = "/tmp/ptsCOGIP"
-    table_filename: FilePath = "assets/table2019.dae"
-    robot_filename: FilePath = "assets/robot2019.dae"
     native_binary: Path = "submodules/mcu-firmware/applications/cup2019/bin/cogip-native/cortex.elf"
 
 

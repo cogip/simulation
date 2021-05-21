@@ -1,15 +1,16 @@
 from cogip.models.models import DynObstacleRect
 import math
 from pathlib import Path
-from typing import Union
 
 from PySide2.QtCore import Slot as qtSlot
 from PySide2 import QtCore, QtGui
+from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DExtras import Qt3DExtras
 
+from cogip import logger
 from cogip.entities.asset import AssetEntity
 from cogip.entities.dynobstacle import DynRectObstacleEntity, DynCircleObstacleEntity
-from cogip.entities.sensor import ToFSensor, LidarSensor
+from cogip.entities.sensor import LidarSensor
 from cogip.models import DynObstacleList, RobotState
 
 
@@ -17,39 +18,25 @@ class RobotEntity(AssetEntity):
     """
     The robot entity displayed on the table.
 
-    Used to display the robot and the position to reach.
-
     Attributes:
-        sensors_update_interval: Interval in seconds between each sensors update
-    """
+        asset_path: Path of the asset file
+        asset_name: Interval in seconds between each sensors update
+        asset_scale: Scale to apply to the entity after load
+        sensors_update_interval: Interval in milliseconds between each sensors update
 
+    """
+    asset_path: Path = Path("assets/robot2021.dae")
+    asset_name: str = "Scene"
+    asset_scale: float = 1000.0
     sensors_update_interval: int = 5
 
-    def __init__(
-            self,
-            asset_path: Union[Path, str],
-            asset_name: str = None,
-            enable_tof_sensors: bool = True,
-            enable_lidar_sensors: bool = True,
-            color: QtGui.QColor = None):
+    def __init__(self):
         """
         Class constructor.
 
         Inherits [AssetEntity][cogip.entities.asset.AssetEntity].
-
-        Arguments:
-            asset_path: Path of the asset file
-            asset_name: Name of the entity to identity the usefull entity
-                after load the asset file
-            enable_tof_sensors: Enable the ToF sensors
-            enable_lidar_sensors: Enable the LIDAR sensors
-            color: The color of the robot
         """
-        super(RobotEntity, self).__init__(asset_path, asset_name)
-        self.enable_tof_sensors = enable_tof_sensors
-        self.enable_lidar_sensors = enable_lidar_sensors
-        self.color = color
-        self.tof_sensors = []
+        super().__init__(self.asset_path, scale=self.asset_scale)
         self.lidar_sensors = []
         self.rect_obstacles_pool = []
         self.round_obstacles_pool = []
@@ -64,70 +51,22 @@ class RobotEntity(AssetEntity):
 
         Set the color and enable sensors.
         """
-        super(RobotEntity, self).post_init()
+        super().post_init()
 
-        if self.color:
-            self.material = Qt3DExtras.QDiffuseSpecularMaterial(self)
-            self.material.setDiffuse(self.color)
-            self.material.setDiffuse(self.color)
-            self.material.setSpecular(self.color)
-            self.material.setShininess(1.0)
-            self.material.setAlphaBlendingEnabled(True)
-            self.asset_entity.addComponent(self.material)
+        self.asset_entity = self.findChild(Qt3DCore.QEntity, self.asset_name)
+        if not self.asset_entity:
+            logger.error(f"Entity '{self.asset_name}' not found in {self.asset_path}")
+            return
 
-        if self.enable_tof_sensors:
-            self.add_tof_sensors()
+        self.asset_entity.setParent(self)
 
-        if self.enable_lidar_sensors:
-            self.add_lidar_sensors()
+        if self.scale != 1:
+            for comp in self.asset_entity.components():
+                if isinstance(comp, Qt3DCore.QTransform):
+                    comp.setScale(self.scale)
+                    break
 
-    def add_tof_sensors(self):
-        """
-        Add ToF sensors to the robot entity.
-        """
-        sensors_properties = [
-            {
-                "name": "Back left sensor",
-                "origin_x": 135,
-                "origin_y": 135
-            },
-            {
-                "name": "Back sensor",
-                "origin_x": 0,
-                "origin_y": 177
-            },
-            {
-                "name": "Back right sensor",
-                "origin_x": -135,
-                "origin_y": 135
-            },
-            {
-                "name": "Front right sensor",
-                "origin_x": -135,
-                "origin_y": -135
-            },
-            {
-                "name": "Front sensor",
-                "origin_x": 0,
-                "origin_y": -177
-            },
-            {
-                "name": "Front left sensor",
-                "origin_x": 135,
-                "origin_y": -135
-            },
-        ]
-
-        # Add sensors
-        for prop in sensors_properties:
-            if prop:
-                sensor = ToFSensor(asset_entity=self, **prop)
-                self.sensor_timer.timeout.connect(sensor.update_hit)
-                self.tof_sensors.append(sensor)
-            else:
-                ToFSensor.nb_tof_sensors += 1
-                if ToFSensor.shm_data:
-                    ToFSensor.shm_data[ToFSensor.nb_tof_sensors] = 65535
+        self.add_lidar_sensors()
 
     def add_lidar_sensors(self):
         """
@@ -141,8 +80,11 @@ class RobotEntity(AssetEntity):
 
         for i in range(0, 360):
             angle = (360 - i) % 360
+            angle = i
             origin_x = radius * math.sin(math.radians(180 - angle))
             origin_y = radius * math.cos(math.radians(180 - angle))
+            origin_x = radius * math.sin(math.radians(angle))
+            origin_y = radius * math.cos(math.radians(angle))
             sensors_properties.append(
                 {
                     "name": f"Lidar {angle}",
@@ -221,16 +163,76 @@ class RobotEntity(AssetEntity):
         """
         Qt slot called to set the robot's new position.
 
-        If sensors are disabled, we consider that this robot represents
-        the position to reach.
+        Arguments:
+            new_state: new robot state
+        """
+        self.transform_component.setTranslation(
+            QtGui.QVector3D(new_state.pose_current.x, new_state.pose_current.y, 0))
+        self.transform_component.setRotationZ(new_state.pose_current.O - 90)
+
+        if new_state.obstacles:
+            self.set_dyn_obstacles(new_state.obstacles)
+
+
+class RobotShadowEntity(AssetEntity):
+    """
+    The robot entity displayed on the table to show the position to reach.
+
+    Attributes:
+        asset_path: Path of the asset file
+        asset_name: Interval in seconds between each sensors update
+        asset_scale: Scale to apply to the entity after load
+    """
+
+    asset_path: Path = Path("assets/robot2021.dae")
+    asset_name: str = "Scene"
+    asset_scale: float = 1000.0
+
+    def __init__(self, color: QtGui.QColor = QtGui.QColor.fromRgb(0, 255, 0, 50)):
+        """
+        Class constructor.
+
+        Inherits [AssetEntity][cogip.entities.asset.AssetEntity].
+
+        Arguments:
+            color: The color of the robot
+        """
+        super().__init__(self.asset_path, scale=self.asset_scale)
+        self.color = color
+
+    def post_init(self):
+        """
+        Function called once the asset has been loaded.
+
+        Set the color and enable sensors.
+        """
+        super().post_init()
+
+        self.asset_entity = self.findChild(Qt3DCore.QEntity, self.asset_name)
+        if not self.asset_entity:
+            logger.error(f"Entity '{self.asset_name}' not found in {self.asset_path}")
+            return
+
+        self.asset_entity.setParent(self)
+
+        if self.scale != 1:
+            for comp in self.asset_entity.components():
+                if isinstance(comp, Qt3DCore.QTransform):
+                    comp.setScale(self.scale)
+                    break
+
+        for material in self.asset_entity.findChildren(Qt3DExtras.QPhongMaterial):
+            material.setDiffuse(self.color)
+            material.setSpecular(self.color)
+
+    @qtSlot(RobotState)
+    def new_robot_state(self, new_state: RobotState) -> None:
+        """
+        Qt slot called to set the robot's new position to reach.
 
         Arguments:
             new_state: new robot state
         """
-        state = new_state.copy()
-        if not self.enable_tof_sensors and not self.enable_lidar_sensors:
-            state.pose_current = new_state.pose_order
-        super(RobotEntity, self).new_robot_state(state)
-
-        if state.obstacles:
-            self.set_dyn_obstacles(state.obstacles)
+        self.transform_component.setTranslation(
+            QtGui.QVector3D(new_state.pose_order.x, new_state.pose_order.y, 0))
+        self.transform_component.setRotationZ(new_state.pose_order.O - 90)

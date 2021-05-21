@@ -11,12 +11,12 @@ from threading import Thread
 
 import serial.tools.list_ports
 # import ptvsd
-from PySide2 import QtWidgets, QtGui
+from PySide2 import QtWidgets
 
 from cogip import logger
 from cogip.config import settings
-from cogip.entities.asset import AssetEntity
-from cogip.entities.robot import RobotEntity
+from cogip.entities.robot import RobotEntity, RobotShadowEntity
+from cogip.entities.table import TableEntity
 
 from .mainwindow import MainWindow
 from .serialcontroller import SerialController
@@ -125,27 +125,15 @@ def main():
     win = MainWindow()
 
     # Create table entity
-    table_entity = AssetEntity(
-        asset_path=Path(settings.table_filename).resolve(),
-        asset_name="Table2019"
-    )
+    table_entity = TableEntity()
     win.game_view.add_asset(table_entity)
 
     # Create robot entity
-    robot_entity = RobotEntity(
-        asset_path=Path(settings.robot_filename).resolve(),
-        asset_name="Robot2019"
-    )
+    robot_entity = RobotEntity()
     win.game_view.add_asset(robot_entity)
 
     # Create robot entity
-    robot_final_entity = RobotEntity(
-        asset_path=Path(settings.robot_filename).resolve(),
-        asset_name="Robot2019",
-        enable_tof_sensors=False,
-        enable_lidar_sensors=False,
-        color=QtGui.QColor.fromRgb(0, 255, 0, 50)
-    )
+    robot_final_entity = RobotShadowEntity()
     win.game_view.add_asset(robot_final_entity)
 
     # Connect UI signals to Controller slots
