@@ -15,11 +15,49 @@ from PySide2 import QtWidgets
 
 from cogip import logger
 from cogip.config import settings
+from cogip.entities.buoy import BuoyEntity
 from cogip.entities.robot import RobotEntity, RobotShadowEntity
 from cogip.entities.table import TableEntity
 
 from .mainwindow import MainWindow
 from .serialcontroller import SerialController
+
+
+buoys = [
+    # Blue side (+X)
+    {"x": 1500-300, "y": 400, "color": "red"},
+    {"x": 1500-300, "y": 1200, "color": "green"},
+    {"x": 1500-445, "y": 515, "color": "green"},
+    {"x": 1500-445, "y": 1085, "color": "red"},
+    {"x": 1500-670, "y": 100, "color": "red"},
+    {"x": 1500-956, "y": 400, "color": "green"},
+    {"x": 1500-1005, "y": 1955, "color": "red"},
+    {"x": 1500-1065, "y": 1655, "color": "green"},
+    {"x": 1500-1100, "y": 800, "color": "red"},
+    {"x": 1500-1270, "y": 1200, "color": "green"},
+    {"x": 1500-1335, "y": 1655, "color": "red"},
+    {"x": 1500-1395, "y": 1955, "color": "green"},
+    # Yellow side (-X)
+    {"x": 1500-1605, "y": 1955, "color": "red"},
+    {"x": 1500-1665, "y": 1655, "color": "green"},
+    {"x": 1500-1730, "y": 1200, "color": "red"},
+    {"x": 1500-1900, "y": 800, "color": "green"},
+    {"x": 1500-1935, "y": 1655, "color": "red"},
+    {"x": 1500-1995, "y": 1955, "color": "green"},
+    {"x": 1500-2044, "y": 400, "color": "red"},
+    {"x": 1500-2330, "y": 100, "color": "green"},
+    {"x": 1500-2555, "y": 515, "color": "red"},
+    {"x": 1500-2555, "y": 1085, "color": "green"},
+    {"x": 1500-2700, "y": 400, "color": "green"},
+    {"x": 1500-2700, "y": 1200, "color": "red"},
+    # Shoal area (floating buoys)
+    {"x": 1500-1200, "y": 75, "color": "green"},
+    {"x": 1500-1340, "y": 330, "color": "green"},
+    {"x": 1500-1360, "y": 125, "color": "red"},
+    {"x": 1500-1660, "y": 400, "color": "red"},
+    {"x": 1500-1700, "y": 100, "color": "red"},
+    {"x": 1500-1900, "y": 200, "color": "green"}
+]
 
 
 def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
@@ -127,6 +165,11 @@ def main():
     # Create table entity
     table_entity = TableEntity()
     win.game_view.add_asset(table_entity)
+
+    # Create buoy entities
+    for buoy in buoys:
+        buoy_entity = BuoyEntity(**buoy)
+        win.game_view.add_asset(buoy_entity)
 
     # Create robot entity
     robot_entity = RobotEntity()
