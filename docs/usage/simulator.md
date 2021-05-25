@@ -17,7 +17,7 @@ If no serial port is found, it will launch the default native firmware (see [Sim
 
 ```bash
 $ simulator --help
-usage: simulator [-h] [-D UART_DEVICE | -B NATIVE_BINARY | -r REMOTE] [-n]
+usage: simulator [-h] [-D UART_DEVICE | -B NATIVE_BINARY | -r REMOTE]
 
 Launch COGIP Simulator.
 
@@ -29,7 +29,6 @@ optional arguments:
                         Specify native binary compiled with shell menus enabled
   -r REMOTE, --remote REMOTE
                         Remote device providing the serial port connected to the robot
-  -n, --no-wait         Do not wait for the firmware start sequence
 ```
 
 ## Simulation Mode

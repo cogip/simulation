@@ -247,3 +247,16 @@ class ObstacleList(BaseModel):
         Add a obstacle to the list
         """
         self.__root__.append(item)
+
+
+class LogMessage(BaseModel):
+    """
+    A log received on the serial port.
+
+    Attributes:
+        log: message
+    """
+    log: str
+
+
+SerialMessage = Union[RobotState, ShellMenu, LogMessage]
