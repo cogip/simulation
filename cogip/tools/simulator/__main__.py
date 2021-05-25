@@ -78,11 +78,6 @@ def get_argument_parser(default_uart: str = "/tmp/ptsCOGIP"):
         dest="remote", default=None,
         help="Remote device providing the serial port connected to the robot"
     )
-    arg_parser.add_argument(
-        "-n", "--no-wait",
-        dest="no_wait", action='store_true',
-        help="Do not wait for the firmware start sequence"
-    )
     return arg_parser
 
 
@@ -154,7 +149,7 @@ def main():
         socat_process = subprocess.Popen(socat_args, executable=socat_path)
 
     # Create controller
-    controller = SerialController(args.uart_device, no_wait=args.no_wait)
+    controller = SerialController(args.uart_device)
 
     # Create QApplication
     app = QtWidgets.QApplication(sys.argv)
