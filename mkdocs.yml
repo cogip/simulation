@@ -38,7 +38,6 @@ nav:
             - mainwindow.py: developers/modules/cogip/tools/lidarpf/mainwindow.md
         - entities:
           - asset.py: developers/modules/cogip/entities/asset.md
-          - buoy.py: developers/modules/cogip/entities/buoy.md
           - dynobstacle.py: developers/modules/cogip/entities/dynobstacle.md
           - impact.py: developers/modules/cogip/entities/impact.md
           - line.py: developers/modules/cogip/entities/line.md

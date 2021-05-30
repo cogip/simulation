@@ -34,7 +34,7 @@ class AssetEntity(Qt3DCore.QEntity):
 
     ready: qtSignal = qtSignal()
 
-    def __init__(self, asset_path: Path, scale: float = 1.0):
+    def __init__(self, asset_path: Path, scale: float = 1.0, parent: Qt3DCore.QEntity = None):
         """
         The constructor checks the asset's file and starts loading the entity.
 
@@ -46,7 +46,7 @@ class AssetEntity(Qt3DCore.QEntity):
             scale: scale to apply to the entity after load
         """
 
-        super().__init__()
+        super().__init__(parent)
 
         self.asset_ready: bool = False
         self.asset_path: Path = asset_path
