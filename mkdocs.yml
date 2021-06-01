@@ -15,6 +15,7 @@ nav:
   - Installation: install.md
   - Usage:
     - usage/simulator.md
+    - usage/replay.md
     - usage/lidarusb.md
     - usage/lidarpf.md
   - Developer's Doc:
@@ -26,6 +27,9 @@ nav:
             - __main__.py: developers/modules/cogip/tools/simulator/main.md
             - mainwindow.py: developers/modules/cogip/tools/simulator/mainwindow.md
             - serialcontroller.py: developers/modules/cogip/tools/simulator/serialcontroller.md
+          - replay:
+            - __main__.py: developers/modules/cogip/tools/replay/main.md
+            - mainwindow.py: developers/modules/cogip/tools/replay/mainwindow.md
           - lidarusb:
             - __main__.py: developers/modules/cogip/tools/lidarusb/main.md
             - dataproxy.py: developers/modules/cogip/tools/lidarusb/dataproxy.md

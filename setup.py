@@ -46,6 +46,7 @@ setup(
     entry_points={
         'console_scripts': [
             'simulator=cogip.tools.simulator.__main__:main',
+            'replay=cogip.tools.replay.__main__:main',
             'lidarusb=cogip.tools.lidarusb.__main__:main',
             'lidarpf=cogip.tools.lidarpf.__main__:main'
         ]

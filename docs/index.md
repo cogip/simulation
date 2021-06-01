@@ -32,6 +32,12 @@ The simulator provides a graphical interface, featuring:
 
 ![Charts View](img/simulator/charts_view.png)
 
+### Replay
+
+The replay tool is used to replay a game from a trace file.
+
+![Replay Overview](img/replay/replay_overview.png)
+
 ### Lidar USB View
 
 This tool displays a graphical view to render data provided by a HLS-LFCD2 Lidar connected to USB port.
