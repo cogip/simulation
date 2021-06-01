@@ -1,4 +1,5 @@
 # import time
+from typing import Optional
 from serial import Serial
 from threading import Lock
 # import ptvsd # Used to debug with VS Code
@@ -57,6 +58,8 @@ class SerialController(QtCore.QObject):
 
         self.serial_lock = Lock()
 
+        self.menu: Optional[models.ShellMenu] = None
+
     def quit(self):
         """
         Request to exit the thread as soon as possible.
@@ -107,10 +110,12 @@ class SerialController(QtCore.QObject):
                         self.last_cycle = message.cycle
                         self.signal_new_robot_state.emit(message)
                 elif isinstance(message, models.ShellMenu):
+                    self.menu = message
                     self.signal_new_menu.emit(message)
-                    for entry in message.entries:
+                    for entry in self.menu.entries:
                         if entry.cmd == "_trace_on":
                             self.new_command("_trace_on")
+                            entry.cmd = "_trace_off"
                         if entry.cmd == "_set_shmem_key" and Sensor.shm_key is None:
                             Sensor.init_shm()
                             self.new_command(f"_set_shmem_key {Sensor.shm_key}")
@@ -122,5 +127,10 @@ class SerialController(QtCore.QObject):
                         self.new_command("_help_json")
             except:  # noqa
                 self.signal_new_console_text.emit(line)
+
+        if self.menu:
+            for entry in self.menu.entries:
+                if entry.cmd == "_trace_off":
+                    self.new_command("_trace_off")
 
         self.serial_port.close()
