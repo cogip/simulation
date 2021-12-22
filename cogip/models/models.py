@@ -87,8 +87,8 @@ class Vertex(BaseModel):
         y: Y position
         z: Z position (optional)
     """
-    x: float
-    y: float
+    x: float = 0.0
+    y: float = 0.0
     z: float = 0.0
 
     def __hash__(self):
@@ -104,7 +104,7 @@ class Pose(Vertex):
         y: Y postion
         O: Rotation
     """
-    O: float
+    O: float = 0.0
 
 
 class Speed(BaseModel):
@@ -198,9 +198,9 @@ class RobotState(BaseModel):
         path: Computed path
     """
     mode: CtrlModeEnum
-    pose_current: Pose
-    pose_order: Pose
-    cycle: Optional[int] = None
+    pose_current: Pose = Pose()
+    pose_order: Pose = Pose()
+    cycle: int = 0
     speed_current: Optional[Speed] = None
     speed_order: Optional[Speed] = None
     path: List[Vertex] = []
