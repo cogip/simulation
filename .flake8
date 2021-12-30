@@ -4,7 +4,8 @@ exclude =
     __pycache__,
     submodules,
     tests,
-    doc
+    doc,
+    cogip/tools/copilot/messages
 max-line-length = 127
 #max-complexity = 10
 #ignore = E226,E302,E41
