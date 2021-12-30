@@ -1,9 +1,9 @@
-# Simulator
+# Monitor
 
-The simulator is used to monitor the robot behavior during the game.
+The monitor is used to monitor the robot behavior during the game.
 It it connected to `Copilot` embedded in the robot through Socket.IO protocol.
 
-The simulator provides a graphical interface, featuring:
+The monitor provides a graphical interface, featuring:
 
   * a 3D view of the table (in yellow) and the robot (in green)
 
@@ -19,17 +19,17 @@ The simulator provides a graphical interface, featuring:
 
   * charts window to visualize calibration data
 
-![GUI Overview](img/simulator/gui_overview.png)
+![GUI Overview](../img/monitor/gui_overview.png)
 
-![Charts View](img/simulator/charts_view.png)
+![Charts View](../img/monitor/charts_view.png)
 
 ## Command line options
 
 ```bash
-$ simulator --help
-Usage: simulator [URL]
+$ monitor --help
+Usage: monitor [URL]
 
-  Launch COGIP Simulator.
+  Launch COGIP Monitor.
 
 Arguments:
   [URL]  URL to Copilot socket.io/web server  [env var: COPILOT_URL; default: http://copilot]
@@ -37,18 +37,18 @@ Arguments:
 
 !!! note "Environnement variables can be set in the `.env` file."
 
-## Launch the simulator
+## Launch the monitor
 
-To connect the `Simulator` to the `Copilot` running on the same developmnet PC, run:
+To connect the `Monitor` to the `Copilot` running on the same developmnet PC, run:
 
 ```bash
-simulator http://localhost:8080
+monitor http://localhost:8080
 ```
 
-To connect the `Simulator` to the `Copilot` running on the Raspberry Pi in the robot, run:
+To connect the `Monitor` to the `Copilot` running on the Raspberry Pi in the robot, run:
 
 ```bash
-simulator http://copilot
+monitor http://copilot
 ```
 
 !!! note "Adapt URL and port depending on `Copilot` configuration"

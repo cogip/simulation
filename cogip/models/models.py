@@ -1,5 +1,5 @@
 """
-This module contains all data models used in the simulator.
+This module contains all data models used in the monitor.
 
 The models are based on [Pydantic](https://pydantic-docs.helpmanual.io/) models,
 allowing them to be loaded from/exported to JSON strings/files.

@@ -1,4 +1,4 @@
-::: cogip.tools.simulator.__main__
+::: cogip.tools.monitor.mainwindow
     rendering:
       show_source: true
       show_root_heading: no

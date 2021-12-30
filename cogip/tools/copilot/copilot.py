@@ -185,7 +185,7 @@ class Copilot():
             use_integers_for_enums=True
         )
 
-        # Convert obstacles format to comply with Pydantic models used by the simulator
+        # Convert obstacles format to comply with Pydantic models used by the monitor
         obstacles = state_dict.get("obstacles", [])
         new_obstacles = [y for obstacle in obstacles for _, y in obstacle.items()]
         state_dict["obstacles"] = new_obstacles

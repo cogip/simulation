@@ -5,7 +5,7 @@ from pathlib import Path
 
 cwd = Path(__file__).resolve().parent
 
-name = 'cogip-simulation'
+name = 'cogip-tools'
 version = '1.0'
 release = '1.0.0'
 
@@ -26,7 +26,7 @@ required_packages = [
     "python-dotenv==0.14.0",
     "typer==0.4.0",
 
-    # Packages specific to simulator
+    # Packages specific to monitor
     "PySide2==5.15.1;" + marker_platform_x86_64,
     "requests==2.26.0;" + marker_platform_x86_64,
     "sysv-ipc==1.0.1;" + marker_platform_x86_64,
@@ -70,7 +70,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'simulator=cogip.tools.simulator.__main__:main',
+            'monitor=cogip.tools.monitor.__main__:main',
             'replay=cogip.tools.replay.__main__:main',
             'copilot=cogip.tools.copilot.__main__:main',
             'lidarusb=cogip.tools.lidarusb.__main__:main',

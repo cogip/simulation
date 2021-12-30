@@ -14,7 +14,7 @@ that controls a camera, a touch screen. It runs the `Copilot` tool from this rep
 
 `Copilot` is based on a web server, it provides a dashboard accessible with web browsers on the network.
 It also provides a SocketIO server.
-Monitoring tools like `Simulator` from this repository are connected to the SocketIO server.
+Monitoring tools like `Monitor` from this repository are connected to the SocketIO server.
 
 `Copilot` received robot state and shell menus from `mcu-firmware` and emits SocketIO messages in JSON format to connected monitors.
 

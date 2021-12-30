@@ -99,10 +99,10 @@ make -C submodules/mcu-firmware/applications/app_test BOARD=cogip-native PORT="-
 copilot -s /tmp/ttyRPI -p 8080
 ```
 
-And finally `Simulator`is launched using:
+And finally `Monitor`is launched using:
 
 ```bash
-simulator http://localhost:8080
+monitor http://localhost:8080
 ```
 
 ## Packaging
@@ -113,5 +113,5 @@ To build a source distribution package, use:
 python setup.py sdist
 ```
 
-This will produce `dist/cogip-simulation-1.0.0.tar.gz`.
+This will produce `dist/cogip-tools-1.0.0.tar.gz`.
 This package can be copied to the Raspberry Pi and installed to deploy the `Copilot`.
