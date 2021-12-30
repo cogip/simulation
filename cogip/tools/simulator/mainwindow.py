@@ -99,6 +99,9 @@ class MainWindow(QtWidgets.QMainWindow):
         status_bar.addPermanentWidget(pos_mode_label, 0)
         status_bar.addPermanentWidget(self.pos_mode_text, 0)
 
+        self.connected_label = QtWidgets.QLabel("Disconnected")
+        status_bar.addPermanentWidget(self.connected_label, 0)
+
         # Actions
         # Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons
 
@@ -233,7 +236,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Qt Slot
 
-        Display the new menu sent by [SerialController][cogip.tools.simulator.serialcontroller.SerialController].
+        Display the new menu sent by [SocketioController][cogip.tools.simulator.socketiocontroller.SocketioController].
 
         Once a menu has been build once, it is cached and reused.
 
@@ -292,7 +295,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def build_command(self, cmd: str, layout: QtWidgets.QHBoxLayout):
         """
-        Build command to send to [SerialController][cogip.tools.simulator.serialcontroller.SerialController].
+        Build command to send to [SocketioController][cogip.tools.simulator.socketiocontroller.SocketioController].
 
         It is built based on the command name given in arguments,
         and arguments strings fetched from the command button in the menu.
@@ -359,6 +362,18 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         if filename:
             self.signal_save_obstacles.emit(Path(filename))
+
+    @qtSlot()
+    def connected(self, state: bool):
+        """
+        Qt Slot
+
+        Update the status bar with connected/disconnected state.
+
+        Arguments:
+            state: True if connected, False if disconnected
+        """
+        self.connected_label.setText("Connected" if state else "Disconnected")
 
 
 def split_command(command: str) -> Tuple[str, List[str]]:

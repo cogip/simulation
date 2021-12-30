@@ -28,11 +28,14 @@ required_packages = [
 
     # Packages specific to simulator
     "PySide2==5.15.1;" + marker_platform_x86_64,
+    "requests==2.26.0;" + marker_platform_x86_64,
     "sysv-ipc==1.0.1;" + marker_platform_x86_64,
+    "websocket-client==1.2.3;" + marker_platform_x86_64,
 
     # Packages specific to Copilot
     "aioserial==1.3.0",
     "fastapi==0.70.1",
+    "polling2==0.5.0",
     "protobuf==3.19.1",
     "python-socketio==5.5.0",
     "uvicorn[standard]==0.16.0",

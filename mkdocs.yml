@@ -27,7 +27,7 @@ nav:
           - simulator:
             - __main__.py: developers/modules/cogip/tools/simulator/main.md
             - mainwindow.py: developers/modules/cogip/tools/simulator/mainwindow.md
-            - serialcontroller.py: developers/modules/cogip/tools/simulator/serialcontroller.md
+            - socketiocontroller.py: developers/modules/cogip/tools/simulator/socketiocontroller.md
           - copilot:
             - __main__.py: developers/modules/cogip/tools/copilot/main.md
             - app.py: developers/modules/cogip/tools/copilot/app.md
@@ -83,7 +83,6 @@ plugins:
         - cogip
 
   - search
-
 
 markdown_extensions:
   - admonition

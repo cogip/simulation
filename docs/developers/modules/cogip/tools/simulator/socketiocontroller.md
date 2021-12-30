@@ -1,4 +1,4 @@
-::: cogip.tools.simulator.serialcontroller
+::: cogip.tools.simulator.socketiocontroller
     rendering:
       show_source: true
       show_root_heading: no
