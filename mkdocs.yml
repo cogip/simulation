@@ -75,6 +75,9 @@ plugins:
         python:
           rendering:
             show_source: true
+            show_root_heading: no
+            heading_level: 2
+            members_order: source
           setup_commands:
             - import sys
             - from unittest.mock import MagicMock as mock
@@ -87,3 +90,6 @@ plugins:
 markdown_extensions:
   - admonition
   - codehilite
+  - toc:
+      permalink: "#"
+      baselevel: 1
