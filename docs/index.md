@@ -1,52 +1,25 @@
 # Overview
 
-The COGIP simulation project provides a set of simulation utilities developed by the COGIP robotic team.
-It is used during development and debugging of its robot [firmware](https://github.com/cogip/mcu-firmware) and other test platforms.
+The COGIP simulation project provides a set of Python utilities developed by the COGIP robotic team.
+It is used during development, debugging and monitoring of its robot [firmware](https://github.com/cogip/mcu-firmware) and other test platforms.
 This robot is developed for [Eurobot](https://www.eurobot.org/), French robotic contest.
 
-## Tools
 
-### Simulator
+![Communication Overview](img/copilot/copilot.svg)
 
-The simulator provides a graphical interface, featuring:
+The main component of the robot is a STM32 that runs [`mcu-firmware`](https://github.com/cogip/mcu-firmware). It is assiocated to a Raspberry Pi 4
+that controls a camera, a touch screen. It runs the `Copilot` tool from this repository.
 
-  * a 3D view of the table (in yellow) and the robot (in green)
+`mcu-firmware` (on STM32) and `Copilot` (on Raspberry Pi) communicate using Protobuf messages over a serial port.
 
-  * a controller for the firmware compiled in native and calibration mode
+`Copilot` is based on a web server, it provides a dashboard accessible with web browsers on the network.
+It also provides a SocketIO server.
+Monitoring tools like `Simulator` from this repository are connected to the SocketIO server.
 
-  * a controller for the robot via serial port
+`Copilot` received robot state and shell menus from `mcu-firmware` and emits SocketIO messages in JSON format to connected monitors.
 
-  * a menu giving access to the firmware's calibration menu
+Monitors can send commands to `Copilot` which forwards them to `mcu-firmware`.
 
-  * a button to add obstacles (in grey), move and resize them
+The touchscreen displays the `Copilot` dashboard using an web browser embedded in the Raspberry Pi.
 
-  * save and load obstacles using JSON files
-
-  * visualization of ToF (red dots) and LIDAR (bleu dots) sensors detections
-
-  * visualization of obstacles detected in the firmware (in transparent red)
-
-  * charts window to visualize calibration data
-
-![GUI Overview](img/simulator/gui_overview.png)
-
-![Charts View](img/simulator/charts_view.png)
-
-### Replay
-
-The replay tool is used to replay a game from a trace file.
-
-![Replay Overview](img/replay/replay_overview.png)
-
-### Lidar USB View
-
-This tool displays a graphical view to render data provided by a HLS-LFCD2 Lidar connected to USB port.
-
-![View with unfiltered data](img/lidarusb/lidarusb_unfiltered.png)
-
-![View with filtered data](img/lidarusb/lidarusb_filtered.png)
-
-### Lidar Platform View
-
-Using the same interface as Lidar USB View, this tools displays Lida data provided by the real platform
-through RIOT shell commands.
+This repository also provides some tools to help debugging other robot components.

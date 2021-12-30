@@ -1,5 +1,9 @@
 # Replay
 
+The replay tool is used to replay a game from a trace file.
+
+![Replay Overview](../img/replay/replay_overview.png)
+
 After installation (see [Install](../install.md)), the replay tool is launched with:
 ```bash
 $ replay

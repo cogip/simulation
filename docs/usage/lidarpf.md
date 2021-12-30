@@ -1,5 +1,8 @@
 # Lidar Platform Viewer
 
+Using the same interface as Lidar USB View, this tools displays Lida data provided by the real platform
+through RIOT shell commands.
+
 After installation (see [Install](../install.md)), the `Lidar Platform Viewer` is launched with:
 ```bash
 $ lidarpf
@@ -17,7 +20,7 @@ By default, the serial ports are scanned, and if found, the first port will be u
 
 If the right USB port is not automatically detected, it can be specified using command line option.
 
-## Command line options
+## Command line options
 
 ```text
 $ lidarpf --help
@@ -37,9 +40,13 @@ Options:
 
   --help                          Show this message and exit.
 ```
-## Interface
+## Interface
 
 The graphical interface provides a polar chart and table view.
+
+![View with unfiltered data](../img/lidarusb/lidarusb_unfiltered.png)
+
+![View with filtered data](../img/lidarusb/lidarusb_filtered.png)
 
 ### Polar Chart
 
@@ -60,8 +67,3 @@ limit the detection to the maximum distance selected by the slider.
 ### Table
 
 The table on the right of the window presents the same data as the chart but in numeric format.
-
-
-![View with unfiltered data](../img/lidarusb/lidarusb_unfiltered.png)
-
-![View with filtered data](../img/lidarusb/lidarusb_filtered.png)
