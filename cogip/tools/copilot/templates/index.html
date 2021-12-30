@@ -1,0 +1,35 @@
+<html>
+  <head>
+    <title>COGIP Dashboard</title>
+</head>
+<body>
+    <div id="connection"><pre>Disconnected.</pre></div>
+    <div id="menu"></div>
+    <div id="state"></div>
+
+    <script type="text/javascript" src="{{ url_for('static', path='js/jquery.min.js') }}"></script>
+    <script type="text/javascript" src="{{ url_for('static', path='js/socket.io.min.js') }}"></script>
+
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function () {
+            var socket = io.connect(window.location.origin, {path: '/sio/socket.io'});
+            socket.on('connect', function () {
+                console.log('Connected to Copilot.');
+                $('#connection').html('<pre>Connected to ' + window.location.origin + '</pre>');
+            });
+            socket.on('disconnect', function () {
+                console.log('Disconnected.');
+                $('#connection').html('<pre>Disconnected.</pre>');
+            });
+            socket.on('menu', function (msg) {
+                console.log(JSON.stringify(msg));
+                $('#menu').html('<pre>' + JSON.stringify(msg, null, 2) + '</pre>');
+            });
+            socket.on('state', function (msg) {
+                console.log(JSON.stringify(msg));
+                $('#state').html('<pre>' + JSON.stringify(msg, null, 2) + '</pre>');
+            });
+        });
+    </script>
+
+</body>
