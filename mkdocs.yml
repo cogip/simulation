@@ -15,6 +15,7 @@ nav:
   - Installation: install.md
   - Usage:
     - usage/simulator.md
+    - usage/copilot.md
     - usage/replay.md
     - usage/lidarusb.md
     - usage/lidarpf.md
@@ -27,6 +28,13 @@ nav:
             - __main__.py: developers/modules/cogip/tools/simulator/main.md
             - mainwindow.py: developers/modules/cogip/tools/simulator/mainwindow.md
             - serialcontroller.py: developers/modules/cogip/tools/simulator/serialcontroller.md
+          - copilot:
+            - __main__.py: developers/modules/cogip/tools/copilot/main.md
+            - app.py: developers/modules/cogip/tools/copilot/app.md
+            - copilot.py: developers/modules/cogip/tools/copilot/copilot.md
+            - message_types.py: developers/modules/cogip/tools/copilot/message_types.md
+            - queues.py: developers/modules/cogip/tools/copilot/queues.md
+            - messages: developers/modules/cogip/tools/copilot/messages.md
           - replay:
             - __main__.py: developers/modules/cogip/tools/replay/main.md
             - mainwindow.py: developers/modules/cogip/tools/replay/mainwindow.md

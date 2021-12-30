@@ -59,10 +59,17 @@ setup(
     python_requires='>=3.8',
     install_requires=required_packages,
     packages=find_packages(),
+    package_data={
+        "cogip.tools.copilot": [
+            "static/**/*",
+            "templates/*"
+        ]
+    },
     entry_points={
         'console_scripts': [
             'simulator=cogip.tools.simulator.__main__:main',
             'replay=cogip.tools.replay.__main__:main',
+            'copilot=cogip.tools.copilot.__main__:main',
             'lidarusb=cogip.tools.lidarusb.__main__:main',
             'lidarpf=cogip.tools.lidarpf.__main__:main'
         ]
