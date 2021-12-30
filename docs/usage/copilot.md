@@ -11,8 +11,8 @@ connected to the same network.
 ## Command line options
 
 ```bash
-$ copilot --help
-Usage: copilot [OPTIONS]
+$ cogip-copilot --help
+Usage: cogip-copilot [OPTIONS]
 
 Launch COGIP Copilot.
 

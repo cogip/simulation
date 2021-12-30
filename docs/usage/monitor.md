@@ -26,8 +26,8 @@ The monitor provides a graphical interface, featuring:
 ## Command line options
 
 ```bash
-$ monitor --help
-Usage: monitor [URL]
+$ cogip-monitor --help
+Usage: cogip-monitor [URL]
 
   Launch COGIP Monitor.
 
@@ -42,13 +42,13 @@ Arguments:
 To connect the `Monitor` to the `Copilot` running on the same developmnet PC, run:
 
 ```bash
-monitor http://localhost:8080
+cogip-monitor http://localhost:8080
 ```
 
 To connect the `Monitor` to the `Copilot` running on the Raspberry Pi in the robot, run:
 
 ```bash
-monitor http://copilot
+cogip-monitor http://copilot
 ```
 
 !!! note "Adapt URL and port depending on `Copilot` configuration"

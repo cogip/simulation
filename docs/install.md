@@ -96,13 +96,13 @@ make -C submodules/mcu-firmware/applications/app_test BOARD=cogip-native PORT="-
 `Copilot` is run using:
 
 ```bash
-copilot -s /tmp/ttyRPI -p 8080
+cogip-copilot -s /tmp/ttyRPI -p 8080
 ```
 
 And finally `Monitor`is launched using:
 
 ```bash
-monitor http://localhost:8080
+cogip-monitor http://localhost:8080
 ```
 
 ## Packaging

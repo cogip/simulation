@@ -70,11 +70,11 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'monitor=cogip.tools.monitor.__main__:main',
-            'replay=cogip.tools.replay.__main__:main',
-            'copilot=cogip.tools.copilot.__main__:main',
-            'lidarusb=cogip.tools.lidarusb.__main__:main',
-            'lidarpf=cogip.tools.lidarpf.__main__:main'
+            'cogip-monitor=cogip.tools.monitor.__main__:main',
+            'cogip-replay=cogip.tools.replay.__main__:main',
+            'cogip-copilot=cogip.tools.copilot.__main__:main',
+            'cogip-lidarusb=cogip.tools.lidarusb.__main__:main',
+            'cogip-lidarpf=cogip.tools.lidarpf.__main__:main'
         ]
     }
 )
