@@ -1,4 +1,4 @@
-site_name: COGIP Simulator
+site_name: COGIP Tools
 
 repo_name: cogip/simulation
 repo_url: https://github.com/cogip/simulation
@@ -14,7 +14,7 @@ nav:
   - Overview: index.md
   - Installation: install.md
   - Usage:
-    - usage/simulator.md
+    - usage/monitor.md
     - usage/copilot.md
     - usage/replay.md
     - usage/lidarusb.md
@@ -24,10 +24,10 @@ nav:
     - Modules:
       - cogip:
         - tools:
-          - simulator:
-            - __main__.py: developers/modules/cogip/tools/simulator/main.md
-            - mainwindow.py: developers/modules/cogip/tools/simulator/mainwindow.md
-            - socketiocontroller.py: developers/modules/cogip/tools/simulator/socketiocontroller.md
+          - monitor:
+            - __main__.py: developers/modules/cogip/tools/monitor/main.md
+            - mainwindow.py: developers/modules/cogip/tools/monitor/mainwindow.md
+            - socketiocontroller.py: developers/modules/cogip/tools/monitor/socketiocontroller.md
           - copilot:
             - __main__.py: developers/modules/cogip/tools/copilot/main.md
             - app.py: developers/modules/cogip/tools/copilot/app.md

@@ -20,7 +20,7 @@ def main_opt(
             envvar="COPILOT_URL",
             help="URL to Copilot socket.io/web server")) -> None:
     """
-    Launch COGIP Simulator.
+    Launch COGIP Monitor.
     """
     faulthandler.enable()
 

@@ -15,7 +15,7 @@ from cogip.models import ShellMenu, RobotState
 class MainWindow(QtWidgets.QMainWindow):
     """MainWindow class
 
-    Build the main window of the simulator.
+    Build the main window of the monitor.
 
     It contains:
 
@@ -44,7 +44,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.menu_widgets: Dict[str, QtWidgets.QWidget] = {}
 
-        self.setWindowTitle('COGIP Simulator')
+        self.setWindowTitle('COGIP Monitor')
 
         self.central_widget = QtWidgets.QWidget()
         self.central_layout = QtWidgets.QHBoxLayout()
@@ -236,7 +236,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         Qt Slot
 
-        Display the new menu sent by [SocketioController][cogip.tools.simulator.socketiocontroller.SocketioController].
+        Display the new menu sent by [SocketioController][cogip.tools.monitor.socketiocontroller.SocketioController].
 
         Once a menu has been build once, it is cached and reused.
 
@@ -295,7 +295,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def build_command(self, cmd: str, layout: QtWidgets.QHBoxLayout):
         """
-        Build command to send to [SocketioController][cogip.tools.simulator.socketiocontroller.SocketioController].
+        Build command to send to [SocketioController][cogip.tools.monitor.socketiocontroller.SocketioController].
 
         It is built based on the command name given in arguments,
         and arguments strings fetched from the command button in the menu.

@@ -1,4 +1,4 @@
-::: cogip.tools.simulator.mainwindow
+::: cogip.tools.monitor.socketiocontroller
     rendering:
       show_source: true
       show_root_heading: no
