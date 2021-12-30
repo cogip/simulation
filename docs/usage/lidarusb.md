@@ -4,7 +4,7 @@ This tool displays a graphical view to render data provided by a HLS-LFCD2 Lidar
 
 After installation (see [Install](../install.md)), the `Lidar USB Viewer` is launched with:
 ```bash
-$ lidarusb
+$ cogip-lidarusb
 ```
 
 The `Lidar USB Viewer` requires a HLS-LFCD2 Lidar to be connected to an USB port using a Serial-USB converter.
@@ -16,8 +16,8 @@ If the right USB port is not automatically detected, it can be specified using c
 ##  Command line options
 
 ```text
-$ lidarusb --help
-Usage: lidarusb [OPTIONS] [UART]
+$ cogip-lidarusb --help
+Usage: cogip-lidarusb [OPTIONS] [UART]
 
   Starts the Lidar USB View tool.
 

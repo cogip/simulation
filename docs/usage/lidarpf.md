@@ -5,7 +5,7 @@ through RIOT shell commands.
 
 After installation (see [Install](../install.md)), the `Lidar Platform Viewer` is launched with:
 ```bash
-$ lidarpf
+$ cogip-lidarpf
 ```
 
 The `Lidar Platform Viewer` requires a platform/robot connected via its serial port.
@@ -23,8 +23,8 @@ If the right USB port is not automatically detected, it can be specified using c
 ## Command line options
 
 ```text
-$ lidarpf --help
-Usage: lidarpf [OPTIONS] [UART]
+$ cogip-lidarpf --help
+Usage: cogip-lidarpf [OPTIONS] [UART]
 
   Starts the Lidar Platform View tool.
 
