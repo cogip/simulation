@@ -1,6 +1,6 @@
-MarkupSafe==1.1.1
-mkdocs==1.1.2
-mkdocs-material==6.2.5
-mkdocstrings==0.15.0
-pymdown-extensions==8.1
+MarkupSafe==2.0.1
+mkdocs==1.2.3
+mkdocs-material==8.1.3
+mkdocstrings==0.16.2
+pymdown-extensions==9.1
 Jinja2==2.11.3

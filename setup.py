@@ -12,23 +12,39 @@ release = '1.0.0'
 readme_filename = cwd / "README.md"
 long_description = readme_filename.open().read()
 
+marker_platform_x86_64 = "platform_machine=='x86_64'"
+
 required_packages = [
+    # Common packages
     "click==7.1.2",
-    "flake8==3.9.2",
     "Jinja2==2.11.3",
-    "MarkupSafe==1.1.1",
-    "mkdocs==1.1.2",
-    "mkdocs-material==6.2.5",
-    "mkdocstrings==0.15.0",
+    "MarkupSafe==2.0.1",
     "psutil==5.7.2",
     "ptvsd==4.3.2",
     "pydantic==1.8.2",
-    "pymdown-extensions==8.1",
     "pyserial==3.5",
-    "PySide2==5.15.1",
     "python-dotenv==0.14.0",
-    "sysv-ipc==1.0.1",
-    "typer==0.3.2"
+    "typer==0.4.0",
+
+    # Packages specific to simulator
+    "PySide2==5.15.1;" + marker_platform_x86_64,
+    "sysv-ipc==1.0.1;" + marker_platform_x86_64,
+
+    # Packages specific to Copilot
+    "aioserial==1.3.0",
+    "fastapi==0.70.1",
+    "protobuf==3.19.1",
+    "python-socketio==5.5.0",
+    "uvicorn[standard]==0.16.0",
+
+    # Packages specific to documentation
+    "mkdocs==1.2.3;" + marker_platform_x86_64,
+    "mkdocs-material==8.1.3;" + marker_platform_x86_64,
+    "mkdocstrings==0.16.2;" + marker_platform_x86_64,
+    "pymdown-extensions==9.1;" + marker_platform_x86_64,
+
+    # Packages specific to developers
+    "flake8==3.9.2;" + marker_platform_x86_64,
 ]
 
 setup(
