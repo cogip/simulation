@@ -1,1 +1,0 @@
-::: cogip.tools.lidarusb.dataproxy

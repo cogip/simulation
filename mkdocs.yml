@@ -21,52 +21,7 @@ nav:
     - usage/lidarpf.md
   - Developer's Doc:
     - Introduction: developers/developers.md
-    - Modules:
-      - cogip:
-        - tools:
-          - monitor:
-            - __main__.py: developers/modules/cogip/tools/monitor/main.md
-            - mainwindow.py: developers/modules/cogip/tools/monitor/mainwindow.md
-            - socketiocontroller.py: developers/modules/cogip/tools/monitor/socketiocontroller.md
-          - copilot:
-            - __main__.py: developers/modules/cogip/tools/copilot/main.md
-            - app.py: developers/modules/cogip/tools/copilot/app.md
-            - copilot.py: developers/modules/cogip/tools/copilot/copilot.md
-            - message_types.py: developers/modules/cogip/tools/copilot/message_types.md
-            - queues.py: developers/modules/cogip/tools/copilot/queues.md
-            - messages: developers/modules/cogip/tools/copilot/messages.md
-          - replay:
-            - __main__.py: developers/modules/cogip/tools/replay/main.md
-            - mainwindow.py: developers/modules/cogip/tools/replay/mainwindow.md
-          - lidarusb:
-            - __main__.py: developers/modules/cogip/tools/lidarusb/main.md
-            - dataproxy.py: developers/modules/cogip/tools/lidarusb/dataproxy.md
-            - lidarserial.py: developers/modules/cogip/tools/lidarusb/lidarserial.md
-            - mainwindow.py: developers/modules/cogip/tools/lidarusb/mainwindow.md
-          - lidarpf:
-            - __main__.py: developers/modules/cogip/tools/lidarpf/main.md
-            - dataproxy.py: developers/modules/cogip/tools/lidarpf/dataproxy.md
-            - lidarserial.py: developers/modules/cogip/tools/lidarpf/lidarserial.md
-            - mainwindow.py: developers/modules/cogip/tools/lidarpf/mainwindow.md
-        - entities:
-          - asset.py: developers/modules/cogip/entities/asset.md
-          - dynobstacle.py: developers/modules/cogip/entities/dynobstacle.md
-          - impact.py: developers/modules/cogip/entities/impact.md
-          - line.py: developers/modules/cogip/entities/line.md
-          - obstacle.py: developers/modules/cogip/entities/obstacle.md
-          - path.py: developers/modules/cogip/entities/path.md
-          - robot.py: developers/modules/cogip/entities/robot.md
-          - sensor.py: developers/modules/cogip/entities/sensor.md
-          - table.py: developers/modules/cogip/entities/table.md
-        - widgets:
-          - chartsview.py: developers/modules/cogip/widgets/chartsview.md
-          - gameview.py: developers/modules/cogip/widgets/gameview.md
-          - lidarview.py: developers/modules/cogip/widgets/lidarview.md
-        - models:
-          - models.py: developers/modules/cogip/models/models.md
-        - utils:
-          - lidartablemodel: developers/modules/cogip/utils/lidartablemodel.md
-        - config.py: developers/modules/cogip/config.md
+    - Modules: reference/
 
 plugins:
   - mkdocstrings:
@@ -80,10 +35,18 @@ plugins:
             members_order: source
           setup_commands:
             - import sys
-            - from unittest.mock import MagicMock as mock
-            - sys.modules["Shiboken"] = mock()
+            - from unittest.mock import MagicMock
+            - sys.modules["Shiboken"] = MagicMock()
+          selection:
+            new_path_syntax: true
       watch:
         - cogip
+
+  - gen-files:
+      scripts:
+        - docs/gen_doc_stubs.py
+  - literate-nav:
+      nav_file: SUMMARY.md
 
   - search
 

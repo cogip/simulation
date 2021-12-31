@@ -18,7 +18,6 @@ required_packages = [
     # Common packages
     "click==7.1.2",
     "Jinja2==2.11.3",
-    "MarkupSafe==2.0.1",
     "psutil==5.7.2",
     "ptvsd==4.3.2",
     "pydantic==1.8.2",
@@ -41,9 +40,12 @@ required_packages = [
     "uvicorn[standard]==0.16.0",
 
     # Packages specific to documentation
+    "MarkupSafe==2.0.1;" + marker_platform_x86_64,
     "mkdocs==1.2.3;" + marker_platform_x86_64,
+    "mkdocs-gen-files==0.3.3;" + marker_platform_x86_64,
+    "mkdocs-literate-nav==0.4.1;" + marker_platform_x86_64,
     "mkdocs-material==8.1.3;" + marker_platform_x86_64,
-    "mkdocstrings==0.16.2;" + marker_platform_x86_64,
+    "mkdocstrings==0.17.0;" + marker_platform_x86_64,
     "pymdown-extensions==9.1;" + marker_platform_x86_64,
 
     # Packages specific to developers
@@ -70,11 +72,11 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'cogip-monitor=cogip.tools.monitor.__main__:main',
-            'cogip-replay=cogip.tools.replay.__main__:main',
-            'cogip-copilot=cogip.tools.copilot.__main__:main',
-            'cogip-lidarusb=cogip.tools.lidarusb.__main__:main',
-            'cogip-lidarpf=cogip.tools.lidarpf.__main__:main'
+            'cogip-monitor=cogip.tools.monitor.main:main',
+            'cogip-replay=cogip.tools.replay.main:main',
+            'cogip-copilot=cogip.tools.copilot.main:main',
+            'cogip-lidarusb=cogip.tools.lidarusb.main:main',
+            'cogip-lidarpf=cogip.tools.lidarpf.main:main'
         ]
     }
 )

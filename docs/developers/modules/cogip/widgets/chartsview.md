@@ -1,1 +1,0 @@
-::: cogip.widgets.chartsview
