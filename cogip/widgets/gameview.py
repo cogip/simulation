@@ -3,7 +3,7 @@ from typing import List
 
 from pydantic import ValidationError
 
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DExtras import Qt3DExtras
@@ -14,6 +14,21 @@ from cogip.entities.asset import AssetEntity
 from cogip.entities.obstacle import ObstacleEntity
 from cogip.entities.path import PathEntity
 from cogip.models import models
+
+
+class GroundTextureImage(Qt3DRender.QPaintedTextureImage):
+    """
+    Specific renderer to display ground image.
+    """
+    def __init__(self, parent: Qt3DCore.QNode = None):
+        super().__init__(parent)
+
+    def paint(self, painter: QtGui.QPainter):
+        renderer = QtSvg.QSvgRenderer("assets/ground2022.svg")
+        self.image = QtGui.QImage(2000, 3000, QtGui.QImage.Format_RGBA64)  # 512x512 RGBA
+        painter2 = QtGui.QPainter(self.image)
+        renderer.render(painter2)
+        painter.drawImage(0, 0, self.image)
 
 
 class GameView(QtWidgets.QWidget):
@@ -118,32 +133,26 @@ class GameView(QtWidgets.QWidget):
         self.plane_intersection = None
 
         # Add a plane to display the ground image
-        self.ground_entity = Qt3DCore.QEntity()
-        self.ground_entity.setParent(self.root_entity)
+        self.ground_entity = Qt3DCore.QEntity(self.root_entity)
 
-        self.ground_mesh = Qt3DExtras.QPlaneMesh()
+        self.ground_mesh = Qt3DExtras.QPlaneMesh(self.ground_entity)
         self.ground_mesh.setHeight(2000)
         self.ground_mesh.setWidth(3000)
         self.ground_entity.addComponent(self.ground_mesh)
 
-        self.ground_material = Qt3DExtras.QNormalDiffuseSpecularMapMaterial()
-        self.ground_image1 = Qt3DRender.QTextureImage()
-        self.ground_image2 = Qt3DRender.QTextureImage()
-        self.ground_image3 = Qt3DRender.QTextureImage()
-        self.ground_source = QtCore.QUrl("file:assets/ground.jpg")
-        self.ground_image1.setSource(self.ground_source)
-        self.ground_image2.setSource(self.ground_source)
-        self.ground_image3.setSource(self.ground_source)
-        self.ground_material.diffuse().addTextureImage(self.ground_image1)
-        self.ground_material.normal().addTextureImage(self.ground_image2)
-        self.ground_material.specular().addTextureImage(self.ground_image3)
-        self.ground_material.setShininess(1.0)
-        self.ground_material.setAmbient("white")
+        self.ground_material = Qt3DExtras.QTextureMaterial(self.ground_entity)
+
+        self.ground_texture = Qt3DRender.QTexture2D(self.ground_material)
+        self.ground_texture_image = GroundTextureImage(self.ground_texture)
+        self.ground_texture_image.setSize(QtCore.QSize(2000, 3000))
+        self.ground_texture.addTextureImage(self.ground_texture_image)
+        self.ground_material.setTexture(self.ground_texture)
         self.ground_entity.addComponent(self.ground_material)
 
-        self.ground_transform = Qt3DCore.QTransform()
+        self.ground_transform = Qt3DCore.QTransform(self.ground_entity)
+        self.ground_transform.setRotationX(-90)
+        self.ground_transform.setRotationY(180)
         self.ground_transform.setTranslation(QtGui.QVector3D(0, 1000, 0))
-        self.ground_transform.setRotationX(90)
         self.ground_entity.addComponent(self.ground_transform)
 
     def add_asset(self, asset: AssetEntity) -> None:
