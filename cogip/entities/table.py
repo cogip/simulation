@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Optional
 
+from PySide2 import QtGui
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DExtras import Qt3DExtras
 
@@ -19,10 +20,9 @@ class TableEntity(AssetEntity):
         ground_entity_name: name of the ground entity
     """
 
-    asset_path: Path = Path("assets/table2021.dae")
+    asset_path: Path = Path("assets/table2022.dae")
     asset_name: str = "myscene"
-    asset_scale: float = 1000.0
-    ground_entity_name = "node18"
+    ground_entity_name = "node5"
 
     def __init__(self, parent: Optional[Qt3DCore.QEntity] = None):
         """
@@ -30,7 +30,7 @@ class TableEntity(AssetEntity):
 
         Inherits [AssetEntity][cogip.entities.asset.AssetEntity].
         """
-        super().__init__(self.asset_path, scale=self.asset_scale, parent=parent)
+        super().__init__(self.asset_path, parent=parent)
 
     def post_init(self):
         """
@@ -44,12 +44,14 @@ class TableEntity(AssetEntity):
             return
 
         self.asset_entity.setParent(self)
+        self.transform_component.setTranslation(QtGui.QVector3D(1500, 0, 0))
 
-        if self.scale != 1:
-            for comp in self.asset_entity.components():
-                if isinstance(comp, Qt3DCore.QTransform):
-                    comp.setScale(self.scale)
-                    break
+        for comp in self.asset_entity.components():
+            if isinstance(comp, Qt3DCore.QTransform):
+                comp.setRotationX(0)
+                comp.setRotationY(0)
+                comp.setRotationZ(180)
+                break
 
         # Find the ground entity and remove its material
         self.ground_entity = self.findChild(Qt3DCore.QEntity, self.ground_entity_name)
