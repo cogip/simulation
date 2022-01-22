@@ -30,12 +30,16 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_add_obstacle: Qt signal to add an obstacle
         signal_load_obstacles: Qt signal to load obstacles
         signal_save_obstacles: Qt signal to save obstacles
+        signal_load_samples: Qt signal to load samples
+        signal_save_samples: Qt signal to save samples
     """
 
     signal_send_command: qtSignal = qtSignal(str)
     signal_add_obstacle: qtSignal = qtSignal()
     signal_load_obstacles: qtSignal = qtSignal(Path)
     signal_save_obstacles: qtSignal = qtSignal(Path)
+    signal_load_samples: qtSignal = qtSignal(Path)
+    signal_save_samples: qtSignal = qtSignal(Path)
 
     def __init__(self, *args, **kwargs):
         """
@@ -55,6 +59,7 @@ class MainWindow(QtWidgets.QMainWindow):
         menubar = self.menuBar()
         file_menu = menubar.addMenu('&File')
         obstacles_menu = menubar.addMenu('&Obstacles')
+        samples_menu = menubar.addMenu('&Samples')
         view_menu = menubar.addMenu('&View')
 
         # Toolbars
@@ -152,6 +157,26 @@ class MainWindow(QtWidgets.QMainWindow):
         self.save_obstacles_action.triggered.connect(self.save_obstacles)
         obstacles_menu.addAction(self.save_obstacles_action)
         obstacles_toolbar.addAction(self.save_obstacles_action)
+
+        # Open samples action
+        self.load_samples_action = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme("document-open"),
+            'Load samples',
+            self
+        )
+        self.load_samples_action.setStatusTip('Load samples')
+        self.load_samples_action.triggered.connect(self.load_samples)
+        samples_menu.addAction(self.load_samples_action)
+
+        # Save samples action
+        self.save_samples_action = QtWidgets.QAction(
+            QtGui.QIcon.fromTheme("document-save"),
+            'Save samples',
+            self
+        )
+        self.save_samples_action.setStatusTip('Save samples')
+        self.save_samples_action.triggered.connect(self.save_samples)
+        samples_menu.addAction(self.save_samples_action)
 
         # Console
         dock = QtWidgets.QDockWidget("Console")
@@ -362,6 +387,42 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         if filename:
             self.signal_save_obstacles.emit(Path(filename))
+
+    @qtSlot()
+    def load_samples(self):
+        """
+        Qt Slot
+
+        Open a file dialog to select a file and load samples from it.
+        """
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+            parent=self,
+            caption="Select file to load samples",
+            dir="",
+            filter="JSON Files (*.json)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
+        )
+        if filename:
+            self.signal_load_samples.emit(Path(filename))
+
+    @qtSlot()
+    def save_samples(self):
+        """
+        Qt Slot
+
+        Open a file dialog to select a file and save samples in it.
+        """
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+            parent=self,
+            caption="Select file to save samples",
+            dir="",
+            filter="JSON Files (*.json)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
+        )
+        if filename:
+            self.signal_save_samples.emit(Path(filename))
 
     @qtSlot()
     def connected(self, state: bool):

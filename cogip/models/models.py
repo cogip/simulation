@@ -7,7 +7,7 @@ All values are automatically verified and converted to the expected data type,
 an exception being raised if impossible.
 """
 
-from enum import IntEnum
+from enum import auto, IntEnum
 from typing import List, Optional, Union
 
 from pydantic import BaseModel
@@ -260,3 +260,83 @@ class LogMessage(BaseModel):
 
 
 SerialMessage = Union[RobotState, ShellMenu, LogMessage]
+
+
+class SampleID(IntEnum):
+    """
+    Enum to identify each sample
+    """
+    YELLOW_TABLE_FIXED_B = auto()
+    YELLOW_TABLE_FIXED_G = auto()
+    YELLOW_TABLE_FIXED_R = auto()
+    YELLOW_TABLE_RANDOM_1 = auto()
+    YELLOW_TABLE_RANDOM_2 = auto()
+    YELLOW_TABLE_RANDOM_3 = auto()
+    YELLOW_SHED_R = auto()
+    YELLOW_SHED_B = auto()
+    YELLOW_OUTSIDE_G = auto()
+    YELLOW_RACK_SIDE_B = auto()
+    YELLOW_RACK_SIDE_G = auto()
+    YELLOW_RACK_SIDE_R = auto()
+    YELLOW_RACK_TOP_B = auto()
+    YELLOW_RACK_TOP_G = auto()
+    YELLOW_RACK_TOP_R = auto()
+    PURPLE_TABLE_FIXED_B = auto()
+    PURPLE_TABLE_FIXED_G = auto()
+    PURPLE_TABLE_FIXED_R = auto()
+    PURPLE_TABLE_RANDOM_1 = auto()
+    PURPLE_TABLE_RANDOM_2 = auto()
+    PURPLE_TABLE_RANDOM_3 = auto()
+    PURPLE_SHED_B = auto()
+    PURPLE_SHED_R = auto()
+    PURPLE_OUTSIDE_G = auto()
+    PURPLE_RACK_SIDE_B = auto()
+    PURPLE_RACK_SIDE_G = auto()
+    PURPLE_RACK_SIDE_R = auto()
+    PURPLE_RACK_TOP_B = auto()
+    PURPLE_RACK_TOP_G = auto()
+    PURPLE_RACK_TOP_R = auto()
+
+
+class SampleColor(IntEnum):
+    """
+    Enum for sample colors
+
+    Attributes:
+        ROCK:
+        RED:
+        GREEN:
+        BLUE:
+    """
+    ROCK = auto()
+    RED = auto()
+    GREEN = auto()
+    BLUE = auto()
+
+
+class Sample(BaseModel):
+    """
+    Contains the properties of a sample on the table.
+
+    Attributes:
+        id: sample id
+        pos_x: X position
+        pos_y: Y position
+        pos_z: Z position
+        angle_x: X angle
+        angle_y: Y angle
+        angle_z: Z angle
+        color: color
+        hidden: sample hidden (rock face) or not (color face)
+        known: color known or not
+    """
+    id: SampleID
+    pos_x: float
+    pos_y: float
+    pos_z: float
+    angle_x: float
+    angle_y: float
+    angle_z: float
+    color: SampleColor
+    hidden: bool
+    known: bool

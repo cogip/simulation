@@ -31,7 +31,7 @@ def main_opt(
     app = QtWidgets.QApplication(sys.argv)
 
     # Create UI
-    win = MainWindow()
+    win = MainWindow(url)
 
     # Create table entity
     table_entity = TableEntity(win.game_view.root_entity)
@@ -52,6 +52,8 @@ def main_opt(
     win.signal_add_obstacle.connect(win.game_view.add_obstacle)
     win.signal_load_obstacles.connect(win.game_view.load_obstacles)
     win.signal_save_obstacles.connect(win.game_view.save_obstacles)
+    win.signal_load_samples.connect(win.game_view.load_samples)
+    win.signal_save_samples.connect(win.game_view.save_samples)
 
     # Connect Controller signals to Robot slots
     controller.signal_new_robot_state.connect(robot_entity.new_robot_state)
