@@ -1,9 +1,12 @@
+import json
 from pathlib import Path
 from typing import List
 
 from pydantic import ValidationError
+from pydantic.json import pydantic_encoder
+from pydantic.tools import parse_file_as
 
-from PySide2 import QtCore, QtGui, QtSvg, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DExtras import Qt3DExtras
@@ -13,22 +16,8 @@ from PySide2.QtCore import Slot as qtSlot
 from cogip.entities.asset import AssetEntity
 from cogip.entities.obstacle import ObstacleEntity
 from cogip.entities.path import PathEntity
+from cogip.entities.sample import create_samples
 from cogip.models import models
-
-
-class GroundTextureImage(Qt3DRender.QPaintedTextureImage):
-    """
-    Specific renderer to display ground image.
-    """
-    def __init__(self, parent: Qt3DCore.QNode = None):
-        super().__init__(parent)
-
-    def paint(self, painter: QtGui.QPainter):
-        renderer = QtSvg.QSvgRenderer("assets/ground2022.svg")
-        self.image = QtGui.QImage(2000, 3000, QtGui.QImage.Format_RGBA64)  # 512x512 RGBA
-        painter2 = QtGui.QPainter(self.image)
-        renderer.render(painter2)
-        painter.drawImage(0, 0, self.image)
 
 
 class GameView(QtWidgets.QWidget):
@@ -44,12 +33,10 @@ class GameView(QtWidgets.QWidget):
     moving obstacles on the horizontal plane.
 
     Attributes:
-        ready: signal emitted when when all assets are ready
         new_move_delta: signal emitted to [`ObstacleEntity`][cogip.entities.obstacle.ObstacleEntity]
             when a move is detected
     """
 
-    ready: qtSignal = qtSignal()
     new_move_delta: qtSignal = qtSignal(QtGui.QVector3D)
 
     def __init__(self):
@@ -64,6 +51,7 @@ class GameView(QtWidgets.QWidget):
         super(GameView, self).__init__()
 
         self.obstacle_entities: List[ObstacleEntity] = []
+        self.samples = []
 
         # Create the view and set it as the widget layout
         self.view = Qt3DExtras.Qt3DWindow()
@@ -143,8 +131,9 @@ class GameView(QtWidgets.QWidget):
         self.ground_material = Qt3DExtras.QTextureMaterial(self.ground_entity)
 
         self.ground_texture = Qt3DRender.QTexture2D(self.ground_material)
-        self.ground_texture_image = GroundTextureImage(self.ground_texture)
-        self.ground_texture_image.setSize(QtCore.QSize(2000, 3000))
+        self.ground_texture_image = Qt3DRender.QTextureImage(self.ground_texture)
+        self.ground_texture_image.setSource(QtCore.QUrl("file:assets/ground2022.png"))
+        self.ground_texture_image.setMirrored(False)
         self.ground_texture.addTextureImage(self.ground_texture_image)
         self.ground_material.setTexture(self.ground_texture)
         self.ground_entity.addComponent(self.ground_material)
@@ -226,13 +215,45 @@ class GameView(QtWidgets.QWidget):
         with filename.open('w') as fd:
             fd.write(obstacle_models.json(indent=2))
 
+    @qtSlot(Path)
+    def load_samples(self, filename: Path):
+        """
+        Qt Slot
+
+        Load samples from a JSON file.
+
+        Arguments:
+            filename: path of the JSON file
+        """
+        try:
+            sample_models = parse_file_as(List[models.Sample], filename)
+            for sample_model in sample_models:
+                self.sample_entities[sample_model.id].update_from_model(sample_model)
+        except ValidationError:
+            pass
+
+    @qtSlot(Path)
+    def save_samples(self, filename: Path):
+        """
+        Qt Slot
+
+        Save samples to a JSON file.
+
+        Arguments:
+            filename: path of the JSON file
+        """
+        sample_models = []
+        for sample_entity in self.sample_entities.values():
+            sample_models.append(sample_entity.get_model())
+        with filename.open('w') as fd:
+            fd.write(json.dumps(sample_models, default=pydantic_encoder, indent=2))
+
     @qtSlot()
     def asset_ready(self):
         """
         Qt Slot
 
-        Emit a the `ready` Qt signal if all assets are ready
-        (loading assets is done in background).
+        Create samples when all assets are ready (loading assets is done in background).
         """
         child_assets_not_ready = [
             child
@@ -240,7 +261,10 @@ class GameView(QtWidgets.QWidget):
             if not child.asset_ready
         ]
         if len(child_assets_not_ready) == 0:
-            self.ready.emit()
+            self.sample_entities = create_samples(self.root_entity, self.container)
+            for sample in self.sample_entities.values():
+                sample.enable_controller.connect(self.camera_controller.setEnabled)
+                self.new_move_delta.connect(sample.new_move_delta)
 
     @qtSlot(Qt3DRender.QPickEvent)
     def plane_pressed(self, pick: Qt3DRender.QPickEvent):

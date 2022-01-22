@@ -3,7 +3,6 @@ from typing import Optional
 
 from PySide2 import QtGui
 from PySide2.Qt3DCore import Qt3DCore
-from PySide2.Qt3DExtras import Qt3DExtras
 
 from cogip import logger
 from cogip.entities.asset import AssetEntity
@@ -19,8 +18,7 @@ class TableEntity(AssetEntity):
         asset_scale: Scale to apply to the entity after load
         ground_entity_name: name of the ground entity
     """
-
-    asset_path: Path = Path("assets/table2022.dae")
+    asset_path: Path = Path("assets/table2022-without-samples.dae")
     asset_name: str = "myscene"
     ground_entity_name = "node5"
 
@@ -31,6 +29,7 @@ class TableEntity(AssetEntity):
         Inherits [AssetEntity][cogip.entities.asset.AssetEntity].
         """
         super().__init__(self.asset_path, parent=parent)
+        self._parent = parent
 
     def post_init(self):
         """
@@ -58,7 +57,4 @@ class TableEntity(AssetEntity):
         if not self.ground_entity:
             logger.warning(f"Entity '{self.ground_entity_name}' not found in {self.asset_path}")
         else:
-            for comp in self.ground_entity.components():
-                if isinstance(comp, Qt3DExtras.QPhongMaterial):
-                    self.ground_entity.removeComponent(comp)
-                    break
+            self.ground_entity.setEnabled(False)
