@@ -3,7 +3,7 @@
 import sys
 from threading import Thread
 
-from PySide2 import QtWidgets, QtGui
+from PySide6 import QtWidgets, QtGui
 import serial.tools.list_ports
 import typer
 

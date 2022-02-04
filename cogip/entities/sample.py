@@ -1,11 +1,11 @@
 from typing import Dict, Tuple
 
-from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.Qt3DCore import Qt3DCore
-from PySide2.Qt3DExtras import Qt3DExtras
-from PySide2.Qt3DRender import Qt3DRender
-from PySide2.QtCore import Signal as qtSignal
-from PySide2.QtCore import Slot as qtSlot
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DExtras import Qt3DExtras
+from PySide6.Qt3DRender import Qt3DRender
+from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip.models import models
 from cogip.models.models import SampleID, SampleColor

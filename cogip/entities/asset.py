@@ -13,17 +13,17 @@ Other formats could be also supported, but not tested
 from pathlib import Path
 from typing import TextIO, Tuple
 
-from PySide2 import QtCore
-from PySide2.Qt3DCore import Qt3DCore
-from PySide2.Qt3DRender import Qt3DRender
-from PySide2.QtCore import Signal as qtSignal
-from PySide2.QtCore import Slot as qtSlot
+from PySide6 import QtCore
+from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DRender import Qt3DRender
+from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 
 class AssetEntity(Qt3DCore.QEntity):
     """Base class for asset entities
 
-    This class inherits from [`Qt3DCore.QEntity`](https://doc.qt.io/qtforpython-5/PySide2/Qt3DCore/QEntity.html)
+    This class inherits from [`Qt3DCore.QEntity`](https://doc.qt.io/qtforpython-6/PySide6/Qt3DCore/QEntity.html)
 
     Attributes:
         ready: Qt signal emitted when the asset entity is ready to be used

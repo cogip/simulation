@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
+# flake8: noqa: E402
 import faulthandler
+import os
 import sys
 
-# import ptvsd
-from dotenv import load_dotenv
-from PySide2 import QtWidgets
+# Remove info logs from QWebEngineView.
+# This needs to be set in os.environ before importing typer.
+os.environ["QT_LOGGING_RULES"] = "*.debug=false;qt.webenginecontext.info=false"
+
+from PySide6 import QtWidgets
 import typer
 
 from cogip.entities.robot import RobotEntity, RobotShadowEntity
@@ -90,5 +94,4 @@ def main():
     During installation of the simulation tools, `setuptools` is configured
     to create the `copilot` script using this function as entrypoint.
     """
-    load_dotenv()
     typer.run(main_opt)

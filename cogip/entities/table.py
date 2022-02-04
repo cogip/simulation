@@ -1,8 +1,8 @@
 from pathlib import Path
 from typing import Optional
 
-from PySide2 import QtGui
-from PySide2.Qt3DCore import Qt3DCore
+from PySide6 import QtGui
+from PySide6.Qt3DCore import Qt3DCore
 
 from cogip import logger
 from cogip.entities.asset import AssetEntity

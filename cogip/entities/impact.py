@@ -1,13 +1,13 @@
-from PySide2 import QtCore, QtGui
-from PySide2.Qt3DCore import Qt3DCore
-from PySide2.Qt3DExtras import Qt3DExtras
+from PySide6 import QtCore, QtGui
+from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DExtras import Qt3DExtras
 
 
 class ImpactEntity(Qt3DCore.QEntity):
     """
     `QEntity` used to visualize to points detected by sensors.
 
-    It is represented with [`QSphereMesh`](https://doc.qt.io/qtforpython-5/PySide2/Qt3DExtras/QSphereMesh.html),
+    It is represented with [`QSphereMesh`](https://doc.qt.io/qtforpython-6/PySide6/Qt3DExtras/QSphereMesh.html),
     its radius and color are configurable in the constructor.
     """
 

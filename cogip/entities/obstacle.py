@@ -1,9 +1,9 @@
-from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.Qt3DCore import Qt3DCore
-from PySide2.Qt3DRender import Qt3DRender
-from PySide2.Qt3DExtras import Qt3DExtras
-from PySide2.QtCore import Signal as qtSignal
-from PySide2.QtCore import Slot as qtSlot
+from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DRender import Qt3DRender
+from PySide6.Qt3DExtras import Qt3DExtras
+from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip import models
 from cogip.entities.sensor import Sensor
@@ -13,7 +13,7 @@ class ObstacleEntity(Qt3DCore.QEntity):
     """
     An obstacle on the table.
 
-    It is represented as a cube ([QCuboidMesh](https://doc.qt.io/qtforpython-5/PySide2/Qt3DExtras/QCuboidMesh.html)).
+    It is represented as a cube ([QCuboidMesh](https://doc.qt.io/qtforpython-6/PySide6/Qt3DExtras/QCuboidMesh.html)).
 
     When selected with a mouse click, a property window is displayed
     to modify the obstacle properties.

@@ -4,11 +4,11 @@ from typing import List, Optional
 
 import sysv_ipc
 
-from PySide2 import QtCore, QtGui
-from PySide2.Qt3DCore import Qt3DCore
-from PySide2.Qt3DRender import Qt3DRender
-from PySide2.Qt3DExtras import Qt3DExtras
-from PySide2.QtCore import Slot as qtSlot
+from PySide6 import QtCore, QtGui
+from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DRender import Qt3DRender
+from PySide6.Qt3DExtras import Qt3DExtras
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip.entities.asset import AssetEntity
 from cogip.entities.impact import ImpactEntity
@@ -38,7 +38,7 @@ class Sensor(QtCore.QObject):
     """
     Base class for all sensors.
 
-    The sensors are based on [QRayCaster](https://doc.qt.io/qtforpython-5/PySide2/Qt3DRender/QRayCaster.html).
+    The sensors are based on [QRayCaster](https://doc.qt.io/qtforpython-6/PySide6/Qt3DRender/QRayCaster.html).
     It casts a ray and detects collisions with obstacles.
     Detected collision is represented using a [ImpactEntity][cogip.entities.impact.ImpactEntity] object.
 

@@ -26,7 +26,7 @@ required_packages = [
     "typer==0.4.0",
 
     # Packages specific to monitor
-    "PySide2==5.15.1;" + marker_platform_x86_64,
+    "PySide6==6.2.3;" + marker_platform_x86_64,
     "requests==2.26.0;" + marker_platform_x86_64,
     "sysv-ipc==1.0.1;" + marker_platform_x86_64,
     "websocket-client==1.2.3;" + marker_platform_x86_64,

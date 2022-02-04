@@ -1,4 +1,4 @@
-from PySide2 import QtGui, QtWidgets
+from PySide6 import QtGui, QtWidgets
 
 from cogip.widgets.lidarview import LidarView
 
@@ -26,7 +26,7 @@ class MainWindow(QtWidgets.QMainWindow):
         toolbar = self.addToolBar('Control')
 
         # Start action
-        self.start_action = QtWidgets.QAction(
+        self.start_action = QtGui.QAction(
             QtGui.QIcon.fromTheme("media-playback-start"),
             'Start',
             self
@@ -35,7 +35,7 @@ class MainWindow(QtWidgets.QMainWindow):
         toolbar.addAction(self.start_action)
 
         # Pause action
-        self.pause_action = QtWidgets.QAction(
+        self.pause_action = QtGui.QAction(
             QtGui.QIcon.fromTheme("media-playback-pause"),
             'Pause',
             self
