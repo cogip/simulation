@@ -4,7 +4,7 @@ import sys
 from typing import Optional
 import typer
 
-from PySide2 import QtWidgets
+from PySide6 import QtWidgets
 
 from cogip import logger
 from cogip.entities.robot import RobotEntity, RobotShadowEntity

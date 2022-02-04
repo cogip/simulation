@@ -2,10 +2,10 @@ from cogip.models.models import DynObstacleRect
 import math
 from pathlib import Path
 
-from PySide2.QtCore import Slot as qtSlot
-from PySide2 import QtCore, QtGui
-from PySide2.Qt3DCore import Qt3DCore
-from PySide2.Qt3DExtras import Qt3DExtras
+from PySide6.QtCore import Slot as qtSlot
+from PySide6 import QtCore, QtGui
+from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DExtras import Qt3DExtras
 
 from cogip import logger
 from cogip.entities.asset import AssetEntity

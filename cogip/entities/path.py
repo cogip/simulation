@@ -1,7 +1,7 @@
 from typing import List, Optional
 
-from PySide2 import QtCore, QtGui
-from PySide2.Qt3DCore import Qt3DCore
+from PySide6 import QtCore, QtGui
+from PySide6.Qt3DCore import Qt3DCore
 
 from cogip.entities.line import LineEntity
 from cogip.models import models

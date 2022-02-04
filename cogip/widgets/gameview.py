@@ -6,12 +6,12 @@ from pydantic import ValidationError
 from pydantic.json import pydantic_encoder
 from pydantic.tools import parse_file_as
 
-from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.Qt3DCore import Qt3DCore
-from PySide2.Qt3DRender import Qt3DRender
-from PySide2.Qt3DExtras import Qt3DExtras
-from PySide2.QtCore import Signal as qtSignal
-from PySide2.QtCore import Slot as qtSlot
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DRender import Qt3DRender
+from PySide6.Qt3DExtras import Qt3DExtras
+from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip.entities.asset import AssetEntity
 from cogip.entities.obstacle import ObstacleEntity
@@ -22,13 +22,13 @@ from cogip.models import models
 
 class GameView(QtWidgets.QWidget):
     """
-    The `GameView` class is a [`QWidget`](https://doc.qt.io/qtforpython-5/PySide2/QtWidgets/QWidget.html)
-    containing a [`Qt3DWindow`](https://doc.qt.io/qtforpython-5/PySide2/Qt3DExtras/Qt3DWindow.html)
+    The `GameView` class is a [`QWidget`](https://doc.qt.io/qtforpython-6/PySide6/QtWidgets/QWidget.html)
+    containing a [`Qt3DWindow`](https://doc.qt.io/qtforpython-6/PySide6/Qt3DExtras/Qt3DWindow.html)
     used to display all the game element, like table, robot and obstacles.
 
     It also contains an horizontal plane entity with a invisible
-    [`QPlaneMesh`](https://doc.qt.io/qtforpython-5/PySide2/Qt3DExtras/QPlaneMesh.html).
-    This plane is has a [`QObjectPicker`](https://doc.qt.io/qtforpython-5/PySide2/Qt3DRender/QObjectPicker.html)
+    [`QPlaneMesh`](https://doc.qt.io/qtforpython-6/PySide6/Qt3DExtras/QPlaneMesh.html).
+    This plane is has a [`QObjectPicker`](https://doc.qt.io/qtforpython-6/PySide6/Qt3DRender/QObjectPicker.html)
     to detect mouse clicks, to help
     moving obstacles on the horizontal plane.
 

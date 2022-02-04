@@ -1,6 +1,6 @@
-from PySide2 import QtGui
-from PySide2.Qt3DCore import Qt3DCore
-from PySide2.Qt3DExtras import Qt3DExtras
+from PySide6 import QtGui
+from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DExtras import Qt3DExtras
 
 
 class DynRectObstacleEntity(Qt3DCore.QEntity):

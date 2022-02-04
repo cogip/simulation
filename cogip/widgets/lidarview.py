@@ -1,9 +1,8 @@
 from typing import List
 
-from PySide2 import QtCore, QtWidgets, QtGui
-from PySide2.QtCharts import QtCharts
-from PySide2.QtCore import Signal as qtSignal
-from PySide2.QtCore import Slot as qtSlot
+from PySide6 import QtCharts, QtCore, QtWidgets, QtGui
+from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip.utils.lidartablemodel import LidarTableModel
 

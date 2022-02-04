@@ -1,9 +1,9 @@
 import ctypes
 from typing import List
 
-from PySide2 import QtCore
-from PySide2.QtCore import Signal as qtSignal
-from PySide2.QtCore import Slot as qtSlot
+from PySide6 import QtCore
+from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 
 class DoubleByte(ctypes.Structure):

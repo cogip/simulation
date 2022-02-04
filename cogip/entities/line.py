@@ -1,10 +1,10 @@
 from array import array
 from typing import Optional
 
-from PySide2 import QtCore, QtGui
-from PySide2.Qt3DCore import Qt3DCore
-from PySide2.Qt3DRender import Qt3DRender
-from PySide2.Qt3DExtras import Qt3DExtras
+from PySide6 import QtCore, QtGui
+from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DRender import Qt3DRender
+from PySide6.Qt3DExtras import Qt3DExtras
 
 from cogip.models import models
 
@@ -25,16 +25,15 @@ class LineEntity(Qt3DCore.QEntity):
         super().__init__(parent)
         self.color = color
 
-        self.geometry = Qt3DRender.QGeometry(self)
+        self.geometry = Qt3DCore.QGeometry(self)
 
-        self.position_buffer = Qt3DRender.QBuffer(self.geometry)
-        self.position_buffer.setType(Qt3DRender.QBuffer.VertexBuffer)
+        self.position_buffer = Qt3DCore.QBuffer(self.geometry)
 
-        self.position_attribute = Qt3DRender.QAttribute(self.geometry)
-        self.position_attribute.setName(Qt3DRender.QAttribute.defaultPositionAttributeName())
-        self.position_attribute.setAttributeType(Qt3DRender.QAttribute.VertexAttribute)
-        self.position_attribute.setDataType(Qt3DRender.QAttribute.Float)
-        self.position_attribute.setDataSize(3)
+        self.position_attribute = Qt3DCore.QAttribute(self.geometry)
+        self.position_attribute.setName(Qt3DCore.QAttribute.defaultPositionAttributeName())
+        self.position_attribute.setAttributeType(Qt3DCore.QAttribute.VertexAttribute)
+        self.position_attribute.setVertexBaseType(Qt3DCore.QAttribute.Float)
+        self.position_attribute.setVertexSize(3)
         self.position_attribute.setCount(2)
         self.position_attribute.setBuffer(self.position_buffer)
         self.geometry.addAttribute(self.position_attribute)
@@ -42,13 +41,12 @@ class LineEntity(Qt3DCore.QEntity):
         # Connectivity between vertices
         self.indices = array('I', [0, 1])
         self.indices_bytes = QtCore.QByteArray(self.indices.tobytes())
-        self.indices_buffer = Qt3DRender.QBuffer(self.geometry)
-        self.indices_buffer.setType(Qt3DRender.QBuffer.VertexBuffer)
+        self.indices_buffer = Qt3DCore.QBuffer(self.geometry)
         self.indices_buffer.setData(self.indices_bytes)
 
-        self.indices_attribute = Qt3DRender.QAttribute(self.geometry)
-        self.indices_attribute.setVertexBaseType(Qt3DRender.QAttribute.UnsignedInt)
-        self.indices_attribute.setAttributeType(Qt3DRender.QAttribute.IndexAttribute)
+        self.indices_attribute = Qt3DCore.QAttribute(self.geometry)
+        self.indices_attribute.setVertexBaseType(Qt3DCore.QAttribute.UnsignedInt)
+        self.indices_attribute.setAttributeType(Qt3DCore.QAttribute.IndexAttribute)
         self.indices_attribute.setBuffer(self.indices_buffer)
         self.indices_attribute.setCount(2)
         self.geometry.addAttribute(self.indices_attribute)

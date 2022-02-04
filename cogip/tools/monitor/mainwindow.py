@@ -3,9 +3,9 @@ from pathlib import Path
 import re
 from typing import Dict, Optional, List, Tuple
 
-from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.QtCore import Signal as qtSignal
-from PySide2.QtCore import Slot as qtSlot
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip.widgets.chartsview import ChartsView
 from cogip.widgets.gameview import GameView
@@ -111,7 +111,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons
 
         # Exit action
-        self.exit_action = QtWidgets.QAction(
+        self.exit_action = QtGui.QAction(
             QtGui.QIcon.fromTheme("application-exit"),
             'Exit',
             self
@@ -123,7 +123,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_toolbar.addAction(self.exit_action)
 
         # Add obstacle action
-        self.add_obstacle_action = QtWidgets.QAction(
+        self.add_obstacle_action = QtGui.QAction(
             QtGui.QIcon.fromTheme("list-add"),
             'Add obstacle',
             self
@@ -135,7 +135,7 @@ class MainWindow(QtWidgets.QMainWindow):
         obstacles_toolbar.addAction(self.add_obstacle_action)
 
         # Open obstacles action
-        self.load_obstacles_action = QtWidgets.QAction(
+        self.load_obstacles_action = QtGui.QAction(
             QtGui.QIcon.fromTheme("document-open"),
             'Load obstacles',
             self
@@ -147,7 +147,7 @@ class MainWindow(QtWidgets.QMainWindow):
         obstacles_toolbar.addAction(self.load_obstacles_action)
 
         # Save obstacles action
-        self.save_obstacles_action = QtWidgets.QAction(
+        self.save_obstacles_action = QtGui.QAction(
             QtGui.QIcon.fromTheme("document-save"),
             'Save obstacles',
             self
@@ -159,7 +159,7 @@ class MainWindow(QtWidgets.QMainWindow):
         obstacles_toolbar.addAction(self.save_obstacles_action)
 
         # Open samples action
-        self.load_samples_action = QtWidgets.QAction(
+        self.load_samples_action = QtGui.QAction(
             QtGui.QIcon.fromTheme("document-open"),
             'Load samples',
             self
@@ -169,7 +169,7 @@ class MainWindow(QtWidgets.QMainWindow):
         samples_menu.addAction(self.load_samples_action)
 
         # Save samples action
-        self.save_samples_action = QtWidgets.QAction(
+        self.save_samples_action = QtGui.QAction(
             QtGui.QIcon.fromTheme("document-save"),
             'Save samples',
             self
@@ -215,7 +215,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.charts_view = ChartsView(self)
 
         # Add view action
-        self.view_charts_action = QtWidgets.QAction('Calibration Charts', self)
+        self.view_charts_action = QtGui.QAction('Calibration Charts', self)
         self.view_charts_action.setStatusTip('Display/Hide calibration charts')
         self.view_charts_action.setCheckable(True)
         self.view_charts_action.toggled.connect(self.charts_toggled)

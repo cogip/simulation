@@ -2,9 +2,9 @@ from functools import partial
 from pathlib import Path
 from typing import Dict, Optional
 
-from PySide2 import QtCore, QtGui, QtWidgets
-from PySide2.QtCore import Signal as qtSignal
-from PySide2.QtCore import Slot as qtSlot
+from PySide6 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip.widgets.chartsview import ChartsView
 from cogip.widgets.gameview import GameView
@@ -97,7 +97,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons
 
         # Exit action
-        self.exit_action = QtWidgets.QAction(
+        self.exit_action = QtGui.QAction(
             QtGui.QIcon.fromTheme("application-exit"),
             'Exit',
             self
@@ -109,7 +109,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_toolbar.addAction(self.exit_action)
 
         # Add obstacle action
-        self.open_trace_action = QtWidgets.QAction(
+        self.open_trace_action = QtGui.QAction(
             QtGui.QIcon.fromTheme("document-open"),
             'Open trace',
             self
@@ -156,7 +156,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.charts_view = ChartsView(self)
 
         # Add view action
-        self.view_charts_action = QtWidgets.QAction('Calibration Charts', self)
+        self.view_charts_action = QtGui.QAction('Calibration Charts', self)
         self.view_charts_action.setStatusTip('Display/Hide calibration charts')
         self.view_charts_action.setCheckable(True)
         self.view_charts_action.toggled.connect(self.charts_toggled)
