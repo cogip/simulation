@@ -8,6 +8,7 @@ from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 
 from cogip.widgets.chartsview import ChartsView
+from cogip.widgets.dashboard import Dashboard
 from cogip.widgets.gameview import GameView
 from cogip.models import ShellMenu, RobotState
 
@@ -41,8 +42,12 @@ class MainWindow(QtWidgets.QMainWindow):
     signal_load_samples: qtSignal = qtSignal(Path)
     signal_save_samples: qtSignal = qtSignal(Path)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, url: str, *args, **kwargs):
         """
+        Class constructor.
+
+        Arguments:
+            url: URL of the copilot web server
         """
         super(MainWindow, self).__init__(*args, **kwargs)
 
@@ -214,6 +219,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Charts widget
         self.charts_view = ChartsView(self)
 
+        # Dashboard widget
+        self.dashboard = Dashboard(url, self)
+
         # Add view action
         self.view_charts_action = QtGui.QAction('Calibration Charts', self)
         self.view_charts_action.setStatusTip('Display/Hide calibration charts')
@@ -221,6 +229,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.view_charts_action.toggled.connect(self.charts_toggled)
         self.charts_view.closed.connect(partial(self.view_charts_action.setChecked, False))
         view_menu.addAction(self.view_charts_action)
+
+        self.view_dashboard_action = QtGui.QAction('Dashboard', self)
+        self.view_dashboard_action.setStatusTip('Display/Hide dashboard')
+        self.view_dashboard_action.setCheckable(True)
+        self.view_dashboard_action.toggled.connect(self.dashboard_toggled)
+        self.dashboard.closed.connect(partial(self.view_dashboard_action.setChecked, False))
+        view_menu.addAction(self.view_dashboard_action)
 
     @qtSlot(bool)
     def charts_toggled(self, checked: bool):
@@ -239,6 +254,24 @@ class MainWindow(QtWidgets.QMainWindow):
             self.charts_view.activateWindow()
         else:
             self.charts_view.close()
+
+    @qtSlot(bool)
+    def dashboard_toggled(self, checked: bool):
+        """
+        Qt Slot
+
+        Show/hide the dashboard.
+
+        Arguments:
+            checked: Show action was checked or unchecked
+        """
+        if checked:
+            self.dashboard.restore_saved_geometry()
+            self.dashboard.show()
+            self.dashboard.raise_()
+            self.dashboard.activateWindow()
+        else:
+            self.dashboard.close()
 
     @qtSlot(RobotState)
     def new_robot_state(self, state: RobotState):
