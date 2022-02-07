@@ -11,7 +11,7 @@ os.environ["QT_LOGGING_RULES"] = "*.debug=false;qt.webenginecontext.info=false"
 from PySide6 import QtWidgets
 import typer
 
-from cogip.entities.robot import RobotEntity, RobotShadowEntity
+from cogip.entities.robot import RobotEntity
 from cogip.entities.table import TableEntity
 
 from .mainwindow import MainWindow
@@ -45,10 +45,6 @@ def main_opt(
     robot_entity = RobotEntity()
     win.game_view.add_asset(robot_entity)
 
-    # Create robot entity
-    robot_final_entity = RobotShadowEntity()
-    win.game_view.add_asset(robot_final_entity)
-
     # Connect UI signals to Controller slots
     win.signal_send_command.connect(controller.new_command)
 
@@ -61,7 +57,6 @@ def main_opt(
 
     # Connect Controller signals to Robot slots
     controller.signal_new_robot_state.connect(robot_entity.new_robot_state)
-    controller.signal_new_robot_state.connect(robot_final_entity.new_robot_state)
     controller.signal_new_robot_state.connect(win.game_view.new_robot_state)
 
     # Connect Controller signals to UI slots

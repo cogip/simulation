@@ -2,12 +2,12 @@
 from pathlib import Path
 import sys
 from typing import Optional
-import typer
 
 from PySide6 import QtWidgets
+import typer
 
 from cogip import logger
-from cogip.entities.robot import RobotEntity, RobotShadowEntity
+from cogip.entities.robot import RobotEntity
 from cogip.entities.table import TableEntity
 
 from .mainwindow import MainWindow
@@ -36,13 +36,8 @@ def main_opt(trace_file: Optional[Path] = typer.Argument(None)):
     robot_entity = RobotEntity()
     win.game_view.add_asset(robot_entity)
 
-    # Create robot entity
-    robot_final_entity = RobotShadowEntity()
-    win.game_view.add_asset(robot_final_entity)
-
     # Connect UI signals
     win.signal_new_robot_state.connect(robot_entity.new_robot_state)
-    win.signal_new_robot_state.connect(robot_final_entity.new_robot_state)
     win.signal_new_robot_state.connect(win.game_view.new_robot_state)
     win.signal_new_robot_state.connect(win.new_robot_state)
     win.signal_new_robot_state.connect(win.charts_view.new_robot_state)

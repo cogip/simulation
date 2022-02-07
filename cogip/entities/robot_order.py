@@ -1,0 +1,35 @@
+from PySide6 import QtCore, QtGui
+from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DExtras import Qt3DExtras
+from PySide6.Qt3DRender import Qt3DRender
+
+
+class RobotOrderEntity(Qt3DCore.QEntity):
+    """
+    A robot entity to display to order position.
+
+    Attributes:
+        color: Robot color
+    """
+
+    color: QtGui.QColor = QtGui.QColor.fromRgb(100, 255, 100, 100)
+
+    def __init__(self, parent: Qt3DCore.QEntity):
+        """
+        Class constructor.
+        """
+        super().__init__(parent)
+
+        mesh = Qt3DRender.QMesh(self)
+        mesh.setSource(QtCore.QUrl("file:assets/robot2022.obj"))
+
+        self.transform = Qt3DCore.QTransform(self)
+
+        self.material = Qt3DExtras.QDiffuseSpecularMaterial(self)
+        self.material.setShininess(1.0)
+        self.material.setDiffuse(self.color)
+        self.material.setSpecular(self.color)
+
+        self.addComponent(mesh)
+        self.addComponent(self.transform)
+        self.addComponent(self.material)
