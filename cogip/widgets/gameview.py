@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import timeit
 from typing import List
 
 from pydantic import ValidationError
@@ -145,6 +146,8 @@ class GameView(QtWidgets.QWidget):
         self.ground_transform.setTranslation(QtGui.QVector3D(0, 1000, 0))
         self.ground_entity.addComponent(self.ground_transform)
 
+        self.start_time = timeit.default_timer()
+
     def add_asset(self, asset: AssetEntity) -> None:
         """
         Add an asset (like [TableEntity][cogip.entities.asset.AssetEntity]
@@ -270,6 +273,9 @@ class GameView(QtWidgets.QWidget):
             self.robot_manual = RobotManualEntity(self.root_entity, self.container)
             self.robot_manual.enable_controller.connect(self.camera_controller.setEnabled)
             self.new_move_delta.connect(self.robot_manual.new_move_delta)
+
+            print(f"Load time of assets: {timeit.default_timer() - self.start_time:0.3f}s")
+
     @qtSlot(Qt3DRender.QPickEvent)
     def plane_pressed(self, pick: Qt3DRender.QPickEvent):
         """
