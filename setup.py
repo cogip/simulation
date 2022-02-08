@@ -16,28 +16,24 @@ marker_platform_x86_64 = "platform_machine=='x86_64'"
 
 required_packages = [
     # Common packages
-    "click==7.1.2",
-    "Jinja2==2.11.3",
-    "psutil==5.7.2",
-    "ptvsd==4.3.2",
-    "pydantic==1.8.2",
+    "pydantic==1.9.0",
     "pyserial==3.5",
-    "python-dotenv==0.14.0",
+    "python-dotenv==0.19.2",
     "typer==0.4.0",
 
     # Packages specific to monitor
     "PySide6==6.2.3;" + marker_platform_x86_64,
-    "requests==2.26.0;" + marker_platform_x86_64,
-    "sysv-ipc==1.0.1;" + marker_platform_x86_64,
+    "sysv-ipc==1.1.0;" + marker_platform_x86_64,
     "websocket-client==1.2.3;" + marker_platform_x86_64,
 
     # Packages specific to Copilot
     "aioserial==1.3.0",
-    "fastapi==0.70.1",
+    "fastapi==0.73.0",
+    "Jinja2==3.0.3",
     "polling2==0.5.0",
-    "protobuf==3.19.1",
-    "python-socketio==5.5.0",
-    "uvicorn[standard]==0.16.0",
+    "protobuf==3.19.4",
+    "python-socketio==5.5.1",
+    "uvicorn[standard]==0.17.4",
 
     # Packages specific to documentation
     "MarkupSafe==2.0.1;" + marker_platform_x86_64,
