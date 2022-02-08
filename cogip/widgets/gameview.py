@@ -16,6 +16,7 @@ from PySide6.QtCore import Slot as qtSlot
 from cogip.entities.asset import AssetEntity
 from cogip.entities.obstacle import ObstacleEntity
 from cogip.entities.path import PathEntity
+from cogip.entities.robot_manual import RobotManualEntity
 from cogip.entities.sample import create_samples
 from cogip.models import models
 
@@ -266,6 +267,9 @@ class GameView(QtWidgets.QWidget):
                 sample.enable_controller.connect(self.camera_controller.setEnabled)
                 self.new_move_delta.connect(sample.new_move_delta)
 
+            self.robot_manual = RobotManualEntity(self.root_entity, self.container)
+            self.robot_manual.enable_controller.connect(self.camera_controller.setEnabled)
+            self.new_move_delta.connect(self.robot_manual.new_move_delta)
     @qtSlot(Qt3DRender.QPickEvent)
     def plane_pressed(self, pick: Qt3DRender.QPickEvent):
         """
