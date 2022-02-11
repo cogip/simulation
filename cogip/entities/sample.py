@@ -379,7 +379,9 @@ class SampleEntity(Qt3DCore.QEntity):
         Arguments:
             delta: The difference between current and new position
         """
-        if self._moving and delta:
+        if not delta:
+            self._moving = False
+        elif self._moving:
             new_translation = self._transform.translation() + delta
             self._transform.setTranslation(new_translation)
             self._properties.spin_x.setValue(new_translation.x())

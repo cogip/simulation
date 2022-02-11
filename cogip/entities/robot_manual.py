@@ -156,8 +156,9 @@ class RobotManualEntity(Qt3DCore.QEntity):
         Arguments:
             delta: The difference between current and new position
         """
-        self.move_delta = delta
-        if self.moving and delta:
+        if not delta:
+            self.moving = False
+        elif self.moving:
             new_translation = self.transform.translation() + delta
             self.transform.setTranslation(new_translation)
             self.properties.spin_x.setValue(new_translation.x())
