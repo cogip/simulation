@@ -10,6 +10,7 @@ from PySide6.QtCore import Slot as qtSlot
 from cogip.widgets.chartsview import ChartsView
 from cogip.widgets.dashboard import Dashboard
 from cogip.widgets.gameview import GameView
+from cogip.widgets.help import HelpCameraControlDialog
 from cogip.models import ShellMenu, RobotState
 
 
@@ -66,6 +67,7 @@ class MainWindow(QtWidgets.QMainWindow):
         obstacles_menu = menubar.addMenu('&Obstacles')
         samples_menu = menubar.addMenu('&Samples')
         view_menu = menubar.addMenu('&View')
+        help_menu = menubar.addMenu('&Help')
 
         # Toolbars
         file_toolbar = self.addToolBar('File')
@@ -222,6 +224,9 @@ class MainWindow(QtWidgets.QMainWindow):
         # Dashboard widget
         self.dashboard = Dashboard(url, self)
 
+        # Help controls widget
+        self.help_camera_control = HelpCameraControlDialog(self)
+
         # Add view action
         self.view_charts_action = QtGui.QAction('Calibration Charts', self)
         self.view_charts_action.setStatusTip('Display/Hide calibration charts')
@@ -236,6 +241,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.view_dashboard_action.toggled.connect(self.dashboard_toggled)
         self.dashboard.closed.connect(partial(self.view_dashboard_action.setChecked, False))
         view_menu.addAction(self.view_dashboard_action)
+
+        # Add help action
+        self.help_camera_control_action = QtGui.QAction('Camera control', self)
+        self.help_camera_control_action.setStatusTip('Display camera control help')
+        self.help_camera_control_action.triggered.connect(self.display_help_camera_control)
+        self.dashboard.closed.connect(partial(self.help_camera_control_action.setChecked, False))
+        help_menu.addAction(self.help_camera_control_action)
 
     @qtSlot(bool)
     def charts_toggled(self, checked: bool):
@@ -456,6 +468,17 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         if filename:
             self.signal_save_samples.emit(Path(filename))
+
+    def display_help_camera_control(self):
+        """
+        Qt Slot
+
+        Open camera control help dialog.
+        """
+        self.help_camera_control.restore_saved_geometry()
+        self.help_camera_control.show()
+        self.help_camera_control.raise_()
+        self.help_camera_control.activateWindow()
 
     @qtSlot()
     def connected(self, state: bool):
