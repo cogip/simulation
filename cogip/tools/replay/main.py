@@ -29,7 +29,7 @@ def main_opt(trace_file: Optional[Path] = typer.Argument(None)):
     win = MainWindow(trace_file)
 
     # Create table entity
-    table_entity = TableEntity(win.game_view.root_entity)
+    table_entity = TableEntity(win.game_view.scene_entity)
     win.game_view.add_asset(table_entity)
 
     # Create robot entity
