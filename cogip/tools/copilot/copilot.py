@@ -162,6 +162,7 @@ class Copilot():
 
         Send a reset message to all connected monitors.
         """
+        self._menu = None
         await queues.sio_messages_to_send.put(("reset", None))
         for _ in range(self._nb_connections):
             await queues.serial_messages_to_send.put((OutputMessageType.MONITOR_CONNECTED, None))

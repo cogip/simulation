@@ -147,3 +147,4 @@ class SocketioController(QtCore.QObject):
             to abort automatic start of the planner.
             """
             self.sio.emit("break")
+            Sensor.shm_key = None

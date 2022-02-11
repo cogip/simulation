@@ -172,6 +172,10 @@ class Sensor(QtCore.QObject):
         Initialize the shared memory segment used to share
         sensors data with the firmware.
         """
+        if cls.shm_ptr:
+            cls.shm_ptr.detach()
+            cls.shm_ptr.remove()
+
         cls.shm_ptr = sysv_ipc.SharedMemory(key=None, mode=0o666, flags=sysv_ipc.IPC_CREX, size=1024)
         cls.shm_key = cls.shm_ptr.key
         cls.shm_data = ShmData.from_buffer(cls.shm_ptr)
@@ -181,9 +185,6 @@ class Sensor(QtCore.QObject):
 
         for i in range(360):
             cls.shm_data.lidar[i] = 65535
-
-        # cls.shm_ptr.detach()
-        # cls.shm_ptr.remove()
 
 
 class ToFSensor(Sensor):
