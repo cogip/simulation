@@ -28,7 +28,7 @@ class RobotManualEntity(Qt3DCore.QEntity):
             self,
             parent: Qt3DCore.QEntity,
             parent_widget: QtWidgets.QWidget,
-            x: int = 0,
+            x: int = 1800,
             y: int = 1000,
             rotation: int = 0):
         """
@@ -199,8 +199,8 @@ class RobotManualProperties(QtWidgets.QDialog):
         label_x = QtWidgets.QLabel("X")
         self.spin_x = QtWidgets.QSpinBox()
         self.spin_x.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
-        self.spin_x.setMinimum(-1500)
-        self.spin_x.setMaximum(1500)
+        self.spin_x.setMinimum(-1700)
+        self.spin_x.setMaximum(1700)
         self.spin_x.setValue(int(self.robot_entity.transform.translation().x()))
         self.spin_x.valueChanged.connect(self.robot_entity.setXTranslation)
         layout.addWidget(label_x, row, 0)
@@ -210,8 +210,8 @@ class RobotManualProperties(QtWidgets.QDialog):
         label_y = QtWidgets.QLabel("Y")
         self.spin_y = QtWidgets.QSpinBox()
         self.spin_y.setStepType(QtWidgets.QAbstractSpinBox.AdaptiveDecimalStepType)
-        self.spin_y.setMinimum(0)
-        self.spin_y.setMaximum(2000)
+        self.spin_y.setMinimum(-200)
+        self.spin_y.setMaximum(2200)
         self.spin_y.setValue(int(self.robot_entity.transform.translation().y()))
         self.spin_y.valueChanged.connect(self.robot_entity.setYTranslation)
         layout.addWidget(label_y, row, 0)

@@ -110,7 +110,7 @@ class Sensor(QtCore.QObject):
 
         # Add impact entity
         self.impact_entity = ImpactEntity(radius=impact_radius, color=impact_color)
-        self.impact_entity.setParent(self.asset_entity.parentEntity())
+        self.impact_entity.setParent(self.asset_entity.parent().parent().parent())
 
     @qtSlot()
     def update_hit(self):
@@ -298,7 +298,7 @@ class LidarSensor(Sensor):
             direction_y=direction_y,
             direction_z=0,
             impact_radius=20,
-            impact_color=QtCore.Qt.blue)
+            impact_color=QtCore.Qt.cyan)
 
         self.lidar_id = LidarSensor.nb_lidar_sensors
         LidarSensor.nb_lidar_sensors += 1
