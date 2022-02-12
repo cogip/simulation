@@ -174,7 +174,6 @@ class MainWindow(QtWidgets.QMainWindow):
             checked: Show action has checked or unchecked
         """
         if checked:
-            self.charts_view.restore_saved_geometry()
             self.charts_view.show()
             self.charts_view.raise_()
             self.charts_view.activateWindow()

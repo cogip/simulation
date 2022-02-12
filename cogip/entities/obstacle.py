@@ -163,7 +163,6 @@ class ObstacleEntity(Qt3DCore.QEntity):
         if not self.moving:
             if ObstacleProperties.active_properties:
                 ObstacleProperties.active_properties.close()
-            self.properties.restore_saved_geometry()
             self.properties.show()
             self.properties.raise_()
             self.properties.activateWindow()
@@ -226,10 +225,8 @@ class ObstacleProperties(QtWidgets.QDialog):
     Each obstacle has its own property window.
 
     Attributes:
-        saved_geometry: The position of the last displayed property window
-        active_geometry: The current property window displayed.
+        active_properties: The current property window displayed.
     """
-    saved_geometry: QtCore.QRect = None
     active_properties: "ObstacleProperties" = None
 
     def __init__(self, parent: QtWidgets.QWidget, obstacle_entity: ObstacleEntity):
@@ -315,17 +312,7 @@ class ObstacleProperties(QtWidgets.QDialog):
         layout.addWidget(self.spin_height, row, 1)
         row += 1
 
-    @classmethod
-    def set_saved_geometry(cls, geometry: QtCore.QRect):
-        """
-        Class method.
-
-        Save the position of the last displayed property window.
-
-        Arguments:
-            geometry: The position to save
-        """
-        cls.saved_geometry = geometry
+        self.readSettings()
 
     @classmethod
     def set_active_properties(cls, properties: "ObstacleProperties"):
@@ -339,13 +326,6 @@ class ObstacleProperties(QtWidgets.QDialog):
         """
         cls.active_properties = properties
 
-    def restore_saved_geometry(self):
-        """
-        Reuse the position of the last displayed property window for the current window.
-        """
-        if ObstacleProperties.saved_geometry:
-            self.setGeometry(ObstacleProperties.saved_geometry)
-
     def closeEvent(self, event: QtGui.QCloseEvent):
         """
         Close the property windows.
@@ -353,6 +333,13 @@ class ObstacleProperties(QtWidgets.QDialog):
         Arguments:
             event: The close event (unused)
         """
-        ObstacleProperties.set_saved_geometry(self.geometry())
         ObstacleProperties.set_active_properties(None)
-        event.accept()
+
+        settings = QtCore.QSettings("COGIP", "monitor")
+        settings.setValue("obstacle_dialog/geometry", self.saveGeometry())
+
+        super().closeEvent(event)
+
+    def readSettings(self):
+        settings = QtCore.QSettings("COGIP", "monitor")
+        self.restoreGeometry(settings.value("obstacle_dialog/geometry"))

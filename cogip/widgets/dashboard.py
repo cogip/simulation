@@ -13,11 +13,9 @@ class Dashboard(QtWidgets.QDialog):
     Multiple screen sizes and resolutions are available to test rendering on different screens.
 
     Attributes:
-        saved_geometry: Saved window position
         closed: Qt signal emitted when the window is hidden
         screen_sizes: available screens sizes in inches and corresponding resolutions
     """
-    saved_geometry: QtCore.QRect = None
     closed: qtSignal = qtSignal()
     screen_sizes = {
         5: (800, 480),
@@ -60,12 +58,7 @@ class Dashboard(QtWidgets.QDialog):
 
         self.screen_radios[7].setChecked(True)
 
-    def restore_saved_geometry(self):
-        """
-        Reuse the position of the last displayed window for the current window.
-        """
-        if self.saved_geometry:
-            self.setGeometry(self.saved_geometry)
+        self.readSettings()
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         """
@@ -74,9 +67,24 @@ class Dashboard(QtWidgets.QDialog):
         Arguments:
             event: The close event (unused)
         """
-        self.saved_geometry = self.geometry()
+        settings = QtCore.QSettings("COGIP", "monitor")
+        settings.setValue("dashboard/geometry", self.saveGeometry())
+        for inches, radio in self.screen_radios.items():
+            if radio.isChecked():
+                settings.setValue("dashboard/inches", inches)
+                break
+
         self.closed.emit()
-        event.accept()
+        super().closeEvent(event)
+
+    def readSettings(self):
+        settings = QtCore.QSettings("COGIP", "monitor")
+        self.restoreGeometry(settings.value("dashboard/geometry"))
+        try:
+            inches = int(settings.value("dashboard/inches"))
+            self.screen_radios[inches].setChecked(True)
+        except:  # noqa
+            pass
 
     def set_resolution(self, width: int, height: int, checked: bool) -> None:
         """
