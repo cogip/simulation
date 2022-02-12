@@ -228,10 +228,8 @@ class ChartsView(QtWidgets.QDialog):
     Build the calibration charts window.
 
     Attributes:
-        saved_geometry: Saved window position
         closed: Qt signal emitted when the window is hidden
     """
-    saved_geometry: QtCore.QRect = None
     closed: qtSignal = qtSignal()
 
     def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
@@ -253,6 +251,8 @@ class ChartsView(QtWidgets.QDialog):
         self.linear_speed_chart = ChartView(self, "Linear Speed")
         self.layout.addWidget(self.linear_speed_chart, 0, 0)
 
+        self.readSettings()
+
     @qtSlot(RobotState)
     def new_robot_state(self, state: RobotState) -> None:
         """
@@ -265,13 +265,6 @@ class ChartsView(QtWidgets.QDialog):
         """
         self.linear_speed_chart.new_robot_state(state.mode, state.cycle, state.speed_current, state.speed_order)
 
-    def restore_saved_geometry(self):
-        """
-        Reuse the position of the last displayed property window for the current window.
-        """
-        if self.saved_geometry:
-            self.setGeometry(self.saved_geometry)
-
     def closeEvent(self, event: QtGui.QCloseEvent):
         """
         Hide the window.
@@ -279,6 +272,12 @@ class ChartsView(QtWidgets.QDialog):
         Arguments:
             event: The close event (unused)
         """
-        self.saved_geometry = self.geometry()
+        settings = QtCore.QSettings("COGIP", "monitor")
+        settings.setValue("chartsview/geometry", self.saveGeometry())
+
         self.closed.emit()
-        event.accept()
+        super().closeEvent(event)
+
+    def readSettings(self):
+        settings = QtCore.QSettings("COGIP", "monitor")
+        self.restoreGeometry(settings.value("chartsview/geometry"))

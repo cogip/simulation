@@ -126,7 +126,6 @@ class RobotManualEntity(Qt3DCore.QEntity):
         if not self.moving:
             if RobotManualProperties.active_properties:
                 RobotManualProperties.active_properties.close()
-            self.properties.restore_saved_geometry()
             self.properties.show()
             self.properties.raise_()
             self.properties.activateWindow()
@@ -170,10 +169,8 @@ class RobotManualProperties(QtWidgets.QDialog):
     The property window.
 
     Attributes:
-        saved_geometry: The position of the last displayed property window
-        active_geometry: The current property window displayed.
+        active_properties: The current property window displayed.
     """
-    saved_geometry: QtCore.QRect = None
     active_properties: "RobotManualProperties" = None
 
     def __init__(self, parent: QtWidgets.QWidget, robot_entity: RobotManualEntity):
@@ -229,17 +226,7 @@ class RobotManualProperties(QtWidgets.QDialog):
         layout.addWidget(self.spin_rotation, row, 1)
         row += 1
 
-    @classmethod
-    def set_saved_geometry(cls, geometry: QtCore.QRect):
-        """
-        Class method.
-
-        Save the position of the last displayed property window.
-
-        Arguments:
-            geometry: The position to save
-        """
-        cls.saved_geometry = geometry
+        self.readSettings()
 
     @classmethod
     def set_active_properties(cls, properties: "RobotManualProperties"):
@@ -253,13 +240,6 @@ class RobotManualProperties(QtWidgets.QDialog):
         """
         cls.active_properties = properties
 
-    def restore_saved_geometry(self):
-        """
-        Reuse the position of the last displayed property window for the current window.
-        """
-        if RobotManualProperties.saved_geometry:
-            self.setGeometry(RobotManualProperties.saved_geometry)
-
     def closeEvent(self, event: QtGui.QCloseEvent):
         """
         Close the property windows.
@@ -267,6 +247,13 @@ class RobotManualProperties(QtWidgets.QDialog):
         Arguments:
             event: The close event (unused)
         """
-        RobotManualProperties.set_saved_geometry(self.geometry())
         RobotManualProperties.set_active_properties(None)
-        event.accept()
+
+        settings = QtCore.QSettings("COGIP", "monitor")
+        settings.setValue("manual_robot_dialog/geometry", self.saveGeometry())
+
+        super().closeEvent(event)
+
+    def readSettings(self):
+        settings = QtCore.QSettings("COGIP", "monitor")
+        self.restoreGeometry(settings.value("manual_robot_dialog/geometry"))

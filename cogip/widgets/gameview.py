@@ -479,6 +479,28 @@ class GameView(QtWidgets.QWidget):
         ground_transform.setTranslation(QtGui.QVector3D(0, 1000, 0))
         self.ground_entity.addComponent(ground_transform)
 
+    def get_camera_params(self) -> Dict[str, Any]:
+        """
+        Return current camera parameters to save them for next session.
+        """
+        return {
+            "translation": self.root_transform.translation().toTuple(),
+            "rotation": [
+                self.root_transform.rotationX(),
+                self.root_transform.rotationY(),
+                self.root_transform.rotationZ()
+            ]
+        }
+
+    def set_camera_params(self, camera_params: Dict[str, Any]) -> None:
+        """
+        Set camera parameters to restore them from previous session.
+        """
+        self.root_transform.setTranslation(QtGui.QVector3D(*camera_params["translation"]))
+        self.root_transform.setRotationX(camera_params["rotation"][0])
+        self.root_transform.setRotationY(camera_params["rotation"][1])
+        self.root_transform.setRotationZ(camera_params["rotation"][2])
+
 
 def create_ligth_entity(parent: Qt3DCore.QEntity, x: float, y: float, z: float) -> Qt3DCore.QEntity:
     """

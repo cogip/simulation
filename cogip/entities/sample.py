@@ -318,7 +318,6 @@ class SampleEntity(Qt3DCore.QEntity):
         if not self._moving:
             if SampleProperties.active_properties:
                 SampleProperties.active_properties.close()
-            self._properties.restore_saved_geometry()
             self._properties.show()
             self._properties.raise_()
             self._properties.activateWindow()
@@ -411,10 +410,8 @@ class SampleProperties(QtWidgets.QDialog):
     Each sample has its own property window.
 
     Attributes:
-        saved_geometry: The position of the last displayed property window
-        active_geometry: The current property window displayed.
+        active_properties: The current property window displayed.
     """
-    saved_geometry: QtCore.QRect = None
     active_properties: "SampleProperties" = None
 
     def __init__(self, parent: QtWidgets.QWidget, sample_entity: SampleEntity):
@@ -529,17 +526,7 @@ class SampleProperties(QtWidgets.QDialog):
         layout.addWidget(self.checkbox_known, row, 1)
         row += 1
 
-    @classmethod
-    def set_saved_geometry(cls, geometry: QtCore.QRect):
-        """
-        Class method.
-
-        Save the position of the last displayed property window.
-
-        Arguments:
-            geometry: The position to save
-        """
-        cls.saved_geometry = geometry
+        self.readSettings()
 
     @classmethod
     def set_active_properties(cls, properties: "SampleProperties"):
@@ -553,13 +540,6 @@ class SampleProperties(QtWidgets.QDialog):
         """
         cls.active_properties = properties
 
-    def restore_saved_geometry(self):
-        """
-        Reuse the position of the last displayed property window for the current window.
-        """
-        if SampleProperties.saved_geometry:
-            self.setGeometry(SampleProperties.saved_geometry)
-
     def closeEvent(self, event: QtGui.QCloseEvent):
         """
         Close the property windows.
@@ -567,6 +547,13 @@ class SampleProperties(QtWidgets.QDialog):
         Arguments:
             event: The close event (unused)
         """
-        SampleProperties.set_saved_geometry(self.geometry())
         SampleProperties.set_active_properties(None)
-        event.accept()
+
+        settings = QtCore.QSettings("COGIP", "monitor")
+        settings.setValue("sample_dialog/geometry", self.saveGeometry())
+
+        super().closeEvent(event)
+
+    def readSettings(self):
+        settings = QtCore.QSettings("COGIP", "monitor")
+        self.restoreGeometry(settings.value("sample_dialog/geometry"))

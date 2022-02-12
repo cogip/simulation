@@ -31,7 +31,6 @@ class HelpCameraControlDialog(QtWidgets.QDialog):
         saved_geometry: Saved window position
         closed: Qt signal emitted when the window is hidden
     """
-    saved_geometry: QtCore.QRect = None
     closed: qtSignal = qtSignal()
 
     def __init__(self, parent: QtWidgets.QWidget = None):
@@ -56,12 +55,7 @@ class HelpCameraControlDialog(QtWidgets.QDialog):
 
         self.resize(580, 395)
 
-    def restore_saved_geometry(self):
-        """
-        Reuse the position of the last displayed window for the current window.
-        """
-        if self.saved_geometry:
-            self.setGeometry(self.saved_geometry)
+        self.readSettings()
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         """
@@ -70,6 +64,13 @@ class HelpCameraControlDialog(QtWidgets.QDialog):
         Arguments:
             event: The close event (unused)
         """
-        self.saved_geometry = self.geometry()
+        settings = QtCore.QSettings("COGIP", "monitor")
+        settings.setValue("help/geometry", self.saveGeometry())
+
         self.closed.emit()
         event.accept()
+        super().closeEvent(event)
+
+    def readSettings(self):
+        settings = QtCore.QSettings("COGIP", "monitor")
+        self.restoreGeometry(settings.value("help/geometry"))

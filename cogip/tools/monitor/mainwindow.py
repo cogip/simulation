@@ -1,4 +1,5 @@
 from functools import partial
+import json
 from pathlib import Path
 import re
 from typing import Dict, Optional, List, Tuple
@@ -71,7 +72,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Toolbars
         file_toolbar = self.addToolBar('File')
+        file_toolbar.setObjectName("File Toolbar")
         obstacles_toolbar = self.addToolBar('Obstacles')
+        obstacles_toolbar.setObjectName("Obstacles Toolbar")
 
         # Status bar
         status_bar = self.statusBar()
@@ -187,6 +190,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Console
         dock = QtWidgets.QDockWidget("Console")
+        dock.setObjectName("Console")
         dock.setAllowedAreas(QtCore.Qt.BottomDockWidgetArea)
         self.log_text = QtWidgets.QTextEdit()
         self.log_text.setReadOnly(True)
@@ -249,6 +253,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dashboard.closed.connect(partial(self.help_camera_control_action.setChecked, False))
         help_menu.addAction(self.help_camera_control_action)
 
+        self.readSettings()
+
     @qtSlot(bool)
     def charts_toggled(self, checked: bool):
         """
@@ -260,7 +266,6 @@ class MainWindow(QtWidgets.QMainWindow):
             checked: Show action has checked or unchecked
         """
         if checked:
-            self.charts_view.restore_saved_geometry()
             self.charts_view.show()
             self.charts_view.raise_()
             self.charts_view.activateWindow()
@@ -278,7 +283,6 @@ class MainWindow(QtWidgets.QMainWindow):
             checked: Show action was checked or unchecked
         """
         if checked:
-            self.dashboard.restore_saved_geometry()
             self.dashboard.show()
             self.dashboard.raise_()
             self.dashboard.activateWindow()
@@ -475,7 +479,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         Open camera control help dialog.
         """
-        self.help_camera_control.restore_saved_geometry()
         self.help_camera_control.show()
         self.help_camera_control.raise_()
         self.help_camera_control.activateWindow()
@@ -491,6 +494,31 @@ class MainWindow(QtWidgets.QMainWindow):
             state: True if connected, False if disconnected
         """
         self.connected_label.setText("Connected" if state else "Disconnected")
+
+    def closeEvent(self, event: QtGui.QCloseEvent):
+        settings = QtCore.QSettings("COGIP", "monitor")
+        settings.setValue("geometry", self.saveGeometry())
+        settings.setValue("windowState", self.saveState())
+        settings.setValue("charts_checked", self.view_charts_action.isChecked())
+        settings.setValue("dashboard_checked", self.view_dashboard_action.isChecked())
+        settings.setValue("camera_params", json.dumps(self.game_view.get_camera_params()))
+        super().closeEvent(event)
+
+    def readSettings(self):
+        settings = QtCore.QSettings("COGIP", "monitor")
+        self.restoreGeometry(settings.value("geometry"))
+        self.restoreState(settings.value("windowState"))
+        if settings.value("charts_checked") == "true":
+            self.charts_toggled(True)
+            self.view_charts_action.setChecked(True)
+        if settings.value("dashboard_checked") == "true":
+            self.dashboard_toggled(True)
+            self.view_dashboard_action.setChecked(True)
+        try:
+            camera_params = json.loads(settings.value("camera_params"))
+            self.game_view.set_camera_params(camera_params)
+        except Exception:
+            pass
 
 
 def split_command(command: str) -> Tuple[str, List[str]]:
