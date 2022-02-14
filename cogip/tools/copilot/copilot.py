@@ -148,7 +148,8 @@ class Copilot():
                     await self._loop.run_in_executor(None, message.ParseFromString, encoded_message)
                     await request_handler(message)
                 except ProtobufDecodeError as exc:
-                    logger.error(exc, encoded_message)
+                    logger.error(f"Protobuf decode error: {exc}")
+                    logger.error(f"Message: {encoded_message}")
 
             queues.serial_messages_received.task_done()
 
