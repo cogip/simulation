@@ -1,0 +1,33 @@
+.row {
+  margin-right: 0px;
+}
+
+#menu {
+  text-align: center;
+  min-height: 95vh;
+  max-height: 95vh;
+  padding-left: 25px;
+}
+
+input[type="text"] {
+  max-width: 15%;
+}
+
+#menu button {
+  margin-bottom: 1vh !important;
+}
+
+#connection pre {
+  text-align: right;
+}
+
+pre {
+  margin-bottom: 0px;
+  padding-bottom: 0px;
+  font-size: 1.5vh;
+}
+
+#board {
+  margin-top: 1vh;
+  margin-right: 1vw;
+}
