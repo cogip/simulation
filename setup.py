@@ -67,7 +67,11 @@ setup(
     packages=find_packages(),
     package_data={
         "cogip.tools.copilot": [
-            "static/**/*",
+            "static/css/*",
+            "static/css/external/*",
+            "static/img/*",
+            "static/js/*",
+            "static/js/external/*",
             "templates/*"
         ],
         "cogip.tools.robotcam": [
