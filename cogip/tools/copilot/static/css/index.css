@@ -6,11 +6,17 @@
   text-align: center;
   min-height: 95vh;
   max-height: 95vh;
-  padding-left: 25px;
+  padding-top: 10px;
+  padding-right: 0px;
 }
 
 input[type="text"] {
   max-width: 15%;
+}
+
+#divButtons {
+  max-height: 82vh;
+  overflow-y: auto;
 }
 
 #menu button {

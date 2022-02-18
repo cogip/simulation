@@ -68,7 +68,7 @@
             socketModule.onDisconnect();
           })
           .on("menu", function (menu) {
-            socketModule.onMenu(menu);
+            socketModule.onMenu(menu, this);
           });
         // socket.on('state', function(msg) {
         //     console.log(JSON.stringify(msg));
