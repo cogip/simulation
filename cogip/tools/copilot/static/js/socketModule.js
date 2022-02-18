@@ -10,10 +10,11 @@ export function onDisconnect() {
   $("#connection").html("<pre>Disconnected.</pre>");
 }
 
-export function onMenu(menu) {
+export function onMenu(menu, socket) {
   $("#menu").empty();
-  $("#menu").html("<h1>" + menu.name + "</h1>"); // display title for menu
+  $("#menu").html("<h1 class=small >" + menu.name + "</h1>"); // display title for menu
 
+  const divButton = $('<div id="divButtons"></div>');
   // add all buttons menu
   for (let value in menu.entries) {
     if (!menu.entries[value]["cmd"].startsWith("_")) {
@@ -21,10 +22,16 @@ export function onMenu(menu) {
       if (menu.entries[value]["desc"].includes("<")) {
         inputParams = `<input type="text" placeholder="kp"/>`;
       }
+
       let newButtonMenu = $(
         `<div><button type='button' class='btn btn-light btn-sm'>${menu.entries[value]["desc"]}</button>${inputParams}</div>`
-      );
-      $("#menu").append(newButtonMenu);
+      ).click(function () {
+        socket.emit("cmd", menu.entries[value]["cmd"]);
+      });
+
+      divButton.append(newButtonMenu);
     }
+
+    $("#menu").append(divButton);
   }
 }
