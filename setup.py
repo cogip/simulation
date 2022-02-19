@@ -16,6 +16,7 @@ marker_platform_x86_64 = "platform_machine=='x86_64'"
 
 required_packages = [
     # Common packages
+    "py-spy==0.3.11",
     "pydantic==1.9.0",
     "pyserial==3.5",
     "python-dotenv==0.19.2",
