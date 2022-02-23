@@ -33,6 +33,8 @@ class CameraServer():
     _camera_capture: cv2.VideoCapture = None            # OpenCV video capture
     _camera_matrix_coefficients: np.ndarray = None      # Matrix coefficients from camera calibration
     _camera_distortion_coefficients: np.ndarray = None  # Distortion coefficients from camera calibration
+    _marker_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)  # Aruco tags dictionary
+    _detector_params = cv2.aruco.DetectorParameters_create()  # Default parameters for aruco tag detection
     _exiting: bool = False                              # True if Uvicorn server was ask to shutdown
     _last_frame: SharedMemory = None                    # Last generated frame to stream on web server
     _original_uvicorn_exit_handler = UvicornServer.handle_exit
@@ -79,6 +81,36 @@ class CameraServer():
         Initialize camera and aruco markers detection parameters.
         """
         # List all detection parameters with their default values to help further optimization
+        self._detector_params.adaptiveThreshWinSizeMin = 3
+        self._detector_params.adaptiveThreshWinSizeMax = 23
+        self._detector_params.adaptiveThreshWinSizeStep = 10
+        self._detector_params.adaptiveThreshConstant = 7
+        self._detector_params.minMarkerPerimeterRate = 0.03
+        self._detector_params.maxMarkerPerimeterRate = 4.0
+        self._detector_params.polygonalApproxAccuracyRate = 0.03
+        self._detector_params.minCornerDistanceRate = 0.05
+        self._detector_params.minDistanceToBorder = 3
+        self._detector_params.minMarkerDistanceRate = 0.05
+        self._detector_params.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_NONE
+        self._detector_params.cornerRefinementWinSize = 5
+        self._detector_params.cornerRefinementMaxIterations = 30
+        self._detector_params.cornerRefinementMinAccuracy = 0.1
+        self._detector_params.markerBorderBits = 1
+        self._detector_params.perspectiveRemovePixelPerCell = 4
+        self._detector_params.perspectiveRemoveIgnoredMarginPerCell = 0.13
+        self._detector_params.maxErroneousBitsInBorderRate = 0.35
+        self._detector_params.minOtsuStdDev = 5.0
+        self._detector_params.errorCorrectionRate = 0.6
+        self._detector_params.aprilTagMinClusterPixels = 5
+        self._detector_params.aprilTagMaxNmaxima = 10
+        self._detector_params.aprilTagCriticalRad = 10*math.pi/180
+        self._detector_params.aprilTagMaxLineFitMse = 10.0
+        self._detector_params.aprilTagMinWhiteBlackDiff = 5
+        self._detector_params.aprilTagDeglitch = 0
+        self._detector_params.aprilTagQuadDecimate = 0.0
+        self._detector_params.aprilTagQuadSigma = 0.0
+        self._detector_params.detectInvertedMarker = False
+
         self._camera_capture = cv2.VideoCapture(str(self.settings.camera_device), cv2.CAP_V4L2)
         if not self._camera_capture.isOpened():
             logger.error(f"Cannot open camera device {self.settings.camera_device}")
@@ -153,6 +185,89 @@ class CameraServer():
             raise Exception("Can't read frame.")
 
         image_stream = image_color
+
+        image_gray = cv2.cvtColor(image_color, cv2.COLOR_BGR2GRAY)
+        image_stream = image_gray
+
+        # Detect markers
+        corners, ids, rejected = cv2.aruco.detectMarkers(
+            image_gray,
+            self._marker_dictionary,
+            parameters=self._detector_params,
+            cameraMatrix=self._camera_matrix_coefficients,
+            distCoeff=self._camera_distortion_coefficients
+        )
+
+        # Draw a square around the markers
+        cv2.aruco.drawDetectedMarkers(
+            image_stream,
+            corners=corners,
+            ids=ids
+        )
+
+        # Record coords by marker id to sort them by id
+        coords_by_id = {}
+
+        if(np.all(ids)):
+            # Estimate position of markers
+            rvecs, tvecs, marker_points = cv2.aruco.estimatePoseSingleMarkers(
+                corners,
+                markerLength=50,
+                cameraMatrix=self._camera_matrix_coefficients,
+                distCoeffs=self._camera_distortion_coefficients
+            )
+
+            for (id, rvec, tvec) in zip(ids, rvecs, tvecs):
+                # Convert marker position from local camera coordinates to world coordinates
+                id = id[0]
+                rvec = rvec[0]
+                tvec = tvec[0]
+
+                rvec_flipped = rvec * -1
+                rotation_matrix, jacobian = cv2.Rodrigues(rvec_flipped)
+
+                sy = math.sqrt(rotation_matrix[0, 0] * rotation_matrix[0, 0] + rotation_matrix[1, 0] * rotation_matrix[1, 0])
+
+                if sy >= 1e-6:
+                    rot_z = math.atan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
+                else:
+                    rot_z = 0
+
+                # Draw axis
+                cv2.aruco.drawAxis(
+                    image_stream,
+                    cameraMatrix=self._camera_matrix_coefficients,
+                    distCoeffs=self._camera_distortion_coefficients,
+                    rvec=rvec,
+                    tvec=tvec,
+                    length=25
+                )
+
+                coords_by_id[id.item()] = (*[v.item() for v in tvec], rot_z)
+
+        if self.sio.connected:
+            self.sio.emit("samples", coords_by_id)
+
+        # Print sample coords on image
+        for i, (id, coords) in enumerate(sorted(coords_by_id.items())):
+            tvec_str = (
+                f"[{id:2d}] "
+                f"X: {coords[0]: 4.0f} "
+                f"Y: {coords[1]: 4.0f} "
+                f"Z: {coords[2]: 4.0f} "
+                f"0: {math.degrees(coords[3]):3.1f}"
+            )
+            cv2.putText(
+                img=image_stream,
+                text=tvec_str,
+                org=(20, 465 - 20 * i),
+                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                fontScale=0.5,
+                color=(0, 0, 255),
+                thickness=2,
+                bottomLeftOrigin=False
+            )
+
         # Encode the frame in BMP format (larger but faster than JPEG)
         ret, encoded_image = cv2.imencode(".bmp", image_stream)
         if not ret:
