@@ -99,6 +99,12 @@ make -C submodules/mcu-firmware/applications/app_test BOARD=cogip-native PORT="-
 COPILOT_SERIAL_PORT=/tmp/ttyRPI cogip-copilot
 ```
 
+`RobotCam` is run using:
+
+```bash
+cogip-robotcam
+```
+
 And finally `Monitor`is launched using:
 
 ```bash
@@ -114,4 +120,9 @@ python setup.py sdist
 ```
 
 This will produce `dist/cogip-tools-1.0.0.tar.gz`.
-This package can be copied to the Raspberry Pi and installed to deploy the `Copilot`.
+
+This package can be copied to the Raspberry Pi and installed to deploy the `Copilot` and `RobotCam` tools:
+
+```bash
+pip install cogip-tools-1.0.0.tar.gz
+```

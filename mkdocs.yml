@@ -16,6 +16,7 @@ nav:
   - Usage:
     - usage/monitor.md
     - usage/copilot.md
+    - usage/robotcam.md
     - usage/replay.md
     - usage/lidarusb.md
     - usage/lidarpf.md

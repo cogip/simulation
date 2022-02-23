@@ -32,6 +32,7 @@ required_packages = [
     "aioserial==1.3.0",
     "fastapi==0.73.0",
     "Jinja2==3.0.3",
+    "opencv-contrib-python==4.5.3.56",  # Use latest version avalaible on pypi.org AND piwheels.org
     "polling2==0.5.0",
     "protobuf==3.19.4",
     "python-socketio==5.5.1",
@@ -68,13 +69,18 @@ setup(
         "cogip.tools.copilot": [
             "static/**/*",
             "templates/*"
+        ],
+        "cogip.tools.robotcam": [
+            "data/*"
         ]
+
     },
     entry_points={
         'console_scripts': [
             'cogip-monitor=cogip.tools.monitor.main:main',
             'cogip-replay=cogip.tools.replay.main:main',
             'cogip-copilot=cogip.tools.copilot.main:main',
+            'cogip-robotcam=cogip.tools.robotcam.main:main',
             'cogip-lidarusb=cogip.tools.lidarusb.main:main',
             'cogip-lidarpf=cogip.tools.lidarpf.main:main'
         ]
