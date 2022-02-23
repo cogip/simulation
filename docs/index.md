@@ -8,7 +8,7 @@ This robot is developed for [Eurobot](https://www.eurobot.org/), French robotic 
 ![Communication Overview](img/copilot/copilot.svg)
 
 The main component of the robot is a STM32 that runs [`mcu-firmware`](https://github.com/cogip/mcu-firmware). It is assiocated to a Raspberry Pi 4
-that controls a camera, a touch screen. It runs the `Copilot` tool from this repository.
+that controls a camera, a touch screen. It runs the `Copilot` and `RobotCam` tool from this repository.
 
 `mcu-firmware` (on STM32) and `Copilot` (on Raspberry Pi) communicate using Protobuf messages over a serial port.
 
@@ -21,5 +21,7 @@ Monitoring tools like `Monitor` from this repository are connected to the Socket
 Monitors can send commands to `Copilot` which forwards them to `mcu-firmware`.
 
 The touchscreen displays the `Copilot` dashboard using an web browser embedded in the Raspberry Pi.
+
+`RobotCam` controls the camera embedded in the robot, stream the video on the web server and detect samples using Aruco tags.
 
 This repository also provides some tools to help debugging other robot components.
