@@ -32,6 +32,7 @@ class CopilotServer:
     _loop: asyncio.AbstractEventLoop = None          # Event loop to use for all async objects
     _nb_connections: int = 0                         # Number of monitors connected
     _menu: models.ShellMenu = None                   # Last received shell menu
+    _samples: Dict[str, Any] = None                  # Last detected samples
     _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
     _record_handler: GameRecordFileHandler = None    # Log file handler to record games
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
@@ -351,3 +352,7 @@ class CopilotServer:
             response = PB_Command()
             response.cmd, _, response.desc = data.partition(" ")
             await self._serial_messages_to_send.put((OutputMessageType.COMMAND, response))
+
+        @self.sio.on("samples")
+        async def on_sample(sid, data):
+            self._samples = data
