@@ -28,13 +28,16 @@ required_packages = [
     "websocket-client==1.2.3;" + marker_platform_x86_64,
 
     # Packages specific to Copilot
+    "aiohttp==3.8.1",
     "aioserial==1.3.0",
     "fastapi==0.73.0",
     "Jinja2==3.0.3",
     "polling2==0.5.0",
     "protobuf==3.19.4",
     "python-socketio==5.5.1",
-    "uvicorn[standard]==0.17.4",
+    "requests==2.27.1",
+    "uvicorn[standard]==0.17.5",
+    "websocket-client==1.2.3",
 
     # Packages specific to documentation
     "MarkupSafe==2.0.1;" + marker_platform_x86_64,
