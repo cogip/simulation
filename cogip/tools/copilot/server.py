@@ -1,6 +1,9 @@
 import asyncio
+import json
+import logging
 from pathlib import Path
-from typing import Dict
+from typing import Any, Dict
+
 from aioserial import AioSerial
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
@@ -15,6 +18,7 @@ from uvicorn.main import Server as UvicornServer
 from cogip import models, logger
 from .messages import PB_Command, PB_Menu, PB_State
 from .message_types import InputMessageType, OutputMessageType
+from .recorder import GameRecordFileHandler
 from .settings import Settings
 
 
@@ -29,6 +33,7 @@ class CopilotServer:
     _nb_connections: int = 0                         # Number of monitors connected
     _menu: models.ShellMenu = None                   # Last received shell menu
     _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
+    _record_handler: GameRecordFileHandler = None    # Log file handler to record games
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
     _serial_messages_to_send: asyncio.Queue = None   # Queue for messages waiting to be sent on serial port
     _sio_messages_to_send: asyncio.Queue = None      # Queue for messages waiting to be sent on SocketIO server
@@ -64,6 +69,17 @@ class CopilotServer:
 
         # Create HTML templates
         self.templates = Jinja2Templates(directory=current_dir/"templates")
+
+        # Create game recorder
+        self._game_recorder = logging.getLogger('GameRecorder')
+        self._game_recorder.setLevel(logging.INFO)
+        self._game_recorder.propagate = False
+        try:
+            self._record_handler = GameRecordFileHandler(self.settings.record_dir)
+            self._game_recorder.addHandler(self._record_handler)
+        except OSError:
+            logger.warning(f"Failed to record games in directory '{self.settings.record_dir}'")
+            self._record_handler = None
 
         # Open serial port
         self._serial_port = AioSerial()
@@ -208,6 +224,7 @@ class CopilotServer:
         new_obstacles = [y for obstacle in obstacles for _, y in obstacle.items()]
         state_dict["obstacles"] = new_obstacles
         await self._sio_messages_to_send.put(("state", state_dict))
+        await self._loop.run_in_executor(None, self.record_state, state_dict)
 
     async def emit_menu(self) -> None:
         """
@@ -219,6 +236,14 @@ class CopilotServer:
         await self._sio_messages_to_send.put(
             ("menu", self._menu.dict(exclude_defaults=True, exclude_unset=True))
         )
+
+    def record_state(self, state: Dict[str, Any]) -> None:
+        """
+        Add a robot robot state in the current record file.
+        Do it only the the robot the game has started, ie mode != 0.
+        """
+        if self._record_handler and state.get("mode", 0):
+            self._game_recorder.info(json.dumps(state))
 
     def register_endpoints(self) -> None:
 

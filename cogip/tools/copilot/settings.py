@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic import BaseSettings, Field
 
 
@@ -13,6 +15,10 @@ class Settings(BaseSettings):
     serial_baud: int = Field(
         default=230400,
         description="Baud rate"
+    )
+    record_dir: Path = Field(
+        default="/var/tmp/cogip",
+        description="Directory where games will be recorded"
     )
 
     class Config:

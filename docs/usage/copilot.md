@@ -30,4 +30,7 @@ COPILOT_SERIAL_PORT="/dev/ttyUSB0"
 
 # Baud rate
 COPILOT_SERIAL_BAUD=230400
+
+# Directory where games will be recorded
+COPILOT_RECORD_DIR="/var/tmp/cogip"
 ```
