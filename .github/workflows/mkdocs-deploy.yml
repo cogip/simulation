@@ -27,4 +27,4 @@ jobs:
 
       - name: Deploy doc
         run: |
-          mkdocs gh-deploy
+          mkdocs gh-deploy --force
