@@ -52,11 +52,13 @@
     <script type="module">
       import * as socketModule from "../static/js/socketModule.js";
       import * as drawModule from "../static/js/drawModule.js";
+      import { virtualKeyboard } from "../static/js/keyboardModule.js";
 
       window.addEventListener("resize", drawModule.resizeCanvas, false);
 
       $(document).ready(function () {
         drawModule.resizeCanvas(); // draw background
+        virtualKeyboard.init(); // initialize
 
         io.connect(window.location.origin, {
           path: "/sio/socket.io",
@@ -69,6 +71,7 @@
           })
           .on("menu", function (menu) {
             socketModule.onMenu(menu, this);
+            virtualKeyboard._actualize();
           });
         // socket.on('state', function(msg) {
         //     console.log(JSON.stringify(msg));

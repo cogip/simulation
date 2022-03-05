@@ -20,7 +20,7 @@ export function onMenu(menu, socket) {
     if (!menu.entries[value]["cmd"].startsWith("_")) {
       let inputParams = "";
       if (menu.entries[value]["desc"].includes("<")) {
-        inputParams = `<input type="text" placeholder="kp"/>`;
+        inputParams = `<input class="use-keyboard-input" />`;
       }
 
       let newButtonMenu = $(
