@@ -7,11 +7,13 @@
   min-height: 95vh;
   max-height: 95vh;
   padding-top: 10px;
-  padding-right: 0px;
+  padding-right: 5px;
+  padding-left: 15px;
 }
 
-input[type="text"] {
-  max-width: 15%;
+input[type="number"] {
+  font-size: small !important;
+  height: fit-content;
 }
 
 #divButtons {
@@ -19,8 +21,9 @@ input[type="text"] {
   overflow-y: auto;
 }
 
-#menu button {
+#divButtons button {
   margin-bottom: 1vh !important;
+  font-size: small;
 }
 
 #connection pre {
@@ -105,4 +108,8 @@ pre {
 
 .keyboard__key--dark {
   background: rgba(0, 0, 0, 0.25);
+}
+
+.use-keyboard-input {
+  width: 95%;
 }

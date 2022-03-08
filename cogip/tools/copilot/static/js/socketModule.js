@@ -19,17 +19,24 @@ export function onMenu(menu, socket) {
   for (let value in menu.entries) {
     if (!menu.entries[value]["cmd"].startsWith("_")) {
       let inputParams = "";
-      if (menu.entries[value]["desc"].includes("<")) {
-        inputParams = `<input class="use-keyboard-input" />`;
-      }
 
       let newButtonMenu = $(
-        `<div><button type='button' class='btn btn-light btn-sm'>${menu.entries[value]["desc"]}</button>${inputParams}</div>`
+        `<button type='button' class='btn btn-outline-secondary btn-sm'>${menu.entries[value]["desc"]}</button>`
       ).click(function () {
         socket.emit("cmd", menu.entries[value]["cmd"]);
       });
 
-      divButton.append(newButtonMenu);
+      if (menu.entries[value]["desc"].includes("<")) {
+        let divRow = $('<div class="input-group input-group-sm"></div>');
+        inputParams = `<input class="form-control from-control-sm use-keyboard-input" type="number" />`;
+
+        divRow.append(newButtonMenu);
+        divRow.append(inputParams);
+        divButton.append(divRow);
+      } else {
+        divButton.append(newButtonMenu);
+        divButton.append("<br>");
+      }
     }
 
     $("#menu").append(divButton);
