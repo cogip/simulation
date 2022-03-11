@@ -21,7 +21,7 @@ export function onMenu(menu, socket) {
       let inputParams = "";
 
       let newButtonMenu = $(
-        `<button type='button' class='btn btn-outline-secondary btn-sm'>${menu.entries[value]["desc"]}</button>`
+        `<button type='button' class='btn btn-dark btn-sm'>${menu.entries[value]["desc"]}</button>`
       ).click(function () {
         socket.emit("cmd", menu.entries[value]["cmd"]);
       });

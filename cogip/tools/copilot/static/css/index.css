@@ -1,3 +1,11 @@
+.bg-dark {
+  background: hsl(0deg 0% 30% / 56%);
+}
+
+h1 {
+  color: #acaeb1;
+}
+
 .row {
   margin-right: 0px;
 }
@@ -9,11 +17,17 @@
   padding-top: 10px;
   padding-right: 5px;
   padding-left: 15px;
+  border-right: 1px solid #6c757d !important;
 }
 
-input[type="number"] {
+input[type="number"],
+input[type="number"]:focus,
+button.btn-dark {
   font-size: small !important;
   height: fit-content;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.5);
+  color: #acaeb1;
 }
 
 #divButtons {
