@@ -1,5 +1,8 @@
 // addEventListener to adapt board to window size
 
+let ratioX = null;
+let ratioY = null;
+
 export function resizeCanvas() {
   const footerHeight = $(".footer").outerHeight();
   const menuWidth = $("#menu").outerWidth();
@@ -27,15 +30,186 @@ export function resizeCanvas() {
 
   const context = htmlCanvas.getContext("2d");
 
-  background.onload = function () {
-    context.drawImage(
-      background,
-      -htmlCanvas.width / 2,
-      0,
-      imgWidth,
-      imgHeight
-    );
-  };
+  context.canvas.width = imgWidth;
+  context.canvas.height = imgHeight;
 
-  context.translate(htmlCanvas.width / 2, 0);
+  context.translate(htmlCanvas.width / 2, 0); // x invert
+
+  htmlCanvas.addEventListener("click", function (event) {
+    console.log(getMousePos(this, event));
+  });
+
+  ratioX = imgWidth / 3000;
+  ratioY = imgHeight / 2000;
+}
+
+function getMousePos(canvas, evt) {
+  var transX = canvas.width / 2;
+  var transY = 0;
+  var rect = canvas.getBoundingClientRect();
+  return {
+    x: evt.clientX - rect.left - transX,
+    y: evt.clientY - rect.top - transY,
+  };
+}
+
+export function displayMsg(msg) {
+  $("#msg").empty();
+
+  let mode = null;
+  switch (msg.mode) {
+    case 0:
+      mode = "STOP";
+      break;
+    case 1:
+      mode = "IDLE";
+      break;
+    case 2:
+      mode = "BLOCKED";
+      break;
+    case 3:
+      mode = "RUNNING";
+      break;
+    case 4:
+      mode = "RUNNING_SPEED";
+      break;
+    case 5:
+      mode = "PASSTHROUGH";
+      break;
+  }
+
+  if (
+    msg.pose_current !== undefined &&
+    !isNaN(msg.pose_current.x) &&
+    !isNaN(msg.pose_current.y)
+  ) {
+    const formatMsg = $(
+      `<pre>Cycle: ${msg.cycle} / X: ${msg.pose_current.x.toFixed(
+        2
+      )} / Y: ${msg.pose_current.y.toFixed(
+        2
+      )} / Angle: ${msg.pose_current.O.toFixed(2)} / Mode: ${mode}</pre>`
+    );
+    $("#msg").append(formatMsg);
+  }
+}
+
+let robot = new Image();
+robot.src = "static/img/robot.png";
+
+let order = new Image();
+order.src = "static/img/robot.png";
+
+export function drawBoardElement(msg) {
+  // get board dom element
+  let htmlCanvas = document.getElementById("board");
+  const context = htmlCanvas.getContext("2d");
+
+  // clear area
+  context.clearRect(
+    -htmlCanvas.width / 2,
+    0,
+    htmlCanvas.width,
+    htmlCanvas.height
+  );
+
+  // draw robot
+  // init robot position
+  if (
+    msg.pose_current !== undefined &&
+    !isNaN(msg.pose_current.x) &&
+    !isNaN(msg.pose_current.y)
+  ) {
+    const robotX = msg.pose_current.x;
+    const robotY = msg.pose_current.y;
+    const robotO = msg.pose_current.O;
+    drawRobot(robotX, robotY, robotO, context);
+  }
+
+  // draw order
+  if (msg.pose_order) {
+    // init order position
+    const orderX = msg.pose_order.x;
+    const orderY = msg.pose_order.y;
+    const orderO = msg.pose_order.O;
+
+    context.save();
+    context.filter = "opacity(60%)";
+    drawRobot(orderX, orderY, orderO, context);
+    context.restore();
+  }
+
+  // draw path
+  if (msg.path.length) {
+    for (let i = 0; i < msg.path.length - 1; i++) {
+      const startPoint = msg.path[i];
+      const endPoint = msg.path[i + 1];
+
+      drawPath(startPoint, endPoint, context);
+    }
+  }
+
+  // draw obstacles
+  if (msg.obstacles.length) {
+    msg.obstacles.forEach(function (obstacle) {
+      drawObstacles(obstacle, context);
+    });
+  }
+}
+
+function drawRobot(x, y, O, context) {
+  let robotWidth = robot.width * ratioX;
+  let robotHeight = robot.height * ratioY;
+
+  context.save();
+  context.translate(-x * ratioX, y * ratioY);
+  context.rotate(-(O * Math.PI) / 180);
+  context.drawImage(
+    robot,
+    -robotWidth / 2,
+    -robotHeight / 2,
+    robotWidth,
+    robotHeight
+  );
+  context.restore();
+}
+
+function drawPath(startPoint, endPoint, context) {
+  context.save();
+  context.strokeStyle = "blue";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(-startPoint.x * ratioX, startPoint.y * ratioY);
+  context.lineTo(-endPoint.x * ratioX, endPoint.y * ratioY);
+  context.closePath();
+  context.stroke();
+  context.restore();
+}
+
+function drawObstacles(obstacle, context) {
+  let obstacleX = -obstacle.x * ratioX;
+  let obstacleY = obstacle.y * ratioY;
+
+  context.save();
+  context.fillStyle = "red";
+  context.filter = "opacity(20%)";
+
+  if (obstacle.radius) {
+    let radius = obstacle.radius * ratioX;
+
+    context.beginPath();
+    context.arc(obstacleX, obstacleY, radius, 0, 2 * Math.PI);
+    context.fill();
+    context.closePath();
+  } else {
+    let angle = obstacle.angle;
+    let length_x = obstacle.length_x * ratioX;
+    let length_y = obstacle.length_y * ratioY;
+
+    context.translate(-obstacleX, obstacleY);
+    context.rotate(-(angle * Math.PI) / 180);
+    context.fillRect(-length_x / 2, -length_y / 2, length_x, length_y);
+  }
+
+  context.restore();
 }

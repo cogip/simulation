@@ -19,16 +19,12 @@
       </div>
     </div>
 
-    <div id="state"></div>
-
     <footer class="footer mt-auto bg-dark">
       <div class="container pt-2">
-        <span class="text-muted" style="float: left">
-          <pre>Cogip © 2022. All Rights Reserved</pre>
-        </span>
-        <span class="text-muted" style="float: right" id="connection">
+        <span class="text-muted" style="float: left" id="connection">
           <pre>Disconnected.</pre>
         </span>
+        <span class="text-muted" style="float: right" id="msg"> </span>
       </div>
     </footer>
 
@@ -54,7 +50,7 @@
 
       $(document).ready(function () {
         drawModule.resizeCanvas(); // draw background
-        virtualKeyboard.init(); // initialize
+        virtualKeyboard.init(); // initialize keyboard
 
         io.connect(window.location.origin, {
           path: "/sio/socket.io",
@@ -68,11 +64,11 @@
           .on("menu", function (menu) {
             socketModule.onMenu(menu, this);
             virtualKeyboard._actualize();
+          })
+          .on("state", function (msg) {
+            drawModule.displayMsg(msg); // uses message to display informationin bottom page
+            drawModule.drawBoardElement(msg); // move robot
           });
-        // socket.on('state', function(msg) {
-        //     console.log(JSON.stringify(msg));
-        //     $('#state').html('<pre>' + JSON.stringify(msg, null, 2) + '</pre>');
-        // });
       });
     </script>
   </body>
