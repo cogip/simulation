@@ -16,6 +16,16 @@
       <div class="col-lg-3 col-sm-3" id="menu"></div>
       <div class="col-lg-9 col-sm-9">
         <canvas id="board"></canvas>
+        <button
+          class="btn btn-outline-dark float-end"
+          id="buttonCameraModal"
+          type="button"
+          onclick="modalCamera()"
+          data-bs-toggle="modal"
+          data-bs-target="#cameraModal"
+        >
+          <img src="{{ url_for('static', path='img/camera.svg') }}" />
+        </button>
       </div>
     </div>
 
@@ -27,6 +37,27 @@
         <span class="text-muted" style="float: right" id="msg"> </span>
       </div>
     </footer>
+
+    <div
+      class="modal"
+      tabindex="-1"
+      id="cameraModal"
+      style="display: none"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-body" id="displayFlux">
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script
       type="text/javascript"
@@ -44,6 +75,7 @@
     <script type="module">
       import * as socketModule from "../static/js/socketModule.js";
       import * as drawModule from "../static/js/drawModule.js";
+      import * as cameraModule from "../static/js/cameraModule.js";
       import { virtualKeyboard } from "../static/js/keyboardModule.js";
 
       window.addEventListener("resize", drawModule.resizeCanvas, false);
