@@ -23,7 +23,6 @@ h1 {
 input[type="number"],
 input[type="number"]:focus,
 button.btn-dark {
-  font-size: small !important;
   height: fit-content;
   background: rgba(0, 0, 0, 0.25);
   border: 1px solid rgba(0, 0, 0, 0.5);
@@ -37,7 +36,6 @@ button.btn-dark {
 
 #divButtons button {
   margin-bottom: 1vh !important;
-  font-size: small;
 }
 
 #connection pre {
@@ -47,7 +45,7 @@ button.btn-dark {
 pre {
   margin-bottom: 0px;
   padding-bottom: 0px;
-  font-size: 1.5vh;
+  font-size: 15px;
 }
 
 #board {

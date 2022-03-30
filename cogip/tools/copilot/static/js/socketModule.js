@@ -21,14 +21,14 @@ export function onMenu(menu, socket) {
       let inputParams = "";
 
       let newButtonMenu = $(
-        `<button type='button' class='btn btn-dark btn-sm'>${menu.entries[value]["desc"]}</button>`
+        `<button type='button' class='btn btn-dark'>${menu.entries[value]["desc"]}</button>`
       ).click(function () {
         socket.emit("cmd", menu.entries[value]["cmd"]);
       });
 
       if (menu.entries[value]["desc"].includes("<")) {
-        let divRow = $('<div class="input-group input-group-sm"></div>');
-        inputParams = `<input class="form-control from-control-sm use-keyboard-input" type="number" />`;
+        let divRow = $('<div class="input-group"></div>');
+        inputParams = `<input class="form-control use-keyboard-input" type="number" />`;
 
         divRow.append(newButtonMenu);
         divRow.append(inputParams);
