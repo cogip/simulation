@@ -194,6 +194,7 @@ class CopilotServer:
         Send a reset message to all connected monitors.
         """
         self._menu = None
+        await self._serial_messages_to_send.put((OutputMessageType.COPILOT_CONNECTED, None))
         await self._sio_messages_to_send.put(("reset", None))
         if self._record_handler:
             await self._loop.run_in_executor(None, self._record_handler.doRollover)
