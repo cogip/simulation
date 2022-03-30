@@ -97,6 +97,9 @@
             socketModule.onMenu(menu, this);
             virtualKeyboard._actualize();
           })
+          .on("reset", function (menu) {
+            socketModule.onReset(this);
+          })
           .on("state", function (msg) {
             drawModule.displayMsg(msg); // uses message to display informationin bottom page
             drawModule.drawBoardElement(msg); // move robot
