@@ -12,6 +12,7 @@ from google.protobuf import symbol_database as _symbol_database
 _sym_db = _symbol_database.Default()
 
 
+import PB_Coords_pb2 as PB__Coords__pb2
 import PB_Rectangle_pb2 as PB__Rectangle__pb2
 import PB_Circle_pb2 as PB__Circle__pb2
 
@@ -21,9 +22,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='cogip.obstacles',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x11PB_Obstacle.proto\x12\x0f\x63ogip.obstacles\x1a\x12PB_Rectangle.proto\x1a\x0fPB_Circle.proto\"{\n\x0bPB_Obstacle\x12\x32\n\trectangle\x18\x01 \x01(\x0b\x32\x1d.cogip.obstacles.PB_RectangleH\x00\x12,\n\x06\x63ircle\x18\x02 \x01(\x0b\x32\x1a.cogip.obstacles.PB_CircleH\x00\x42\n\n\x08obstacleb\x06proto3')
+  serialized_pb=_b('\n\x11PB_Obstacle.proto\x12\x0f\x63ogip.obstacles\x1a\x0fPB_Coords.proto\x1a\x12PB_Rectangle.proto\x1a\x0fPB_Circle.proto\"\xae\x01\n\x0bPB_Obstacle\x12\x32\n\trectangle\x18\x01 \x01(\x0b\x32\x1d.cogip.obstacles.PB_RectangleH\x00\x12,\n\x06\x63ircle\x18\x02 \x01(\x0b\x32\x1a.cogip.obstacles.PB_CircleH\x00\x12\x31\n\x0c\x62ounding_box\x18\x03 \x03(\x0b\x32\x1b.cogip.cogip_defs.PB_CoordsB\n\n\x08obstacleb\x06proto3')
   ,
-  dependencies=[PB__Rectangle__pb2.DESCRIPTOR,PB__Circle__pb2.DESCRIPTOR,])
+  dependencies=[PB__Coords__pb2.DESCRIPTOR,PB__Rectangle__pb2.DESCRIPTOR,PB__Circle__pb2.DESCRIPTOR,])
 
 
 
@@ -49,6 +50,13 @@ _PB_OBSTACLE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='bounding_box', full_name='cogip.obstacles.PB_Obstacle.bounding_box', index=2,
+      number=3, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -64,12 +72,13 @@ _PB_OBSTACLE = _descriptor.Descriptor(
       name='obstacle', full_name='cogip.obstacles.PB_Obstacle.obstacle',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=75,
-  serialized_end=198,
+  serialized_start=93,
+  serialized_end=267,
 )
 
 _PB_OBSTACLE.fields_by_name['rectangle'].message_type = PB__Rectangle__pb2._PB_RECTANGLE
 _PB_OBSTACLE.fields_by_name['circle'].message_type = PB__Circle__pb2._PB_CIRCLE
+_PB_OBSTACLE.fields_by_name['bounding_box'].message_type = PB__Coords__pb2._PB_COORDS
 _PB_OBSTACLE.oneofs_by_name['obstacle'].fields.append(
   _PB_OBSTACLE.fields_by_name['rectangle'])
 _PB_OBSTACLE.fields_by_name['rectangle'].containing_oneof = _PB_OBSTACLE.oneofs_by_name['obstacle']
