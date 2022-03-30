@@ -42,3 +42,7 @@ export function onMenu(menu, socket) {
     $("#menu").append(divButton);
   }
 }
+
+export function onReset(socket) {
+  socket.emit("break");
+}
