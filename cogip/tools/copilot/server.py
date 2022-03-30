@@ -224,7 +224,12 @@ class CopilotServer:
 
         # Convert obstacles format to comply with Pydantic models used by the monitor
         obstacles = state_dict.get("obstacles", [])
-        new_obstacles = [y for obstacle in obstacles for _, y in obstacle.items()]
+        new_obstacles = []
+        for obstacle in obstacles:
+            bb = obstacle.pop("bounding_box")
+            new_obstacle = list(obstacle.values())[0]
+            new_obstacle["bb"] = bb
+            new_obstacles.append(new_obstacle)
         state_dict["obstacles"] = new_obstacles
         await self._sio_messages_to_send.put(("state", state_dict))
         await self._loop.run_in_executor(None, self.record_state, state_dict)
