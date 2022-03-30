@@ -167,7 +167,8 @@ class CopilotServer:
                     await request_handler(message)
                 except ProtobufDecodeError as exc:
                     logger.error(f"Protobuf decode error: {exc}")
-                    logger.error(f"Message: {encoded_message}")
+                except Exception as exc:
+                    logger.error(f"Unknown Protobuf decode error {type(exc)}: {exc}")
 
             self._serial_messages_received.task_done()
 
