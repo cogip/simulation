@@ -20,25 +20,24 @@ required_packages = [
     "pydantic==1.9.0",
     "pyserial==3.5",
     "python-dotenv==0.19.2",
-    "typer==0.4.0",
 
     # Packages specific to monitor
     "PySide6==6.2.3;" + marker_platform_x86_64,
     "sysv-ipc==1.1.0;" + marker_platform_x86_64,
-    "websocket-client==1.2.3;" + marker_platform_x86_64,
+    "typer==0.4.1;" + marker_platform_x86_64,
 
-    # Packages specific to Copilot
+    # Packages specific to Copilot and Robotcam
     "aiohttp==3.8.1",
     "aioserial==1.3.0",
-    "fastapi==0.73.0",
+    "fastapi==0.75.0",
     "Jinja2==3.0.3",
-    "opencv-contrib-python==4.5.3.56",  # Use latest version avalaible on pypi.org AND piwheels.org
+    "opencv-contrib-python==4.5.5.64",
     "polling2==0.5.0",
     "protobuf==3.19.4",
     "python-socketio==5.5.1",
     "requests==2.27.1",
-    "uvicorn[standard]==0.17.5",
-    "websocket-client==1.2.3",
+    "uvicorn[standard]==0.17.6",
+    "websocket-client==1.3.1",
 
     # Packages specific to documentation
     "MarkupSafe==2.0.1;" + marker_platform_x86_64,
