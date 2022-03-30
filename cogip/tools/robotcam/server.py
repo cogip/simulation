@@ -1,4 +1,5 @@
 import asyncio
+import functools
 import json
 import math
 from multiprocessing.shared_memory import SharedMemory
@@ -187,7 +188,9 @@ class CameraServer():
         image_stream = image_color
 
         image_gray = cv2.cvtColor(image_color, cv2.COLOR_BGR2GRAY)
-        image_stream = image_gray
+
+        if not self.settings.calibration:
+            image_stream = image_gray
 
         # Detect markers
         corners, ids, rejected = cv2.aruco.detectMarkers(
@@ -208,7 +211,9 @@ class CameraServer():
         # Record coords by marker id to sort them by id
         coords_by_id = {}
 
+        # if(ids and len(ids[0])):
         if(np.all(ids)):
+
             # Estimate position of markers
             rvecs, tvecs, marker_points = cv2.aruco.estimatePoseSingleMarkers(
                 corners,
@@ -248,25 +253,61 @@ class CameraServer():
         if self.sio.connected:
             self.sio.emit("samples", coords_by_id)
 
-        # Print sample coords on image
-        for i, (id, coords) in enumerate(sorted(coords_by_id.items())):
-            tvec_str = (
-                f"[{id:2d}] "
-                f"X: {coords[0]: 4.0f} "
-                f"Y: {coords[1]: 4.0f} "
-                f"Z: {coords[2]: 4.0f} "
-                f"0: {math.degrees(coords[3]):3.1f}"
-            )
-            cv2.putText(
+        if not self.settings.calibration:
+            # Print sample coords on image
+            for i, (id, coords) in enumerate(sorted(coords_by_id.items())):
+                tvec_str = (
+                    f"[{id:2d}] "
+                    f"X: {coords[0]: 4.0f} "
+                    f"Y: {coords[1]: 4.0f} "
+                    f"Z: {coords[2]: 4.0f} "
+                    f"0: {math.degrees(coords[3]):3.1f}"
+                )
+                cv2.putText(
+                    img=image_stream,
+                    text=tvec_str,
+                    org=(20, 465 - 20 * i),
+                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                    fontScale=0.5,
+                    color=(0, 0, 255),
+                    thickness=2,
+                    bottomLeftOrigin=False
+                )
+        elif sorted(list(coords_by_id.keys())) == list(range(6)):
+            put_text = functools.partial(
+                cv2.putText,
                 img=image_stream,
-                text=tvec_str,
-                org=(20, 465 - 20 * i),
                 fontFace=cv2.FONT_HERSHEY_SIMPLEX,
                 fontScale=0.5,
                 color=(0, 0, 255),
-                thickness=2,
+                thickness=1,
                 bottomLeftOrigin=False
             )
+
+            x0, y0, z0, rot0 = coords_by_id[0]
+            x1, y1, z1, rot1 = coords_by_id[1]
+            x2, y2, z2, rot2 = coords_by_id[2]
+            x3, y3, z3, rot3 = coords_by_id[3]
+            x4, y4, z4, rot4 = coords_by_id[4]
+            x5, y5, z5, rot5 = coords_by_id[5]
+
+            put_text(text="rot = ", org=(20, 20))
+            put_text(text=f"{math.degrees(rot0):+3.1f}", org=(70, 20))
+            put_text(text=f"{math.degrees(rot1):+3.1f}", org=(120, 20))
+            put_text(text=f"{math.degrees(rot2):+3.1f}", org=(170, 20))
+            put_text(text=f"{math.degrees(rot3):+3.1f}", org=(220, 20))
+            put_text(text=f"{math.degrees(rot4):+3.1f}", org=(270, 20))
+            put_text(text=f"{math.degrees(rot5):+3.1f}", org=(320, 20))
+
+            put_text(text=f"dist(x0, x3) = {abs(x0 - x3):+3.0f}", org=(20, 50))
+            put_text(text=f"dist(x1, x4) = {abs(x1 - x4):+3.0f}", org=(20, 70))
+            put_text(text=f"dist(x2, x5) = {abs(x2 - x5):+3.0f}", org=(20, 90))
+
+            put_text(text=f"dist(y0, y1) = {abs(y0 - y1):+3.0f}", org=(270, 60))
+            put_text(text=f"dist(y1, y2) = {abs(y1 - y2):+3.0f}", org=(270, 80))
+
+            put_text(text=f"dist(y3, y4) = {abs(y3 - y4):+3.0f}", org=(270, 110))
+            put_text(text=f"dist(y4, y5) = {abs(y4 - y5):+3.0f}", org=(270, 130))
 
         # Encode the frame in BMP format (larger but faster than JPEG)
         ret, encoded_image = cv2.imencode(".bmp", image_stream)
