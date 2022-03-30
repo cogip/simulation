@@ -126,11 +126,11 @@ class RobotEntity(AssetEntity):
                     obstacle = self.rect_obstacles_pool.pop(0)
                     obstacle.setEnabled(True)
                 else:
-                    obstacle = DynRectObstacleEntity()
-                    obstacle.setParent(self.parentEntity())
+                    obstacle = DynRectObstacleEntity(self.parentEntity())
 
                 obstacle.set_position(x=dyn_obstacle.x, y=dyn_obstacle.y, rotation=dyn_obstacle.angle)
                 obstacle.set_size(length=dyn_obstacle.length_y, width=dyn_obstacle.length_x)
+                obstacle.set_bounding_box(dyn_obstacle.bb)
 
                 current_rect_obstacles.append(obstacle)
             else:
@@ -139,10 +139,10 @@ class RobotEntity(AssetEntity):
                     obstacle = self.round_obstacles_pool.pop(0)
                     obstacle.setEnabled(True)
                 else:
-                    obstacle = DynCircleObstacleEntity()
-                    obstacle.setParent(self.parentEntity())
+                    obstacle = DynCircleObstacleEntity(self.parentEntity())
 
                 obstacle.set_position(x=dyn_obstacle.x, y=dyn_obstacle.y, radius=dyn_obstacle.radius)
+                obstacle.set_bounding_box(dyn_obstacle.bb)
 
                 current_round_obstacles.append(obstacle)
 

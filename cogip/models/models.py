@@ -129,12 +129,14 @@ class DynObstacleRect(BaseModel):
         angle: Orientation of the obstacle
         length_x: length along X axis
         length_y: length along Y axis
+        bb: bounding box
     """
     x: float
     y: float
     angle: float
     length_x: float
     length_y: float
+    bb: List[Vertex] = []
 
     def __hash__(self):
         """
@@ -151,10 +153,12 @@ class DynRoundObstacle(BaseModel):
         x: Center X position
         y: Center Y position
         radius: Radius of the obstacle
+        bb: bounding box
     """
     x: float
     y: float
     radius: float
+    bb: List[Vertex] = []
 
     def __hash__(self):
         """
@@ -218,6 +222,7 @@ class Obstacle(BaseModel):
         length: Length
         width: Width
         height: Height
+        bb: bounding box
     """
     x: int = 0
     y: int = 1000
