@@ -1,4 +1,6 @@
 import asyncio
+import base64
+import binascii
 import json
 import logging
 from pathlib import Path
@@ -101,21 +103,33 @@ class CopilotServer:
         """
         Async worker reading messages from the robot on serial ports.
 
-        Messages encoding:
-
-            - byte 1: message type
-            - bytes 2-5: message length
-            - bytes 6-*: Protobuf message
-
-        Message length can be 0. In this case, only the message type matters.
+        Messages is base64-encoded and separated by '\n'.
+        After decoding, first byte is the message type, following bytes are
+        the Protobuf encoded message (if any).
         """
         while(True):
-            message_type = int.from_bytes(await self._serial_port.readline_async(1), byteorder='little')
-            message_length = int.from_bytes(await self._serial_port.readline_async(4), byteorder='little')
-            encoded_message = b""
-            if message_length:
-                encoded_message = await self._serial_port.read_async(message_length)
-            await self._serial_messages_received.put((message_type, encoded_message))
+            # Read next base64 message
+            base64_message = await self._serial_port.readline_async()
+
+            # Base64 decoding
+            try:
+                pb_message = base64.decodebytes(base64_message)
+            except binascii.Error:
+                print("Failed to decode base64 message.")
+                continue
+
+            # Get message type on first byte
+            message_type = int(pb_message[0])
+
+            # Check valid message type
+            try:
+                InputMessageType(message_type)
+            except ValueError:
+                print("Unknown message type:", message_type)
+                continue
+
+            # Send Protobuf message for decoding
+            await self._serial_messages_received.put((message_type, pb_message[1:]))
 
     async def serial_sender(self):
         """
