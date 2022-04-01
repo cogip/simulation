@@ -1,3 +1,7 @@
+body {
+  overflow: hidden;
+}
+
 .bg-dark {
   background: hsl(0deg 0% 30% / 56%);
 }
