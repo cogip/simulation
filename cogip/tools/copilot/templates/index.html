@@ -51,9 +51,45 @@
             <button
               type="button"
               class="btn-close"
-              data-bs-dismiss="modal"
+              onclick="$('#cameraModal').modal('hide');"
               aria-label="Close"
             ></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal"
+      tabindex="-1"
+      id="wizardModal"
+      style="display: none"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark">
+          <div class="modal-header">
+            <h5 class="modal-title" id="wizardModalTitle"></h5>
+          </div>
+          <div class="modal-body">
+            <div>
+              <span class="input-group-text" id="wizardName"></span>
+              <input
+                id="wizardInput"
+                type=""
+                class="use-keyboard-input"
+                placeholder=""
+                aria-label="wizardName"
+                aria-describedby="wizardName"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="btn-send-wizard" type="button" class="btn btn-primary">
+              Send
+            </button>
           </div>
         </div>
       </div>
@@ -76,6 +112,7 @@
       import * as socketModule from "../static/js/socketModule.js";
       import * as drawModule from "../static/js/drawModule.js";
       import * as cameraModule from "../static/js/cameraModule.js";
+      import * as wizardModule from "../static/js/wizardModule.js";
       import { virtualKeyboard } from "../static/js/keyboardModule.js";
 
       window.addEventListener("resize", drawModule.resizeCanvas, false);
@@ -100,6 +137,14 @@
           .on("state", function (msg) {
             drawModule.displayMsg(msg); // uses message to display informationin bottom page
             drawModule.drawBoardElement(msg); // move robot
+          })
+          .on("wizard", function (msg) {
+            wizardModule.openWizardModal(msg, this);
+            virtualKeyboard._actualize();
+          })
+          .on("close_wizard", function () {
+            $("#wizardModal").modal("hide");
+            virtualKeyboard.close();
           });
       });
     </script>
