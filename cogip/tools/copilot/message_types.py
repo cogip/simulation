@@ -32,27 +32,22 @@ class OutputMessageType(IntEnum):
     """
     A command that will be sent and executed on to the robot."""
 
-    BREAK = 1
-    """
-    If the robot is booting, it will abort automatic start of the planner.
-    """
-
-    COPILOT_CONNECTED = 2
+    COPILOT_CONNECTED = 1
     """
     Inform the robot that the Copilot is connected.
     """
 
-    COPILOT_DISCONNECTED = 3
+    COPILOT_DISCONNECTED = 2
     """
     Inform the robot that the Copilot is disconnected.
     """
 
-    MONITOR_CONNECTED = 4
+    MONITOR_CONNECTED = 3
     """
     Inform the robot that a monitor is connected.
     """
 
-    MONITOR_DISCONNECTED = 5
+    MONITOR_DISCONNECTED = 4
     """
     Inform the robot that a monitor is disconnected.
     """

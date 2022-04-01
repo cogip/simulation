@@ -345,18 +345,6 @@ class CopilotServer:
             self._nb_connections -= 1
             await self._serial_messages_to_send.put((OutputMessageType.MONITOR_DISCONNECTED, None))
 
-        @self.sio.on("break")
-        async def on_break(sid):
-            """
-            Callback on break message.
-
-            Send a
-            [BREAK][cogip.tools.copilot.message_types.OutputMessageType.BREAK]
-            message on serial port: if the robot is booting, it will abort
-            automatic start of the planner.
-            """
-            await self._serial_messages_to_send.put((OutputMessageType.BREAK, None))
-
         @self.sio.on("cmd")
         async def on_cmd(sid, data):
             """

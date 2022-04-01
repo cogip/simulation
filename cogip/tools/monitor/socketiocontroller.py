@@ -143,8 +143,6 @@ class SocketioController(QtCore.QObject):
         def on_reset():
             """
             Callback on reset message.
-            The robot send this message during startup, so send a break message
-            to abort automatic start of the planner.
+            Reset shmem on firmware restart.
             """
-            self.sio.emit("break")
             Sensor.shm_key = None
