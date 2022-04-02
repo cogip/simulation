@@ -41,13 +41,3 @@ class OutputMessageType(IntEnum):
     """
     Inform the robot that the Copilot is disconnected.
     """
-
-    MONITOR_CONNECTED = 3
-    """
-    Inform the robot that a monitor is connected.
-    """
-
-    MONITOR_DISCONNECTED = 4
-    """
-    Inform the robot that a monitor is disconnected.
-    """
