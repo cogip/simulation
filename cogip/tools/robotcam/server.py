@@ -211,9 +211,7 @@ class CameraServer():
         # Record coords by marker id to sort them by id
         coords_by_id = {}
 
-        # if(ids and len(ids[0])):
-        if(np.all(ids)):
-
+        if(np.any(ids)):
             # Estimate position of markers
             rvecs, tvecs, marker_points = cv2.aruco.estimatePoseSingleMarkers(
                 corners,
