@@ -202,10 +202,6 @@ class CopilotServer:
         """
         Handle reset message. This means that the robot has just booted.
 
-        Send a
-        [MONITOR_CONNECTED][cogip.tools.copilot.message_types.OutputMessageType.MONITOR_CONNECTED]
-        message to the robot on serial port for each connected monitor.
-
         Send a reset message to all connected monitors.
         """
         self._menu = None
@@ -213,9 +209,6 @@ class CopilotServer:
         await self._sio_messages_to_send.put(("reset", None))
         if self._record_handler:
             await self._loop.run_in_executor(None, self._record_handler.doRollover)
-
-        for _ in range(self._nb_connections):
-            await self._serial_messages_to_send.put((OutputMessageType.MONITOR_CONNECTED, None))
 
     async def handle_message_menu(self, menu: PB_Menu) -> None:
         """
@@ -324,26 +317,17 @@ class CopilotServer:
             """
             Callback on new monitor connection.
 
-            Send a
-            [MONITOR_CONNECTED][cogip.tools.copilot.message_types.OutputMessageType.MONITOR_CONNECTED]
-            message on serial port.
             Send the current menu to monitors.
             """
             self._nb_connections += 1
-            await self._serial_messages_to_send.put((OutputMessageType.MONITOR_CONNECTED, None))
             await self.emit_menu()
 
         @self.sio.event
         async def disconnect(sid):
             """
             Callback on monitor disconnection.
-
-            Send a
-            [MONITOR_DISCONNECTED][cogip.tools.copilot.message_types.OutputMessageType.MONITOR_DISCONNECTED]
-            message on serial port.
             """
             self._nb_connections -= 1
-            await self._serial_messages_to_send.put((OutputMessageType.MONITOR_DISCONNECTED, None))
 
         @self.sio.on("cmd")
         async def on_cmd(sid, data):
