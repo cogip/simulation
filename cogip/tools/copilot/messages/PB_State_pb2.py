@@ -24,7 +24,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0ePB_State.proto\x1a\rPB_Mode.proto\x1a\x0fPB_Coords.proto\x1a\rPB_Pose.proto\x1a\x0ePB_Polar.proto\x1a\x11PB_Obstacle.proto\"\xd1\x02\n\x08PB_State\x12\x16\n\x04mode\x18\x01 \x01(\x0e\x32\x08.PB_Mode\x12/\n\x0cpose_current\x18\x02 \x01(\x0b\x32\x19.cogip.cogip_defs.PB_Pose\x12-\n\npose_order\x18\x03 \x01(\x0b\x32\x19.cogip.cogip_defs.PB_Pose\x12\r\n\x05\x63ycle\x18\x04 \x01(\r\x12\x31\n\rspeed_current\x18\x05 \x01(\x0b\x32\x1a.cogip.cogip_defs.PB_Polar\x12/\n\x0bspeed_order\x18\x06 \x01(\x0b\x32\x1a.cogip.cogip_defs.PB_Polar\x12)\n\x04path\x18\x07 \x03(\x0b\x32\x1b.cogip.cogip_defs.PB_Coords\x12/\n\tobstacles\x18\x08 \x03(\x0b\x32\x1c.cogip.obstacles.PB_Obstacleb\x06proto3')
+  serialized_pb=_b('\n\x0ePB_State.proto\x1a\rPB_Mode.proto\x1a\x0fPB_Coords.proto\x1a\rPB_Pose.proto\x1a\x0ePB_Polar.proto\x1a\x11PB_Obstacle.proto\"\xec\x01\n\x08PB_State\x12\x16\n\x04mode\x18\x01 \x01(\x0e\x32\x08.PB_Mode\x12\x1e\n\x0cpose_current\x18\x02 \x01(\x0b\x32\x08.PB_Pose\x12\x1c\n\npose_order\x18\x03 \x01(\x0b\x32\x08.PB_Pose\x12\r\n\x05\x63ycle\x18\x04 \x01(\r\x12 \n\rspeed_current\x18\x05 \x01(\x0b\x32\t.PB_Polar\x12\x1e\n\x0bspeed_order\x18\x06 \x01(\x0b\x32\t.PB_Polar\x12\x18\n\x04path\x18\x07 \x03(\x0b\x32\n.PB_Coords\x12\x1f\n\tobstacles\x18\x08 \x03(\x0b\x32\x0c.PB_Obstacleb\x06proto3')
   ,
   dependencies=[PB__Mode__pb2.DESCRIPTOR,PB__Coords__pb2.DESCRIPTOR,PB__Pose__pb2.DESCRIPTOR,PB__Polar__pb2.DESCRIPTOR,PB__Obstacle__pb2.DESCRIPTOR,])
 
@@ -107,7 +107,7 @@ _PB_STATE = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=101,
-  serialized_end=438,
+  serialized_end=337,
 )
 
 _PB_STATE.fields_by_name['mode'].enum_type = PB__Mode__pb2._PB_MODE

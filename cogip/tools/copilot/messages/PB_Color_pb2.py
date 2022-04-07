@@ -17,15 +17,15 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='PB_Color.proto',
-  package='cogip.cogip_defs',
+  package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0ePB_Color.proto\x12\x10\x63ogip.cogip_defs*2\n\x08PB_Color\x12\x08\n\x04NONE\x10\x00\x12\x07\n\x03RED\x10\x01\x12\t\n\x05GREEN\x10\x02\x12\x08\n\x04\x42LUE\x10\x03\x62\x06proto3')
+  serialized_pb=_b('\n\x0ePB_Color.proto*2\n\x08PB_Color\x12\x08\n\x04NONE\x10\x00\x12\x07\n\x03RED\x10\x01\x12\t\n\x05GREEN\x10\x02\x12\x08\n\x04\x42LUE\x10\x03\x62\x06proto3')
 )
 
 _PB_COLOR = _descriptor.EnumDescriptor(
   name='PB_Color',
-  full_name='cogip.cogip_defs.PB_Color',
+  full_name='PB_Color',
   filename=None,
   file=DESCRIPTOR,
   values=[
@@ -48,8 +48,8 @@ _PB_COLOR = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=36,
-  serialized_end=86,
+  serialized_start=18,
+  serialized_end=68,
 )
 _sym_db.RegisterEnumDescriptor(_PB_COLOR)
 

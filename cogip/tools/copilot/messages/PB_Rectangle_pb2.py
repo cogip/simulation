@@ -16,10 +16,10 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='PB_Rectangle.proto',
-  package='cogip.obstacles',
+  package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x12PB_Rectangle.proto\x12\x0f\x63ogip.obstacles\"W\n\x0cPB_Rectangle\x12\t\n\x01x\x18\x01 \x01(\x11\x12\t\n\x01y\x18\x02 \x01(\x11\x12\r\n\x05\x61ngle\x18\x03 \x01(\x11\x12\x10\n\x08length_x\x18\x04 \x01(\x11\x12\x10\n\x08length_y\x18\x05 \x01(\x11\x62\x06proto3')
+  serialized_pb=_b('\n\x12PB_Rectangle.proto\"W\n\x0cPB_Rectangle\x12\t\n\x01x\x18\x01 \x01(\x11\x12\t\n\x01y\x18\x02 \x01(\x11\x12\r\n\x05\x61ngle\x18\x03 \x01(\x11\x12\x10\n\x08length_x\x18\x04 \x01(\x11\x12\x10\n\x08length_y\x18\x05 \x01(\x11\x62\x06proto3')
 )
 
 
@@ -27,41 +27,41 @@ DESCRIPTOR = _descriptor.FileDescriptor(
 
 _PB_RECTANGLE = _descriptor.Descriptor(
   name='PB_Rectangle',
-  full_name='cogip.obstacles.PB_Rectangle',
+  full_name='PB_Rectangle',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='x', full_name='cogip.obstacles.PB_Rectangle.x', index=0,
+      name='x', full_name='PB_Rectangle.x', index=0,
       number=1, type=17, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='y', full_name='cogip.obstacles.PB_Rectangle.y', index=1,
+      name='y', full_name='PB_Rectangle.y', index=1,
       number=2, type=17, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='angle', full_name='cogip.obstacles.PB_Rectangle.angle', index=2,
+      name='angle', full_name='PB_Rectangle.angle', index=2,
       number=3, type=17, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='length_x', full_name='cogip.obstacles.PB_Rectangle.length_x', index=3,
+      name='length_x', full_name='PB_Rectangle.length_x', index=3,
       number=4, type=17, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='length_y', full_name='cogip.obstacles.PB_Rectangle.length_y', index=4,
+      name='length_y', full_name='PB_Rectangle.length_y', index=4,
       number=5, type=17, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -79,8 +79,8 @@ _PB_RECTANGLE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=39,
-  serialized_end=126,
+  serialized_start=22,
+  serialized_end=109,
 )
 
 DESCRIPTOR.message_types_by_name['PB_Rectangle'] = _PB_RECTANGLE
@@ -89,7 +89,7 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 PB_Rectangle = _reflection.GeneratedProtocolMessageType('PB_Rectangle', (_message.Message,), dict(
   DESCRIPTOR = _PB_RECTANGLE,
   __module__ = 'PB_Rectangle_pb2'
-  # @@protoc_insertion_point(class_scope:cogip.obstacles.PB_Rectangle)
+  # @@protoc_insertion_point(class_scope:PB_Rectangle)
   ))
 _sym_db.RegisterMessage(PB_Rectangle)
 

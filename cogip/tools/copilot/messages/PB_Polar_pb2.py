@@ -16,10 +16,10 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='PB_Polar.proto',
-  package='cogip.cogip_defs',
+  package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0ePB_Polar.proto\x12\x10\x63ogip.cogip_defs\"+\n\x08PB_Polar\x12\x10\n\x08\x64istance\x18\x01 \x01(\x11\x12\r\n\x05\x61ngle\x18\x02 \x01(\x11\x62\x06proto3')
+  serialized_pb=_b('\n\x0ePB_Polar.proto\"+\n\x08PB_Polar\x12\x10\n\x08\x64istance\x18\x01 \x01(\x11\x12\r\n\x05\x61ngle\x18\x02 \x01(\x11\x62\x06proto3')
 )
 
 
@@ -27,20 +27,20 @@ DESCRIPTOR = _descriptor.FileDescriptor(
 
 _PB_POLAR = _descriptor.Descriptor(
   name='PB_Polar',
-  full_name='cogip.cogip_defs.PB_Polar',
+  full_name='PB_Polar',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='distance', full_name='cogip.cogip_defs.PB_Polar.distance', index=0,
+      name='distance', full_name='PB_Polar.distance', index=0,
       number=1, type=17, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='angle', full_name='cogip.cogip_defs.PB_Polar.angle', index=1,
+      name='angle', full_name='PB_Polar.angle', index=1,
       number=2, type=17, cpp_type=1, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -58,8 +58,8 @@ _PB_POLAR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=36,
-  serialized_end=79,
+  serialized_start=18,
+  serialized_end=61,
 )
 
 DESCRIPTOR.message_types_by_name['PB_Polar'] = _PB_POLAR
@@ -68,7 +68,7 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 PB_Polar = _reflection.GeneratedProtocolMessageType('PB_Polar', (_message.Message,), dict(
   DESCRIPTOR = _PB_POLAR,
   __module__ = 'PB_Polar_pb2'
-  # @@protoc_insertion_point(class_scope:cogip.cogip_defs.PB_Polar)
+  # @@protoc_insertion_point(class_scope:PB_Polar)
   ))
 _sym_db.RegisterMessage(PB_Polar)
 

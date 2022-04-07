@@ -17,10 +17,10 @@ import PB_Command_pb2 as PB__Command__pb2
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='PB_Menu.proto',
-  package='cogip.shell',
+  package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\rPB_Menu.proto\x12\x0b\x63ogip.shell\x1a\x10PB_Command.proto\"A\n\x07PB_Menu\x12\x0c\n\x04name\x18\x01 \x01(\t\x12(\n\x07\x65ntries\x18\x03 \x03(\x0b\x32\x17.cogip.shell.PB_Commandb\x06proto3')
+  serialized_pb=_b('\n\rPB_Menu.proto\x1a\x10PB_Command.proto\"5\n\x07PB_Menu\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x1c\n\x07\x65ntries\x18\x03 \x03(\x0b\x32\x0b.PB_Commandb\x06proto3')
   ,
   dependencies=[PB__Command__pb2.DESCRIPTOR,])
 
@@ -29,20 +29,20 @@ DESCRIPTOR = _descriptor.FileDescriptor(
 
 _PB_MENU = _descriptor.Descriptor(
   name='PB_Menu',
-  full_name='cogip.shell.PB_Menu',
+  full_name='PB_Menu',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='name', full_name='cogip.shell.PB_Menu.name', index=0,
+      name='name', full_name='PB_Menu.name', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='entries', full_name='cogip.shell.PB_Menu.entries', index=1,
+      name='entries', full_name='PB_Menu.entries', index=1,
       number=3, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -60,8 +60,8 @@ _PB_MENU = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=48,
-  serialized_end=113,
+  serialized_start=35,
+  serialized_end=88,
 )
 
 _PB_MENU.fields_by_name['entries'].message_type = PB__Command__pb2._PB_COMMAND
@@ -71,7 +71,7 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 PB_Menu = _reflection.GeneratedProtocolMessageType('PB_Menu', (_message.Message,), dict(
   DESCRIPTOR = _PB_MENU,
   __module__ = 'PB_Menu_pb2'
-  # @@protoc_insertion_point(class_scope:cogip.shell.PB_Menu)
+  # @@protoc_insertion_point(class_scope:PB_Menu)
   ))
 _sym_db.RegisterMessage(PB_Menu)
 

@@ -16,10 +16,10 @@ _sym_db = _symbol_database.Default()
 
 DESCRIPTOR = _descriptor.FileDescriptor(
   name='PB_Command.proto',
-  package='cogip.shell',
+  package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x10PB_Command.proto\x12\x0b\x63ogip.shell\"\'\n\nPB_Command\x12\x0b\n\x03\x63md\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x65sc\x18\x02 \x01(\tb\x06proto3')
+  serialized_pb=_b('\n\x10PB_Command.proto\"\'\n\nPB_Command\x12\x0b\n\x03\x63md\x18\x01 \x01(\t\x12\x0c\n\x04\x64\x65sc\x18\x02 \x01(\tb\x06proto3')
 )
 
 
@@ -27,20 +27,20 @@ DESCRIPTOR = _descriptor.FileDescriptor(
 
 _PB_COMMAND = _descriptor.Descriptor(
   name='PB_Command',
-  full_name='cogip.shell.PB_Command',
+  full_name='PB_Command',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='cmd', full_name='cogip.shell.PB_Command.cmd', index=0,
+      name='cmd', full_name='PB_Command.cmd', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='desc', full_name='cogip.shell.PB_Command.desc', index=1,
+      name='desc', full_name='PB_Command.desc', index=1,
       number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=_b("").decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
@@ -58,8 +58,8 @@ _PB_COMMAND = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=33,
-  serialized_end=72,
+  serialized_start=20,
+  serialized_end=59,
 )
 
 DESCRIPTOR.message_types_by_name['PB_Command'] = _PB_COMMAND
@@ -68,7 +68,7 @@ _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 PB_Command = _reflection.GeneratedProtocolMessageType('PB_Command', (_message.Message,), dict(
   DESCRIPTOR = _PB_COMMAND,
   __module__ = 'PB_Command_pb2'
-  # @@protoc_insertion_point(class_scope:cogip.shell.PB_Command)
+  # @@protoc_insertion_point(class_scope:PB_Command)
   ))
 _sym_db.RegisterMessage(PB_Command)
 
