@@ -12,3 +12,4 @@ from .PB_Pose_pb2 import PB_Pose  # noqa
 from .PB_Menu_pb2 import PB_Menu  # noqa
 from .PB_Command_pb2 import PB_Command  # noqa
 from .PB_State_pb2 import PB_State  # noqa
+from .PB_GameOutputMessage_pb2 import PB_GameOutputMessage  # noqa

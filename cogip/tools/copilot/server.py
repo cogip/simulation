@@ -18,8 +18,8 @@ import socketio
 from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
-from .messages import PB_Command, PB_Menu, PB_State
-from .message_types import InputMessageType, OutputMessageType
+from .messages import PB_Command, PB_Menu, PB_State, PB_GameOutputMessage
+from .message_types import OutputMessageType
 from .recorder import GameRecordFileHandler
 from .settings import Settings
 
@@ -118,18 +118,8 @@ class CopilotServer:
                 print("Failed to decode base64 message.")
                 continue
 
-            # Get message type on first byte
-            message_type = int(pb_message[0])
-
-            # Check valid message type
-            try:
-                InputMessageType(message_type)
-            except ValueError:
-                print("Unknown message type:", message_type)
-                continue
-
             # Send Protobuf message for decoding
-            await self._serial_messages_received.put((message_type, pb_message[1:]))
+            await self._serial_messages_received.put(pb_message)
 
     async def serial_sender(self):
         """
@@ -137,7 +127,7 @@ class CopilotServer:
 
         See `serial_receiver` for message encoding.
         """
-        message_type: InputMessageType
+        message_type: OutputMessageType
         pb_message: ProtobufMessage
 
         while True:
@@ -159,30 +149,31 @@ class CopilotServer:
         """
         Async worker decoding messages received from the robot.
         """
-        message_type: InputMessageType
         encoded_message: bytes
         request_handlers = {
-            InputMessageType.MENU: (self.handle_message_menu, PB_Menu),
-            InputMessageType.RESET: (self.handle_reset, None),
-            InputMessageType.STATE: (self.handle_message_state, PB_State)
+            "reset": self.handle_reset,
+            "menu": self.handle_message_menu,
+            "state": self.handle_message_state
         }
 
         while True:
-            message_type, encoded_message = await self._serial_messages_received.get()
-            request_handler, pb_message = request_handlers.get(message_type, (None, None))
+            encoded_message = await self._serial_messages_received.get()
+
+            try:
+                message = PB_GameOutputMessage()
+                await self._loop.run_in_executor(None, message.ParseFromString, encoded_message)
+            except ProtobufDecodeError as exc:
+                logger.error(f"Protobuf decode error: {exc}")
+            except Exception as exc:
+                logger.error(f"Unknown Protobuf decode error {type(exc)}: {exc}")
+
+            message_type = message.WhichOneof("type")
+
+            request_handler = request_handlers.get(message_type, None)
             if not request_handler:
                 logger.error(f"No handler found for message type '{message_type}'")
-            elif not pb_message:
-                await request_handler()
             else:
-                try:
-                    message = pb_message()
-                    await self._loop.run_in_executor(None, message.ParseFromString, encoded_message)
-                    await request_handler(message)
-                except ProtobufDecodeError as exc:
-                    logger.error(f"Protobuf decode error: {exc}")
-                except Exception as exc:
-                    logger.error(f"Unknown Protobuf decode error {type(exc)}: {exc}")
+                await request_handler(message)
 
             self._serial_messages_received.task_done()
 
@@ -198,7 +189,7 @@ class CopilotServer:
             await self.sio.emit(message_type, message_dict)
             self._sio_messages_to_send.task_done()
 
-    async def handle_reset(self) -> None:
+    async def handle_reset(self, reset: bool) -> None:
         """
         Handle reset message. This means that the robot has just booted.
 
@@ -214,7 +205,7 @@ class CopilotServer:
         """
         Send shell menu received from the robot to connected monitors.
         """
-        menu_dict = ProtobufMessageToDict(menu)
+        menu_dict = ProtobufMessageToDict(menu)["menu"]
         self._menu = models.ShellMenu.parse_obj(menu_dict)
         await self.emit_menu()
 
@@ -227,7 +218,7 @@ class CopilotServer:
             including_default_value_fields=True,
             preserving_proto_field_name=True,
             use_integers_for_enums=True
-        )
+        )["state"]
 
         # Convert obstacles format to comply with Pydantic models used by the monitor
         obstacles = state_dict.get("obstacles", [])
