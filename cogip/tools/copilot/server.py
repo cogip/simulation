@@ -17,7 +17,7 @@ import socketio
 from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
-from .messages import PB_Command, PB_Menu, PB_State, PB_GameInputMessage, PB_GameOutputMessage
+from .messages import PB_Command, PB_Menu, PB_State, PB_Wizard, PB_GameInputMessage, PB_GameOutputMessage
 from .recorder import GameRecordFileHandler
 from .settings import Settings
 
@@ -141,7 +141,8 @@ class CopilotServer:
         request_handlers = {
             "reset": self.handle_reset,
             "menu": self.handle_message_menu,
-            "state": self.handle_message_state
+            "state": self.handle_message_state,
+            "wizard": self.handle_message_wizard
         }
 
         while True:
@@ -224,6 +225,19 @@ class CopilotServer:
         state_dict["obstacles"] = new_obstacles
         await self._sio_messages_to_send.put(("state", state_dict))
         await self._loop.run_in_executor(None, self.record_state, state_dict)
+
+    async def handle_message_wizard(self, wizard: PB_Wizard) -> None:
+        wizard_dict = ProtobufMessageToDict(
+            wizard,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+            use_integers_for_enums=True
+        )["wizard"]
+        wizard_type = wizard.wizard.WhichOneof("type")
+        wizard_dict["type"] = wizard_type
+        wizard_dict.update(**wizard_dict[wizard_type])
+        del wizard_dict[wizard_type]
+        await self._sio_messages_to_send.put(("wizard", wizard_dict))
 
     async def emit_menu(self) -> None:
         """
@@ -334,6 +348,35 @@ class CopilotServer:
             response.cmd, _, response.desc = data.partition(" ")
             message = PB_GameInputMessage()
             message.command.CopyFrom(response)
+            await self._serial_messages_to_send.put(message)
+
+        @self.sio.on("wizard")
+        async def on_wizard(sid, data):
+            """
+            Callback on Wizard message.
+
+            Receive a command from a monitor.
+
+            Build the Protobuf wizard message and send to firmware.
+            """
+            await self._sio_messages_to_send.put(("close_wizard", None))
+
+            response = PB_Wizard()
+            response.name = data["name"]
+            data_type = data["type"]
+            if not isinstance(data["value"], list):
+                value = getattr(response, data_type).value
+                value_type = type(value)
+                getattr(response, data_type).value = value_type(data["value"])
+            elif data_type == "select_integer":
+                response.select_integer.value[:] = [int(v) for v in data["value"]]
+            elif data_type == "select_floating":
+                response.select_floating.value[:] = [float(v) for v in data["value"]]
+            elif data_type == "select_str":
+                response.select_str.value[:] = data["value"]
+
+            message = PB_GameInputMessage()
+            message.wizard.CopyFrom(response)
             await self._serial_messages_to_send.put(message)
 
         @self.sio.on("samples")
