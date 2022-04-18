@@ -13,13 +13,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google.protobuf.json_format import MessageToDict as ProtobufMessageToDict
 from google.protobuf.message import DecodeError as ProtobufDecodeError
-from google.protobuf.message import Message as ProtobufMessage
 import socketio
 from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
-from .messages import PB_Command, PB_Menu, PB_State, PB_GameOutputMessage
-from .message_types import OutputMessageType
+from .messages import PB_Command, PB_Menu, PB_State, PB_GameInputMessage, PB_GameOutputMessage
 from .recorder import GameRecordFileHandler
 from .settings import Settings
 
@@ -127,22 +125,12 @@ class CopilotServer:
 
         See `serial_receiver` for message encoding.
         """
-        message_type: OutputMessageType
-        pb_message: ProtobufMessage
-
         while True:
-            message_type, pb_message = await self._serial_messages_to_send.get()
-            message_type_byte = int.to_bytes(message_type, 1, byteorder='little', signed=False)
-            await self._serial_port.write_async(message_type_byte)
-            if pb_message:
-                response_encoded = await self._loop.run_in_executor(None, pb_message.SerializeToString)
-                length_bytes = int.to_bytes(len(response_encoded), 4, byteorder='little', signed=False)
-                await self._serial_port.write_async(length_bytes)
-                await self._serial_port.write_async(response_encoded)
-            else:
-                length_bytes = int.to_bytes(0, 4, byteorder='little', signed=False)
-                await self._serial_port.write_async(length_bytes)
-
+            pb_message: PB_GameInputMessage = await self._serial_messages_to_send.get()
+            response_serialized = await self._loop.run_in_executor(None, pb_message.SerializeToString)
+            response_base64 = await self._loop.run_in_executor(None, base64.encodebytes, response_serialized)
+            await self._serial_port.write_async(response_base64)
+            await self._serial_port.write_async(b"\n")
             self._serial_messages_to_send.task_done()
 
     async def serial_decoder(self):
@@ -196,7 +184,9 @@ class CopilotServer:
         Send a reset message to all connected monitors.
         """
         self._menu = None
-        await self._serial_messages_to_send.put((OutputMessageType.COPILOT_CONNECTED, None))
+        message = PB_GameInputMessage()
+        message.copilot_connected = True
+        await self._serial_messages_to_send.put(message)
         await self._sio_messages_to_send.put(("reset", None))
         if self._record_handler:
             await self._loop.run_in_executor(None, self._record_handler.doRollover)
@@ -282,7 +272,9 @@ class CopilotServer:
             asyncio.create_task(self.sio_sender(), name="SocketIO Sender")
 
             # Send CONNECTED message to firmware
-            await self._serial_messages_to_send.put((OutputMessageType.COPILOT_CONNECTED, None))
+            message = PB_GameInputMessage()
+            message.copilot_connected = True
+            await self._serial_messages_to_send.put(message)
 
         @self.app.on_event("shutdown")
         async def shutdown_event():
@@ -294,7 +286,9 @@ class CopilotServer:
             message on serial port.
             Wait for all serial messages to be sent.
             """
-            await self._serial_messages_to_send.put((OutputMessageType.COPILOT_DISCONNECTED, None))
+            message = PB_GameInputMessage()
+            message.copilot_disconnected = True
+            await self._serial_messages_to_send.put(message)
             await self._serial_messages_to_send.join()
 
         @self.app.get("/", response_class=HTMLResponse)
@@ -338,7 +332,9 @@ class CopilotServer:
             """
             response = PB_Command()
             response.cmd, _, response.desc = data.partition(" ")
-            await self._serial_messages_to_send.put((OutputMessageType.COMMAND, response))
+            message = PB_GameInputMessage()
+            message.command.CopyFrom(response)
+            await self._serial_messages_to_send.put(message)
 
         @self.sio.on("samples")
         async def on_sample(sid, data):
