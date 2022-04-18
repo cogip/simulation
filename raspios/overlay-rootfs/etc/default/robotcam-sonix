@@ -1,0 +1,8 @@
+# ROBOTCAM_SERVER_PORT=8081
+# ROBOTCAM_COPILOT_URL=http://localhost:8080
+ROBOTCAM_CAMERA_DEVICE=/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN0001-video-index0
+ROBOTCAM_CAMERA_PARAMS=/usr/local/lib/python3.9/dist-packages/cogip/tools/robotcam/data/coefs-camera-sonix-640x480-yuyv-8x13.json
+# ROBOTCAM_CAMERA_WIDTH=640
+# ROBOTCAM_CAMERA_HEIGHT=480
+# ROBOTCAM_CAMERA_CODEC=YUYV
+# ROBOTCAM_CALIBRATION=0

@@ -1,0 +1,17 @@
+[Unit]
+Description=COGIP Robotcam
+
+Wants=network.target
+After=syslog.target network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+User=root
+WorkingDirectory=/tmp
+ExecStart=/usr/bin/python3 -m cogip.tools.robotcam
+RestartSec=5
+EnvironmentFile=/etc/default/robotcam
+
+[Install]
+WantedBy=multi-user.target

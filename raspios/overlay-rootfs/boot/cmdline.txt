@@ -1,0 +1,1 @@
+console=tty1 root=ROOTDEV-02 rootfstype=ext4 rw rootwait quiet

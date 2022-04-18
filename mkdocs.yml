@@ -13,13 +13,14 @@ theme:
 nav:
   - Overview: index.md
   - Installation: install.md
-  - Usage:
+  - Tools:
     - usage/monitor.md
     - usage/copilot.md
     - usage/robotcam.md
     - usage/replay.md
     - usage/lidarusb.md
     - usage/lidarpf.md
+  - Raspberry Pi OS: raspios.md
   - Developer's Doc:
     - Introduction: developers/developers.md
     - Modules: reference/

@@ -1,0 +1,4 @@
+*.sh
+boot-overlay
+work
+!work/rootfs.tar
