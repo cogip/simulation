@@ -225,7 +225,10 @@ class CopilotServer:
         new_obstacles = []
         for obstacle in obstacles:
             bb = obstacle.pop("bounding_box")
-            new_obstacle = list(obstacle.values())[0]
+            try:
+                new_obstacle = list(obstacle.values())[0]
+            except IndexError:
+                continue
             new_obstacle["bb"] = bb
             new_obstacles.append(new_obstacle)
         state_dict["obstacles"] = new_obstacles
