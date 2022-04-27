@@ -38,13 +38,6 @@ class Settings(BaseSettings):
         default=1,
         description="Number of uvicorn workers (ignored if launched by gunicorn)"
     )
-    frame_size: int = Field(
-        default=308316,  # size for a frame in BMP format, black and white, 640x480 pixels.
-        description=(
-            "Size of the shared memory storing the last frame to stream on server"
-            "(default for B&W, 921692 for color image)"
-        )
-    )
     calibration: bool = Field(
         default=False,
         description="Using sample calibration board, display distance between tags"
