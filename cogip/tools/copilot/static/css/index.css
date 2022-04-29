@@ -208,7 +208,7 @@ input[type='checkbox']:checked {
 }
 
 .keyboard--hidden {
-  bottom: -100%;
+  bottom: -200%;
 }
 
 .keyboard__keys {
