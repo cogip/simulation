@@ -13,7 +13,14 @@
 
   <body class="d-flex flex-column h-100 w-100 bg-dark">
     <div class="row">
-      <div class="col-lg-3 col-sm-3" id="menu"></div>
+      <div class="col-lg-3 col-sm-3" id="menu">
+        <div>
+          <img
+            id="logoCogip"
+            src="{{ url_for('static', path='img/cogip-logo.png') }}"
+          />
+        </div>
+      </div>
       <div class="col-lg-9 col-sm-9">
         <button
           class="btn btn-outline-dark float-end"

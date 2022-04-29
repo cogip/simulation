@@ -2,6 +2,10 @@ body {
   overflow: hidden;
 }
 
+#logoCogip {
+  height: 6%;
+}
+
 h1 {
   color: #acaeb1;
 }
@@ -12,8 +16,8 @@ h1 {
 
 #menu {
   text-align: center;
-  min-height: 95vh;
-  max-height: 95vh;
+  min-height: 90vh;
+  max-height: 90vh;
   padding-top: 10px;
   padding-right: 5px;
   padding-left: 15px;
