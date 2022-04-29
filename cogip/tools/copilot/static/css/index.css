@@ -10,6 +10,11 @@ h1 {
   color: #acaeb1;
 }
 
+#displayScore {
+  color: #acaeb1;
+  font-size:1500%;
+}
+
 .row {
   margin-right: 0px;
 }

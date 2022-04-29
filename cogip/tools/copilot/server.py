@@ -144,11 +144,11 @@ class CopilotServer:
             "state": self.handle_message_state,
             "wizard": self.handle_message_wizard,
             "req_samples": self.handle_samples_request,
+            "score":  self.handle_score
         }
 
         while True:
             encoded_message = await self._serial_messages_received.get()
-
             try:
                 message = PB_GameOutputMessage()
                 await self._loop.run_in_executor(None, message.ParseFromString, encoded_message)
@@ -253,6 +253,15 @@ class CopilotServer:
                 rot_z=coords[5]
             )
         await self._serial_messages_to_send.put(message)
+
+    async def handle_score(self, message: PB_GameOutputMessage) -> None:
+        score = ProtobufMessageToDict(
+            message,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+            use_integers_for_enums=True
+        )["score"]
+        await self._sio_messages_to_send.put(("score", score))
 
     async def emit_menu(self) -> None:
         """

@@ -110,6 +110,31 @@
       </div>
     </div>
 
+    <div
+      class="modal"
+      tabindex="-1"
+      id="scoreModal"
+      style="display: none"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+          <div class="modal-header">
+            <h5 class="modal-title">Score</h5>
+            <button
+              type="button"
+              class="btn-close"
+              onclick="$('#scoreModal').modal('hide');"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="displayScore"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script
       type="text/javascript"
       src="{{ url_for('static', path='js/external/bootstrap-5.0.2.min.js') }}"
@@ -128,6 +153,7 @@
       import * as drawModule from "../static/js/drawModule.js";
       import * as cameraModule from "../static/js/cameraModule.js";
       import * as wizardModule from "../static/js/wizardModule.js";
+      import * as scoreModule from "../static/js/scoreModule.js";
       import { virtualKeyboard } from "../static/js/keyboardModule.js";
 
       window.addEventListener("resize", drawModule.resizeCanvas, false);
@@ -160,6 +186,12 @@
           .on("close_wizard", function () {
             $("#wizardModal").modal("hide");
             virtualKeyboard.close();
+          })
+          .on("score", function (score) {
+            scoreModule.openScoreModal(score);
+          })
+          .on("close_score", function () {
+            $("#scoreModal").modal("hide");
           });
       });
     </script>
