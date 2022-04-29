@@ -71,18 +71,28 @@ pre {
   background-size: contain;
   margin-top: 1vh;
   margin-right: 1vw;
+  position: absolute;
 }
 
 #buttonCameraModal {
   z-index: 2;
   position: relative;
-  right: 8;
-  top: -45;
+  right: -49;
+  margin-top: 10px;
+  top: 410;
 }
 
-#buttonCameraModal:hover {
+#buttonRefresh {
+  z-index: 2;
+  position: relative;
+  margin-top: 10px;
+}
+
+#buttonCameraModal:hover,
+#buttonRefresh:hover {
   opacity: 0.7;
 }
+
 
 #displayFlux {
   margin: auto;
