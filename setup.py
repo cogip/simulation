@@ -41,12 +41,12 @@ required_packages = [
 
     # Packages specific to documentation
     "MarkupSafe==2.0.1;" + marker_platform_x86_64,
-    "mkdocs==1.2.3;" + marker_platform_x86_64,
+    "mkdocs==1.3.0;" + marker_platform_x86_64,
     "mkdocs-gen-files==0.3.3;" + marker_platform_x86_64,
     "mkdocs-literate-nav==0.4.1;" + marker_platform_x86_64,
-    "mkdocs-material==8.1.3;" + marker_platform_x86_64,
+    "mkdocs-material==8.2.13;" + marker_platform_x86_64,
     "mkdocstrings==0.17.0;" + marker_platform_x86_64,
-    "pymdown-extensions==9.1;" + marker_platform_x86_64,
+    "pymdown-extensions==9.4;" + marker_platform_x86_64,
 
     # Packages specific to developers
     "flake8==3.9.2;" + marker_platform_x86_64,
