@@ -186,12 +186,12 @@ class ChartView(QtWidgets.QWidget):
         self.range_max_x = max(self.range_max_x, cycle)
 
         if current:
-            self.serie_current.append(cycle, current.distance)
-            self.range_max_y = max(self.range_max_y, current.distance)
+            self.serie_current.append(cycle, current)
+            self.range_max_y = max(self.range_max_y, current)
 
         if order:
-            self.serie_order.append(cycle, order.distance)
-            self.range_max_y = max(self.range_max_y, order.distance)
+            self.serie_order.append(cycle, order)
+            self.range_max_y = max(self.range_max_y, order)
 
         self.chart.axisY(self.serie_current).setMax(self.range_max_y)
         self.chart.axisY(self.serie_order).setMax(self.range_max_y)
@@ -249,7 +249,9 @@ class ChartsView(QtWidgets.QDialog):
         self.setLayout(self.layout)
 
         self.linear_speed_chart = ChartView(self, "Linear Speed")
+        self.angular_speed_chart = ChartView(self, "Angular Speed")
         self.layout.addWidget(self.linear_speed_chart, 0, 0)
+        self.layout.addWidget(self.angular_speed_chart, 1, 0)
 
         self.readSettings()
 
@@ -263,7 +265,12 @@ class ChartsView(QtWidgets.QDialog):
         Arguments:
             state: New robot state
         """
-        self.linear_speed_chart.new_robot_state(state.mode, state.cycle, state.speed_current, state.speed_order)
+        self.linear_speed_chart.new_robot_state(state.mode, state.cycle,
+                                                state.speed_current.distance,
+                                                state.speed_order.distance)
+        self.angular_speed_chart.new_robot_state(state.mode, state.cycle,
+                                                 state.speed_current.angle,
+                                                 state.speed_order.angle)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         """
