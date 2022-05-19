@@ -8,7 +8,7 @@ an exception being raised if impossible.
 """
 
 from enum import auto, IntEnum
-from typing import List, Optional, Union
+from typing import List, Union
 
 from pydantic import BaseModel
 
@@ -115,8 +115,8 @@ class Speed(BaseModel):
         distance: Linear speed
         angle: Angular speed
     """
-    distance: float
-    angle: float
+    distance: float = 0.0
+    angle: float = 0.0
 
 
 class DynObstacleRect(BaseModel):
@@ -205,8 +205,8 @@ class RobotState(BaseModel):
     pose_current: Pose = Pose()
     pose_order: Pose = Pose()
     cycle: int = 0
-    speed_current: Optional[Speed] = None
-    speed_order: Optional[Speed] = None
+    speed_current: Speed = Speed()
+    speed_order: Speed = Speed()
     path: List[Vertex] = []
     obstacles: DynObstacleList
 
