@@ -17,7 +17,7 @@ import socketio
 from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
-from .messages import PB_Command, PB_Menu, PB_State, PB_Wizard, PB_GameInputMessage, PB_GameOutputMessage
+from .messages import PB_Command, PB_Wizard, PB_GameInputMessage, PB_GameOutputMessage
 from .recorder import GameRecordFileHandler
 from .settings import Settings
 
@@ -178,7 +178,7 @@ class CopilotServer:
             await self.sio.emit(message_type, message_dict)
             self._sio_messages_to_send.task_done()
 
-    async def handle_reset(self, reset: bool) -> None:
+    async def handle_reset(self, message: PB_GameOutputMessage) -> None:
         """
         Handle reset message. This means that the robot has just booted.
 
@@ -192,27 +192,27 @@ class CopilotServer:
         if self._record_handler:
             await self._loop.run_in_executor(None, self._record_handler.doRollover)
 
-    async def handle_message_menu(self, menu: PB_Menu) -> None:
+    async def handle_message_menu(self, message: PB_GameOutputMessage) -> None:
         """
         Send shell menu received from the robot to connected monitors.
         """
-        menu_dict = ProtobufMessageToDict(menu)["menu"]
-        self._menu = models.ShellMenu.parse_obj(menu_dict)
+        menu = ProtobufMessageToDict(message)["menu"]
+        self._menu = models.ShellMenu.parse_obj(menu)
         await self.emit_menu()
 
-    async def handle_message_state(self, state: PB_State) -> None:
+    async def handle_message_state(self, message: PB_GameOutputMessage) -> None:
         """
         Send robot state received from the robot to connected monitors.
         """
-        state_dict = ProtobufMessageToDict(
-            state,
+        state = ProtobufMessageToDict(
+            message,
             including_default_value_fields=True,
             preserving_proto_field_name=True,
             use_integers_for_enums=True
         )["state"]
 
         # Convert obstacles format to comply with Pydantic models used by the monitor
-        obstacles = state_dict.get("obstacles", [])
+        obstacles = state.get("obstacles", [])
         new_obstacles = []
         for obstacle in obstacles:
             bb = obstacle.pop("bounding_box")
@@ -222,22 +222,22 @@ class CopilotServer:
                 continue
             new_obstacle["bb"] = bb
             new_obstacles.append(new_obstacle)
-        state_dict["obstacles"] = new_obstacles
-        await self._sio_messages_to_send.put(("state", state_dict))
-        await self._loop.run_in_executor(None, self.record_state, state_dict)
+        state["obstacles"] = new_obstacles
+        await self._sio_messages_to_send.put(("state", state))
+        await self._loop.run_in_executor(None, self.record_state, state)
 
-    async def handle_message_wizard(self, wizard: PB_Wizard) -> None:
-        wizard_dict = ProtobufMessageToDict(
-            wizard,
+    async def handle_message_wizard(self, message: PB_GameOutputMessage) -> None:
+        wizard = ProtobufMessageToDict(
+            message,
             including_default_value_fields=True,
             preserving_proto_field_name=True,
             use_integers_for_enums=True
         )["wizard"]
-        wizard_type = wizard.wizard.WhichOneof("type")
-        wizard_dict["type"] = wizard_type
-        wizard_dict.update(**wizard_dict[wizard_type])
-        del wizard_dict[wizard_type]
-        await self._sio_messages_to_send.put(("wizard", wizard_dict))
+        wizard_type = message.wizard.WhichOneof("type")
+        wizard["type"] = wizard_type
+        wizard.update(**wizard[wizard_type])
+        del wizard[wizard_type]
+        await self._sio_messages_to_send.put(("wizard", wizard))
 
     async def emit_menu(self) -> None:
         """
