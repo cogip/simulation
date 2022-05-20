@@ -130,7 +130,7 @@ class CopilotServer:
             response_serialized = await self._loop.run_in_executor(None, pb_message.SerializeToString)
             response_base64 = await self._loop.run_in_executor(None, base64.encodebytes, response_serialized)
             await self._serial_port.write_async(response_base64)
-            await self._serial_port.write_async(b"\n")
+            await self._serial_port.write_async(b"\0")
             self._serial_messages_to_send.task_done()
 
     async def serial_decoder(self):
