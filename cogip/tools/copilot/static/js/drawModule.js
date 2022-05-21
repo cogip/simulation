@@ -206,7 +206,7 @@ function drawObstacles(obstacle, context) {
     let length_x = obstacle.length_x * ratioX;
     let length_y = obstacle.length_y * ratioY;
 
-    context.translate(-obstacleX, obstacleY);
+    context.translate(obstacleX, obstacleY);
     context.rotate(-(angle * Math.PI) / 180);
     context.fillRect(-length_x / 2, -length_y / 2, length_x, length_y);
   }
