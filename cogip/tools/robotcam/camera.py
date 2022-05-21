@@ -284,8 +284,12 @@ class CameraHandler():
                 sy = math.sqrt(rotation_matrix[0, 0] * rotation_matrix[0, 0] + rotation_matrix[1, 0] * rotation_matrix[1, 0])
 
                 if sy >= 1e-6:
+                    rot_x = math.atan2(rotation_matrix[2, 1], rotation_matrix[2, 2])
+                    rot_y = math.atan2(-rotation_matrix[2, 0], sy)
                     rot_z = math.atan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
                 else:
+                    rot_x = math.atan2(-rotation_matrix[1, 2], rotation_matrix[1, 1])
+                    rot_y = math.atan2(-rotation_matrix[2, 0], sy)
                     rot_z = 0
 
                 # Draw axis
@@ -298,7 +302,10 @@ class CameraHandler():
                     length=25
                 )
 
-                coords_by_id[id.item()] = (*[v.item() for v in tvec], rot_z)
+                coords_by_id[id.item()] = (
+                    *[v.item() for v in tvec],
+                    math.degrees(rot_x), math.degrees(rot_y), math.degrees(rot_z)
+                )
 
         if self.sio.connected:
             self.sio.emit("samples", coords_by_id)
@@ -311,7 +318,9 @@ class CameraHandler():
                     f"X: {coords[0]: 4.0f} "
                     f"Y: {coords[1]: 4.0f} "
                     f"Z: {coords[2]: 4.0f} "
-                    f"0: {math.degrees(coords[3]):3.1f}"
+                    f"0x: {coords[3]: 3.1f} "
+                    f"0y: {coords[4]: 3.1f} "
+                    f"0z: {coords[5]: 3.1f}"
                 )
                 cv2.putText(
                     img=image_stream,
@@ -334,20 +343,20 @@ class CameraHandler():
                 bottomLeftOrigin=False
             )
 
-            x0, y0, z0, rot0 = coords_by_id[0]
-            x1, y1, z1, rot1 = coords_by_id[1]
-            x2, y2, z2, rot2 = coords_by_id[2]
-            x3, y3, z3, rot3 = coords_by_id[3]
-            x4, y4, z4, rot4 = coords_by_id[4]
-            x5, y5, z5, rot5 = coords_by_id[5]
+            x0, y0, z0, _, _, rot0 = coords_by_id[0]
+            x1, y1, z1, _, _, rot1 = coords_by_id[1]
+            x2, y2, z2, _, _, rot2 = coords_by_id[2]
+            x3, y3, z3, _, _, rot3 = coords_by_id[3]
+            x4, y4, z4, _, _, rot4 = coords_by_id[4]
+            x5, y5, z5, _, _, rot5 = coords_by_id[5]
 
             put_text(text="rot = ", org=(20, 20))
-            put_text(text=f"{math.degrees(rot0):+3.1f}", org=(70, 20))
-            put_text(text=f"{math.degrees(rot1):+3.1f}", org=(120, 20))
-            put_text(text=f"{math.degrees(rot2):+3.1f}", org=(170, 20))
-            put_text(text=f"{math.degrees(rot3):+3.1f}", org=(220, 20))
-            put_text(text=f"{math.degrees(rot4):+3.1f}", org=(270, 20))
-            put_text(text=f"{math.degrees(rot5):+3.1f}", org=(320, 20))
+            put_text(text=f"{rot0:+3.1f}", org=(70, 20))
+            put_text(text=f"{rot1:+3.1f}", org=(120, 20))
+            put_text(text=f"{rot2:+3.1f}", org=(170, 20))
+            put_text(text=f"{rot3:+3.1f}", org=(220, 20))
+            put_text(text=f"{rot4:+3.1f}", org=(270, 20))
+            put_text(text=f"{rot5:+3.1f}", org=(320, 20))
 
             put_text(text=f"dist(x0, x3) = {abs(x0 - x3):+3.0f}", org=(20, 50))
             put_text(text=f"dist(x1, x4) = {abs(x1 - x4):+3.0f}", org=(20, 70))
