@@ -142,7 +142,8 @@ class CopilotServer:
             "reset": self.handle_reset,
             "menu": self.handle_message_menu,
             "state": self.handle_message_state,
-            "wizard": self.handle_message_wizard
+            "wizard": self.handle_message_wizard,
+            "req_samples": self.handle_samples_request,
         }
 
         while True:
@@ -238,6 +239,20 @@ class CopilotServer:
         wizard.update(**wizard[wizard_type])
         del wizard[wizard_type]
         await self._sio_messages_to_send.put(("wizard", wizard))
+
+    async def handle_samples_request(self, message: PB_GameOutputMessage) -> None:
+        message = PB_GameInputMessage()
+        for (id, coords) in sorted(self._samples.items()):
+            message.samples.samples.add(
+                tag=int(id),
+                x=coords[0],
+                y=coords[1],
+                z=coords[2],
+                rot_x=coords[3],
+                rot_y=coords[4],
+                rot_z=coords[5]
+            )
+        await self._serial_messages_to_send.put(message)
 
     async def emit_menu(self) -> None:
         """

@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x1aPB_GameOutputMessage.proto\x1a\rPB_Menu.proto\x1a\x0ePB_State.proto\x1a\x0fPB_Wizard.proto\"\x83\x01\n\x14PB_GameOutputMessage\x12\x0f\n\x05reset\x18\x01 \x01(\x08H\x00\x12\x18\n\x04menu\x18\x02 \x01(\x0b\x32\x08.PB_MenuH\x00\x12\x1a\n\x05state\x18\x03 \x01(\x0b\x32\t.PB_StateH\x00\x12\x1c\n\x06wizard\x18\x04 \x01(\x0b\x32\n.PB_WizardH\x00\x42\x06\n\x04typeb\x06proto3')
+  serialized_pb=_b('\n\x1aPB_GameOutputMessage.proto\x1a\rPB_Menu.proto\x1a\x0ePB_State.proto\x1a\x0fPB_Wizard.proto\"\xab\x01\n\x14PB_GameOutputMessage\x12\x0f\n\x05reset\x18\x01 \x01(\x08H\x00\x12\x18\n\x04menu\x18\x02 \x01(\x0b\x32\x08.PB_MenuH\x00\x12\x1a\n\x05state\x18\x03 \x01(\x0b\x32\t.PB_StateH\x00\x12\x1c\n\x06wizard\x18\x04 \x01(\x0b\x32\n.PB_WizardH\x00\x12\x15\n\x0breq_samples\x18\x05 \x01(\x08H\x00\x12\x0f\n\x05score\x18\x06 \x01(\rH\x00\x42\x06\n\x04typeb\x06proto3')
   ,
   dependencies=[PB__Menu__pb2.DESCRIPTOR,PB__State__pb2.DESCRIPTOR,PB__Wizard__pb2.DESCRIPTOR,])
 
@@ -64,6 +64,20 @@ _PB_GAMEOUTPUTMESSAGE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='req_samples', full_name='PB_GameOutputMessage.req_samples', index=4,
+      number=5, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='score', full_name='PB_GameOutputMessage.score', index=5,
+      number=6, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -80,7 +94,7 @@ _PB_GAMEOUTPUTMESSAGE = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=79,
-  serialized_end=210,
+  serialized_end=250,
 )
 
 _PB_GAMEOUTPUTMESSAGE.fields_by_name['menu'].message_type = PB__Menu__pb2._PB_MENU
@@ -98,6 +112,12 @@ _PB_GAMEOUTPUTMESSAGE.fields_by_name['state'].containing_oneof = _PB_GAMEOUTPUTM
 _PB_GAMEOUTPUTMESSAGE.oneofs_by_name['type'].fields.append(
   _PB_GAMEOUTPUTMESSAGE.fields_by_name['wizard'])
 _PB_GAMEOUTPUTMESSAGE.fields_by_name['wizard'].containing_oneof = _PB_GAMEOUTPUTMESSAGE.oneofs_by_name['type']
+_PB_GAMEOUTPUTMESSAGE.oneofs_by_name['type'].fields.append(
+  _PB_GAMEOUTPUTMESSAGE.fields_by_name['req_samples'])
+_PB_GAMEOUTPUTMESSAGE.fields_by_name['req_samples'].containing_oneof = _PB_GAMEOUTPUTMESSAGE.oneofs_by_name['type']
+_PB_GAMEOUTPUTMESSAGE.oneofs_by_name['type'].fields.append(
+  _PB_GAMEOUTPUTMESSAGE.fields_by_name['score'])
+_PB_GAMEOUTPUTMESSAGE.fields_by_name['score'].containing_oneof = _PB_GAMEOUTPUTMESSAGE.oneofs_by_name['type']
 DESCRIPTOR.message_types_by_name['PB_GameOutputMessage'] = _PB_GAMEOUTPUTMESSAGE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 

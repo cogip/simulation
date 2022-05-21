@@ -14,6 +14,7 @@ _sym_db = _symbol_database.Default()
 
 import PB_Command_pb2 as PB__Command__pb2
 import PB_Wizard_pb2 as PB__Wizard__pb2
+import PB_Samples_pb2 as PB__Samples__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +22,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x19PB_GameInputMessage.proto\x1a\x10PB_Command.proto\x1a\x0fPB_Wizard.proto\"\x98\x01\n\x13PB_GameInputMessage\x12\x1e\n\x07\x63ommand\x18\x01 \x01(\x0b\x32\x0b.PB_CommandH\x00\x12\x1b\n\x11\x63opilot_connected\x18\x02 \x01(\x08H\x00\x12\x1e\n\x14\x63opilot_disconnected\x18\x03 \x01(\x08H\x00\x12\x1c\n\x06wizard\x18\x04 \x01(\x0b\x32\n.PB_WizardH\x00\x42\x06\n\x04typeb\x06proto3')
+  serialized_pb=_b('\n\x19PB_GameInputMessage.proto\x1a\x10PB_Command.proto\x1a\x0fPB_Wizard.proto\x1a\x10PB_Samples.proto\"\xb8\x01\n\x13PB_GameInputMessage\x12\x1e\n\x07\x63ommand\x18\x01 \x01(\x0b\x32\x0b.PB_CommandH\x00\x12\x1b\n\x11\x63opilot_connected\x18\x02 \x01(\x08H\x00\x12\x1e\n\x14\x63opilot_disconnected\x18\x03 \x01(\x08H\x00\x12\x1c\n\x06wizard\x18\x04 \x01(\x0b\x32\n.PB_WizardH\x00\x12\x1e\n\x07samples\x18\x05 \x01(\x0b\x32\x0b.PB_SamplesH\x00\x42\x06\n\x04typeb\x06proto3')
   ,
-  dependencies=[PB__Command__pb2.DESCRIPTOR,PB__Wizard__pb2.DESCRIPTOR,])
+  dependencies=[PB__Command__pb2.DESCRIPTOR,PB__Wizard__pb2.DESCRIPTOR,PB__Samples__pb2.DESCRIPTOR,])
 
 
 
@@ -63,6 +64,13 @@ _PB_GAMEINPUTMESSAGE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='samples', full_name='PB_GameInputMessage.samples', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -78,12 +86,13 @@ _PB_GAMEINPUTMESSAGE = _descriptor.Descriptor(
       name='type', full_name='PB_GameInputMessage.type',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=65,
-  serialized_end=217,
+  serialized_start=83,
+  serialized_end=267,
 )
 
 _PB_GAMEINPUTMESSAGE.fields_by_name['command'].message_type = PB__Command__pb2._PB_COMMAND
 _PB_GAMEINPUTMESSAGE.fields_by_name['wizard'].message_type = PB__Wizard__pb2._PB_WIZARD
+_PB_GAMEINPUTMESSAGE.fields_by_name['samples'].message_type = PB__Samples__pb2._PB_SAMPLES
 _PB_GAMEINPUTMESSAGE.oneofs_by_name['type'].fields.append(
   _PB_GAMEINPUTMESSAGE.fields_by_name['command'])
 _PB_GAMEINPUTMESSAGE.fields_by_name['command'].containing_oneof = _PB_GAMEINPUTMESSAGE.oneofs_by_name['type']
@@ -96,6 +105,9 @@ _PB_GAMEINPUTMESSAGE.fields_by_name['copilot_disconnected'].containing_oneof = _
 _PB_GAMEINPUTMESSAGE.oneofs_by_name['type'].fields.append(
   _PB_GAMEINPUTMESSAGE.fields_by_name['wizard'])
 _PB_GAMEINPUTMESSAGE.fields_by_name['wizard'].containing_oneof = _PB_GAMEINPUTMESSAGE.oneofs_by_name['type']
+_PB_GAMEINPUTMESSAGE.oneofs_by_name['type'].fields.append(
+  _PB_GAMEINPUTMESSAGE.fields_by_name['samples'])
+_PB_GAMEINPUTMESSAGE.fields_by_name['samples'].containing_oneof = _PB_GAMEINPUTMESSAGE.oneofs_by_name['type']
 DESCRIPTOR.message_types_by_name['PB_GameInputMessage'] = _PB_GAMEINPUTMESSAGE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
