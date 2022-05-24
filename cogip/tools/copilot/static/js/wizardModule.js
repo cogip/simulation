@@ -181,6 +181,7 @@ function formatWizardInput(showInput, typeInput, value, choices) {
       });
       $(".form-check").append(choiceZone);
     } else if (typeInput === "camp") {
+      $("#wizardInput").attr("type", "hidden");
       const campZone = $('<div id="newZone"></div>');
 
       const listCamp = ["purple", "yellow"];
