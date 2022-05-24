@@ -32,7 +32,7 @@ class CopilotServer:
     _loop: asyncio.AbstractEventLoop = None          # Event loop to use for all async objects
     _nb_connections: int = 0                         # Number of monitors connected
     _menu: models.ShellMenu = None                   # Last received shell menu
-    _samples: Dict[str, Any] = None                  # Last detected samples
+    _samples: Dict[str, Any] = {}                    # Last detected samples
     _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
     _record_handler: GameRecordFileHandler = None    # Log file handler to record games
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
@@ -242,6 +242,7 @@ class CopilotServer:
 
     async def handle_samples_request(self, message: PB_GameOutputMessage) -> None:
         message = PB_GameInputMessage()
+        message.samples.has_samples = False
         for (id, coords) in sorted(self._samples.items()):
             message.samples.samples.add(
                 tag=int(id),
@@ -252,6 +253,7 @@ class CopilotServer:
                 rot_y=coords[4],
                 rot_z=coords[5]
             )
+            message.samples.has_samples = True
         await self._serial_messages_to_send.put(message)
 
     async def handle_score(self, message: PB_GameOutputMessage) -> None:

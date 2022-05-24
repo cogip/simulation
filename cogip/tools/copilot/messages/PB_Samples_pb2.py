@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x10PB_Samples.proto\"f\n\tPB_Sample\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\x12\r\n\x05rot_x\x18\x04 \x01(\x02\x12\r\n\x05rot_y\x18\x05 \x01(\x02\x12\r\n\x05rot_z\x18\x06 \x01(\x02\x12\x0b\n\x03tag\x18\x07 \x01(\x05\")\n\nPB_Samples\x12\x1b\n\x07samples\x18\x01 \x03(\x0b\x32\n.PB_Sampleb\x06proto3')
+  serialized_pb=_b('\n\x10PB_Samples.proto\"f\n\tPB_Sample\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x12\t\n\x01z\x18\x03 \x01(\x02\x12\r\n\x05rot_x\x18\x04 \x01(\x02\x12\r\n\x05rot_y\x18\x05 \x01(\x02\x12\r\n\x05rot_z\x18\x06 \x01(\x02\x12\x0b\n\x03tag\x18\x07 \x01(\x05\">\n\nPB_Samples\x12\x1b\n\x07samples\x18\x01 \x03(\x0b\x32\n.PB_Sample\x12\x13\n\x0bhas_samples\x18\x02 \x01(\x08\x62\x06proto3')
 )
 
 
@@ -112,6 +112,13 @@ _PB_SAMPLES = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='has_samples', full_name='PB_Samples.has_samples', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -125,7 +132,7 @@ _PB_SAMPLES = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=124,
-  serialized_end=165,
+  serialized_end=186,
 )
 
 _PB_SAMPLES.fields_by_name['samples'].message_type = _PB_SAMPLE
