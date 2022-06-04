@@ -1,0 +1,11 @@
+FROM scratch
+
+USER root
+
+ADD work/rootfs.tar /
+
+ENV DEBIAN_FRONTEND noninteractive
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+RUN update-locale LANG=C
+
+RUN apt-get update && apt-get -y dist-upgrade && apt-get -y clean

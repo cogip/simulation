@@ -12,7 +12,10 @@ export function onDisconnect() {
 
 export function onMenu(menu, socket) {
   $("#menu").empty();
-  $("#menu").html("<h1 class=small >" + menu.name + "</h1>"); // display title for menu
+  $("#menu").html(
+    "<div><img id='logoCogip' src='static/img/cogip-logo.png') }}\" />'</div>"
+  );
+  $("#menu").append("<h1 class=small >" + menu.name + "</h1>"); // display title for menu
 
   const divButton = $('<div id="divButtons"></div>');
   // add all buttons menu

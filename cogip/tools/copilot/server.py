@@ -13,13 +13,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from google.protobuf.json_format import MessageToDict as ProtobufMessageToDict
 from google.protobuf.message import DecodeError as ProtobufDecodeError
-from google.protobuf.message import Message as ProtobufMessage
 import socketio
 from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
-from .messages import PB_Command, PB_Menu, PB_State, PB_GameOutputMessage
-from .message_types import OutputMessageType
+from .messages import PB_Command, PB_Wizard, PB_GameInputMessage, PB_GameOutputMessage
 from .recorder import GameRecordFileHandler
 from .settings import Settings
 
@@ -34,7 +32,7 @@ class CopilotServer:
     _loop: asyncio.AbstractEventLoop = None          # Event loop to use for all async objects
     _nb_connections: int = 0                         # Number of monitors connected
     _menu: models.ShellMenu = None                   # Last received shell menu
-    _samples: Dict[str, Any] = None                  # Last detected samples
+    _samples: Dict[str, Any] = {}                    # Last detected samples
     _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
     _record_handler: GameRecordFileHandler = None    # Log file handler to record games
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
@@ -127,22 +125,12 @@ class CopilotServer:
 
         See `serial_receiver` for message encoding.
         """
-        message_type: OutputMessageType
-        pb_message: ProtobufMessage
-
         while True:
-            message_type, pb_message = await self._serial_messages_to_send.get()
-            message_type_byte = int.to_bytes(message_type, 1, byteorder='little', signed=False)
-            await self._serial_port.write_async(message_type_byte)
-            if pb_message:
-                response_encoded = await self._loop.run_in_executor(None, pb_message.SerializeToString)
-                length_bytes = int.to_bytes(len(response_encoded), 4, byteorder='little', signed=False)
-                await self._serial_port.write_async(length_bytes)
-                await self._serial_port.write_async(response_encoded)
-            else:
-                length_bytes = int.to_bytes(0, 4, byteorder='little', signed=False)
-                await self._serial_port.write_async(length_bytes)
-
+            pb_message: PB_GameInputMessage = await self._serial_messages_to_send.get()
+            response_serialized = await self._loop.run_in_executor(None, pb_message.SerializeToString)
+            response_base64 = await self._loop.run_in_executor(None, base64.encodebytes, response_serialized)
+            await self._serial_port.write_async(response_base64)
+            await self._serial_port.write_async(b"\0")
             self._serial_messages_to_send.task_done()
 
     async def serial_decoder(self):
@@ -153,12 +141,14 @@ class CopilotServer:
         request_handlers = {
             "reset": self.handle_reset,
             "menu": self.handle_message_menu,
-            "state": self.handle_message_state
+            "state": self.handle_message_state,
+            "wizard": self.handle_message_wizard,
+            "req_samples": self.handle_samples_request,
+            "score":  self.handle_score
         }
 
         while True:
             encoded_message = await self._serial_messages_received.get()
-
             try:
                 message = PB_GameOutputMessage()
                 await self._loop.run_in_executor(None, message.ParseFromString, encoded_message)
@@ -189,48 +179,91 @@ class CopilotServer:
             await self.sio.emit(message_type, message_dict)
             self._sio_messages_to_send.task_done()
 
-    async def handle_reset(self, reset: bool) -> None:
+    async def handle_reset(self, message: PB_GameOutputMessage) -> None:
         """
         Handle reset message. This means that the robot has just booted.
 
         Send a reset message to all connected monitors.
         """
         self._menu = None
-        await self._serial_messages_to_send.put((OutputMessageType.COPILOT_CONNECTED, None))
+        message = PB_GameInputMessage()
+        message.copilot_connected = True
+        await self._serial_messages_to_send.put(message)
         await self._sio_messages_to_send.put(("reset", None))
         if self._record_handler:
             await self._loop.run_in_executor(None, self._record_handler.doRollover)
 
-    async def handle_message_menu(self, menu: PB_Menu) -> None:
+    async def handle_message_menu(self, message: PB_GameOutputMessage) -> None:
         """
         Send shell menu received from the robot to connected monitors.
         """
-        menu_dict = ProtobufMessageToDict(menu)["menu"]
-        self._menu = models.ShellMenu.parse_obj(menu_dict)
+        menu = ProtobufMessageToDict(message)["menu"]
+        self._menu = models.ShellMenu.parse_obj(menu)
         await self.emit_menu()
 
-    async def handle_message_state(self, state: PB_State) -> None:
+    async def handle_message_state(self, message: PB_GameOutputMessage) -> None:
         """
         Send robot state received from the robot to connected monitors.
         """
-        state_dict = ProtobufMessageToDict(
-            state,
+        state = ProtobufMessageToDict(
+            message,
             including_default_value_fields=True,
             preserving_proto_field_name=True,
             use_integers_for_enums=True
         )["state"]
 
         # Convert obstacles format to comply with Pydantic models used by the monitor
-        obstacles = state_dict.get("obstacles", [])
+        obstacles = state.get("obstacles", [])
         new_obstacles = []
         for obstacle in obstacles:
             bb = obstacle.pop("bounding_box")
-            new_obstacle = list(obstacle.values())[0]
+            try:
+                new_obstacle = list(obstacle.values())[0]
+            except IndexError:
+                continue
             new_obstacle["bb"] = bb
             new_obstacles.append(new_obstacle)
-        state_dict["obstacles"] = new_obstacles
-        await self._sio_messages_to_send.put(("state", state_dict))
-        await self._loop.run_in_executor(None, self.record_state, state_dict)
+        state["obstacles"] = new_obstacles
+        await self._sio_messages_to_send.put(("state", state))
+        await self._loop.run_in_executor(None, self.record_state, state)
+
+    async def handle_message_wizard(self, message: PB_GameOutputMessage) -> None:
+        wizard = ProtobufMessageToDict(
+            message,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+            use_integers_for_enums=True
+        )["wizard"]
+        wizard_type = message.wizard.WhichOneof("type")
+        wizard["type"] = wizard_type
+        wizard.update(**wizard[wizard_type])
+        del wizard[wizard_type]
+        await self._sio_messages_to_send.put(("wizard", wizard))
+
+    async def handle_samples_request(self, message: PB_GameOutputMessage) -> None:
+        message = PB_GameInputMessage()
+        message.samples.has_samples = False
+        for (id, coords) in sorted(self._samples.items()):
+            message.samples.samples.add(
+                tag=int(id),
+                x=coords[0],
+                y=coords[1],
+                z=coords[2],
+                rot_x=coords[3],
+                rot_y=coords[4],
+                rot_z=coords[5]
+            )
+            message.samples.has_samples = True
+        await self._serial_messages_to_send.put(message)
+
+    async def handle_score(self, message: PB_GameOutputMessage) -> None:
+        score = ProtobufMessageToDict(
+            message,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+            use_integers_for_enums=True
+        )["score"]
+        await self._sio_messages_to_send.put(("score", score))
 
     async def emit_menu(self) -> None:
         """
@@ -279,7 +312,9 @@ class CopilotServer:
             asyncio.create_task(self.sio_sender(), name="SocketIO Sender")
 
             # Send CONNECTED message to firmware
-            await self._serial_messages_to_send.put((OutputMessageType.COPILOT_CONNECTED, None))
+            message = PB_GameInputMessage()
+            message.copilot_connected = True
+            await self._serial_messages_to_send.put(message)
 
         @self.app.on_event("shutdown")
         async def shutdown_event():
@@ -291,7 +326,9 @@ class CopilotServer:
             message on serial port.
             Wait for all serial messages to be sent.
             """
-            await self._serial_messages_to_send.put((OutputMessageType.COPILOT_DISCONNECTED, None))
+            message = PB_GameInputMessage()
+            message.copilot_disconnected = True
+            await self._serial_messages_to_send.put(message)
             await self._serial_messages_to_send.join()
 
         @self.app.get("/", response_class=HTMLResponse)
@@ -335,7 +372,38 @@ class CopilotServer:
             """
             response = PB_Command()
             response.cmd, _, response.desc = data.partition(" ")
-            await self._serial_messages_to_send.put((OutputMessageType.COMMAND, response))
+            message = PB_GameInputMessage()
+            message.command.CopyFrom(response)
+            await self._serial_messages_to_send.put(message)
+
+        @self.sio.on("wizard")
+        async def on_wizard(sid, data):
+            """
+            Callback on Wizard message.
+
+            Receive a command from a monitor.
+
+            Build the Protobuf wizard message and send to firmware.
+            """
+            await self._sio_messages_to_send.put(("close_wizard", None))
+
+            response = PB_Wizard()
+            response.name = data["name"]
+            data_type = data["type"]
+            if not isinstance(data["value"], list):
+                value = getattr(response, data_type).value
+                value_type = type(value)
+                getattr(response, data_type).value = value_type(data["value"])
+            elif data_type == "select_integer":
+                response.select_integer.value[:] = [int(v) for v in data["value"]]
+            elif data_type == "select_floating":
+                response.select_floating.value[:] = [float(v) for v in data["value"]]
+            elif data_type == "select_str":
+                response.select_str.value[:] = data["value"]
+
+            message = PB_GameInputMessage()
+            message.wizard.CopyFrom(response)
+            await self._serial_messages_to_send.put(message)
 
         @self.sio.on("samples")
         async def on_sample(sid, data):

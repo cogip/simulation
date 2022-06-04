@@ -13,8 +13,23 @@
 
   <body class="d-flex flex-column h-100 w-100 bg-dark">
     <div class="row">
-      <div class="col-lg-3 col-sm-3" id="menu"></div>
+      <div class="col-lg-3 col-sm-3" id="menu">
+        <div>
+          <img
+            id="logoCogip"
+            src="{{ url_for('static', path='img/cogip-logo.png') }}"
+          />
+        </div>
+      </div>
       <div class="col-lg-9 col-sm-9">
+        <button
+          class="btn btn-outline-dark float-end"
+          id="buttonRefresh"
+          type="button"
+          onclick="location.reload();"
+        >
+          <img src="{{ url_for('static', path='img/refresh.svg') }}" />
+        </button>
         <canvas id="board"></canvas>
         <button
           class="btn btn-outline-dark float-end"
@@ -46,14 +61,75 @@
       aria-hidden="true"
     >
       <div class="modal-dialog modal-lg">
-        <div class="modal-content">
+        <div class="modal-content bg-dark">
           <div class="modal-body" id="displayFlux">
             <button
               type="button"
               class="btn-close"
-              data-bs-dismiss="modal"
+              onclick="$('#cameraModal').modal('hide');"
               aria-label="Close"
             ></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal"
+      tabindex="-1"
+      id="wizardModal"
+      style="display: none"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark">
+          <div class="modal-header">
+            <h5 class="modal-title" id="wizardModalTitle"></h5>
+          </div>
+          <div class="modal-body">
+            <div>
+              <span class="input-group-text" id="wizardName"></span>
+              <input
+                id="wizardInput"
+                type=""
+                class="use-keyboard-input"
+                placeholder=""
+                aria-label="wizardName"
+                aria-describedby="wizardName"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="btn-send-wizard" type="button" class="btn btn-primary">
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal"
+      tabindex="-1"
+      id="scoreModal"
+      style="display: none"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+          <div class="modal-header">
+            <h5 class="modal-title">Score</h5>
+            <button
+              type="button"
+              class="btn-close"
+              onclick="$('#scoreModal').modal('hide');"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="displayScore"></div>
           </div>
         </div>
       </div>
@@ -76,6 +152,8 @@
       import * as socketModule from "../static/js/socketModule.js";
       import * as drawModule from "../static/js/drawModule.js";
       import * as cameraModule from "../static/js/cameraModule.js";
+      import * as wizardModule from "../static/js/wizardModule.js";
+      import * as scoreModule from "../static/js/scoreModule.js";
       import { virtualKeyboard } from "../static/js/keyboardModule.js";
 
       window.addEventListener("resize", drawModule.resizeCanvas, false);
@@ -100,6 +178,20 @@
           .on("state", function (msg) {
             drawModule.displayMsg(msg); // uses message to display informationin bottom page
             drawModule.drawBoardElement(msg); // move robot
+          })
+          .on("wizard", function (msg) {
+            wizardModule.openWizardModal(msg, this);
+            virtualKeyboard._actualize();
+          })
+          .on("close_wizard", function () {
+            $("#wizardModal").modal("hide");
+            virtualKeyboard.close();
+          })
+          .on("score", function (score) {
+            scoreModule.openScoreModal(score);
+          })
+          .on("close_score", function () {
+            $("#scoreModal").modal("hide");
           });
       });
     </script>
