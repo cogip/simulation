@@ -103,7 +103,6 @@ class RobotEntity(AssetEntity):
             self.sensor_timer.timeout.connect(sensor.update_hit)
             self.lidar_sensors.append(sensor)
 
-    @qtSlot(DynObstacleList)
     def set_dyn_obstacles(self, dyn_obstacles: DynObstacleList) -> None:
         """
         Qt Slot
@@ -120,7 +119,7 @@ class RobotEntity(AssetEntity):
         current_rect_obstacles = []
         current_round_obstacles = []
 
-        for dyn_obstacle in dyn_obstacles.__root__:
+        for dyn_obstacle in dyn_obstacles:
             if isinstance(dyn_obstacle, DynObstacleRect):
                 if len(self.rect_obstacles_pool):
                     obstacle = self.rect_obstacles_pool.pop(0)
