@@ -120,6 +120,9 @@ class CopilotServer:
         CopilotServer._exiting = True
         CopilotServer._original_uvicorn_exit_handler(*args, **kwargs)
 
+    async def send_serial_message(self, *args) -> None:
+        await self._serial_messages_to_send.put(args)
+
     async def serial_receiver(self):
         """
         Async worker reading messages from the robot on serial ports.
@@ -200,7 +203,7 @@ class CopilotServer:
         Send a reset message to all connected monitors.
         """
         self._menu = None
-        await self._serial_messages_to_send.put((copilot_connected_uuid, None))
+        await self.send_serial_message(copilot_connected_uuid, None)
         await self.sio.emit("reset")
         if self._record_handler:
             await self._loop.run_in_executor(None, self._record_handler.doRollover)
@@ -277,7 +280,7 @@ class CopilotServer:
                 rot_z=coords[5]
             )
             pb_samples.has_samples = True
-        await self._serial_messages_to_send.put((resp_samples_uuid, pb_samples))
+        await self.send_serial_message(resp_samples_uuid, pb_samples)
 
     @pb_exception_handler
     async def handle_score(self, message: bytes) -> None:
@@ -326,7 +329,6 @@ class CopilotServer:
 
             # Create asyncio queues
             self._serial_messages_received = asyncio.Queue()
-            self._pb_messages_to_send = asyncio.Queue()
             self._serial_messages_received = asyncio.Queue()
             self._serial_messages_to_send = asyncio.Queue()
 
@@ -336,7 +338,7 @@ class CopilotServer:
             asyncio.create_task(self.serial_sender(), name="Serial Sender")
 
             # Send CONNECTED message to firmware
-            await self._serial_messages_to_send.put((copilot_connected_uuid, None))
+            await self.send_serial_message(copilot_connected_uuid, None)
 
         @self.app.on_event("shutdown")
         async def shutdown_event():
@@ -348,7 +350,7 @@ class CopilotServer:
             message on serial port.
             Wait for all serial messages to be sent.
             """
-            await self._serial_messages_to_send.put((copilot_disconnected_uuid, None))
+            await self.send_serial_message(copilot_disconnected_uuid, None)
             await self._serial_messages_to_send.join()
 
         @self.app.get("/", response_class=HTMLResponse)
@@ -392,7 +394,7 @@ class CopilotServer:
             """
             response = PB_Command()
             response.cmd, _, response.desc = data.partition(" ")
-            await self._serial_messages_to_send.put((command_uuid, response))
+            await self.send_serial_message(command_uuid, response)
 
         @self.sio.on("wizard")
         async def on_wizard(sid, data):
@@ -419,7 +421,7 @@ class CopilotServer:
             elif data_type == "select_str":
                 response.select_str.value[:] = data["value"]
 
-            await self._serial_messages_to_send.put((wizard_uuid, response))
+            await self.send_serial_message(wizard_uuid, response)
 
         @self.sio.on("samples")
         async def on_sample(sid, data):
