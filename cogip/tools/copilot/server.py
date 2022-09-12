@@ -18,9 +18,10 @@ from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
 from cogip.tools.copilot.messages.PB_Samples_pb2 import PB_Samples
-from .messages import PB_Command, PB_Menu, PB_Score, PB_State, PB_Wizard
+from .messages import PB_Menu, PB_Score, PB_State, PB_Wizard
 from .recorder import GameRecordFileHandler
 from .settings import Settings
+from .sio_events import SioEvents
 
 
 reset_uuid: int = 3351980141
@@ -79,6 +80,7 @@ class CopilotServer:
             logger=False,
             engineio_logger=False
         )
+        self.sio.register_namespace(SioEvents(self))
 
         # Overload default Uvicorn exit handler
         UvicornServer.handle_exit = self.handle_exit
@@ -112,7 +114,17 @@ class CopilotServer:
         self._serial_port.open()
 
         self.register_endpoints()
-        self.register_sio_events()
+
+    def sio_client_connected(self) -> None:
+        """Add one connected client"""
+        self._nb_connections += 1
+
+    def sio_client_disconnected(self) -> None:
+        """Remove one connected client"""
+        self._nb_connections -= 1
+
+    def set_samples(self, samples: Dict[str, Any]) -> None:
+        self._samples = samples
 
     @staticmethod
     def handle_exit(*args, **kwargs):
@@ -359,70 +371,3 @@ class CopilotServer:
             Homepage of the dashboard web server.
             """
             return self.templates.TemplateResponse("index.html", {"request": request})
-
-    def register_sio_events(self) -> None:
-
-        @self.sio.event
-        async def connect(sid, environ):
-            """
-            Callback on new monitor connection.
-
-            Send the current menu to monitors.
-            """
-            self._nb_connections += 1
-            await self.emit_menu()
-
-        @self.sio.event
-        async def disconnect(sid):
-            """
-            Callback on monitor disconnection.
-            """
-            self._nb_connections -= 1
-
-        @self.sio.on("cmd")
-        async def on_cmd(sid, data):
-            """
-            Callback on command message.
-
-            Receive a command from a monitor.
-
-            Build the Protobuf command message:
-
-            * split received string at first space if any.
-            * first is the command and goes to `cmd` attribute.
-            * second part is arguments, if any, and goes to `desc` attribute.
-            """
-            response = PB_Command()
-            response.cmd, _, response.desc = data.partition(" ")
-            await self.send_serial_message(command_uuid, response)
-
-        @self.sio.on("wizard")
-        async def on_wizard(sid, data):
-            """
-            Callback on Wizard message.
-
-            Receive a command from a monitor.
-
-            Build the Protobuf wizard message and send to firmware.
-            """
-            await self.sio.emit("close_wizard")
-
-            response = PB_Wizard()
-            response.name = data["name"]
-            data_type = data["type"]
-            if not isinstance(data["value"], list):
-                value = getattr(response, data_type).value
-                value_type = type(value)
-                getattr(response, data_type).value = value_type(data["value"])
-            elif data_type == "select_integer":
-                response.select_integer.value[:] = [int(v) for v in data["value"]]
-            elif data_type == "select_floating":
-                response.select_floating.value[:] = [float(v) for v in data["value"]]
-            elif data_type == "select_str":
-                response.select_str.value[:] = data["value"]
-
-            await self.send_serial_message(wizard_uuid, response)
-
-        @self.sio.on("samples")
-        async def on_sample(sid, data):
-            self._samples = data
