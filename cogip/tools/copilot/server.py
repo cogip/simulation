@@ -55,7 +55,6 @@ def pb_exception_handler(func):
 class CopilotServer:
     _serial_port: AioSerial = None                   # Async serial port
     _loop: asyncio.AbstractEventLoop = None          # Event loop to use for all async objects
-    _nb_connections: int = 0                         # Number of monitors connected
     _menu: models.ShellMenu = None                   # Last received shell menu
     _samples: Dict[str, Any] = {}                    # Last detected samples
     _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
@@ -63,6 +62,7 @@ class CopilotServer:
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
     _serial_messages_to_send: asyncio.Queue = None   # Queue for messages waiting to be sent on serial port
     _original_uvicorn_exit_handler = UvicornServer.handle_exit  # Backup of original exit handler to overload it
+    _monitor_sid: str = None                         # Session ID on the monitor sio client
 
     def __init__(self):
         """
@@ -115,13 +115,13 @@ class CopilotServer:
 
         self.register_endpoints()
 
-    def sio_client_connected(self) -> None:
-        """Add one connected client"""
-        self._nb_connections += 1
+    @property
+    def monitor_sid(self) -> str:
+        return self._monitor_sid
 
-    def sio_client_disconnected(self) -> None:
-        """Remove one connected client"""
-        self._nb_connections -= 1
+    @monitor_sid.setter
+    def monitor_sid(self, sid: str) -> None:
+        self._monitor_sid = sid
 
     def set_samples(self, samples: Dict[str, Any]) -> None:
         self._samples = samples
@@ -305,17 +305,15 @@ class CopilotServer:
         score = ProtobufMessageToDict(pb_score)
         await self.sio.emit("score", score.value)
 
-    async def emit_menu(self) -> None:
+    async def emit_menu(self, sid: str = None) -> None:
         """
         Sent current shell menu to connected monitors.
         """
-        if not self._menu or self._nb_connections == 0:
+        if not self._menu:
             return
 
-        await self.sio.emit(
-            "menu",
-            self._menu.dict(exclude_defaults=True, exclude_unset=True)
-        )
+        client = sid or "dashboards"
+        await self.sio.emit("menu", self._menu.dict(exclude_defaults=True, exclude_unset=True), to=client)
 
     def record_state(self, state: Dict[str, Any]) -> None:
         """

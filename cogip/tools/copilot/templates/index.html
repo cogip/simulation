@@ -164,6 +164,7 @@
 
         io.connect(window.location.origin, {
           path: "/sio/socket.io",
+          auth: { "type": "dashboard" }
         })
           .on("connect", function () {
             socketModule.onConnection();

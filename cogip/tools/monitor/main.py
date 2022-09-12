@@ -64,6 +64,7 @@ def main_opt(
     controller.signal_new_menu.connect(win.load_menu)
     controller.signal_new_robot_state.connect(win.new_robot_state)
     controller.signal_connected.connect(win.connected)
+    controller.signal_exit.connect(win.close)
 
     # Connect Controller signals to ChartsView slots
     controller.signal_new_robot_state.connect(win.charts_view.new_robot_state)

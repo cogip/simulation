@@ -1,7 +1,7 @@
 from threading import Thread
+import time
 from typing import Optional
 
-import polling2
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
@@ -27,6 +27,8 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted on robot state update
         signal_connected:
             Qt signal emitted on Copilot connection state changes
+        signal_exit:
+            Qt signal emitted to exit Monitor
         last_cycle:
             Record the last cycle to avoid sending the same data several times
     """
@@ -34,6 +36,7 @@ class SocketioController(QtCore.QObject):
     signal_new_menu: qtSignal = qtSignal(models.ShellMenu)
     signal_new_robot_state: qtSignal = qtSignal(models.RobotState)
     signal_connected: qtSignal = qtSignal(bool)
+    signal_exit: qtSignal = qtSignal()
     last_cycle: int = 0
 
     def __init__(self, url: str):
@@ -57,13 +60,17 @@ class SocketioController(QtCore.QObject):
         """
         # Poll in background to wait for the first connection.
         # Deconnections/reconnections are handle directly by the client.
-        Thread(target=lambda: polling2.poll(
-            lambda: self.sio.connect(self.url, socketio_path="sio/socket.io"),
-            step=2,
-            check_success=lambda _: True,
-            ignore_exceptions=(socketio.exceptions.ConnectionError),
-            poll_forever=True
-        )).start()
+        self._retry_connection = True
+        Thread(target=self.try_connect).start()
+
+    def try_connect(self):
+        while(self._retry_connection):
+            try:
+                self.sio.connect(self.url, socketio_path="sio/socket.io", auth={"type": "monitor"})
+            except socketio.exceptions.ConnectionError:
+                time.sleep(2)
+                continue
+            break
 
     def stop(self):
         """
@@ -103,6 +110,17 @@ class SocketioController(QtCore.QObject):
             """
             Callback on Copilot connection error.
             """
+            if (
+                data and
+                isinstance(data, dict) and
+                (message := data.get("message")) and
+                message == "A monitor is already connected"
+               ):
+                print(f"Error: {message}.")
+                self._retry_connection = False
+                self.signal_exit.emit()
+                return
+            print("Connection error:", data)
             self.signal_new_console_text.emit("Connection to Copilot failed.")
             self.signal_connected.emit(False)
 

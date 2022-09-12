@@ -1,4 +1,5 @@
 import socketio
+from socketio.exceptions import ConnectionRefusedError
 
 from .messages import PB_Command, PB_Wizard
 from . import server
@@ -9,20 +10,31 @@ class SioEvents(socketio.AsyncNamespace):
         super().__init__()
         self._copilot = copilot
 
-    async def on_connect(self, sid, environ):
+    async def on_connect(self, sid, environ, auth):
         """
         Callback on new monitor connection.
 
         Send the current menu to monitors.
         """
-        self._copilot.sio_client_connected()
-        await self._copilot.emit_menu()
+        if auth and isinstance(auth, dict) and (client_type := auth.get("type")):
+            if client_type == "monitor":
+                if self._copilot.monitor_sid:
+                    print("Connection refused: a monitor is already connected")
+                    raise ConnectionRefusedError("A monitor is already connected")
+                self._copilot.monitor_sid = sid
+
+            if client_type in ["monitor", "dashboard"]:
+                self.enter_room(sid, "dashboards")
+                print("Client invited to room 'dashboards'.")
+                await self._copilot.emit_menu(sid)
 
     async def on_disconnect(self, sid):
         """
         Callback on monitor disconnection.
         """
-        self._copilot.sio_client_disconnected()
+        if sid == self._copilot.monitor_sid:
+            self._copilot.monitor_sid = None
+        self.leave_room(sid, "dashboards")
 
     async def on_cmd(self, sid, data):
         """
