@@ -61,7 +61,6 @@ class CopilotServer:
     _record_handler: GameRecordFileHandler = None    # Log file handler to record games
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
     _serial_messages_to_send: asyncio.Queue = None   # Queue for messages waiting to be sent on serial port
-    _sio_messages_to_send: asyncio.Queue = None      # Queue for messages waiting to be sent on SocketIO server
     _original_uvicorn_exit_handler = UvicornServer.handle_exit  # Backup of original exit handler to overload it
 
     def __init__(self):
@@ -194,18 +193,6 @@ class CopilotServer:
 
             self._serial_messages_received.task_done()
 
-    async def sio_sender(self):
-        """
-        Async worker waiting for messages to send to monitors through SocketIO server.
-        """
-        message_type: str
-        message_dict: Dict
-
-        while True:
-            message_type, message_dict = await self._sio_messages_to_send.get()
-            await self.sio.emit(message_type, message_dict)
-            self._sio_messages_to_send.task_done()
-
     async def handle_reset(self) -> None:
         """
         Handle reset message. This means that the robot has just booted.
@@ -214,7 +201,7 @@ class CopilotServer:
         """
         self._menu = None
         await self._serial_messages_to_send.put((copilot_connected_uuid, None))
-        await self._sio_messages_to_send.put(("reset", None))
+        await self.sio.emit("reset")
         if self._record_handler:
             await self._loop.run_in_executor(None, self._record_handler.doRollover)
 
@@ -257,7 +244,7 @@ class CopilotServer:
             new_obstacle["bb"] = bb
             new_obstacles.append(new_obstacle)
         state["obstacles"] = new_obstacles
-        await self._sio_messages_to_send.put(("state", state))
+        await self.sio.emit("state", state)
         await self._loop.run_in_executor(None, self.record_state, state)
 
     @pb_exception_handler
@@ -275,7 +262,7 @@ class CopilotServer:
         wizard["type"] = wizard_type
         wizard.update(**wizard[wizard_type])
         del wizard[wizard_type]
-        await self._sio_messages_to_send.put(("wizard", wizard))
+        await self.sio.emit("wizard", wizard)
 
     async def handle_samples_request(self) -> None:
         pb_samples = PB_Samples()
@@ -301,7 +288,7 @@ class CopilotServer:
         await self._loop.run_in_executor(None, pb_score.ParseFromString, message)
 
         score = ProtobufMessageToDict(pb_score)
-        await self._sio_messages_to_send.put(("score", score.value))
+        await self.sio.emit("score", score.value)
 
     async def emit_menu(self) -> None:
         """
@@ -310,8 +297,9 @@ class CopilotServer:
         if not self._menu or self._nb_connections == 0:
             return
 
-        await self._sio_messages_to_send.put(
-            ("menu", self._menu.dict(exclude_defaults=True, exclude_unset=True))
+        await self.sio.emit(
+            "menu",
+            self._menu.dict(exclude_defaults=True, exclude_unset=True)
         )
 
     def record_state(self, state: Dict[str, Any]) -> None:
@@ -341,13 +329,11 @@ class CopilotServer:
             self._pb_messages_to_send = asyncio.Queue()
             self._serial_messages_received = asyncio.Queue()
             self._serial_messages_to_send = asyncio.Queue()
-            self._sio_messages_to_send = asyncio.Queue()
 
             # Create async workers
             asyncio.create_task(self.serial_decoder(), name="Serial Decoder")
             asyncio.create_task(self.serial_receiver(), name="Serial Receiver")
             asyncio.create_task(self.serial_sender(), name="Serial Sender")
-            asyncio.create_task(self.sio_sender(), name="SocketIO Sender")
 
             # Send CONNECTED message to firmware
             await self._serial_messages_to_send.put((copilot_connected_uuid, None))
@@ -417,7 +403,7 @@ class CopilotServer:
 
             Build the Protobuf wizard message and send to firmware.
             """
-            await self._sio_messages_to_send.put(("close_wizard", None))
+            await self.sio.emit("close_wizard")
 
             response = PB_Wizard()
             response.name = data["name"]
