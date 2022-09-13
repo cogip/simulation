@@ -18,7 +18,7 @@ from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
 from cogip.tools.copilot.messages.PB_Samples_pb2 import PB_Samples
-from .messages import PB_Menu, PB_Score, PB_State, PB_Wizard
+from .messages import PB_Menu, PB_Pose, PB_Score, PB_State, PB_Wizard
 from .recorder import GameRecordFileHandler
 from .settings import Settings
 from .sio_events import SioEvents
@@ -34,6 +34,7 @@ resp_samples_uuid: int = 1538397045
 copilot_connected_uuid: int = 1132911482
 copilot_disconnected_uuid: int = 1412808668
 score_uuid: int = 2552455996
+pose_uuid: int = 1534060156
 
 
 def create_app() -> FastAPI:
@@ -189,6 +190,7 @@ class CopilotServer:
         request_handlers = {
             reset_uuid: self.handle_reset,
             menu_uuid: self.handle_message_menu,
+            pose_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
             wizard_uuid: self.handle_message_wizard,
             req_samples_uuid: self.handle_samples_request,
@@ -231,6 +233,22 @@ class CopilotServer:
         menu = ProtobufMessageToDict(pb_menu)
         self._menu = models.ShellMenu.parse_obj(menu)
         await self.emit_menu()
+
+    @pb_exception_handler
+    async def handle_message_pose(self, message: bytes) -> None:
+        """
+        Send robot pose received from the robot to connected monitors and detector.
+        """
+        pb_pose = PB_Pose()
+        await self._loop.run_in_executor(None, pb_pose.ParseFromString, message)
+
+        pose = ProtobufMessageToDict(
+            pb_pose,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+            use_integers_for_enums=True
+        )
+        await self.sio.emit("pose", pose)
 
     @pb_exception_handler
     async def handle_message_state(self, message: bytes) -> None:

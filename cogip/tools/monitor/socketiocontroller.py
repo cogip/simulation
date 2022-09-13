@@ -23,6 +23,8 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted to log messages in UI console
         signal_new_menu:
             Qt signal emitted to load a new menu
+        signal_new_robot_pose:
+            Qt signal emitted on robot pose update
         signal_new_robot_state:
             Qt signal emitted on robot state update
         signal_connected:
@@ -34,6 +36,7 @@ class SocketioController(QtCore.QObject):
     """
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(models.ShellMenu)
+    signal_new_robot_pose: qtSignal = qtSignal(models.Pose)
     signal_new_robot_state: qtSignal = qtSignal(models.RobotState)
     signal_connected: qtSignal = qtSignal(bool)
     signal_exit: qtSignal = qtSignal()
@@ -146,6 +149,14 @@ class SocketioController(QtCore.QObject):
                 if "_set_shmem_key" in commands and Sensor.shm_key is None:
                     Sensor.init_shm()
                     self.new_command(f"_set_shmem_key {Sensor.shm_key}")
+
+        @self.sio.on("pose")
+        def on_pose(data):
+            """
+            Callback on robot pose message.
+            """
+            pose = models.Pose.parse_obj(data)
+            self.signal_new_robot_pose.emit(pose)
 
         @self.sio.on("state")
         def on_state(data):

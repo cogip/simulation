@@ -12,7 +12,7 @@ from cogip.widgets.chartsview import ChartsView
 from cogip.widgets.dashboard import Dashboard
 from cogip.widgets.gameview import GameView
 from cogip.widgets.help import HelpCameraControlDialog
-from cogip.models import ShellMenu, RobotState
+from cogip.models import Pose, ShellMenu, RobotState
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -289,21 +289,32 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.dashboard.close()
 
-    @qtSlot(RobotState)
-    def new_robot_state(self, state: RobotState):
+    @qtSlot(Pose)
+    def new_robot_pose(self, pose: Pose):
         """
         Qt Slot
 
         Update robot position information in the status bar.
 
         Arguments:
+            pose: Robot pose
+        """
+        self.pos_x_text.setText(f"{pose.x:> #6.2f}")
+        self.pos_y_text.setText(f"{pose.y:> #6.2f}")
+        self.pos_angle_text.setText(f"{pose.O:> #4.2f}")
+
+    @qtSlot(RobotState)
+    def new_robot_state(self, state: RobotState):
+        """
+        Qt Slot
+
+        Update robot state information in the status bar.
+
+        Arguments:
             state: Robot state
         """
         self.pos_mode_text.setText(state.mode.name)
         self.cycle_text.setText(f"{state.cycle or 0:>#6d}")
-        self.pos_x_text.setText(f"{state.pose_current.x:> #6.2f}")
-        self.pos_y_text.setText(f"{state.pose_current.y:> #6.2f}")
-        self.pos_angle_text.setText(f"{state.pose_current.O:> #4.2f}")
 
     @qtSlot(ShellMenu)
     def load_menu(self, new_menu: ShellMenu):

@@ -179,7 +179,6 @@ class RobotState(BaseModel):
 
     Attributes:
         mode: Current robot mode
-        pose_current: Current robot position
         pose_order: Position to reach
         cycle: Current cycle
         speed_current: Current speed

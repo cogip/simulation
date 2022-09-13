@@ -1,5 +1,11 @@
 // addEventListener to adapt board to window size
 
+let pose_current = undefined;
+
+export function updatePoseCurrent(new_pose) {
+  pose_current = new_pose;
+}
+
 let ratioX = null;
 let ratioY = null;
 
@@ -79,16 +85,16 @@ export function displayMsg(msg) {
   }
 
   if (
-    msg.pose_current !== undefined &&
-    !isNaN(msg.pose_current.x) &&
-    !isNaN(msg.pose_current.y)
+    pose_current !== undefined &&
+    !isNaN(pose_current.x) &&
+    !isNaN(pose_current.y)
   ) {
     const formatMsg = $(
-      `<pre>Cycle: ${msg.cycle} / X: ${msg.pose_current.x.toFixed(
+      `<pre>Cycle: ${msg.cycle} / X: ${pose_current.x.toFixed(
         2
-      )} / Y: ${msg.pose_current.y.toFixed(
+      )} / Y: ${pose_current.y.toFixed(
         2
-      )} / Angle: ${msg.pose_current.O.toFixed(2)} / Mode: ${mode}</pre>`
+      )} / Angle: ${pose_current.O.toFixed(2)} / Mode: ${mode}</pre>`
     );
     $("#msg").append(formatMsg);
   }
@@ -116,13 +122,13 @@ export function drawBoardElement(msg) {
   // draw robot
   // init robot position
   if (
-    msg.pose_current !== undefined &&
-    !isNaN(msg.pose_current.x) &&
-    !isNaN(msg.pose_current.y)
+    pose_current !== undefined &&
+    !isNaN(pose_current.x) &&
+    !isNaN(pose_current.y)
   ) {
-    const robotX = msg.pose_current.x;
-    const robotY = msg.pose_current.y;
-    const robotO = msg.pose_current.O;
+    const robotX = pose_current.x;
+    const robotY = pose_current.y;
+    const robotO = pose_current.O;
     drawRobot(robotX, robotY, robotO, context);
   }
 

@@ -56,12 +56,14 @@ def main_opt(
     win.signal_save_samples.connect(win.game_view.save_samples)
 
     # Connect Controller signals to Robot slots
+    controller.signal_new_robot_pose.connect(robot_entity.new_robot_pose)
     controller.signal_new_robot_state.connect(robot_entity.new_robot_state)
     controller.signal_new_robot_state.connect(win.game_view.new_robot_state)
 
     # Connect Controller signals to UI slots
     controller.signal_new_console_text.connect(win.log_text.append)
     controller.signal_new_menu.connect(win.load_menu)
+    controller.signal_new_robot_pose.connect(win.new_robot_pose)
     controller.signal_new_robot_state.connect(win.new_robot_state)
     controller.signal_connected.connect(win.connected)
     controller.signal_exit.connect(win.close)

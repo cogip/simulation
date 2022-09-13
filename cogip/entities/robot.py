@@ -7,7 +7,7 @@ from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
 
 from cogip import logger
-from cogip.models import DynObstacleList, RobotState
+from cogip.models import DynObstacleList, Pose, RobotState
 
 from .asset import AssetEntity
 from .dynobstacle import DynRectObstacleEntity, DynCircleObstacleEntity
@@ -159,6 +159,18 @@ class RobotEntity(AssetEntity):
         self.rect_obstacles_pool = current_rect_obstacles
         self.round_obstacles_pool = current_round_obstacles
 
+    @qtSlot(Pose)
+    def new_robot_pose(self, new_pose: Pose) -> None:
+        """
+        Qt slot called to set the robot's new pose.
+
+        Arguments:
+            new_pose: new robot pose
+        """
+        self.transform_component.setTranslation(
+            QtGui.QVector3D(new_pose.x, new_pose.y, 0))
+        self.transform_component.setRotationZ(new_pose.O - 90)
+
     @qtSlot(RobotState)
     def new_robot_state(self, new_state: RobotState) -> None:
         """
@@ -167,10 +179,6 @@ class RobotEntity(AssetEntity):
         Arguments:
             new_state: new robot state
         """
-        self.transform_component.setTranslation(
-            QtGui.QVector3D(new_state.pose_current.x, new_state.pose_current.y, 0))
-        self.transform_component.setRotationZ(new_state.pose_current.O - 90)
-
         if self.order_robot:
             self.order_robot.transform.setTranslation(
                 QtGui.QVector3D(new_state.pose_order.x, new_state.pose_order.y, 0))
