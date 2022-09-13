@@ -99,6 +99,12 @@ make -C submodules/mcu-firmware/applications/app_test BOARD=cogip-native PORT="-
 COPILOT_SERIAL_PORT=/tmp/ttyRPI cogip-copilot
 ```
 
+`Detector` is run using:
+
+```bash
+cogip-detector
+```
+
 `RobotCam` is run using:
 
 ```bash

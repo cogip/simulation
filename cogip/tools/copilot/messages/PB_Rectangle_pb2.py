@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x12PB_Rectangle.proto\"W\n\x0cPB_Rectangle\x12\t\n\x01x\x18\x01 \x01(\x11\x12\t\n\x01y\x18\x02 \x01(\x11\x12\r\n\x05\x61ngle\x18\x03 \x01(\x11\x12\x10\n\x08length_x\x18\x04 \x01(\x11\x12\x10\n\x08length_y\x18\x05 \x01(\x11\x62\x06proto3')
+  serialized_pb=_b('\n\x12PB_Rectangle.proto\"W\n\x0cPB_Rectangle\x12\t\n\x01x\x18\x01 \x01(\x11\x12\t\n\x01y\x18\x02 \x01(\x11\x12\r\n\x05\x61ngle\x18\x03 \x01(\r\x12\x10\n\x08length_x\x18\x04 \x01(\r\x12\x10\n\x08length_y\x18\x05 \x01(\rb\x06proto3')
 )
 
 
@@ -48,21 +48,21 @@ _PB_RECTANGLE = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='angle', full_name='PB_Rectangle.angle', index=2,
-      number=3, type=17, cpp_type=1, label=1,
+      number=3, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='length_x', full_name='PB_Rectangle.length_x', index=3,
-      number=4, type=17, cpp_type=1, label=1,
+      number=4, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='length_y', full_name='PB_Rectangle.length_y', index=4,
-      number=5, type=17, cpp_type=1, label=1,
+      number=5, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,

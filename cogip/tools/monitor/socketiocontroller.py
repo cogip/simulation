@@ -1,7 +1,8 @@
 from threading import Thread
 import time
-from typing import Optional
+from typing import List, Optional
 
+from pydantic import parse_obj_as
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
@@ -27,10 +28,16 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted on robot pose update
         signal_new_robot_state:
             Qt signal emitted on robot state update
+        signal_new_dyn_obstacles:
+            Qt signal emitted on dynamic obstacles update
         signal_connected:
             Qt signal emitted on Copilot connection state changes
         signal_exit:
             Qt signal emitted to exit Monitor
+        signal_start_lidar_emulation:
+            Qt signal emitted to start Lidar emulation
+        signal_stop_lidar_emulation:
+            Qt signal emitted to stop Lidar emulation
         last_cycle:
             Record the last cycle to avoid sending the same data several times
     """
@@ -38,8 +45,11 @@ class SocketioController(QtCore.QObject):
     signal_new_menu: qtSignal = qtSignal(models.ShellMenu)
     signal_new_robot_pose: qtSignal = qtSignal(models.Pose)
     signal_new_robot_state: qtSignal = qtSignal(models.RobotState)
+    signal_new_dyn_obstacles: qtSignal = qtSignal(list)
     signal_connected: qtSignal = qtSignal(bool)
     signal_exit: qtSignal = qtSignal()
+    signal_start_lidar_emulation: qtSignal = qtSignal()
+    signal_stop_lidar_emulation: qtSignal = qtSignal()
     last_cycle: int = 0
 
     def __init__(self, url: str):
@@ -168,10 +178,34 @@ class SocketioController(QtCore.QObject):
                 self.last_cycle = state.cycle
                 self.signal_new_robot_state.emit(state)
 
-        @self.sio.on("reset")
-        def on_reset():
+        @self.sio.on("obstacles")
+        def on_obstacles(data):
             """
-            Callback on reset message.
-            Reset shmem on firmware restart.
+            Callback on obstacles message.
             """
-            Sensor.shm_key = None
+            obstacles = parse_obj_as(models.DynObstacleList, data)
+            self.signal_new_dyn_obstacles.emit(obstacles)
+
+        @self.sio.on("start_lidar_emulation")
+        def on_start_lidar_emulation():
+            """
+            Start Lidar emulation.
+            """
+            self.signal_start_lidar_emulation.emit()
+
+        @self.sio.on("stop_lidar_emulation")
+        def on_stop_lidar_emulation():
+            """
+            Stop Lidar emulation.
+            """
+            self.signal_stop_lidar_emulation.emit()
+
+    def emit_lidar_data(self, data: List[int]) -> None:
+        """
+        Send Lidar data to Copilot.
+
+        Arguments:
+            data: List of distances for each angle
+        """
+        if self.sio.connected:
+            self.sio.emit("lidar_data", data)

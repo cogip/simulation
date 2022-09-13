@@ -1,8 +1,5 @@
-import ctypes
 import math
 from typing import List, Optional
-
-import sysv_ipc
 
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
@@ -16,24 +13,6 @@ from cogip.entities.impact import ImpactEntity
 VL53L0X_NUMOF = 6
 
 
-class ShmData(ctypes.Structure):
-    """
-    Contains all sensors data shared with the firmware.
-
-    The equivalent C struct is:
-    ```c
-    struct {
-        uint16_t tof[VL53L0X_NUMOF];
-        uint16_t lidar[360]
-    }
-    ```
-    """
-    _fields_ = [
-        ('tof', ctypes.c_ushort * VL53L0X_NUMOF),
-        ('lidar', ctypes.c_ushort * 360)
-    ]
-
-
 class Sensor(QtCore.QObject):
     """
     Base class for all sensors.
@@ -45,16 +24,11 @@ class Sensor(QtCore.QObject):
     Attributes:
         obstacles: Class attribute recording all entities that should be detected
         all_sensors: Class attribute recording all sensors
-        shm_key: Key to the shared memory segment
-        shm_ptr: Pointer the shared memory segment
-        shm_data: Data class mapped on the shared memory segment
+        hit: Last hit of this sensor
     """
     obstacles: List[Qt3DCore.QEntity] = []
     all_sensors: List["Sensor"] = []
-
-    shm_key: Optional[str] = None
-    shm_ptr: Optional[sysv_ipc.SharedMemory] = None
-    shm_data: Optional[ShmData] = None
+    hit: Optional[Qt3DRender.QRayCasterHit] = None
 
     def __init__(
             self,
@@ -93,7 +67,6 @@ class Sensor(QtCore.QObject):
         self.origin_y = origin_y
         self.asset_entity = asset_entity
         self.name = name
-        self.distance = None
 
         self.ray_caster = Qt3DRender.QRayCaster()
         self.ray_caster.setEnabled(False)  # Start casting only when the first obstacle is registered
@@ -127,6 +100,8 @@ class Sensor(QtCore.QObject):
         self.hit = None
         if len(distances):
             self.hit = min(distances, key=lambda x: x.distance())
+
+        self.update_impact()
 
     def update_impact(self):
         """
@@ -163,28 +138,6 @@ class Sensor(QtCore.QObject):
         self.ray_caster.addLayer(obstacle.layer)
         # Activate if not already done
         self.ray_caster.trigger()
-
-    @classmethod
-    def init_shm(cls):
-        """
-        Class method.
-
-        Initialize the shared memory segment used to share
-        sensors data with the firmware.
-        """
-        if cls.shm_ptr:
-            cls.shm_ptr.detach()
-            cls.shm_ptr.remove()
-
-        cls.shm_ptr = sysv_ipc.SharedMemory(key=None, mode=0o666, flags=sysv_ipc.IPC_CREX, size=1024)
-        cls.shm_key = cls.shm_ptr.key
-        cls.shm_data = ShmData.from_buffer(cls.shm_ptr)
-
-        for i in range(VL53L0X_NUMOF):
-            cls.shm_data.tof[i] = 65535
-
-        for i in range(360):
-            cls.shm_data.lidar[i] = 65535
 
 
 class ToFSensor(Sensor):
@@ -246,19 +199,6 @@ class ToFSensor(Sensor):
         self.transform.setRotationZ(rotation)
         self.entity.addComponent(self.transform)
 
-    @qtSlot()
-    def update_hit(self):
-        """
-        Store the distance of the closest obstacle in the shared memory segment.
-        """
-        super(ToFSensor, self).update_hit()
-        if Sensor.shm_data:
-            if self.hit:
-                Sensor.shm_data.tof[self.tof_id] = int(self.hit.distance())
-            else:
-                Sensor.shm_data.tof[self.tof_id] = 65535
-        self.update_impact()
-
 
 class LidarSensor(Sensor):
     """
@@ -304,16 +244,13 @@ class LidarSensor(Sensor):
         self.lidar_id = LidarSensor.nb_lidar_sensors
         LidarSensor.nb_lidar_sensors += 1
 
-    @qtSlot()
-    def update_hit(self):
+    @property
+    def distance(self) -> int:
         """
-        Store the distance of the closest obstacle in the shared memory segment.
+        Last sensor hit distance if any.
         """
-        super(LidarSensor, self).update_hit()
-        if Sensor.shm_data:
-            dist = 65535
-            if self.hit:
-                dist = self.hit.distance()
-                dist += math.dist((0, 0), (self.origin_x, self.origin_y))
-            Sensor.shm_data.lidar[self.lidar_id] = int(dist)
-        self.update_impact()
+        dist = 65535
+        if self.hit:
+            dist = self.hit.distance()
+            dist += math.dist((0, 0), (self.origin_x, self.origin_y))
+        return int(dist)

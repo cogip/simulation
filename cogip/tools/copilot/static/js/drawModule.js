@@ -1,9 +1,14 @@
 // addEventListener to adapt board to window size
 
 let pose_current = undefined;
+let obstacles = [];
 
 export function updatePoseCurrent(new_pose) {
   pose_current = new_pose;
+}
+
+export function updateObstacles(new_obstacles) {
+  obstacles = new_obstacles;
 }
 
 let ratioX = null;
@@ -156,8 +161,8 @@ export function drawBoardElement(msg) {
   }
 
   // draw obstacles
-  if (msg.obstacles.length) {
-    msg.obstacles.forEach(function (obstacle) {
+  if (obstacles.length) {
+    obstacles.forEach(function (obstacle) {
       drawObstacles(obstacle, context);
     });
   }

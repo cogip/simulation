@@ -59,6 +59,10 @@ def main_opt(
     controller.signal_new_robot_pose.connect(robot_entity.new_robot_pose)
     controller.signal_new_robot_state.connect(robot_entity.new_robot_state)
     controller.signal_new_robot_state.connect(win.game_view.new_robot_state)
+    controller.signal_new_dyn_obstacles.connect(robot_entity.set_dyn_obstacles)
+    controller.signal_start_lidar_emulation.connect(robot_entity.start_lidar_emulation)
+    controller.signal_stop_lidar_emulation.connect(robot_entity.stop_lidar_emulation)
+    robot_entity.lidar_emit_data_signal.connect(controller.emit_lidar_data)
 
     # Connect Controller signals to UI slots
     controller.signal_new_console_text.connect(win.log_text.append)

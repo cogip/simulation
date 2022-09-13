@@ -5,6 +5,8 @@ It it connected to `Copilot` embedded in the robot through Socket.IO protocol.
 
 Only one `Monitor`can be connected to `Copilot`at the same time.
 
+It can also provide fake Lidar data to `Detector` in emulation mode.
+
 The monitor provides a graphical interface, featuring:
 
   * a 3D view of the table (in yellow) and the robot (in green)

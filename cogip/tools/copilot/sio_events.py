@@ -1,7 +1,11 @@
+from typing import Any, Dict, List
+
+from pydantic import parse_obj_as
 import socketio
 from socketio.exceptions import ConnectionRefusedError
 
-from .messages import PB_Command, PB_Wizard
+from cogip import models
+from .messages import PB_Command, PB_Obstacles, PB_Wizard
 from . import server
 
 
@@ -27,6 +31,17 @@ class SioEvents(socketio.AsyncNamespace):
                 self.enter_room(sid, "dashboards")
                 print("Client invited to room 'dashboards'.")
                 await self._copilot.emit_menu(sid)
+            if client_type == "detector":
+                if self._copilot.detector_sid:
+                    print("Connection refused: a detector is already connected")
+                    raise ConnectionRefusedError("A detector is already connected")
+                if (mode := auth.get("mode")) not in ["detection", "emulation"]:
+                    print(f"Connection refused: unknown mode '{mode}'")
+                    raise ConnectionRefusedError(f"Unknown mode '{mode}'")
+                self._copilot.detector_sid = sid
+                self._copilot.detector_mode = mode
+                if mode == "emulation" and self._copilot.monitor_sid is not None:
+                    await self.emit("start_lidar_emulation", to=self._copilot.monitor_sid)
 
     async def on_disconnect(self, sid):
         """
@@ -34,6 +49,10 @@ class SioEvents(socketio.AsyncNamespace):
         """
         if sid == self._copilot.monitor_sid:
             self._copilot.monitor_sid = None
+            if self._copilot.detector_mode == "emulation":
+                await self.emit("stop_lidar_emulation", to=self._copilot.monitor_sid)
+        elif sid == self._copilot.detector_sid:
+            self._copilot.detector_sid = None
         self.leave_room(sid, "dashboards")
 
     async def on_cmd(self, sid, data):
@@ -80,3 +99,32 @@ class SioEvents(socketio.AsyncNamespace):
 
     async def on_sample(self, sid, data):
         self._copilot.set_samples(data)
+
+    async def on_obstacles(self, sid, obstacles: List[Dict[str, Any]]):
+        """
+        Callback on obstacles message.
+
+        Receive a list of obstacles, computed from Lidar data by the Detector.
+        These obstacles are sent to mcu-firmware to compute avoidance path,
+        and to monitor/dashboards for display.
+        """
+        dyn_obstacles = parse_obj_as(models.DynObstacleList, obstacles)
+        pb_obstacles = PB_Obstacles()
+        for dyn_obstacle in dyn_obstacles:
+            if isinstance(dyn_obstacle, models.DynRoundObstacle):
+                pb_obstacle = pb_obstacles.circles.add()
+                pb_obstacle.x = int(dyn_obstacle.x)
+                pb_obstacle.y = int(dyn_obstacle.y)
+                pb_obstacle.radius = int(dyn_obstacle.radius)
+        await self._copilot.send_serial_message(server.obstacles_uuid, pb_obstacles)
+        await self.emit("obstacles", obstacles, room="dashboards")
+
+    async def on_lidar_data(self, sid, lidar_data):
+        """
+        Callback on lidar data.
+
+        In emulation mode, receive Lidar data from the Monitor,
+        and forward to the Detector in charge of computing dynamic obstacles.
+        """
+        if self._copilot.detector_sid:
+            await self.emit("lidar_data", lidar_data, to=self._copilot.detector_sid)

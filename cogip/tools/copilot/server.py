@@ -4,7 +4,7 @@ import binascii
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 
 from aioserial import AioSerial
 from fastapi import FastAPI, Request
@@ -35,6 +35,7 @@ copilot_connected_uuid: int = 1132911482
 copilot_disconnected_uuid: int = 1412808668
 score_uuid: int = 2552455996
 pose_uuid: int = 1534060156
+obstacles_uuid: int = 3138845474
 
 
 def create_app() -> FastAPI:
@@ -64,6 +65,8 @@ class CopilotServer:
     _serial_messages_to_send: asyncio.Queue = None   # Queue for messages waiting to be sent on serial port
     _original_uvicorn_exit_handler = UvicornServer.handle_exit  # Backup of original exit handler to overload it
     _monitor_sid: str = None                         # Session ID on the monitor sio client
+    _detector_sid: str = None                         # Session ID on the detector sio client
+    _detector_mode: Literal["detection", "emulation"] = "detection"  # Working mode of the detector
 
     def __init__(self):
         """
@@ -123,6 +126,23 @@ class CopilotServer:
     @monitor_sid.setter
     def monitor_sid(self, sid: str) -> None:
         self._monitor_sid = sid
+
+    @property
+    def detector_sid(self) -> str:
+        return self._detector_sid
+
+    @detector_sid.setter
+    def detector_sid(self, sid: str) -> None:
+        self._detector_sid = sid
+
+    @property
+    def detector_mode(self) -> Literal["detection", "emulation"]:
+        return self._detector_mode
+
+    @detector_mode.setter
+    def detector_mode(self, mode: Literal["detection", "emulation"]) -> None:
+        if mode in ["detection", "emulation"]:
+            self._detector_mode = mode
 
     def set_samples(self, samples: Dict[str, Any]) -> None:
         self._samples = samples
@@ -214,7 +234,7 @@ class CopilotServer:
         """
         Handle reset message. This means that the robot has just booted.
 
-        Send a reset message to all connected monitors.
+        Send a reset message to all connected clients.
         """
         self._menu = None
         await self.send_serial_message(copilot_connected_uuid, None)
@@ -264,20 +284,7 @@ class CopilotServer:
             preserving_proto_field_name=True,
             use_integers_for_enums=True
         )
-
-        # Convert obstacles format to comply with Pydantic models used by the monitor
-        obstacles = state.get("obstacles", [])
-        new_obstacles = []
-        for obstacle in obstacles:
-            bb = obstacle.pop("bounding_box")
-            try:
-                new_obstacle = list(obstacle.values())[0]
-            except IndexError:
-                continue
-            new_obstacle["bb"] = bb
-            new_obstacles.append(new_obstacle)
-        state["obstacles"] = new_obstacles
-        await self.sio.emit("state", state)
+        await self.sio.emit("state", state, room="dashboards")
         await self._loop.run_in_executor(None, self.record_state, state)
 
     @pb_exception_handler

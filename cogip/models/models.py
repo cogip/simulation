@@ -192,7 +192,6 @@ class RobotState(BaseModel):
     speed_current: Speed = Speed()
     speed_order: Speed = Speed()
     path: List[Vertex] = []
-    obstacles: DynObstacleList
 
 
 class Obstacle(BaseModel):
@@ -214,9 +213,6 @@ class Obstacle(BaseModel):
     length: int = 200
     width: int = 200
     height: int = 600
-
-
-DynObstacleList = List[Obstacle]
 
 
 class LogMessage(BaseModel):

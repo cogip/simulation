@@ -16,6 +16,7 @@ nav:
   - Tools:
     - usage/monitor.md
     - usage/copilot.md
+    - usage/detector.md
     - usage/robotcam.md
     - usage/replay.md
     - usage/lidarusb.md

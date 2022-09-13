@@ -13,10 +13,13 @@ def main() -> None:
     """
     settings = Settings()
 
-    uvicorn.run(
-        "cogip.tools.copilot.app:app",
-        host="0.0.0.0",
-        port=settings.server_port,
-        workers=1,
-        log_level="warning"
-    )
+    try:
+        uvicorn.run(
+            "cogip.tools.copilot.app:app",
+            host="0.0.0.0",
+            port=settings.server_port,
+            workers=1,
+            log_level="warning"
+        )
+    except Exception as exc:
+        print(exc)
