@@ -3,10 +3,15 @@
 The Copilot tools is running on a Raspberry Pi embedded in the robot.
 It communicates with the robot's STM32 over a serial port.
 It is connected to the network over Wifi.
-It provides a Socket.IO server to send shell menus and robot states to monitors connected
-to this server and receive commands from monitors.
-It provides a web server to provide monitoring on any devices (PC, smartphones)
+
+It provides a Socket.IO server to send shell menus and robot states to `Monitor`/`Dashboards`
+connected to this server and receive commands from `Monitor`/`Dashboards`.
+
+It runs a web server to provide monitoring on any devices (PC, smartphones)
 connected to the same network.
+
+It also forwards fake Lidar data from `Monitor` to `Detector` in emulation mode,
+and dynamic obstacles to `mcu-firmware`.
 
 ## Run Copilot
 

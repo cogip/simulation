@@ -4,7 +4,7 @@ from pathlib import Path
 import timeit
 from typing import Any, Dict, List
 
-from pydantic import ValidationError
+from pydantic import parse_obj_as, ValidationError
 from pydantic.json import pydantic_encoder
 from pydantic.tools import parse_file_as
 
@@ -283,7 +283,7 @@ class GameView(QtWidgets.QWidget):
             filename: path of the JSON file
         """
         try:
-            obstacle_models = models.ObstacleList.parse_file(filename)
+            obstacle_models = parse_obj_as(models.ObstacleList, filename)
             for obstacle_model in obstacle_models:
                 self.add_obstacle(**obstacle_model.dict())
         except ValidationError:
@@ -296,7 +296,7 @@ class GameView(QtWidgets.QWidget):
         Arguments:
             filename: path of the JSON file
         """
-        obstacle_models = models.ObstacleList.parse_obj([])
+        obstacle_models = models.ObstacleList()
         for obstacle_entity in self.obstacle_entities:
             obstacle_models.append(obstacle_entity.get_model())
         with filename.open('w') as fd:

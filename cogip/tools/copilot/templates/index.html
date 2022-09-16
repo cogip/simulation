@@ -164,6 +164,7 @@
 
         io.connect(window.location.origin, {
           path: "/sio/socket.io",
+          auth: { "type": "dashboard" }
         })
           .on("connect", function () {
             socketModule.onConnection();
@@ -174,6 +175,12 @@
           .on("menu", function (menu) {
             socketModule.onMenu(menu, this);
             virtualKeyboard._actualize();
+          })
+          .on("pose", function (msg) {
+            drawModule.updatePoseCurrent(msg);
+          })
+          .on("obstacles", function (msg) {
+            drawModule.updateObstacles(msg);
           })
           .on("state", function (msg) {
             drawModule.displayMsg(msg); // uses message to display informationin bottom page

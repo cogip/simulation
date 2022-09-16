@@ -168,22 +168,7 @@ class DynRoundObstacle(BaseModel):
 
 
 DynObstacle = Union[DynRoundObstacle, DynObstacleRect]
-
-
-class DynObstacleList(BaseModel):
-    """
-    List of dynamic obstacles.
-
-    Attributes:
-        __root__: List of dynamic obstacles
-    """
-    __root__: List[DynObstacle]
-
-    def __hash__(self):
-        """
-        Hash function to allow this class to be used as a key in a dict.
-        """
-        return hash((type(self),) + tuple(self.__root__))
+DynObstacleList = List[DynObstacle]
 
 
 class RobotState(BaseModel):
@@ -194,7 +179,6 @@ class RobotState(BaseModel):
 
     Attributes:
         mode: Current robot mode
-        pose_current: Current robot position
         pose_order: Position to reach
         cycle: Current cycle
         speed_current: Current speed
@@ -208,7 +192,6 @@ class RobotState(BaseModel):
     speed_current: Speed = Speed()
     speed_order: Speed = Speed()
     path: List[Vertex] = []
-    obstacles: DynObstacleList
 
 
 class Obstacle(BaseModel):
@@ -230,28 +213,6 @@ class Obstacle(BaseModel):
     length: int = 200
     width: int = 200
     height: int = 600
-
-
-class ObstacleList(BaseModel):
-    """
-    List of obstacles.
-
-    Attributes:
-        __root__: List of obstacles
-    """
-    __root__: List[Obstacle]
-
-    def __iter__(self):
-        """
-        Function a make the class iterable
-        """
-        return iter(self.__root__)
-
-    def append(self, item):
-        """
-        Add a obstacle to the list
-        """
-        self.__root__.append(item)
 
 
 class LogMessage(BaseModel):

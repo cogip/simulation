@@ -4,7 +4,7 @@ import binascii
 import json
 import logging
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, Literal
 
 from aioserial import AioSerial
 from fastapi import FastAPI, Request
@@ -18,9 +18,10 @@ from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
 from cogip.tools.copilot.messages.PB_Samples_pb2 import PB_Samples
-from .messages import PB_Command, PB_Menu, PB_Score, PB_State, PB_Wizard
+from .messages import PB_Menu, PB_Pose, PB_Score, PB_State, PB_Wizard
 from .recorder import GameRecordFileHandler
 from .settings import Settings
+from .sio_events import SioEvents
 
 
 reset_uuid: int = 3351980141
@@ -33,6 +34,8 @@ resp_samples_uuid: int = 1538397045
 copilot_connected_uuid: int = 1132911482
 copilot_disconnected_uuid: int = 1412808668
 score_uuid: int = 2552455996
+pose_uuid: int = 1534060156
+obstacles_uuid: int = 3138845474
 
 
 def create_app() -> FastAPI:
@@ -54,15 +57,16 @@ def pb_exception_handler(func):
 class CopilotServer:
     _serial_port: AioSerial = None                   # Async serial port
     _loop: asyncio.AbstractEventLoop = None          # Event loop to use for all async objects
-    _nb_connections: int = 0                         # Number of monitors connected
     _menu: models.ShellMenu = None                   # Last received shell menu
     _samples: Dict[str, Any] = {}                    # Last detected samples
     _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
     _record_handler: GameRecordFileHandler = None    # Log file handler to record games
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
     _serial_messages_to_send: asyncio.Queue = None   # Queue for messages waiting to be sent on serial port
-    _sio_messages_to_send: asyncio.Queue = None      # Queue for messages waiting to be sent on SocketIO server
     _original_uvicorn_exit_handler = UvicornServer.handle_exit  # Backup of original exit handler to overload it
+    _monitor_sid: str = None                         # Session ID on the monitor sio client
+    _detector_sid: str = None                         # Session ID on the detector sio client
+    _detector_mode: Literal["detection", "emulation"] = "detection"  # Working mode of the detector
 
     def __init__(self):
         """
@@ -80,6 +84,7 @@ class CopilotServer:
             logger=False,
             engineio_logger=False
         )
+        self.sio.register_namespace(SioEvents(self))
 
         # Overload default Uvicorn exit handler
         UvicornServer.handle_exit = self.handle_exit
@@ -113,13 +118,43 @@ class CopilotServer:
         self._serial_port.open()
 
         self.register_endpoints()
-        self.register_sio_events()
+
+    @property
+    def monitor_sid(self) -> str:
+        return self._monitor_sid
+
+    @monitor_sid.setter
+    def monitor_sid(self, sid: str) -> None:
+        self._monitor_sid = sid
+
+    @property
+    def detector_sid(self) -> str:
+        return self._detector_sid
+
+    @detector_sid.setter
+    def detector_sid(self, sid: str) -> None:
+        self._detector_sid = sid
+
+    @property
+    def detector_mode(self) -> Literal["detection", "emulation"]:
+        return self._detector_mode
+
+    @detector_mode.setter
+    def detector_mode(self, mode: Literal["detection", "emulation"]) -> None:
+        if mode in ["detection", "emulation"]:
+            self._detector_mode = mode
+
+    def set_samples(self, samples: Dict[str, Any]) -> None:
+        self._samples = samples
 
     @staticmethod
     def handle_exit(*args, **kwargs):
         """Overload function for Uvicorn handle_exit"""
         CopilotServer._exiting = True
         CopilotServer._original_uvicorn_exit_handler(*args, **kwargs)
+
+    async def send_serial_message(self, *args) -> None:
+        await self._serial_messages_to_send.put(args)
 
     async def serial_receiver(self):
         """
@@ -175,6 +210,7 @@ class CopilotServer:
         request_handlers = {
             reset_uuid: self.handle_reset,
             menu_uuid: self.handle_message_menu,
+            pose_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
             wizard_uuid: self.handle_message_wizard,
             req_samples_uuid: self.handle_samples_request,
@@ -194,27 +230,15 @@ class CopilotServer:
 
             self._serial_messages_received.task_done()
 
-    async def sio_sender(self):
-        """
-        Async worker waiting for messages to send to monitors through SocketIO server.
-        """
-        message_type: str
-        message_dict: Dict
-
-        while True:
-            message_type, message_dict = await self._sio_messages_to_send.get()
-            await self.sio.emit(message_type, message_dict)
-            self._sio_messages_to_send.task_done()
-
     async def handle_reset(self) -> None:
         """
         Handle reset message. This means that the robot has just booted.
 
-        Send a reset message to all connected monitors.
+        Send a reset message to all connected clients.
         """
         self._menu = None
-        await self._serial_messages_to_send.put((copilot_connected_uuid, None))
-        await self._sio_messages_to_send.put(("reset", None))
+        await self.send_serial_message(copilot_connected_uuid, None)
+        await self.sio.emit("reset")
         if self._record_handler:
             await self._loop.run_in_executor(None, self._record_handler.doRollover)
 
@@ -231,6 +255,22 @@ class CopilotServer:
         await self.emit_menu()
 
     @pb_exception_handler
+    async def handle_message_pose(self, message: bytes) -> None:
+        """
+        Send robot pose received from the robot to connected monitors and detector.
+        """
+        pb_pose = PB_Pose()
+        await self._loop.run_in_executor(None, pb_pose.ParseFromString, message)
+
+        pose = ProtobufMessageToDict(
+            pb_pose,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+            use_integers_for_enums=True
+        )
+        await self.sio.emit("pose", pose)
+
+    @pb_exception_handler
     async def handle_message_state(self, message: bytes) -> None:
         """
         Send robot state received from the robot to connected monitors.
@@ -244,20 +284,7 @@ class CopilotServer:
             preserving_proto_field_name=True,
             use_integers_for_enums=True
         )
-
-        # Convert obstacles format to comply with Pydantic models used by the monitor
-        obstacles = state.get("obstacles", [])
-        new_obstacles = []
-        for obstacle in obstacles:
-            bb = obstacle.pop("bounding_box")
-            try:
-                new_obstacle = list(obstacle.values())[0]
-            except IndexError:
-                continue
-            new_obstacle["bb"] = bb
-            new_obstacles.append(new_obstacle)
-        state["obstacles"] = new_obstacles
-        await self._sio_messages_to_send.put(("state", state))
+        await self.sio.emit("state", state, room="dashboards")
         await self._loop.run_in_executor(None, self.record_state, state)
 
     @pb_exception_handler
@@ -275,7 +302,7 @@ class CopilotServer:
         wizard["type"] = wizard_type
         wizard.update(**wizard[wizard_type])
         del wizard[wizard_type]
-        await self._sio_messages_to_send.put(("wizard", wizard))
+        await self.sio.emit("wizard", wizard)
 
     async def handle_samples_request(self) -> None:
         pb_samples = PB_Samples()
@@ -290,7 +317,7 @@ class CopilotServer:
                 rot_z=coords[5]
             )
             pb_samples.has_samples = True
-        await self._serial_messages_to_send.put((resp_samples_uuid, pb_samples))
+        await self.send_serial_message(resp_samples_uuid, pb_samples)
 
     @pb_exception_handler
     async def handle_score(self, message: bytes) -> None:
@@ -301,18 +328,17 @@ class CopilotServer:
         await self._loop.run_in_executor(None, pb_score.ParseFromString, message)
 
         score = ProtobufMessageToDict(pb_score)
-        await self._sio_messages_to_send.put(("score", score.value))
+        await self.sio.emit("score", score.value)
 
-    async def emit_menu(self) -> None:
+    async def emit_menu(self, sid: str = None) -> None:
         """
         Sent current shell menu to connected monitors.
         """
-        if not self._menu or self._nb_connections == 0:
+        if not self._menu:
             return
 
-        await self._sio_messages_to_send.put(
-            ("menu", self._menu.dict(exclude_defaults=True, exclude_unset=True))
-        )
+        client = sid or "dashboards"
+        await self.sio.emit("menu", self._menu.dict(exclude_defaults=True, exclude_unset=True), to=client)
 
     def record_state(self, state: Dict[str, Any]) -> None:
         """
@@ -338,19 +364,16 @@ class CopilotServer:
 
             # Create asyncio queues
             self._serial_messages_received = asyncio.Queue()
-            self._pb_messages_to_send = asyncio.Queue()
             self._serial_messages_received = asyncio.Queue()
             self._serial_messages_to_send = asyncio.Queue()
-            self._sio_messages_to_send = asyncio.Queue()
 
             # Create async workers
             asyncio.create_task(self.serial_decoder(), name="Serial Decoder")
             asyncio.create_task(self.serial_receiver(), name="Serial Receiver")
             asyncio.create_task(self.serial_sender(), name="Serial Sender")
-            asyncio.create_task(self.sio_sender(), name="SocketIO Sender")
 
             # Send CONNECTED message to firmware
-            await self._serial_messages_to_send.put((copilot_connected_uuid, None))
+            await self.send_serial_message(copilot_connected_uuid, None)
 
         @self.app.on_event("shutdown")
         async def shutdown_event():
@@ -362,7 +385,7 @@ class CopilotServer:
             message on serial port.
             Wait for all serial messages to be sent.
             """
-            await self._serial_messages_to_send.put((copilot_disconnected_uuid, None))
+            await self.send_serial_message(copilot_disconnected_uuid, None)
             await self._serial_messages_to_send.join()
 
         @self.app.get("/", response_class=HTMLResponse)
@@ -371,70 +394,3 @@ class CopilotServer:
             Homepage of the dashboard web server.
             """
             return self.templates.TemplateResponse("index.html", {"request": request})
-
-    def register_sio_events(self) -> None:
-
-        @self.sio.event
-        async def connect(sid, environ):
-            """
-            Callback on new monitor connection.
-
-            Send the current menu to monitors.
-            """
-            self._nb_connections += 1
-            await self.emit_menu()
-
-        @self.sio.event
-        async def disconnect(sid):
-            """
-            Callback on monitor disconnection.
-            """
-            self._nb_connections -= 1
-
-        @self.sio.on("cmd")
-        async def on_cmd(sid, data):
-            """
-            Callback on command message.
-
-            Receive a command from a monitor.
-
-            Build the Protobuf command message:
-
-            * split received string at first space if any.
-            * first is the command and goes to `cmd` attribute.
-            * second part is arguments, if any, and goes to `desc` attribute.
-            """
-            response = PB_Command()
-            response.cmd, _, response.desc = data.partition(" ")
-            await self._serial_messages_to_send.put((command_uuid, response))
-
-        @self.sio.on("wizard")
-        async def on_wizard(sid, data):
-            """
-            Callback on Wizard message.
-
-            Receive a command from a monitor.
-
-            Build the Protobuf wizard message and send to firmware.
-            """
-            await self._sio_messages_to_send.put(("close_wizard", None))
-
-            response = PB_Wizard()
-            response.name = data["name"]
-            data_type = data["type"]
-            if not isinstance(data["value"], list):
-                value = getattr(response, data_type).value
-                value_type = type(value)
-                getattr(response, data_type).value = value_type(data["value"])
-            elif data_type == "select_integer":
-                response.select_integer.value[:] = [int(v) for v in data["value"]]
-            elif data_type == "select_floating":
-                response.select_floating.value[:] = [float(v) for v in data["value"]]
-            elif data_type == "select_str":
-                response.select_str.value[:] = data["value"]
-
-            await self._serial_messages_to_send.put((wizard_uuid, response))
-
-        @self.sio.on("samples")
-        async def on_sample(sid, data):
-            self._samples = data

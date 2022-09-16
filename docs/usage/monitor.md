@@ -1,7 +1,11 @@
 # Monitor
 
-The monitor is used to monitor the robot behavior during the game.
+The `Monitor` is used to monitor the robot behavior during the game.
 It it connected to `Copilot` embedded in the robot through Socket.IO protocol.
+
+Only one `Monitor`can be connected to `Copilot`at the same time.
+
+It can also provide fake Lidar data to `Detector` in emulation mode.
 
 The monitor provides a graphical interface, featuring:
 

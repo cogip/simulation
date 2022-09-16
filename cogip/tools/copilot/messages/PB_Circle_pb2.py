@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=_b('\n\x0fPB_Circle.proto\"1\n\tPB_Circle\x12\t\n\x01x\x18\x01 \x01(\x11\x12\t\n\x01y\x18\x02 \x01(\x11\x12\x0e\n\x06radius\x18\x03 \x01(\x11\x62\x06proto3')
+  serialized_pb=_b('\n\x0fPB_Circle.proto\"1\n\tPB_Circle\x12\t\n\x01x\x18\x01 \x01(\x11\x12\t\n\x01y\x18\x02 \x01(\x11\x12\x0e\n\x06radius\x18\x03 \x01(\rb\x06proto3')
 )
 
 
@@ -48,7 +48,7 @@ _PB_CIRCLE = _descriptor.Descriptor(
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
       name='radius', full_name='PB_Circle.radius', index=2,
-      number=3, type=17, cpp_type=1, label=1,
+      number=3, type=13, cpp_type=3, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
