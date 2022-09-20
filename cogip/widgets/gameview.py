@@ -193,6 +193,25 @@ class GameView(QtWidgets.QWidget):
         self.scene_entity.addComponent(self.scene_transform)
         self.scene_transform.setTranslation(QtGui.QVector3D(-1500, 0, 0))
 
+        # Draw axis
+        self.x_axis = LineEntity(QtCore.Qt.red, self.scene_entity)
+        self.x_axis.set_points(
+            models.Vertex(x=0, y=0, z=0),
+            models.Vertex(x=5000, y=0, z=0)
+        )
+
+        self.y_axis = LineEntity(QtCore.Qt.green, self.scene_entity)
+        self.y_axis.set_points(
+            models.Vertex(x=0, y=0, z=0),
+            models.Vertex(x=0, y=5000, z=0)
+        )
+
+        self.z_axis = LineEntity(QtCore.Qt.blue, self.scene_entity)
+        self.z_axis.set_points(
+            models.Vertex(x=0, y=0, z=0),
+            models.Vertex(x=0, y=0, z=5000)
+        )
+
         self.path: PathEntity = PathEntity(parent=self.scene_entity)
 
         # Init Camera
