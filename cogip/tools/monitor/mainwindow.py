@@ -423,9 +423,7 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select file to load obstacles",
             dir="",
-            filter="JSON Files (*.json)",
-            # Workaround a know Qt bug
-            options=QtWidgets.QFileDialog.DontUseNativeDialog
+            filter="JSON Files (*.json)"
         )
         if filename:
             self.signal_load_obstacles.emit(Path(filename))
@@ -441,9 +439,7 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select file to save obstacles",
             dir="",
-            filter="JSON Files (*.json)",
-            # Workaround a know Qt bug
-            options=QtWidgets.QFileDialog.DontUseNativeDialog
+            filter="JSON Files (*.json)"
         )
         if filename:
             self.signal_save_obstacles.emit(Path(filename))

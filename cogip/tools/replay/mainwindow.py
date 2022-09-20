@@ -207,9 +207,7 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select file to load trace",
             dir="",
-            filter="Text files (*.txt)",
-            # Workaround a known Qt bug
-            options=QtWidgets.QFileDialog.DontUseNativeDialog
+            filter="Text files (*.txt)"
         )
         if filename:
             self.load_trace(Path(filename))
