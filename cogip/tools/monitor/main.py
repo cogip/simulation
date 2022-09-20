@@ -8,7 +8,7 @@ import sys
 # This needs to be set in os.environ before importing typer.
 os.environ["QT_LOGGING_RULES"] = "*.debug=false;qt.webenginecontext.info=false"
 
-from PySide6 import QtWidgets
+from PySide6 import QtGui, QtWidgets
 import typer
 
 from cogip.entities.robot import RobotEntity
@@ -36,6 +36,7 @@ def main_opt(
 
     # Create UI
     win = MainWindow(url)
+    win.setWindowIcon(QtGui.QIcon("assets/cogip-logo.png"))
 
     # Create table entity
     table_entity = TableEntity(win.game_view.scene_entity)
