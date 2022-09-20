@@ -39,7 +39,7 @@ def main_opt(
     win.setWindowIcon(QtGui.QIcon("assets/cogip-logo.png"))
 
     # Create table entity
-    table_entity = TableEntity(win.game_view.scene_entity)
+    table_entity = TableEntity()
     win.game_view.add_asset(table_entity)
 
     # Create robot entity
@@ -53,8 +53,8 @@ def main_opt(
     win.signal_add_obstacle.connect(win.game_view.add_obstacle)
     win.signal_load_obstacles.connect(win.game_view.load_obstacles)
     win.signal_save_obstacles.connect(win.game_view.save_obstacles)
-    win.signal_load_samples.connect(win.game_view.load_samples)
-    win.signal_save_samples.connect(win.game_view.save_samples)
+    win.signal_load_cake_layers.connect(win.game_view.load_cake_layers)
+    win.signal_save_cake_layers.connect(win.game_view.save_cake_layers)
 
     # Connect Controller signals to Robot slots
     controller.signal_new_robot_pose.connect(robot_entity.new_robot_pose)

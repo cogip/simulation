@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import List
 import math
 from pathlib import Path
@@ -7,7 +8,6 @@ from PySide6.QtCore import Slot as qtSlot
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
 
-from cogip import logger
 from cogip.models import DynObstacleList, DynObstacleRect, Pose, RobotState
 
 from .asset import AssetEntity
@@ -22,26 +22,24 @@ class RobotEntity(AssetEntity):
 
     Attributes:
         asset_path: Path of the asset file
-        asset_name: Interval in seconds between each sensors update
         sensors_update_interval: Interval in milliseconds between each sensors update
         lidar_emit_interval: Interval in milliseconds between each Lidar data emission
         lidar_emit_data_signal: Qt Signal emitting Lidar data
         order_robot:: Entity that represents the robot next destination
     """
     asset_path: Path = Path("assets/robot2022.dae")
-    asset_name: str = "myscene"
     sensors_update_interval: int = 5
     lidar_emit_interval: int = 20
     lidar_emit_data_signal: qtSignal = qtSignal(list)
     order_robot: "RobotOrderEntity" = None
 
-    def __init__(self):
+    def __init__(self, parent: Qt3DCore.QEntity | None = None):
         """
         Class constructor.
 
         Inherits [AssetEntity][cogip.entities.asset.AssetEntity].
         """
-        super().__init__(self.asset_path)
+        super().__init__(self.asset_path, parent=parent)
         self.lidar_sensors = []
         self.rect_obstacles_pool = []
         self.round_obstacles_pool = []
@@ -60,20 +58,6 @@ class RobotEntity(AssetEntity):
         """
         super().post_init()
 
-        self.asset_entity = self.findChild(Qt3DCore.QEntity, self.asset_name)
-        if not self.asset_entity:
-            logger.error(f"Entity '{self.asset_name}' not found in {self.asset_path}")
-            return
-
-        self.asset_entity.setParent(self)
-
-        for comp in self.asset_entity.components():
-            if isinstance(comp, Qt3DCore.QTransform):
-                comp.setRotationX(0)
-                comp.setRotationY(0)
-                comp.setRotationZ(0)
-                break
-
         self.add_lidar_sensors()
         self.order_robot = RobotOrderEntity(self.parent())
 
@@ -89,11 +73,8 @@ class RobotEntity(AssetEntity):
 
         for i in range(0, 360):
             angle = (360 - i) % 360
-            angle = i
-            origin_x = radius * math.sin(math.radians(180 - angle))
-            origin_y = radius * math.cos(math.radians(180 - angle))
-            origin_x = radius * math.sin(math.radians(angle))
-            origin_y = radius * math.cos(math.radians(angle))
+            origin_x = radius * math.sin(math.radians(90 - angle))
+            origin_y = radius * math.cos(math.radians(90 - angle))
             sensors_properties.append(
                 {
                     "name": f"Lidar {angle}",
@@ -175,8 +156,9 @@ class RobotEntity(AssetEntity):
             new_pose: new robot pose
         """
         self.transform_component.setTranslation(
-            QtGui.QVector3D(new_pose.x, new_pose.y, 0))
-        self.transform_component.setRotationZ(new_pose.O - 90)
+            QtGui.QVector3D(new_pose.x, new_pose.y, 0)
+        )
+        self.transform_component.setRotationZ(new_pose.O)
 
     @qtSlot(RobotState)
     def new_robot_state(self, new_state: RobotState) -> None:
@@ -188,8 +170,9 @@ class RobotEntity(AssetEntity):
         """
         if self.order_robot:
             self.order_robot.transform.setTranslation(
-                QtGui.QVector3D(new_state.pose_order.x, new_state.pose_order.y, 0))
-            self.order_robot.transform.setRotationZ(new_state.pose_order.O - 90)
+                QtGui.QVector3D(new_state.pose_order.x, new_state.pose_order.y, 0)
+            )
+            self.order_robot.transform.setRotationZ(new_state.pose_order.O)
 
     def start_lidar_emulation(self) -> None:
         """

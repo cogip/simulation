@@ -85,8 +85,6 @@ class AssetEntity(Qt3DCore.QEntity):
         if status != Qt3DRender.QSceneLoader.Ready:
             return
 
-        self.removeComponent(self.loader)
-
         self.post_init()
 
         self.generate_tree()

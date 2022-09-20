@@ -231,81 +231,185 @@ class LogMessage(BaseModel):
 SerialMessage = Union[RobotState, ShellMenu, LogMessage]
 
 
-class SampleID(IntEnum):
+class CakeLayerID(IntEnum):
     """
     Enum to identify each sample
     """
-    YELLOW_TABLE_FIXED_B = auto()
-    YELLOW_TABLE_FIXED_G = auto()
-    YELLOW_TABLE_FIXED_R = auto()
-    YELLOW_TABLE_RANDOM_1 = auto()
-    YELLOW_TABLE_RANDOM_2 = auto()
-    YELLOW_TABLE_RANDOM_3 = auto()
-    YELLOW_SHED_R = auto()
-    YELLOW_SHED_B = auto()
-    YELLOW_OUTSIDE_G = auto()
-    YELLOW_RACK_SIDE_B = auto()
-    YELLOW_RACK_SIDE_G = auto()
-    YELLOW_RACK_SIDE_R = auto()
-    YELLOW_RACK_TOP_B = auto()
-    YELLOW_RACK_TOP_G = auto()
-    YELLOW_RACK_TOP_R = auto()
-    PURPLE_TABLE_FIXED_B = auto()
-    PURPLE_TABLE_FIXED_G = auto()
-    PURPLE_TABLE_FIXED_R = auto()
-    PURPLE_TABLE_RANDOM_1 = auto()
-    PURPLE_TABLE_RANDOM_2 = auto()
-    PURPLE_TABLE_RANDOM_3 = auto()
-    PURPLE_SHED_B = auto()
-    PURPLE_SHED_R = auto()
-    PURPLE_OUTSIDE_G = auto()
-    PURPLE_RACK_SIDE_B = auto()
-    PURPLE_RACK_SIDE_G = auto()
-    PURPLE_RACK_SIDE_R = auto()
-    PURPLE_RACK_TOP_B = auto()
-    PURPLE_RACK_TOP_G = auto()
-    PURPLE_RACK_TOP_R = auto()
+    GREEN_FRONT_ICING_BOTTOM = auto()
+    GREEN_FRONT_ICING_MIDDLE = auto()
+    GREEN_FRONT_ICING_TOP = auto()
+    GREEN_FRONT_CREAM_BOTTOM = auto()
+    GREEN_FRONT_CREAM_MIDDLE = auto()
+    GREEN_FRONT_CREAM_TOP = auto()
+    GREEN_FRONT_SPONGE_BOTTOM = auto()
+    GREEN_FRONT_SPONGE_MIDDLE = auto()
+    GREEN_FRONT_SPONGE_TOP = auto()
+
+    GREEN_BACK_SPONGE_BOTTOM = auto()
+    GREEN_BACK_SPONGE_MIDDLE = auto()
+    GREEN_BACK_SPONGE_TOP = auto()
+    GREEN_BACK_CREAM_BOTTOM = auto()
+    GREEN_BACK_CREAM_MIDDLE = auto()
+    GREEN_BACK_CREAM_TOP = auto()
+    GREEN_BACK_ICING_BOTTOM = auto()
+    GREEN_BACK_ICING_MIDDLE = auto()
+    GREEN_BACK_ICING_TOP = auto()
+
+    BLUE_FRONT_ICING_BOTTOM = auto()
+    BLUE_FRONT_ICING_MIDDLE = auto()
+    BLUE_FRONT_ICING_TOP = auto()
+    BLUE_FRONT_CREAM_BOTTOM = auto()
+    BLUE_FRONT_CREAM_MIDDLE = auto()
+    BLUE_FRONT_CREAM_TOP = auto()
+    BLUE_FRONT_SPONGE_BOTTOM = auto()
+    BLUE_FRONT_SPONGE_MIDDLE = auto()
+    BLUE_FRONT_SPONGE_TOP = auto()
+
+    BLUE_BACK_SPONGE_BOTTOM = auto()
+    BLUE_BACK_SPONGE_MIDDLE = auto()
+    BLUE_BACK_SPONGE_TOP = auto()
+    BLUE_BACK_CREAM_BOTTOM = auto()
+    BLUE_BACK_CREAM_MIDDLE = auto()
+    BLUE_BACK_CREAM_TOP = auto()
+    BLUE_BACK_ICING_BOTTOM = auto()
+    BLUE_BACK_ICING_MIDDLE = auto()
+    BLUE_BACK_ICING_TOP = auto()
 
 
-class SampleColor(IntEnum):
+class CakeLayerKind(IntEnum):
     """
-    Enum for sample colors
+    Enum for cake layers
 
     Attributes:
-        ROCK:
-        RED:
-        GREEN:
-        BLUE:
+        ICING:
+        CREAM:
+        SPONGE:
     """
-    ROCK = auto()
-    RED = auto()
-    GREEN = auto()
-    BLUE = auto()
+    ICING = auto()
+    CREAM = auto()
+    SPONGE = auto()
 
 
-class Sample(BaseModel):
+class CakeLayerPos(IntEnum):
     """
-    Contains the properties of a sample on the table.
+    Enum for cake layer positions
 
     Attributes:
-        id: sample id
-        pos_x: X position
-        pos_y: Y position
-        pos_z: Z position
-        angle_x: X angle
-        angle_y: Y angle
-        angle_z: Z angle
-        color: color
-        hidden: sample hidden (rock face) or not (color face)
-        known: color known or not
+        TOP:
+        MIDDLE:
+        BOTTOM:
     """
-    id: SampleID
-    pos_x: float
-    pos_y: float
-    pos_z: float
-    angle_x: float
-    angle_y: float
-    angle_z: float
-    color: SampleColor
-    hidden: bool
-    known: bool
+    TOP = auto()
+    MIDDLE = auto()
+    BOTTOM = auto()
+
+
+class CakeLayer(BaseModel):
+    """
+    Contains the properties of a cake layer on the table.
+
+    Attributes:
+        id: cake layer id
+        x: X coordinate
+        y: Y coordinate
+        pos: layer position
+        kind: layer kind
+    """
+    id: CakeLayerID
+    x: float
+    y: float
+    pos: CakeLayerPos
+    kind: CakeLayerKind
+
+
+class CherryID(IntEnum):
+    """
+    Enum to identify each cherry
+    """
+    FRONT_1 = auto()
+    FRONT_2 = auto()
+    FRONT_3 = auto()
+    FRONT_4 = auto()
+    FRONT_5 = auto()
+    FRONT_6 = auto()
+    FRONT_7 = auto()
+    FRONT_8 = auto()
+    FRONT_9 = auto()
+    FRONT_10 = auto()
+
+    BACK_1 = auto()
+    BACK_2 = auto()
+    BACK_3 = auto()
+    BACK_4 = auto()
+    BACK_5 = auto()
+    BACK_6 = auto()
+    BACK_7 = auto()
+    BACK_8 = auto()
+    BACK_9 = auto()
+    BACK_10 = auto()
+
+    GREEN_1 = auto()
+    GREEN_2 = auto()
+    GREEN_3 = auto()
+    GREEN_4 = auto()
+    GREEN_5 = auto()
+    GREEN_6 = auto()
+    GREEN_7 = auto()
+    GREEN_8 = auto()
+    GREEN_9 = auto()
+    GREEN_10 = auto()
+
+    BLUE_1 = auto()
+    BLUE_2 = auto()
+    BLUE_3 = auto()
+    BLUE_4 = auto()
+    BLUE_5 = auto()
+    BLUE_6 = auto()
+    BLUE_7 = auto()
+    BLUE_8 = auto()
+    BLUE_9 = auto()
+    BLUE_10 = auto()
+
+    ROBOT_1 = auto()
+    ROBOT_2 = auto()
+    ROBOT_3 = auto()
+    ROBOT_4 = auto()
+    ROBOT_5 = auto()
+    ROBOT_6 = auto()
+    ROBOT_7 = auto()
+    ROBOT_8 = auto()
+    ROBOT_9 = auto()
+    ROBOT_10 = auto()
+
+    OPPONENT_1 = auto()
+    OPPONENT_2 = auto()
+    OPPONENT_3 = auto()
+    OPPONENT_4 = auto()
+    OPPONENT_5 = auto()
+    OPPONENT_6 = auto()
+    OPPONENT_7 = auto()
+    OPPONENT_8 = auto()
+    OPPONENT_9 = auto()
+    OPPONENT_10 = auto()
+
+
+class CherryLocation(IntEnum):
+    """
+    Enum for cherry locations
+
+    Attributes:
+        TOP:
+        MIDDLE:
+        BOTTOM:
+        RACK:
+        ROBOT:
+        OPPONENT:
+        BASKET:
+    """
+    TOP = auto()
+    MIDDLE = auto()
+    BOTTOM = auto()
+    RACK = auto()
+    ROBOT = auto()
+    OPPONENT = auto()
+    BASKET = auto()
