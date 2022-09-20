@@ -215,6 +215,9 @@ class Obstacle(BaseModel):
     height: int = 600
 
 
+ObstacleList = List[Obstacle]
+
+
 class LogMessage(BaseModel):
     """
     A log received on the serial port.

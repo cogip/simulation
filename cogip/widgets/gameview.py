@@ -283,11 +283,11 @@ class GameView(QtWidgets.QWidget):
             filename: path of the JSON file
         """
         try:
-            obstacle_models = parse_obj_as(models.ObstacleList, filename)
+            obstacle_models = parse_file_as(models.ObstacleList, filename)
             for obstacle_model in obstacle_models:
                 self.add_obstacle(**obstacle_model.dict())
-        except ValidationError:
-            pass
+        except ValidationError as exc:
+            print(exc)
 
     def save_obstacles(self, filename: Path):
         """
@@ -296,11 +296,11 @@ class GameView(QtWidgets.QWidget):
         Arguments:
             filename: path of the JSON file
         """
-        obstacle_models = models.ObstacleList()
+        obstacle_models = []
         for obstacle_entity in self.obstacle_entities:
             obstacle_models.append(obstacle_entity.get_model())
         with filename.open('w') as fd:
-            fd.write(obstacle_models.json(indent=2))
+            fd.write(json.dumps(obstacle_models, default=pydantic_encoder, indent=2))
 
     def load_samples(self, filename: Path):
         """
