@@ -29,7 +29,7 @@ export function resizeCanvas() {
     ($("#board").outerWidth(true) - $("#board").outerWidth());
 
   let background = new Image();
-  background.src = "static/img/ground2022.png"; // default background size 2000x3000 --> ratio 2/3
+  background.src = "static/img/ground2023.png"; // default background size 2000x3000 --> ratio 2/3
 
   let imgWidth = htmlCanvas.width;
   let imgHeight = (imgWidth * 2) / 3;
