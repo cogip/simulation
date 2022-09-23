@@ -33,7 +33,7 @@ required_packages = [
     "Jinja2==3.0.3",
     "opencv-contrib-python==4.5.5.64",
     "polling2==0.5.0",
-    "protobuf==3.19.4",
+    "protobuf==3.19.5",
     "python-socketio==5.5.1",
     "requests==2.27.1",
     "uvicorn[standard]==0.17.6",
