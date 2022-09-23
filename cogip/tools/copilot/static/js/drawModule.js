@@ -13,6 +13,8 @@ export function updateObstacles(new_obstacles) {
 
 let ratioX = null;
 let ratioY = null;
+let coordX = 0;
+let coordY = 0;
 
 export function resizeCanvas() {
   const footerHeight = $(".footer").outerHeight();
@@ -44,23 +46,26 @@ export function resizeCanvas() {
   context.canvas.width = imgWidth;
   context.canvas.height = imgHeight;
 
-  context.translate(htmlCanvas.width / 2, 0); // x invert
+  coordX = 0;
+  coordY = htmlCanvas.height / 2;
+
+  context.translate(coordX, coordY); // x invert
 
   htmlCanvas.addEventListener("click", function (event) {
     console.log(getMousePos(this, event));
   });
 
   ratioX = imgWidth / 3000;
-  ratioY = imgHeight / 2000;
+  ratioY = -imgHeight / 2000;
 }
 
 function getMousePos(canvas, evt) {
-  var transX = canvas.width / 2;
-  var transY = 0;
-  var rect = canvas.getBoundingClientRect();
+  let transX = coordX;
+  let transY = coordY;
+  let rect = canvas.getBoundingClientRect();
   return {
     x: evt.clientX - rect.left - transX,
-    y: evt.clientY - rect.top - transY,
+    y: -(evt.clientY - rect.top - transY),
   };
 }
 
@@ -97,9 +102,9 @@ export function displayMsg(msg) {
     const formatMsg = $(
       `<pre>Cycle: ${msg.cycle} / X: ${pose_current.x.toFixed(
         2
-      )} / Y: ${pose_current.y.toFixed(
+      )} / Y: ${pose_current.y.toFixed(2)} / Angle: ${pose_current.O.toFixed(
         2
-      )} / Angle: ${pose_current.O.toFixed(2)} / Mode: ${mode}</pre>`
+      )} / Mode: ${mode}</pre>`
     );
     $("#msg").append(formatMsg);
   }
@@ -117,12 +122,7 @@ export function drawBoardElement(msg) {
   const context = htmlCanvas.getContext("2d");
 
   // clear area
-  context.clearRect(
-    -htmlCanvas.width / 2,
-    0,
-    htmlCanvas.width,
-    htmlCanvas.height
-  );
+  context.clearRect(coordX, -coordY, htmlCanvas.width, htmlCanvas.height);
 
   // draw robot
   // init robot position
@@ -173,7 +173,7 @@ function drawRobot(x, y, O, context) {
   let robotHeight = robot.height * ratioY;
 
   context.save();
-  context.translate(-x * ratioX, y * ratioY);
+  context.translate(x * ratioX, y * ratioY);
   context.rotate(-(O * Math.PI) / 180);
   context.drawImage(
     robot,
@@ -190,15 +190,15 @@ function drawPath(startPoint, endPoint, context) {
   context.strokeStyle = "blue";
   context.lineWidth = 2;
   context.beginPath();
-  context.moveTo(-startPoint.x * ratioX, startPoint.y * ratioY);
-  context.lineTo(-endPoint.x * ratioX, endPoint.y * ratioY);
+  context.moveTo(startPoint.x * ratioX, startPoint.y * ratioY);
+  context.lineTo(endPoint.x * ratioX, endPoint.y * ratioY);
   context.closePath();
   context.stroke();
   context.restore();
 }
 
 function drawObstacles(obstacle, context) {
-  let obstacleX = -obstacle.x * ratioX;
+  let obstacleX = obstacle.x * ratioX;
   let obstacleY = obstacle.y * ratioY;
 
   context.save();
