@@ -164,7 +164,7 @@
 
         io.connect(window.location.origin, {
           path: "/sio/socket.io",
-          auth: { "type": "dashboard" }
+          auth: { type: "dashboard" },
         })
           .on("connect", function () {
             socketModule.onConnection();
@@ -183,7 +183,7 @@
             drawModule.updateObstacles(msg);
           })
           .on("state", function (msg) {
-            drawModule.displayMsg(msg); // uses message to display informationin bottom page
+            drawModule.displayMsg(msg); // uses message to display information in bottom page
             drawModule.drawBoardElement(msg); // move robot
           })
           .on("wizard", function (msg) {

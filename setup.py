@@ -22,7 +22,7 @@ required_packages = [
     "python-dotenv==0.19.2",
 
     # Packages specific to monitor
-    "PySide6==6.2.3;" + marker_platform_x86_64,
+    "PySide6==6.3.2;" + marker_platform_x86_64,
     "sysv-ipc==1.1.0;" + marker_platform_x86_64,
     "typer==0.4.1;" + marker_platform_x86_64,
 

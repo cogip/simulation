@@ -70,6 +70,7 @@ All tools can be install on the development PC.
 !!! note "Python 3.8 or more is required."
 
 To setup a new environment, create a virtual env and install the package in dev mode:
+
 ```bash
 python3.8 -m venv venv
 source venv/bin/activate
@@ -78,7 +79,7 @@ pip install wheel
 pip install -e .
 ```
 
-`mcu-firmware` and `Copilot`  can be run on the development PC.
+`mcu-firmware` and `Copilot` can be run on the development PC.
 In this case, we have to create virtual serial ports to simulation the serial link between STM32 and Raspberry Pi:
 
 ```bash

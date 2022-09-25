@@ -209,9 +209,7 @@ class ChartView(QtWidgets.QWidget):
             parent=self,
             caption=f"Select file to save {self.name} values",
             dir="",
-            filter="CSV Files (*.csv)",
-            # Workaround a know Qt bug
-            options=QtWidgets.QFileDialog.DontUseNativeDialog
+            filter="CSV Files (*.csv)"
         )
         if filename:
             with Path(filename).open("w", newline="") as csv_file:
