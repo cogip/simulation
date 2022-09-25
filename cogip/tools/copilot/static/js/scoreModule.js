@@ -1,7 +1,6 @@
-let socket = null;
-
 export function openScoreModal(score) {
-  $("#displayScore").text(score);
+  document.getElementById("displayScore").textContent = score;
 
-  $("#scoreModal").modal("show");
+  const scoreModal = new bootstrap.Modal("#scoreModal");
+  scoreModal.show(document.getElementById("scoreModal"));
 }
