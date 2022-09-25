@@ -79,7 +79,7 @@ class SioEvents(socketio.AsyncNamespace):
 
         Build the Protobuf wizard message and send to firmware.
         """
-        await self.sio.emit("close_wizard")
+        await self.emit("close_wizard")
 
         response = PB_Wizard()
         response.name = data["name"]
