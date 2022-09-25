@@ -187,7 +187,6 @@ export const virtualKeyboard = {
           keyElement.textContent = key.toLowerCase();
 
           keyElement.addEventListener("focus", () => {
-            console.log("here");
             this.properties.value += this.properties.capsLock
               ? key.toUpperCase()
               : key.toLowerCase();
@@ -244,21 +243,18 @@ export const virtualKeyboard = {
   _actualize() {
     // Automatically use keyboard for elements with .use-keyboard-input
     document.querySelectorAll(".use-keyboard-input").forEach((element) => {
-      console.log(element);
-      // const newElement = element.cloneNode(true);
       element.addEventListener("click", () => {
         virtualKeyboard.open(element.type, element.value, (currentValue) => {
           element.value = currentValue;
         });
       });
-      // element.replaceWith(newElement);
     });
 
     let virtualKeyboard = this;
-    $(document).on("click", function (event) {
+    document.addEventListener("click", function (event) {
       if (
-        $(event.target).closest(".use-keyboard-input").length === 0 &&
-        $(event.target).closest(".keyboard__key").length === 0
+        event.target.closest(".use-keyboard-input") === null &&
+        event.target.closest(".keyboard__key") === null
       ) {
         virtualKeyboard.close();
       }

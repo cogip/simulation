@@ -17,18 +17,14 @@ let coordX = 0;
 let coordY = 0;
 
 export function resizeCanvas() {
-  const footerHeight = $(".footer").outerHeight();
-  const menuWidth = $("#menu").outerWidth();
+  const footerHeight =
+    document.getElementsByClassName("footer")[0].offsetHeight;
+  const menuWidth = document.getElementById("menu").offsetWidth;
 
   let htmlCanvas = document.getElementById("board");
-  htmlCanvas.height =
-    window.innerHeight -
-    footerHeight -
-    ($("#board").outerHeight(true) - $("#board").outerHeight());
-  htmlCanvas.width =
-    window.innerWidth -
-    menuWidth -
-    ($("#board").outerWidth(true) - $("#board").outerWidth());
+
+  htmlCanvas.height = window.innerHeight - footerHeight;
+  htmlCanvas.width = window.innerWidth - menuWidth - 10;
 
   let background = new Image();
   background.src = "static/img/ground2023.png"; // default background size 2000x3000 --> ratio 2/3
@@ -70,7 +66,11 @@ function getMousePos(canvas, evt) {
 }
 
 export function displayMsg(msg) {
-  $("#msg").empty();
+  let msgHTML = document.getElementById("msg");
+
+  while (msgHTML.firstChild) {
+    msgHTML.removeChild(msgHTML.firstChild);
+  }
 
   let mode = null;
   switch (msg.mode) {
@@ -99,14 +99,14 @@ export function displayMsg(msg) {
     !isNaN(pose_current.x) &&
     !isNaN(pose_current.y)
   ) {
-    const formatMsg = $(
-      `<pre>Cycle: ${msg.cycle} / X: ${pose_current.x.toFixed(
-        2
-      )} / Y: ${pose_current.y.toFixed(2)} / Angle: ${pose_current.O.toFixed(
-        2
-      )} / Mode: ${mode}</pre>`
-    );
-    $("#msg").append(formatMsg);
+    const formatMsg = document.createElement("pre");
+    formatMsg.textContent = `Cycle: ${msg.cycle} / X: ${pose_current.x.toFixed(
+      2
+    )} / Y: ${pose_current.y.toFixed(2)} / Angle: ${pose_current.O.toFixed(
+      2
+    )} / Mode: ${mode}`;
+
+    msgHTML.appendChild(formatMsg);
   }
 }
 

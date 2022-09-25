@@ -66,7 +66,7 @@
             <button
               type="button"
               class="btn-close"
-              onclick="$('#cameraModal').modal('hide');"
+              data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
           </div>
@@ -124,7 +124,7 @@
             <button
               type="button"
               class="btn-close"
-              onclick="$('#scoreModal').modal('hide');"
+              data-bs-dismiss="modal"
               aria-label="Close"
             ></button>
           </div>
@@ -141,10 +141,6 @@
     ></script>
     <script
       type="text/javascript"
-      src="{{ url_for('static', path='js/external/jquery.min.js') }}"
-    ></script>
-    <script
-      type="text/javascript"
       src="{{ url_for('static', path='js/external/socket.io.min.js') }}"
     ></script>
 
@@ -158,7 +154,7 @@
 
       window.addEventListener("resize", drawModule.resizeCanvas, false);
 
-      $(document).ready(function () {
+      document.addEventListener("DOMContentLoaded", function (event) {
         drawModule.resizeCanvas(); // draw background
         virtualKeyboard.init(); // initialize keyboard
 
@@ -191,14 +187,18 @@
             virtualKeyboard._actualize();
           })
           .on("close_wizard", function () {
-            $("#wizardModal").modal("hide");
+            document
+              .getElementById("wizardModal")
+              .setAttribute("style", "display: none;");
             virtualKeyboard.close();
           })
           .on("score", function (score) {
             scoreModule.openScoreModal(score);
           })
           .on("close_score", function () {
-            $("#scoreModal").modal("hide");
+            document
+              .getElementById("scoreModal")
+              .setAttribute("style", "display: none;");
           });
       });
     </script>
