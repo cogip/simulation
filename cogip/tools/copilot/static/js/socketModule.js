@@ -1,47 +1,56 @@
 export function onConnection() {
   console.log("Connected to Copilot.");
-  $("#connection").html(
-    "<pre>Connected to " + window.location.origin + "</pre>"
-  );
+  document.getElementById("connection").innerHTML =
+    "<pre>Connected to " + window.location.origin + "</pre>";
 }
 
 export function onDisconnect() {
   console.log("Disconnected.");
-  $("#connection").html("<pre>Disconnected.</pre>");
+  document.getElementById("connection").innerHTML = "<pre>Disconnected.</pre>";
 }
 
 export function onMenu(menu, socket) {
-  $("#menu").empty();
-  $("#menu").html(
-    "<div><img id='logoCogip' src='static/img/cogip-logo.png') }}\" />'</div>"
-  );
-  $("#menu").append("<h1 class=small >" + menu.name + "</h1>"); // display title for menu
+  var HTMLmenu = document.getElementById("menu");
+  while (HTMLmenu.firstChild) HTMLmenu.removeChild(HTMLmenu.firstChild);
+  HTMLmenu.innerHTML =
+    "<div><img id='logoCogip' src='static/img/cogip-logo.png') }}\" />'</div>";
 
-  const divButton = $('<div id="divButtons"></div>');
+  var h1 = document.createElement("h1");
+  h1.setAttribute("class", "small");
+  h1.innerHTML = "<h1 class=small >" + menu.name + "</h1>"; // display title for menu
+  HTMLmenu.appendChild(h1);
+
+  const divButton = document.createElement("div");
+  divButton.setAttribute("id", "divButtons");
+
   // add all buttons menu
   for (let value in menu.entries) {
     if (!menu.entries[value]["cmd"].startsWith("_")) {
-      let inputParams = "";
-
-      let newButtonMenu = $(
-        `<button type='button' class='btn btn-dark'>${menu.entries[value]["desc"]}</button>`
-      ).click(function () {
+      let newButtonMenu = document.createElement("button");
+      newButtonMenu.setAttribute("type", "button");
+      newButtonMenu.setAttribute("class", "btn btn-dark");
+      newButtonMenu.innerHTML = menu.entries[value]["desc"];
+      newButtonMenu.addEventListener("click", function () {
         socket.emit("cmd", menu.entries[value]["cmd"]);
       });
 
       if (menu.entries[value]["desc"].includes("<")) {
-        let divRow = $('<div class="input-group"></div>');
-        inputParams = `<input class="form-control use-keyboard-input" type="number" />`;
+        let divRow = document.createElement("div");
+        divRow.setAttribute("class", "input-group");
 
-        divRow.append(newButtonMenu);
-        divRow.append(inputParams);
-        divButton.append(divRow);
+        let inputParams = document.createElement("input");
+        inputParams.setAttribute("class", "form-control use-keyboard-input");
+        inputParams.setAttribute("type", "number");
+
+        divRow.appendChild(newButtonMenu);
+        divRow.appendChild(inputParams);
+        divButton.appendChild(divRow);
       } else {
-        divButton.append(newButtonMenu);
-        divButton.append("<br>");
+        divButton.appendChild(newButtonMenu);
+        divButton.appendChild(document.createElement("br"));
       }
     }
 
-    $("#menu").append(divButton);
+    HTMLmenu.appendChild(divButton);
   }
 }
