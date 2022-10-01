@@ -23,7 +23,6 @@ required_packages = [
 
     # Packages specific to monitor
     "PySide6==6.3.2;" + marker_platform_x86_64,
-    "sysv-ipc==1.1.0;" + marker_platform_x86_64,
     "typer==0.4.1;" + marker_platform_x86_64,
 
     # Packages specific to Copilot and Robotcam

@@ -148,16 +148,11 @@ class SocketioController(QtCore.QObject):
         def on_menu(data):
             """
             Callback on menu message.
-            Init shmem if command exists in the menu and not already initialized.
             """
             menu = models.ShellMenu.parse_obj(data)
             if self.menu != menu:
                 self.menu = menu
-                commands = [entry.cmd for entry in menu.entries]
                 self.signal_new_menu.emit(menu)
-                if "_set_shmem_key" in commands and Sensor.shm_key is None:
-                    Sensor.init_shm()
-                    self.new_command(f"_set_shmem_key {Sensor.shm_key}")
 
         @self.sio.on("pose")
         def on_pose(data):
