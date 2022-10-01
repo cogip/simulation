@@ -97,9 +97,6 @@ class SioEvents(socketio.AsyncNamespace):
 
         await self._copilot.send_serial_message(server.wizard_uuid, response)
 
-    async def on_sample(self, sid, data):
-        self._copilot.set_samples(data)
-
     async def on_obstacles(self, sid, obstacles: List[Dict[str, Any]]):
         """
         Callback on obstacles message.

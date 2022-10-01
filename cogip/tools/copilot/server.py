@@ -17,7 +17,6 @@ import socketio
 from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
-from cogip.tools.copilot.messages.PB_Samples_pb2 import PB_Samples
 from .messages import PB_Menu, PB_Pose, PB_Score, PB_State, PB_Wizard
 from .recorder import GameRecordFileHandler
 from .settings import Settings
@@ -29,8 +28,6 @@ command_uuid: int = 2168120333
 menu_uuid: int = 1485239280
 state_uuid: int = 3422642571
 wizard_uuid: int = 1525532810
-req_samples_uuid: int = 3781855956
-resp_samples_uuid: int = 1538397045
 copilot_connected_uuid: int = 1132911482
 copilot_disconnected_uuid: int = 1412808668
 score_uuid: int = 2552455996
@@ -58,7 +55,6 @@ class CopilotServer:
     _serial_port: AioSerial = None                   # Async serial port
     _loop: asyncio.AbstractEventLoop = None          # Event loop to use for all async objects
     _menu: models.ShellMenu = None                   # Last received shell menu
-    _samples: Dict[str, Any] = {}                    # Last detected samples
     _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
     _record_handler: GameRecordFileHandler = None    # Log file handler to record games
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
@@ -144,8 +140,6 @@ class CopilotServer:
         if mode in ["detection", "emulation"]:
             self._detector_mode = mode
 
-    def set_samples(self, samples: Dict[str, Any]) -> None:
-        self._samples = samples
 
     @staticmethod
     def handle_exit(*args, **kwargs):
@@ -213,7 +207,6 @@ class CopilotServer:
             pose_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
             wizard_uuid: self.handle_message_wizard,
-            req_samples_uuid: self.handle_samples_request,
             score_uuid: self.handle_score
         }
 
@@ -303,21 +296,6 @@ class CopilotServer:
         wizard.update(**wizard[wizard_type])
         del wizard[wizard_type]
         await self.sio.emit("wizard", wizard)
-
-    async def handle_samples_request(self) -> None:
-        pb_samples = PB_Samples()
-        for (id, coords) in sorted(self._samples.items()):
-            pb_samples.samples.add(
-                tag=int(id),
-                x=coords[0],
-                y=coords[1],
-                z=coords[2],
-                rot_x=coords[3],
-                rot_y=coords[4],
-                rot_z=coords[5]
-            )
-            pb_samples.has_samples = True
-        await self.send_serial_message(resp_samples_uuid, pb_samples)
 
     @pb_exception_handler
     async def handle_score(self, message: bytes) -> None:
