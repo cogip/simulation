@@ -141,6 +141,13 @@ class CopilotServer:
         if mode in ["detection", "emulation"]:
             self._detector_mode = mode
 
+    @property
+    def menu(self) -> models.ShellMenu:
+        return self._menu
+
+    @menu.setter
+    def menu(self, new_menu: models.ShellMenu) -> None:
+        self._menu = new_menu
 
     @staticmethod
     def handle_exit(*args, **kwargs):
