@@ -1,3 +1,4 @@
+from __future__ import annotations
 import asyncio
 import base64
 import binascii
@@ -236,24 +237,28 @@ class CopilotServer:
             await self._loop.run_in_executor(None, self._record_handler.doRollover)
 
     @pb_exception_handler
-    async def handle_message_menu(self, message: bytes) -> None:
+    async def handle_message_menu(self, message: bytes | None = None) -> None:
         """
         Send shell menu received from the robot to connected monitors.
         """
         pb_menu = PB_Menu()
-        await self._loop.run_in_executor(None, pb_menu.ParseFromString, message)
+
+        if message:
+            await self._loop.run_in_executor(None, pb_menu.ParseFromString, message)
 
         menu = ProtobufMessageToDict(pb_menu)
         self._menu = models.ShellMenu.parse_obj(menu)
         await self.emit_menu()
 
     @pb_exception_handler
-    async def handle_message_pose(self, message: bytes) -> None:
+    async def handle_message_pose(self, message: bytes | None = None) -> None:
         """
         Send robot pose received from the robot to connected monitors and detector.
         """
         pb_pose = PB_Pose()
-        await self._loop.run_in_executor(None, pb_pose.ParseFromString, message)
+
+        if message:
+            await self._loop.run_in_executor(None, pb_pose.ParseFromString, message)
 
         pose = ProtobufMessageToDict(
             pb_pose,
@@ -264,12 +269,14 @@ class CopilotServer:
         await self.sio.emit("pose", pose)
 
     @pb_exception_handler
-    async def handle_message_state(self, message: bytes) -> None:
+    async def handle_message_state(self, message: bytes | None = None) -> None:
         """
         Send robot state received from the robot to connected monitors.
         """
         pb_state = PB_State()
-        await self._loop.run_in_executor(None, pb_state.ParseFromString, message)
+
+        if message:
+            await self._loop.run_in_executor(None, pb_state.ParseFromString, message)
 
         state = ProtobufMessageToDict(
             pb_state,
@@ -281,9 +288,11 @@ class CopilotServer:
         await self._loop.run_in_executor(None, self.record_state, state)
 
     @pb_exception_handler
-    async def handle_message_wizard(self, message: bytes) -> None:
+    async def handle_message_wizard(self, message: bytes | None = None) -> None:
         pb_wizard = PB_Wizard()
-        await self._loop.run_in_executor(None, pb_wizard.ParseFromString, message)
+
+        if message:
+            await self._loop.run_in_executor(None, pb_wizard.ParseFromString, message)
 
         wizard = ProtobufMessageToDict(
             pb_wizard,
@@ -298,12 +307,14 @@ class CopilotServer:
         await self.sio.emit("wizard", wizard)
 
     @pb_exception_handler
-    async def handle_score(self, message: bytes) -> None:
+    async def handle_score(self, message: bytes | None = None) -> None:
         """
         Send shell menu received from the robot to connected monitors.
         """
         pb_score = PB_Score()
-        await self._loop.run_in_executor(None, pb_score.ParseFromString, message)
+
+        if message:
+            await self._loop.run_in_executor(None, pb_score.ParseFromString, message)
 
         score = ProtobufMessageToDict(pb_score)
         await self.sio.emit("score", score.value)
