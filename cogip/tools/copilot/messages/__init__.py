@@ -15,3 +15,5 @@ from .PB_State_pb2 import PB_State  # noqa
 from .PB_Wizard_pb2 import PB_Wizard  # noqa
 from .PB_Score_pb2 import PB_Score  # noqa
 from .PB_Obstacles_pb2 import PB_Obstacles  # noqa
+from .PB_PathPose_pb2 import PB_PathPose  # noqa
+from .PB_SpeedEnum_pb2 import PB_SpeedEnum  # noqa
