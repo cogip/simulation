@@ -151,7 +151,7 @@ export function drawBoardElement(msg) {
   }
 
   // draw path
-  if (msg.path.length) {
+  if (msg.path !== undefined && msg.path.length) {
     for (let i = 0; i < msg.path.length - 1; i++) {
       const startPoint = msg.path[i];
       const endPoint = msg.path[i + 1];
