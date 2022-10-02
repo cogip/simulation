@@ -18,7 +18,7 @@ import socketio
 from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
-from .messages import PB_Menu, PB_Pose, PB_Score, PB_State
+from .messages import PB_Menu, PB_Pose, PB_State
 from .recorder import GameRecordFileHandler
 from .settings import Settings
 from .sio_events import SioEvents
@@ -30,7 +30,6 @@ menu_uuid: int = 1485239280
 state_uuid: int = 3422642571
 copilot_connected_uuid: int = 1132911482
 copilot_disconnected_uuid: int = 1412808668
-score_uuid: int = 2552455996
 pose_uuid: int = 1534060156
 pose_reached_uuid: int = 2736246403
 start_pose_uuid: int = 2741980922
@@ -232,7 +231,6 @@ class CopilotServer:
             menu_uuid: self.handle_message_menu,
             pose_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
-            score_uuid: self.handle_score,
             pose_reached_uuid: self.handle_pose_reached
         }
 
@@ -311,19 +309,6 @@ class CopilotServer:
         )
         await self.sio.emit("state", state, room="dashboards")
         await self._loop.run_in_executor(None, self.record_state, state)
-
-    @pb_exception_handler
-    async def handle_score(self, message: bytes | None = None) -> None:
-        """
-        Send shell menu received from the robot to connected monitors.
-        """
-        pb_score = PB_Score()
-
-        if message:
-            await self._loop.run_in_executor(None, pb_score.ParseFromString, message)
-
-        score = ProtobufMessageToDict(pb_score)
-        await self.sio.emit("score", score.value)
 
     async def handle_pose_reached(self) -> None:
         """
