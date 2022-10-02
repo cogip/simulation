@@ -53,7 +53,8 @@ def pb_exception_handler(func):
 class CopilotServer:
     _serial_port: AioSerial = None                   # Async serial port
     _loop: asyncio.AbstractEventLoop = None          # Event loop to use for all async objects
-    _menu: models.ShellMenu = None                   # Last received shell menu
+    _shell_menu: models.ShellMenu = None             # Last received shell menu
+    _planner_menu: models.ShellMenu = None           # Last received planner menu
     _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
     _record_handler: GameRecordFileHandler = None    # Log file handler to record games
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
@@ -143,16 +144,26 @@ class CopilotServer:
     @property
     def planner_sid(self) -> str:
         return self._planner_sid
-    def menu(self) -> models.ShellMenu:
-        return self._menu
 
     @planner_sid.setter
     def planner_sid(self, sid: str) -> None:
         self._planner_sid = sid
 
-    @menu.setter
-    def menu(self, new_menu: models.ShellMenu) -> None:
-        self._menu = new_menu
+    @property
+    def shell_menu(self) -> models.ShellMenu:
+        return self._shell_menu
+
+    @shell_menu.setter
+    def shell_menu(self, new_menu: models.ShellMenu) -> None:
+        self._shell_menu = new_menu
+
+    @property
+    def planner_menu(self) -> models.ShellMenu:
+        return self._planner_menu
+
+    @planner_menu.setter
+    def planner_menu(self, new_menu: models.ShellMenu) -> None:
+        self._planner_menu = new_menu
 
     @staticmethod
     def handle_exit(*args, **kwargs):
@@ -241,7 +252,7 @@ class CopilotServer:
 
         Send a reset message to all connected clients.
         """
-        self._menu = None
+        self._shell_menu = None
         await self.send_serial_message(copilot_connected_uuid, None)
         await self.sio.emit("reset")
         if self._record_handler:
@@ -258,8 +269,8 @@ class CopilotServer:
             await self._loop.run_in_executor(None, pb_menu.ParseFromString, message)
 
         menu = ProtobufMessageToDict(pb_menu)
-        self._menu = models.ShellMenu.parse_obj(menu)
-        await self.emit_menu()
+        self._shell_menu = models.ShellMenu.parse_obj(menu)
+        await self.emit_shell_menu()
 
     @pb_exception_handler
     async def handle_message_pose(self, message: bytes | None = None) -> None:
@@ -311,15 +322,25 @@ class CopilotServer:
         score = ProtobufMessageToDict(pb_score)
         await self.sio.emit("score", score.value)
 
-    async def emit_menu(self, sid: str = None) -> None:
+    async def emit_shell_menu(self, sid: str = None) -> None:
         """
-        Sent current shell menu to connected monitors.
+        Sent current shell menu to connected dashboards.
         """
-        if not self._menu:
+        if not self._shell_menu:
             return
 
         client = sid or "dashboards"
-        await self.sio.emit("menu", self._menu.dict(exclude_defaults=True, exclude_unset=True), to=client)
+        await self.sio.emit("shell_menu", self._shell_menu.dict(exclude_defaults=True, exclude_unset=True), to=client)
+
+    async def emit_planner_menu(self, sid: str = None) -> None:
+        """
+        Sent current planner menu to connected dashboards.
+        """
+        if not self._planner_menu:
+            return
+
+        client = sid or "dashboards"
+        await self.sio.emit("planner_menu", self._planner_menu.dict(exclude_defaults=True, exclude_unset=True), to=client)
 
     def record_state(self, state: Dict[str, Any]) -> None:
         """

@@ -9,7 +9,7 @@ export function onDisconnect() {
   document.getElementById("connection").innerHTML = "<pre>Disconnected.</pre>";
 }
 
-export function onMenu(menu, socket) {
+export function onMenu(menu, type, socket) {
   var HTMLmenu = document.getElementById("menu");
   while (HTMLmenu.firstChild) HTMLmenu.removeChild(HTMLmenu.firstChild);
   HTMLmenu.innerHTML =
@@ -31,7 +31,7 @@ export function onMenu(menu, socket) {
       newButtonMenu.setAttribute("class", "btn btn-dark");
       newButtonMenu.innerHTML = menu.entries[value]["desc"];
       newButtonMenu.addEventListener("click", function () {
-        socket.emit("cmd", menu.entries[value]["cmd"]);
+        socket.emit(type + "_cmd", menu.entries[value]["cmd"]);
       });
 
       if (menu.entries[value]["desc"].includes("<")) {

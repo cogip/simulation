@@ -17,7 +17,7 @@ class SioEvents(socketio.AsyncNamespace):
         """
         Callback on new monitor connection.
 
-        Send the current menu to monitors.
+        Send the current menus to dashboards.
         """
         if auth and isinstance(auth, dict) and (client_type := auth.get("type")):
             if client_type == "monitor":
@@ -34,7 +34,8 @@ class SioEvents(socketio.AsyncNamespace):
             if client_type in ["monitor", "dashboard"]:
                 self.enter_room(sid, "dashboards")
                 print("Client invited to room 'dashboards'.")
-                await self._copilot.emit_menu(sid)
+                await self._copilot.emit_shell_menu(sid)
+                await self._copilot.emit_planner_menu(sid)
             if client_type == "detector":
                 if self._copilot.detector_sid:
                     print("Connection refused: a detector is already connected")
@@ -61,11 +62,11 @@ class SioEvents(socketio.AsyncNamespace):
             self._copilot.planner_sid = None
         self.leave_room(sid, "dashboards")
 
-    async def on_cmd(self, sid, data):
+    async def on_shell_cmd(self, sid, data):
         """
-        Callback on command message.
+        Callback on shell command message.
 
-        Receive a command from a monitor.
+        Receive a shell command from a dashboard.
 
         Build the Protobuf command message:
 
@@ -76,6 +77,14 @@ class SioEvents(socketio.AsyncNamespace):
         response = PB_Command()
         response.cmd, _, response.desc = data.partition(" ")
         await self._copilot.send_serial_message(server.command_uuid, response)
+
+    async def on_planner_cmd(self, sid, data):
+        """
+        Callback on planner command message.
+
+        Receive a planner command from a dashboard and forward it to the planner.
+        """
+        await self.emit("command", data, self._copilot.planner_sid)
 
     async def on_obstacles(self, sid, obstacles: List[Dict[str, Any]]):
         """
@@ -103,3 +112,13 @@ class SioEvents(socketio.AsyncNamespace):
 
         if self._copilot.detector_sid:
             await self.emit("lidar_data", lidar_data, to=self._copilot.detector_sid)
+
+    async def on_planner_menu(self, sid, menu):
+        """
+        Callback on planner menu (from planner only).
+        """
+        if sid != self._copilot.planner_sid:
+            return
+
+        self._copilot.planner_menu = models.ShellMenu.parse_obj(menu)
+        await self._copilot.emit_planner_menu("dashboards")

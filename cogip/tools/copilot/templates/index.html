@@ -168,8 +168,12 @@
           .on("disconnect", function () {
             socketModule.onDisconnect();
           })
-          .on("menu", function (menu) {
-            socketModule.onMenu(menu, this);
+          // .on("shell_menu", function (menu) {
+          //   socketModule.onMenu(menu, "shell", this);
+          //   virtualKeyboard._actualize();
+          // })
+          .on("planner_menu", function (menu) {
+            socketModule.onMenu(menu, "planner", this);
             virtualKeyboard._actualize();
           })
           .on("pose", function (msg) {
