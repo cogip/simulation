@@ -83,6 +83,7 @@ setup(
             'cogip-replay=cogip.tools.replay.main:main',
             'cogip-copilot=cogip.tools.copilot.main:main',
             'cogip-detector=cogip.tools.detector.__main__:main',
+            'cogip-planner=cogip.tools.planner.__main__:main',
             'cogip-robotcam=cogip.tools.robotcam.main:main',
             'cogip-lidarusb=cogip.tools.lidarusb.main:main',
             'cogip-lidarpf=cogip.tools.lidarpf.main:main'
