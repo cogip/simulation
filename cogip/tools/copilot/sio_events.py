@@ -1,11 +1,10 @@
 from typing import Any, Dict, List
 
-from pydantic import parse_obj_as
 import socketio
 from socketio.exceptions import ConnectionRefusedError
 
 from cogip import models
-from .messages import PB_Command, PB_Obstacles
+from .messages import PB_Command
 from . import server
 
 
@@ -80,29 +79,27 @@ class SioEvents(socketio.AsyncNamespace):
 
     async def on_obstacles(self, sid, obstacles: List[Dict[str, Any]]):
         """
-        Callback on obstacles message.
+        Callback on obstacles message (from detector only).
 
         Receive a list of obstacles, computed from Lidar data by the Detector.
-        These obstacles are sent to mcu-firmware to compute avoidance path,
+        These obstacles are sent to planner to compute avoidance path,
         and to monitor/dashboards for display.
         """
-        dyn_obstacles = parse_obj_as(models.DynObstacleList, obstacles)
-        pb_obstacles = PB_Obstacles()
-        for dyn_obstacle in dyn_obstacles:
-            if isinstance(dyn_obstacle, models.DynRoundObstacle):
-                pb_obstacle = pb_obstacles.circles.add()
-                pb_obstacle.x = int(dyn_obstacle.x)
-                pb_obstacle.y = int(dyn_obstacle.y)
-                pb_obstacle.radius = int(dyn_obstacle.radius)
-        await self._copilot.send_serial_message(server.obstacles_uuid, pb_obstacles)
+        if sid != self._copilot.detector_sid:
+            return
+
+        await self.emit("obstacles", obstacles, to=self._copilot.planner_sid)
         await self.emit("obstacles", obstacles, room="dashboards")
 
     async def on_lidar_data(self, sid, lidar_data):
         """
-        Callback on lidar data.
+        Callback on lidar data (from monitor only).
 
         In emulation mode, receive Lidar data from the Monitor,
         and forward to the Detector in charge of computing dynamic obstacles.
         """
+        if sid != self._copilot.monitor_sid:
+            return
+
         if self._copilot.detector_sid:
             await self.emit("lidar_data", lidar_data, to=self._copilot.detector_sid)

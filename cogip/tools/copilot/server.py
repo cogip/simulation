@@ -32,7 +32,6 @@ copilot_connected_uuid: int = 1132911482
 copilot_disconnected_uuid: int = 1412808668
 score_uuid: int = 2552455996
 pose_uuid: int = 1534060156
-obstacles_uuid: int = 3138845474
 
 
 def create_app() -> FastAPI:
