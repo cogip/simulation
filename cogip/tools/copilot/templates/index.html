@@ -176,8 +176,11 @@
             socketModule.onMenu(menu, "planner", this);
             virtualKeyboard._actualize();
           })
-          .on("pose", function (msg) {
+          .on("pose_current", function (msg) {
             drawModule.updatePoseCurrent(msg);
+          })
+          .on("pose_order", function (msg) {
+            drawModule.updatePoseOrder(msg);
           })
           .on("obstacles", function (msg) {
             drawModule.updateObstacles(msg);

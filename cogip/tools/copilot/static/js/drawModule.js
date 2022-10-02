@@ -1,10 +1,15 @@
 // addEventListener to adapt board to window size
 
 let pose_current = undefined;
+let pose_order = undefined;
 let obstacles = [];
 
 export function updatePoseCurrent(new_pose) {
   pose_current = new_pose;
+}
+
+export function updatePoseOrder(new_pose) {
+  pose_order = new_pose;
 }
 
 export function updateObstacles(new_obstacles) {
@@ -138,15 +143,10 @@ export function drawBoardElement(msg) {
   }
 
   // draw order
-  if (msg.pose_order) {
-    // init order position
-    const orderX = msg.pose_order.x;
-    const orderY = msg.pose_order.y;
-    const orderO = msg.pose_order.O;
-
+  if (pose_order !== undefined) {
     context.save();
     context.filter = "opacity(60%)";
-    drawRobot(orderX, orderY, orderO, context);
+    drawRobot(pose_order.x, pose_order.y, pose_order.O, context);
     context.restore();
   }
 

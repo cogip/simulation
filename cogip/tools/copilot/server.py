@@ -32,6 +32,8 @@ copilot_connected_uuid: int = 1132911482
 copilot_disconnected_uuid: int = 1412808668
 score_uuid: int = 2552455996
 pose_uuid: int = 1534060156
+pose_reached_uuid: int = 2736246403
+start_pose_uuid: int = 2741980922
 
 
 def create_app() -> FastAPI:
@@ -230,7 +232,8 @@ class CopilotServer:
             menu_uuid: self.handle_message_menu,
             pose_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
-            score_uuid: self.handle_score
+            score_uuid: self.handle_score,
+            pose_reached_uuid: self.handle_pose_reached
         }
 
         while True:
@@ -288,7 +291,7 @@ class CopilotServer:
             preserving_proto_field_name=True,
             use_integers_for_enums=True
         )
-        await self.sio.emit("pose", pose)
+        await self.sio.emit("pose_current", pose)
 
     @pb_exception_handler
     async def handle_message_state(self, message: bytes | None = None) -> None:
@@ -321,6 +324,15 @@ class CopilotServer:
 
         score = ProtobufMessageToDict(pb_score)
         await self.sio.emit("score", score.value)
+
+    async def handle_pose_reached(self) -> None:
+        """
+        Handle pose reached message.
+
+        Forward info to the planner.
+        """
+        if self.planner_sid:
+            await self.sio.emit("pose_reached", to=self.planner_sid)
 
     async def emit_shell_menu(self, sid: str = None) -> None:
         """

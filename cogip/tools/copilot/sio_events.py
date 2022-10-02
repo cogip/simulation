@@ -4,7 +4,7 @@ import socketio
 from socketio.exceptions import ConnectionRefusedError
 
 from cogip import models
-from .messages import PB_Command
+from .messages import PB_Command, PB_PathPose
 from . import server
 
 
@@ -122,3 +122,31 @@ class SioEvents(socketio.AsyncNamespace):
 
         self._copilot.planner_menu = models.ShellMenu.parse_obj(menu)
         await self._copilot.emit_planner_menu("dashboards")
+
+    async def on_start_pose(self, sid, data: Dict[str, Any]):
+        """
+        Callback on start pose (from planner only).
+        Forward to pose to mcu-firmware and dashboards.
+        """
+        if sid != self._copilot.planner_sid:
+            return
+
+        start_pose = models.PathPose.parse_obj(data)
+        pb_start_pose = PB_PathPose()
+        start_pose.copy_pb(pb_start_pose)
+        await self._copilot.send_serial_message(server.start_pose_uuid, pb_start_pose)
+        await self.emit("pose_order", data, room="dashboards")
+
+    async def on_pose_to_reach(self, sid, data: Dict[str, Any]):
+        """
+        Callback on pose to reach (from planner only).
+        Forward to pose to mcu-firmware and dashboards.
+        """
+        if sid != self._copilot.planner_sid:
+            return
+
+        pose_to_reach = models.PathPose.parse_obj(data)
+        pb_pose_to_reach = PB_PathPose()
+        pose_to_reach.copy_pb(pb_pose_to_reach)
+        await self._copilot.send_serial_message(server.pose_uuid, pb_pose_to_reach)
+        await self.emit("pose_order", data, room="dashboards")

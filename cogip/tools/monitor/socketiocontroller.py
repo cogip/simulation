@@ -23,8 +23,10 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted to log messages in UI console
         signal_new_menu:
             Qt signal emitted to load a new menu
-        signal_new_robot_pose:
-            Qt signal emitted on robot pose update
+        signal_new_robot_pose_current:
+            Qt signal emitted on robot pose current update
+        signal_new_robot_pose_order:
+            Qt signal emitted on robot pose order update
         signal_new_robot_state:
             Qt signal emitted on robot state update
         signal_new_dyn_obstacles:
@@ -42,7 +44,8 @@ class SocketioController(QtCore.QObject):
     """
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(models.ShellMenu)
-    signal_new_robot_pose: qtSignal = qtSignal(models.Pose)
+    signal_new_robot_pose_current: qtSignal = qtSignal(models.Pose)
+    signal_new_robot_pose_order: qtSignal = qtSignal(models.Pose)
     signal_new_robot_state: qtSignal = qtSignal(models.RobotState)
     signal_new_dyn_obstacles: qtSignal = qtSignal(list)
     signal_connected: qtSignal = qtSignal(bool)
@@ -168,13 +171,21 @@ class SocketioController(QtCore.QObject):
             """
             self.on_menu("planner", data)
 
-        @self.sio.on("pose")
-        def on_pose(data):
+        @self.sio.on("pose_current")
+        def on_pose_current(data):
             """
-            Callback on robot pose message.
+            Callback on robot pose current message.
             """
             pose = models.Pose.parse_obj(data)
-            self.signal_new_robot_pose.emit(pose)
+            self.signal_new_robot_pose_current.emit(pose)
+
+        @self.sio.on("pose_order")
+        def on_pose_order(data):
+            """
+            Callback on robot pose order message.
+            """
+            pose = models.Pose.parse_obj(data)
+            self.signal_new_robot_pose_order.emit(pose)
 
         @self.sio.on("state")
         def on_state(data):

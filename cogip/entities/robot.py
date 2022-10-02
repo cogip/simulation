@@ -8,7 +8,7 @@ from PySide6.QtCore import Slot as qtSlot
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
 
-from cogip.models import DynObstacleList, DynObstacleRect, Pose, RobotState
+from cogip.models import DynObstacleList, DynObstacleRect, Pose
 
 from .asset import AssetEntity
 from .dynobstacle import DynRectObstacleEntity, DynCircleObstacleEntity
@@ -148,9 +148,9 @@ class RobotEntity(AssetEntity):
         self.round_obstacles_pool = current_round_obstacles
 
     @qtSlot(Pose)
-    def new_robot_pose(self, new_pose: Pose) -> None:
+    def new_robot_pose_current(self, new_pose: Pose) -> None:
         """
-        Qt slot called to set the robot's new pose.
+        Qt slot called to set the robot's new pose current.
 
         Arguments:
             new_pose: new robot pose
@@ -160,19 +160,19 @@ class RobotEntity(AssetEntity):
         )
         self.transform_component.setRotationZ(new_pose.O)
 
-    @qtSlot(RobotState)
-    def new_robot_state(self, new_state: RobotState) -> None:
+    @qtSlot(Pose)
+    def new_robot_pose_order(self, new_pose: Pose) -> None:
         """
-        Qt slot called to set the robot's new position.
+        Qt slot called to set the robot's new pose order.
 
         Arguments:
-            new_state: new robot state
+            new_pose: new robot pose
         """
         if self.order_robot:
             self.order_robot.transform.setTranslation(
-                QtGui.QVector3D(new_state.pose_order.x, new_state.pose_order.y, 0)
+                QtGui.QVector3D(new_pose.x, new_pose.y, 0)
             )
-            self.order_robot.transform.setRotationZ(new_state.pose_order.O)
+            self.order_robot.transform.setRotationZ(new_pose.O)
 
     def start_lidar_emulation(self) -> None:
         """
