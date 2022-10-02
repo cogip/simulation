@@ -26,6 +26,11 @@ class SioEvents(socketio.AsyncNamespace):
                     print("Connection refused: a monitor is already connected")
                     raise ConnectionRefusedError("A monitor is already connected")
                 self._copilot.monitor_sid = sid
+            if client_type == "planner":
+                if self._copilot.planner_sid:
+                    print("Connection refused: a planner is already connected")
+                    raise ConnectionRefusedError("A planner is already connected")
+                self._copilot.planner_sid = sid
 
             if client_type in ["monitor", "dashboard"]:
                 self.enter_room(sid, "dashboards")
@@ -53,6 +58,8 @@ class SioEvents(socketio.AsyncNamespace):
                 await self.emit("stop_lidar_emulation", to=self._copilot.monitor_sid)
         elif sid == self._copilot.detector_sid:
             self._copilot.detector_sid = None
+        elif sid == self._copilot.planner_sid:
+            self._copilot.planner_sid = None
         self.leave_room(sid, "dashboards")
 
     async def on_cmd(self, sid, data):

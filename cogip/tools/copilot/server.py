@@ -64,6 +64,7 @@ class CopilotServer:
     _monitor_sid: str = None                         # Session ID on the monitor sio client
     _detector_sid: str = None                         # Session ID on the detector sio client
     _detector_mode: Literal["detection", "emulation"] = "detection"  # Working mode of the detector
+    _planner_sid: str = None                         # Session ID on the planner sio client
 
     def __init__(self):
         """
@@ -142,8 +143,14 @@ class CopilotServer:
             self._detector_mode = mode
 
     @property
+    def planner_sid(self) -> str:
+        return self._planner_sid
     def menu(self) -> models.ShellMenu:
         return self._menu
+
+    @planner_sid.setter
+    def planner_sid(self, sid: str) -> None:
+        self._planner_sid = sid
 
     @menu.setter
     def menu(self, new_menu: models.ShellMenu) -> None:
