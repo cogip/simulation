@@ -18,7 +18,7 @@ import socketio
 from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
-from .messages import PB_Menu, PB_Pose, PB_Score, PB_State, PB_Wizard
+from .messages import PB_Menu, PB_Pose, PB_Score, PB_State
 from .recorder import GameRecordFileHandler
 from .settings import Settings
 from .sio_events import SioEvents
@@ -28,7 +28,6 @@ reset_uuid: int = 3351980141
 command_uuid: int = 2168120333
 menu_uuid: int = 1485239280
 state_uuid: int = 3422642571
-wizard_uuid: int = 1525532810
 copilot_connected_uuid: int = 1132911482
 copilot_disconnected_uuid: int = 1412808668
 score_uuid: int = 2552455996
@@ -221,7 +220,6 @@ class CopilotServer:
             menu_uuid: self.handle_message_menu,
             pose_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
-            wizard_uuid: self.handle_message_wizard,
             score_uuid: self.handle_score
         }
 
@@ -300,25 +298,6 @@ class CopilotServer:
         )
         await self.sio.emit("state", state, room="dashboards")
         await self._loop.run_in_executor(None, self.record_state, state)
-
-    @pb_exception_handler
-    async def handle_message_wizard(self, message: bytes | None = None) -> None:
-        pb_wizard = PB_Wizard()
-
-        if message:
-            await self._loop.run_in_executor(None, pb_wizard.ParseFromString, message)
-
-        wizard = ProtobufMessageToDict(
-            pb_wizard,
-            including_default_value_fields=True,
-            preserving_proto_field_name=True,
-            use_integers_for_enums=True
-        )
-        wizard_type = pb_wizard.WhichOneof("type")
-        wizard["type"] = wizard_type
-        wizard.update(**wizard[wizard_type])
-        del wizard[wizard_type]
-        await self.sio.emit("wizard", wizard)
 
     @pb_exception_handler
     async def handle_score(self, message: bytes | None = None) -> None:

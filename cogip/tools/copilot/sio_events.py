@@ -5,7 +5,7 @@ import socketio
 from socketio.exceptions import ConnectionRefusedError
 
 from cogip import models
-from .messages import PB_Command, PB_Obstacles, PB_Wizard
+from .messages import PB_Command, PB_Obstacles
 from . import server
 
 
@@ -77,32 +77,6 @@ class SioEvents(socketio.AsyncNamespace):
         response = PB_Command()
         response.cmd, _, response.desc = data.partition(" ")
         await self._copilot.send_serial_message(server.command_uuid, response)
-
-    async def on_wizard(self, sid, data):
-        """
-        Callback on Wizard message.
-
-        Receive a command from a monitor.
-
-        Build the Protobuf wizard message and send to firmware.
-        """
-        await self.emit("close_wizard")
-
-        response = PB_Wizard()
-        response.name = data["name"]
-        data_type = data["type"]
-        if not isinstance(data["value"], list):
-            value = getattr(response, data_type).value
-            value_type = type(value)
-            getattr(response, data_type).value = value_type(data["value"])
-        elif data_type == "select_integer":
-            response.select_integer.value[:] = [int(v) for v in data["value"]]
-        elif data_type == "select_floating":
-            response.select_floating.value[:] = [float(v) for v in data["value"]]
-        elif data_type == "select_str":
-            response.select_str.value[:] = data["value"]
-
-        await self._copilot.send_serial_message(server.wizard_uuid, response)
 
     async def on_obstacles(self, sid, obstacles: List[Dict[str, Any]]):
         """

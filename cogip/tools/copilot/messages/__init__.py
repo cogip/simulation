@@ -12,7 +12,6 @@ from .PB_Pose_pb2 import PB_Pose  # noqa
 from .PB_Menu_pb2 import PB_Menu  # noqa
 from .PB_Command_pb2 import PB_Command  # noqa
 from .PB_State_pb2 import PB_State  # noqa
-from .PB_Wizard_pb2 import PB_Wizard  # noqa
 from .PB_Score_pb2 import PB_Score  # noqa
 from .PB_Obstacles_pb2 import PB_Obstacles  # noqa
 from .PB_PathPose_pb2 import PB_PathPose  # noqa
