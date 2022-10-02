@@ -8,7 +8,6 @@ from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 import socketio
 
-from cogip.entities.sensor import Sensor
 from cogip.models import models
 
 
