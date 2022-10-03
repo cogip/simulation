@@ -13,7 +13,7 @@ export function onMenu(menu, type, socket) {
   var HTMLmenu = document.getElementById("menu");
   while (HTMLmenu.firstChild) HTMLmenu.removeChild(HTMLmenu.firstChild);
   HTMLmenu.innerHTML =
-    "<div><img id='logoCogip' src='static/img/cogip-logo.png') }}\" />'</div>";
+    "<div><img id='logoCogip' src='static/img/cogip-logo.png'/></div>";
 
   var h1 = document.createElement("h1");
   h1.setAttribute("class", "small");
