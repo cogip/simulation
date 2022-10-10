@@ -37,7 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_save_cake_layers: Qt signal to save cake layers
     """
 
-    signal_send_command: qtSignal = qtSignal(str)
+    signal_send_command: qtSignal = qtSignal(str, str)
     signal_add_obstacle: qtSignal = qtSignal()
     signal_load_obstacles: qtSignal = qtSignal(Path)
     signal_save_obstacles: qtSignal = qtSignal(Path)
@@ -53,7 +53,10 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         super(MainWindow, self).__init__(*args, **kwargs)
 
-        self.menu_widgets: Dict[str, QtWidgets.QWidget] = {}
+        self.menu_widgets: Dict[str, Dict[str, QtWidgets.QWidget]] = {
+            "shell": {},
+            "planner": {}
+        }
 
         self.setWindowTitle('COGIP Monitor')
 
@@ -200,23 +203,33 @@ class MainWindow(QtWidgets.QMainWindow):
         obstacles_menu.addAction(dock.toggleViewAction())
 
         # Shell menu
-        self.current_menu: Optional[str] = None
+        self.current_menus: Dict[str, Optional[str]] = {
+            "shell": None,
+            "planner": None
+        }
 
-        self.menu_staked_widget = QtWidgets.QStackedWidget()
-        self.central_layout.insertWidget(0, self.menu_staked_widget, 1)
+        self.menu_tab_widget = QtWidgets.QTabWidget()
+        self.central_layout.insertWidget(0, self.menu_tab_widget, 1)
 
-        # Set a empty menu to allocate some space in the UI
-        empty_menu_widget = QtWidgets.QStackedWidget()
-        empty_menu_layout = QtWidgets.QVBoxLayout()
-        empty_menu_widget.setLayout(empty_menu_layout)
-        empty_menu_title = QtWidgets.QLabel("No menu loaded")
-        empty_menu_title.setTextFormat(QtCore.Qt.RichText)
-        empty_menu_title.setAlignment(QtCore.Qt.AlignHCenter)
-        empty_menu_title.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        empty_menu_title.setStyleSheet("font-weight: bold; color: blue")
-        empty_menu_layout.addWidget(empty_menu_title)
-        empty_menu_layout.addStretch()
-        self.menu_staked_widget.addWidget(empty_menu_widget)
+        self.menu_staked_widgets = {
+            "shell": QtWidgets.QStackedWidget(),
+            "planner": QtWidgets.QStackedWidget()
+        }
+        for menu_name in ["planner", "shell"]:
+            self.menu_tab_widget.addTab(self.menu_staked_widgets[menu_name], menu_name)
+
+            # Set a empty menu to allocate some space in the UI
+            empty_menu_widget = QtWidgets.QStackedWidget()
+            empty_menu_layout = QtWidgets.QVBoxLayout()
+            empty_menu_widget.setLayout(empty_menu_layout)
+            empty_menu_title = QtWidgets.QLabel("No menu loaded")
+            empty_menu_title.setTextFormat(QtCore.Qt.RichText)
+            empty_menu_title.setAlignment(QtCore.Qt.AlignHCenter)
+            empty_menu_title.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+            empty_menu_title.setStyleSheet("font-weight: bold; color: blue")
+            empty_menu_layout.addWidget(empty_menu_title)
+            empty_menu_layout.addStretch()
+            self.menu_staked_widgets[menu_name].addWidget(empty_menu_widget)
 
         # GameView widget
         self.game_view = GameView()
@@ -317,7 +330,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.cycle_text.setText(f"{state.cycle or 0:>#6d}")
 
     @qtSlot(ShellMenu)
-    def load_menu(self, new_menu: ShellMenu):
+    def load_menu(self, menu_name: str, new_menu: ShellMenu):
         """
         Qt Slot
 
@@ -326,12 +339,14 @@ class MainWindow(QtWidgets.QMainWindow):
         Once a menu has been build once, it is cached and reused.
 
         Arguments:
+            menu_name: menu to update ("shell", "planner", ...)
             new_menu: The new menu information sent by the firmware
         """
-        if self.current_menu == new_menu.name:
+        if self.current_menus[menu_name] == new_menu.name:
             return
-        self.current_menu = new_menu.name
-        widget = self.menu_widgets.get(new_menu.name)
+        self.current_menus[menu_name] = new_menu.name
+
+        widget = self.menu_widgets[menu_name].get(new_menu.name)
         if not widget:
             widget = QtWidgets.QWidget()
             layout = QtWidgets.QVBoxLayout()
@@ -364,21 +379,21 @@ class MainWindow(QtWidgets.QMainWindow):
                     cmd_layout.addWidget(edit)
                     edit.returnPressed.connect(
                         lambda cmd=entry.cmd, layout=cmd_layout:
-                            self.build_command(cmd, layout)
+                            self.build_command(menu_name, cmd, layout)
                     )
                 button.clicked.connect(
                     lambda cmd=entry.cmd, layout=cmd_layout:
-                        self.build_command(cmd, layout)
+                        self.build_command(menu_name, cmd, layout)
                 )
 
             layout.addStretch()
 
             self.menu_widgets[new_menu.name] = widget
-            self.menu_staked_widget.addWidget(widget)
+            self.menu_staked_widgets[menu_name].addWidget(widget)
 
-        self.menu_staked_widget.setCurrentWidget(widget)
+        self.menu_staked_widgets[menu_name].setCurrentWidget(widget)
 
-    def build_command(self, cmd: str, layout: QtWidgets.QHBoxLayout):
+    def build_command(self, menu_name: str, cmd: str, layout: QtWidgets.QHBoxLayout):
         """
         Build command to send to [SocketioController][cogip.tools.monitor.socketiocontroller.SocketioController].
 
@@ -388,6 +403,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Emit the `signal_send_command` signal with the full command string as argument.
 
         Arguments:
+            menu_name: menu to update ("shell", "planner", ...)
             cmd: The command name
             layout: The command button containing the command arguments
         """
@@ -399,7 +415,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 return
             cmd += f" {text}"
             i += 1
-        self.signal_send_command.emit(cmd)
+        self.signal_send_command.emit(menu_name, cmd)
 
     @qtSlot()
     def add_obstacle(self):

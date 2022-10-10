@@ -1,6 +1,6 @@
 from threading import Thread
 import time
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import parse_obj_as
 from PySide6 import QtCore
@@ -14,7 +14,7 @@ from cogip.models import models
 class SocketioController(QtCore.QObject):
     """
     This class controls the socket.io port used to communicate with the Copilot.
-    Its main purpose is to get the shell menu to update the interface,
+    Its main purpose is to get the shell and planner menus to update the interface,
     get the robot position to update its position, and send the commands
     to the robot through the Copilot.
 
@@ -64,7 +64,10 @@ class SocketioController(QtCore.QObject):
         self.sio = socketio.Client()
         self.register_handlers()
 
-        self.menu: Optional[models.ShellMenu] = None
+        self.menus: Dict[str, Optional[models.ShellMenu]] = {
+            "shell": None,
+            "planner": None
+        }
 
     def start(self):
         """
@@ -91,15 +94,22 @@ class SocketioController(QtCore.QObject):
         self.sio.disconnect()
 
     @qtSlot(str)
-    def new_command(self, command: str):
+    def new_command(self, menu_name: str, command: str):
         """
         Send a command to the robot.
 
         Arguments:
+            menu_name: menu to update ("shell", "planner", ...)
             command: Command to send
         """
-        self.signal_new_console_text.emit(f"Send '{command}'")
-        self.sio.emit("cmd", command)
+        self.signal_new_console_text.emit(f"Send '{command}' to {menu_name}")
+        self.sio.emit(menu_name + "_cmd", command)
+
+    def on_menu(self, menu_name: str, data):
+        menu = models.ShellMenu.parse_obj(data)
+        if self.menus[menu_name] != menu:
+            self.menus[menu_name] = menu
+            self.signal_new_menu.emit(menu_name, menu)
 
     def register_handlers(self):
         """
@@ -144,15 +154,19 @@ class SocketioController(QtCore.QObject):
             self.signal_new_console_text.emit("Disconnected from Copilot.")
             self.signal_connected.emit(False)
 
-        @self.sio.on("menu")
-        def on_menu(data):
+        @self.sio.on("shell_menu")
+        def on_shell_menu(data):
             """
-            Callback on menu message.
+            Callback on shell menu message.
             """
-            menu = models.ShellMenu.parse_obj(data)
-            if self.menu != menu:
-                self.menu = menu
-                self.signal_new_menu.emit(menu)
+            self.on_menu("shell", data)
+
+        @self.sio.on("planner_menu")
+        def on_planner_menu(data):
+            """
+            Callback on planner menu message.
+            """
+            self.on_menu("planner", data)
 
         @self.sio.on("pose")
         def on_pose(data):
