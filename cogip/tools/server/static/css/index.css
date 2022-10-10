@@ -278,7 +278,7 @@ input[type='checkbox']:checked {
   max-width: 500px;
 }
 
-.keyboard__key--activatable::after {
+.keyboard__key--activate::after {
   content: "";
   top: 10px;
   right: 10px;

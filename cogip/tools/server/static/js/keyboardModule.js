@@ -159,7 +159,7 @@ export const virtualKeyboard = {
           keyElement.innerHTML = '<img src="static/img/caps_lock.svg"></img>';
           keyElement.classList.add(
             "keyboard__key--wide",
-            "keyboard__key--activatable"
+            "keyboard__key--activate"
           );
 
           keyElement.addEventListener("click", () => {
