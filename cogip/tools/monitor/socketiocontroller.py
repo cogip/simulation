@@ -1,6 +1,6 @@
 from threading import Thread
 import time
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 from pydantic import parse_obj_as
 from PySide6 import QtCore
@@ -8,14 +8,13 @@ from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 import socketio
 
-from cogip.entities.sensor import Sensor
 from cogip.models import models
 
 
 class SocketioController(QtCore.QObject):
     """
     This class controls the socket.io port used to communicate with the Copilot.
-    Its main purpose is to get the shell menu to update the interface,
+    Its main purpose is to get the shell and planner menus to update the interface,
     get the robot position to update its position, and send the commands
     to the robot through the Copilot.
 
@@ -24,8 +23,10 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted to log messages in UI console
         signal_new_menu:
             Qt signal emitted to load a new menu
-        signal_new_robot_pose:
-            Qt signal emitted on robot pose update
+        signal_new_robot_pose_current:
+            Qt signal emitted on robot pose current update
+        signal_new_robot_pose_order:
+            Qt signal emitted on robot pose order update
         signal_new_robot_state:
             Qt signal emitted on robot state update
         signal_new_dyn_obstacles:
@@ -43,7 +44,8 @@ class SocketioController(QtCore.QObject):
     """
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(models.ShellMenu)
-    signal_new_robot_pose: qtSignal = qtSignal(models.Pose)
+    signal_new_robot_pose_current: qtSignal = qtSignal(models.Pose)
+    signal_new_robot_pose_order: qtSignal = qtSignal(models.Pose)
     signal_new_robot_state: qtSignal = qtSignal(models.RobotState)
     signal_new_dyn_obstacles: qtSignal = qtSignal(list)
     signal_connected: qtSignal = qtSignal(bool)
@@ -65,7 +67,10 @@ class SocketioController(QtCore.QObject):
         self.sio = socketio.Client()
         self.register_handlers()
 
-        self.menu: Optional[models.ShellMenu] = None
+        self.menus: Dict[str, Optional[models.ShellMenu]] = {
+            "shell": None,
+            "planner": None
+        }
 
     def start(self):
         """
@@ -92,15 +97,22 @@ class SocketioController(QtCore.QObject):
         self.sio.disconnect()
 
     @qtSlot(str)
-    def new_command(self, command: str):
+    def new_command(self, menu_name: str, command: str):
         """
         Send a command to the robot.
 
         Arguments:
+            menu_name: menu to update ("shell", "planner", ...)
             command: Command to send
         """
-        self.signal_new_console_text.emit(f"Send '{command}'")
-        self.sio.emit("cmd", command)
+        self.signal_new_console_text.emit(f"Send '{command}' to {menu_name}")
+        self.sio.emit(menu_name + "_cmd", command)
+
+    def on_menu(self, menu_name: str, data):
+        menu = models.ShellMenu.parse_obj(data)
+        if self.menus[menu_name] != menu:
+            self.menus[menu_name] = menu
+            self.signal_new_menu.emit(menu_name, menu)
 
     def register_handlers(self):
         """
@@ -145,28 +157,35 @@ class SocketioController(QtCore.QObject):
             self.signal_new_console_text.emit("Disconnected from Copilot.")
             self.signal_connected.emit(False)
 
-        @self.sio.on("menu")
-        def on_menu(data):
+        @self.sio.on("shell_menu")
+        def on_shell_menu(data):
             """
-            Callback on menu message.
-            Init shmem if command exists in the menu and not already initialized.
+            Callback on shell menu message.
             """
-            menu = models.ShellMenu.parse_obj(data)
-            if self.menu != menu:
-                self.menu = menu
-                commands = [entry.cmd for entry in menu.entries]
-                self.signal_new_menu.emit(menu)
-                if "_set_shmem_key" in commands and Sensor.shm_key is None:
-                    Sensor.init_shm()
-                    self.new_command(f"_set_shmem_key {Sensor.shm_key}")
+            self.on_menu("shell", data)
 
-        @self.sio.on("pose")
-        def on_pose(data):
+        @self.sio.on("planner_menu")
+        def on_planner_menu(data):
             """
-            Callback on robot pose message.
+            Callback on planner menu message.
+            """
+            self.on_menu("planner", data)
+
+        @self.sio.on("pose_current")
+        def on_pose_current(data):
+            """
+            Callback on robot pose current message.
             """
             pose = models.Pose.parse_obj(data)
-            self.signal_new_robot_pose.emit(pose)
+            self.signal_new_robot_pose_current.emit(pose)
+
+        @self.sio.on("pose_order")
+        def on_pose_order(data):
+            """
+            Callback on robot pose order message.
+            """
+            pose = models.Pose.parse_obj(data)
+            self.signal_new_robot_pose_order.emit(pose)
 
         @self.sio.on("state")
         def on_state(data):

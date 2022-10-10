@@ -12,6 +12,8 @@ from typing import List, Union
 
 from pydantic import BaseModel
 
+from cogip.tools.copilot.messages import PB_PathPose
+
 
 class MenuEntry(BaseModel):
     """
@@ -117,6 +119,65 @@ class Speed(BaseModel):
     """
     distance: float = 0.0
     angle: float = 0.0
+
+
+class SpeedEnum(IntEnum):
+    """
+    Speed levels.
+    In mcu-firmware, the speeds (linear and angular) are float-point values,
+    but they can take only 3 values: low, normal and max speed. These values
+    depend on the platform, so on the Raspberry side, we only need to define
+    the speed levels instead of the real values.
+
+    Attributes:
+        LOW:
+        NORMAL:
+        MAX:
+    """
+    LOW = 0
+    NORMAL = 1
+    MAX = 2
+
+
+class PathPose(BaseModel):
+    """
+        Class representing a position in a path.
+
+        Attributes:
+            x: X coordinate
+            y: Y coordinate
+            O: 0-orientation
+            max_speed_linear: max speed linear
+            max_speed_angular: max speed angular
+            allow_reverse: reverse mode
+    """
+    x: float = 0.0
+    y: float = 0.0
+    O: float = 0.0
+    max_speed_linear: SpeedEnum = SpeedEnum.NORMAL
+    max_speed_angular: SpeedEnum = SpeedEnum.NORMAL
+    allow_reverse: bool = True
+
+    def mirror(self):
+        """
+        Mirror the position.
+        """
+        self.x = -self.x
+        self.O = -self.O  # noqa
+
+    def copy_pb(self, pb_path_pose: PB_PathPose) -> None:
+        """
+        Copy data in a Protobuf message.
+
+        Arguments:
+            pb_path_pose: Protobuf message to fill
+        """
+        pb_path_pose.pose.x = int(self.x)
+        pb_path_pose.pose.y = int(self.y)
+        pb_path_pose.pose.O = int(self.O)  # noqa
+        pb_path_pose.max_speed_linear_enum = self.max_speed_linear
+        pb_path_pose.max_speed_angular_enum = self.max_speed_angular
+        pb_path_pose.allow_reverse = self.allow_reverse
 
 
 class DynObstacleRect(BaseModel):

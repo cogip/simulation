@@ -1,3 +1,4 @@
+from __future__ import annotations
 import asyncio
 import base64
 import binascii
@@ -17,8 +18,7 @@ import socketio
 from uvicorn.main import Server as UvicornServer
 
 from cogip import models, logger
-from cogip.tools.copilot.messages.PB_Samples_pb2 import PB_Samples
-from .messages import PB_Menu, PB_Pose, PB_Score, PB_State, PB_Wizard
+from .messages import PB_Menu, PB_Pose, PB_State
 from .recorder import GameRecordFileHandler
 from .settings import Settings
 from .sio_events import SioEvents
@@ -28,14 +28,11 @@ reset_uuid: int = 3351980141
 command_uuid: int = 2168120333
 menu_uuid: int = 1485239280
 state_uuid: int = 3422642571
-wizard_uuid: int = 1525532810
-req_samples_uuid: int = 3781855956
-resp_samples_uuid: int = 1538397045
 copilot_connected_uuid: int = 1132911482
 copilot_disconnected_uuid: int = 1412808668
-score_uuid: int = 2552455996
 pose_uuid: int = 1534060156
-obstacles_uuid: int = 3138845474
+pose_reached_uuid: int = 2736246403
+start_pose_uuid: int = 2741980922
 
 
 def create_app() -> FastAPI:
@@ -57,8 +54,8 @@ def pb_exception_handler(func):
 class CopilotServer:
     _serial_port: AioSerial = None                   # Async serial port
     _loop: asyncio.AbstractEventLoop = None          # Event loop to use for all async objects
-    _menu: models.ShellMenu = None                   # Last received shell menu
-    _samples: Dict[str, Any] = {}                    # Last detected samples
+    _shell_menu: models.ShellMenu = None             # Last received shell menu
+    _planner_menu: models.ShellMenu = None           # Last received planner menu
     _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
     _record_handler: GameRecordFileHandler = None    # Log file handler to record games
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
@@ -67,6 +64,7 @@ class CopilotServer:
     _monitor_sid: str = None                         # Session ID on the monitor sio client
     _detector_sid: str = None                         # Session ID on the detector sio client
     _detector_mode: Literal["detection", "emulation"] = "detection"  # Working mode of the detector
+    _planner_sid: str = None                         # Session ID on the planner sio client
 
     def __init__(self):
         """
@@ -144,8 +142,29 @@ class CopilotServer:
         if mode in ["detection", "emulation"]:
             self._detector_mode = mode
 
-    def set_samples(self, samples: Dict[str, Any]) -> None:
-        self._samples = samples
+    @property
+    def planner_sid(self) -> str:
+        return self._planner_sid
+
+    @planner_sid.setter
+    def planner_sid(self, sid: str) -> None:
+        self._planner_sid = sid
+
+    @property
+    def shell_menu(self) -> models.ShellMenu:
+        return self._shell_menu
+
+    @shell_menu.setter
+    def shell_menu(self, new_menu: models.ShellMenu) -> None:
+        self._shell_menu = new_menu
+
+    @property
+    def planner_menu(self) -> models.ShellMenu:
+        return self._planner_menu
+
+    @planner_menu.setter
+    def planner_menu(self, new_menu: models.ShellMenu) -> None:
+        self._planner_menu = new_menu
 
     @staticmethod
     def handle_exit(*args, **kwargs):
@@ -212,9 +231,7 @@ class CopilotServer:
             menu_uuid: self.handle_message_menu,
             pose_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
-            wizard_uuid: self.handle_message_wizard,
-            req_samples_uuid: self.handle_samples_request,
-            score_uuid: self.handle_score
+            pose_reached_uuid: self.handle_pose_reached
         }
 
         while True:
@@ -236,31 +253,35 @@ class CopilotServer:
 
         Send a reset message to all connected clients.
         """
-        self._menu = None
+        self._shell_menu = None
         await self.send_serial_message(copilot_connected_uuid, None)
         await self.sio.emit("reset")
         if self._record_handler:
             await self._loop.run_in_executor(None, self._record_handler.doRollover)
 
     @pb_exception_handler
-    async def handle_message_menu(self, message: bytes) -> None:
+    async def handle_message_menu(self, message: bytes | None = None) -> None:
         """
         Send shell menu received from the robot to connected monitors.
         """
         pb_menu = PB_Menu()
-        await self._loop.run_in_executor(None, pb_menu.ParseFromString, message)
+
+        if message:
+            await self._loop.run_in_executor(None, pb_menu.ParseFromString, message)
 
         menu = ProtobufMessageToDict(pb_menu)
-        self._menu = models.ShellMenu.parse_obj(menu)
-        await self.emit_menu()
+        self._shell_menu = models.ShellMenu.parse_obj(menu)
+        await self.emit_shell_menu()
 
     @pb_exception_handler
-    async def handle_message_pose(self, message: bytes) -> None:
+    async def handle_message_pose(self, message: bytes | None = None) -> None:
         """
         Send robot pose received from the robot to connected monitors and detector.
         """
         pb_pose = PB_Pose()
-        await self._loop.run_in_executor(None, pb_pose.ParseFromString, message)
+
+        if message:
+            await self._loop.run_in_executor(None, pb_pose.ParseFromString, message)
 
         pose = ProtobufMessageToDict(
             pb_pose,
@@ -268,15 +289,17 @@ class CopilotServer:
             preserving_proto_field_name=True,
             use_integers_for_enums=True
         )
-        await self.sio.emit("pose", pose)
+        await self.sio.emit("pose_current", pose)
 
     @pb_exception_handler
-    async def handle_message_state(self, message: bytes) -> None:
+    async def handle_message_state(self, message: bytes | None = None) -> None:
         """
         Send robot state received from the robot to connected monitors.
         """
         pb_state = PB_State()
-        await self._loop.run_in_executor(None, pb_state.ParseFromString, message)
+
+        if message:
+            await self._loop.run_in_executor(None, pb_state.ParseFromString, message)
 
         state = ProtobufMessageToDict(
             pb_state,
@@ -287,58 +310,34 @@ class CopilotServer:
         await self.sio.emit("state", state, room="dashboards")
         await self._loop.run_in_executor(None, self.record_state, state)
 
-    @pb_exception_handler
-    async def handle_message_wizard(self, message: bytes) -> None:
-        pb_wizard = PB_Wizard()
-        await self._loop.run_in_executor(None, pb_wizard.ParseFromString, message)
-
-        wizard = ProtobufMessageToDict(
-            pb_wizard,
-            including_default_value_fields=True,
-            preserving_proto_field_name=True,
-            use_integers_for_enums=True
-        )
-        wizard_type = pb_wizard.WhichOneof("type")
-        wizard["type"] = wizard_type
-        wizard.update(**wizard[wizard_type])
-        del wizard[wizard_type]
-        await self.sio.emit("wizard", wizard)
-
-    async def handle_samples_request(self) -> None:
-        pb_samples = PB_Samples()
-        for (id, coords) in sorted(self._samples.items()):
-            pb_samples.samples.add(
-                tag=int(id),
-                x=coords[0],
-                y=coords[1],
-                z=coords[2],
-                rot_x=coords[3],
-                rot_y=coords[4],
-                rot_z=coords[5]
-            )
-            pb_samples.has_samples = True
-        await self.send_serial_message(resp_samples_uuid, pb_samples)
-
-    @pb_exception_handler
-    async def handle_score(self, message: bytes) -> None:
+    async def handle_pose_reached(self) -> None:
         """
-        Send shell menu received from the robot to connected monitors.
-        """
-        pb_score = PB_Score()
-        await self._loop.run_in_executor(None, pb_score.ParseFromString, message)
+        Handle pose reached message.
 
-        score = ProtobufMessageToDict(pb_score)
-        await self.sio.emit("score", score.value)
+        Forward info to the planner.
+        """
+        if self.planner_sid:
+            await self.sio.emit("pose_reached", to=self.planner_sid)
 
-    async def emit_menu(self, sid: str = None) -> None:
+    async def emit_shell_menu(self, sid: str = None) -> None:
         """
-        Sent current shell menu to connected monitors.
+        Sent current shell menu to connected dashboards.
         """
-        if not self._menu:
+        if not self._shell_menu:
             return
 
         client = sid or "dashboards"
-        await self.sio.emit("menu", self._menu.dict(exclude_defaults=True, exclude_unset=True), to=client)
+        await self.sio.emit("shell_menu", self._shell_menu.dict(exclude_defaults=True, exclude_unset=True), to=client)
+
+    async def emit_planner_menu(self, sid: str = None) -> None:
+        """
+        Sent current planner menu to connected dashboards.
+        """
+        if not self._planner_menu:
+            return
+
+        client = sid or "dashboards"
+        await self.sio.emit("planner_menu", self._planner_menu.dict(exclude_defaults=True, exclude_unset=True), to=client)
 
     def record_state(self, state: Dict[str, Any]) -> None:
         """

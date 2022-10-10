@@ -14,11 +14,55 @@
   <body class="d-flex flex-column h-100 w-100 bg-dark">
     <div class="row">
       <div class="col-lg-3 col-sm-3" id="menu">
-        <div>
-          <img
-            id="logoCogip"
-            src="{{ url_for('static', path='img/cogip-logo.png') }}"
-          />
+        <img id="logoCogip" src="static/img/cogip-logo.png" />
+
+        <nav>
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <button
+              class="nav-link active"
+              id="nav-planner-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#nav-planner"
+              type="button"
+              role="tab"
+              aria-controls="nav-planner"
+              aria-selected="false"
+            >
+              Planner
+            </button>
+            <button
+              class="nav-link"
+              id="nav-shell-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#nav-shell"
+              type="button"
+              role="tab"
+              aria-controls="nav-shell"
+              aria-selected="true"
+            >
+              Shell
+            </button>
+          </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+          <div
+            class="tab-pane fade show active"
+            id="nav-planner"
+            role="tabpanel"
+            aria-labelledby="nav-planner-tab"
+            tabindex="0"
+          >
+            ...
+          </div>
+          <div
+            class="tab-pane fade"
+            id="nav-shell"
+            role="tabpanel"
+            aria-labelledby="nav-shell-tab"
+            tabindex="0"
+          >
+            ...
+          </div>
         </div>
       </div>
       <div class="col-lg-9 col-sm-9">
@@ -168,12 +212,19 @@
           .on("disconnect", function () {
             socketModule.onDisconnect();
           })
-          .on("menu", function (menu) {
-            socketModule.onMenu(menu, this);
+          .on("shell_menu", function (menu) {
+            socketModule.onMenu(menu, "shell", this);
             virtualKeyboard._actualize();
           })
-          .on("pose", function (msg) {
+          .on("planner_menu", function (menu) {
+            socketModule.onMenu(menu, "planner", this);
+            virtualKeyboard._actualize();
+          })
+          .on("pose_current", function (msg) {
             drawModule.updatePoseCurrent(msg);
+          })
+          .on("pose_order", function (msg) {
+            drawModule.updatePoseOrder(msg);
           })
           .on("obstacles", function (msg) {
             drawModule.updateObstacles(msg);

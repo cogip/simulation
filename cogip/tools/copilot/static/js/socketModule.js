@@ -9,16 +9,14 @@ export function onDisconnect() {
   document.getElementById("connection").innerHTML = "<pre>Disconnected.</pre>";
 }
 
-export function onMenu(menu, socket) {
-  var HTMLmenu = document.getElementById("menu");
-  while (HTMLmenu.firstChild) HTMLmenu.removeChild(HTMLmenu.firstChild);
-  HTMLmenu.innerHTML =
-    "<div><img id='logoCogip' src='static/img/cogip-logo.png') }}\" />'</div>";
+export function onMenu(menu, type, socket) {
+  var typeNav = document.getElementById("nav-" + type);
+  while (typeNav.firstChild) typeNav.removeChild(typeNav.firstChild);
 
   var h1 = document.createElement("h1");
   h1.setAttribute("class", "small");
   h1.innerHTML = "<h1 class=small >" + menu.name + "</h1>"; // display title for menu
-  HTMLmenu.appendChild(h1);
+  typeNav.appendChild(h1);
 
   const divButton = document.createElement("div");
   divButton.setAttribute("id", "divButtons");
@@ -31,7 +29,7 @@ export function onMenu(menu, socket) {
       newButtonMenu.setAttribute("class", "btn btn-dark");
       newButtonMenu.innerHTML = menu.entries[value]["desc"];
       newButtonMenu.addEventListener("click", function () {
-        socket.emit("cmd", menu.entries[value]["cmd"]);
+        socket.emit(type + "_cmd", menu.entries[value]["cmd"]);
       });
 
       if (menu.entries[value]["desc"].includes("<")) {
@@ -51,6 +49,6 @@ export function onMenu(menu, socket) {
       }
     }
 
-    HTMLmenu.appendChild(divButton);
+    typeNav.appendChild(divButton);
   }
 }

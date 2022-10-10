@@ -23,7 +23,6 @@ required_packages = [
 
     # Packages specific to monitor
     "PySide6==6.3.2;" + marker_platform_x86_64,
-    "sysv-ipc==1.1.0;" + marker_platform_x86_64,
     "typer==0.4.1;" + marker_platform_x86_64,
 
     # Packages specific to Copilot and Robotcam
@@ -84,6 +83,7 @@ setup(
             'cogip-replay=cogip.tools.replay.main:main',
             'cogip-copilot=cogip.tools.copilot.main:main',
             'cogip-detector=cogip.tools.detector.__main__:main',
+            'cogip-planner=cogip.tools.planner.__main__:main',
             'cogip-robotcam=cogip.tools.robotcam.main:main',
             'cogip-lidarusb=cogip.tools.lidarusb.main:main',
             'cogip-lidarpf=cogip.tools.lidarpf.main:main'
