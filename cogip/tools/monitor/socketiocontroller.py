@@ -22,7 +22,7 @@ class SocketioController(QtCore.QObject):
         signal_new_console_text:
             Qt signal emitted to log messages in UI console
         signal_new_menu:
-            Qt signal emitted to load a new menu
+            Qt signal emitted to load a new shell/planner menu
         signal_new_robot_pose_current:
             Qt signal emitted on robot pose current update
         signal_new_robot_pose_order:
@@ -43,7 +43,7 @@ class SocketioController(QtCore.QObject):
             Record the last cycle to avoid sending the same data several times
     """
     signal_new_console_text: qtSignal = qtSignal(str)
-    signal_new_menu: qtSignal = qtSignal(models.ShellMenu)
+    signal_new_menu: qtSignal = qtSignal(str, models.ShellMenu)
     signal_new_robot_pose_current: qtSignal = qtSignal(models.Pose)
     signal_new_robot_pose_order: qtSignal = qtSignal(models.Pose)
     signal_new_robot_state: qtSignal = qtSignal(models.RobotState)
