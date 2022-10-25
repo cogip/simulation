@@ -1,14 +1,30 @@
 #!/usr/bin/env python3
 import logging
+from pathlib import Path
 from typing import Optional
 
 import typer
+from watchfiles import PythonFilter, run_process
 
 from . import logger
 from .detector import Detector
 
 
+def changes_callback(changes):
+    logger.info("Changes detected:", changes)
+
+
+def run(*args, **kwargs) -> None:
+    detector = Detector(*args, **kwargs)
+    detector.connect()
+
+
 def main_opt(
+    server_url: str = typer.Option(
+        "http://localhost:8080",
+        help="Server URL",
+        envvar="COGIP_SERVER_URL"
+    ),
     uart_port: Optional[str] = typer.Option(
         None,
         help="Serial port connected to the Lidar",
@@ -18,11 +34,6 @@ def main_opt(
         230400,
         help="Baud rate",
         envvar="DETECTOR_UART_SPEED"
-    ),
-    copilot_url: str = typer.Option(
-        "http://localhost:8080",
-        help="Copilot URL",
-        envvar="DETECTOR_COPILOT_URL"
     ),
     min_distance: int = typer.Option(
         150,
@@ -64,20 +75,26 @@ def main_opt(
         help="Interval between each update of the obstacle list (in seconds)",
         envvar="DETECTOR_REFRESH_INTERVAL"
     ),
+    reload: bool = typer.Option(
+        False,
+        "-r", "--reload",
+        help="Reload app on source file changes.",
+        envvar=["COGIP_RELOAD", "DETECTOR_RELOAD"]
+    ),
     debug: bool = typer.Option(
         False,
         "-d", "--debug",
         help="Turn on debug messages.",
-        envvar="DETECTOR_DEBUG",
+        envvar=["COGIP_DEBUG", "DETECTOR_DEBUG"]
     )
 ):
     if debug:
         logger.setLevel(logging.DEBUG)
 
-    detector = Detector(
+    args = (
+        server_url,
         uart_port,
         uart_speed,
-        copilot_url,
         min_distance,
         max_distance,
         lidar_min_intensity,
@@ -87,7 +104,19 @@ def main_opt(
         beacon_radius,
         refresh_interval
     )
-    detector.connect()
+
+    if reload:
+        watch_dir = Path(__file__).parent.parent.parent
+        run_process(
+            watch_dir,
+            target=run,
+            args=args,
+            callback=changes_callback,
+            watch_filter=PythonFilter(),
+            debug=False
+        )
+    else:
+        run(*args)
 
 
 def main():

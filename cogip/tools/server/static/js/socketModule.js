@@ -1,11 +1,11 @@
 export function onConnection() {
-  console.log("Connected to Copilot.");
+  console.log("Connected to Server.");
   document.getElementById("connection").innerHTML =
     "<pre>Connected to " + window.location.origin + "</pre>";
 }
 
 export function onDisconnect() {
-  console.log("Disconnected.");
+  console.log("Disconnected from Server.");
   document.getElementById("connection").innerHTML = "<pre>Disconnected.</pre>";
 }
 
@@ -29,6 +29,7 @@ export function onMenu(menu, type, socket) {
       newButtonMenu.setAttribute("class", "btn btn-dark");
       newButtonMenu.innerHTML = menu.entries[value]["desc"];
       newButtonMenu.addEventListener("click", function () {
+        console.log(type + "_cmd");
         socket.emit(type + "_cmd", menu.entries[value]["cmd"]);
       });
 

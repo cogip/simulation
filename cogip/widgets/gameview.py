@@ -19,7 +19,7 @@ from cogip.entities.line import LineEntity
 from cogip.entities.obstacle import ObstacleEntity
 from cogip.entities.path import PathEntity
 from cogip.entities.robot_manual import RobotManualEntity
-from cogip.entities.artifacts import CakeLayerEntity, CherryEntity, create_cake_layers, create_cherries
+from cogip.entities.artifacts import CakeLayerEntity, CakeLayerID, CherryEntity, CherryID, create_cake_layers, create_cherries
 from cogip.models import models
 
 
@@ -103,9 +103,9 @@ class EventFilter(QtCore.QObject):
             self._last_mouse_pos = new_pos
 
             if event.type() == QtCore.QEvent.MouseMove:
-                if event.buttons() == Qt3DRender.QPickEvent.MiddleButton:
+                if event.buttons() == QtCore.Qt.MouseButton.MiddleButton:
                     self.game_view.rotate(0, 0, (delta.x() + delta.y())/2)
-                elif event.buttons() == Qt3DRender.QPickEvent.RightButton:
+                elif event.buttons() == QtCore.Qt.MouseButton.RightButton:
                     self.game_view.rotate(delta.y(), delta.x(), 0)
                 else:
                     return False
@@ -140,8 +140,8 @@ class GameView(QtWidgets.QWidget):
     """
     ground_image: Path = Path("assets/table2023.png")
     obstacle_entities: List[ObstacleEntity] = []
-    cake_layer_entities: List[CakeLayerEntity] = []
-    cherry_entities: List[CherryEntity] = []
+    cake_layer_entities: Dict[CakeLayerID, CakeLayerEntity] = {}
+    cherry_entities: Dict[CherryID, CherryEntity] = {}
     plane_intersection: QtGui.QVector3D = None
     mouse_enabled: bool = True
     new_move_delta: qtSignal = qtSignal(QtGui.QVector3D)
@@ -379,7 +379,7 @@ class GameView(QtWidgets.QWidget):
         Record the intersection between the mouse pointer and the plane entity,
         on the `pressed` mouse event, in world coordinate.
         """
-        if pick.buttons() != Qt3DRender.QPickEvent.LeftButton:
+        if pick.buttons() != QtCore.Qt.MouseButton.LeftButton.value:
             return
 
         self.plane_intersection = pick.worldIntersection()
@@ -391,7 +391,7 @@ class GameView(QtWidgets.QWidget):
 
         Emit the `new_move_delta` signal to update the corresponding asset's position.
         """
-        if pick.buttons() != Qt3DRender.QPickEvent.LeftButton:
+        if pick.buttons() != QtCore.Qt.MouseButton.LeftButton.value:
             return
 
         new_intersection = pick.worldIntersection()
@@ -450,7 +450,7 @@ class GameView(QtWidgets.QWidget):
         delta = new_pos - self.last_mouse_pos
         self.last_mouse_pos = new_pos
 
-        if pick.buttons() == Qt3DRender.QPickEvent.LeftButton:
+        if pick.buttons() == QtCore.Qt.MouseButton.LeftButton.value:
             self.translate(delta.x(), delta.y(), 0)
 
     def create_object_picker(self):

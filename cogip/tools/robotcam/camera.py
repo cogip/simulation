@@ -44,7 +44,7 @@ class CameraHandler():
         """
         Class constructor.
 
-        Create SocketIO client and connect to Copilot.
+        Create SocketIO client and connect to server.
         """
         self.settings = Settings()
         signal.signal(signal.SIGTERM, self.exit_handler)
@@ -69,13 +69,17 @@ class CameraHandler():
 
     def sio_connect(self) -> bool:
         """
-        Connect to Copilot's SocketIO server.
+        Connect to SocketIO server.
         Returning True stops polling for connection to succeed.
         """
         if self._exiting:
             return True
 
-        self.sio.connect(self.settings.copilot_url, socketio_path="sio/socket.io")
+        self.sio.connect(
+            self.settings.server_url,
+            socketio_path="sio/socket.io",
+            namespaces=["/robotcam"]
+        )
         return True
 
     def open_camera(self):
@@ -230,7 +234,7 @@ class CameraHandler():
 
     def process_image(self) -> None:
         """
-        Read one frame from camera, process it, send samples to Copilot
+        Read one frame from camera, process it, send samples to cogip-server
         and generate image to stream.
         """
         ret, image_color = self._camera_capture.read()
@@ -308,7 +312,7 @@ class CameraHandler():
                 )
 
         if self.sio.connected:
-            self.sio.emit("samples", coords_by_id)
+            self.sio.emit("samples", coords_by_id, namespace="/robotcam")
 
         if not self.settings.calibration:
             # Print sample coords on image
@@ -381,23 +385,23 @@ class CameraHandler():
             self._last_frame.buf[0:len(frame)] = frame
 
     def register_sio_events(self) -> None:
-        @self.sio.event
+        @self.sio.event(namespace="/robotcam")
         def connect():
             """
-            Callback on Copilot connection.
+            Callback on server connection.
             """
-            logger.info("Camera handler: connected to Copilot")
+            logger.info("Camera handler: connected to server")
 
-        @self.sio.event
+        @self.sio.event(namespace="/robotcam")
         def connect_error(data):
             """
-            Callback on Copilot connection error.
+            Callback on server connection error.
             """
-            logger.info("Camera handler: connection to Copilot failed.")
+            logger.info("Camera handler: connection to server failed.")
 
-        @self.sio.event
+        @self.sio.event(namespace="/robotcam")
         def disconnect():
             """
-            Callback on Copilot disconnection.
+            Callback on server disconnection.
             """
-            logger.info("Camera handler: disconnected from Copilot")
+            logger.info("Camera handler: disconnected from server")

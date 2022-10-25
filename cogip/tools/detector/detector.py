@@ -18,16 +18,16 @@ class Detector:
     Read Lidar data from the Lidar in monitoring mode (TODO)
     or fake data provided by `Monitor` in emulation Mode.
 
-    Build obstacles and send the list to `Copilot`.
+    Build obstacles and send the list to the server.
     """
     NB_ANGLES: int = 360
     NB_ANGLES_WITHOUT_OBSTACLE_TO_IGNORE: int = 3
 
     def __init__(
             self,
+            server_url: str,
             uart_port: Optional[str],
             uart_speed: int,
-            copilot_url: str,
             min_distance: int,
             max_distance: int,
             min_intensity: int,
@@ -40,9 +40,10 @@ class Detector:
         Class constructor.
 
         Arguments:
+            server_url: server URL
             uart_port: Serial port connected to the Lidar
             uart_speed: Baud rate
-            copilot_url: Copilot URL
+            server_url: Server URL
             min_distance: Minimum distance to detect an obstacle
             max_distance: Maximum distance to detect an obstacle
             min_intensity: Minimum intensity required to validate a Lidar distance
@@ -51,11 +52,10 @@ class Detector:
             obstacle_bb_vertices: Number of obstacle bounding box vertices
             beacon_radius: Radius of the opponent beacon support (a cylinder of 70mm diameter to a cube of 100mm width)
             refresh_interval: Interval between each update of the obstacle list (in seconds)
-            debug: Turn on debug messages.
         """
+        self._server_url = server_url
         self._uart_port = uart_port
         self._uart_speed = uart_speed
-        self._copilot_url = copilot_url
         self._min_distance = min_distance
         self._max_distance = max_distance
         self._min_intensity = min_intensity
@@ -81,7 +81,7 @@ class Detector:
 
     def connect(self):
         """
-        Connect to `Copilot` SocketIO server.
+        Connect to SocketIO server.
         """
         self.retry_connection = True
         threading.Thread(target=self.try_connect).start()
@@ -100,16 +100,16 @@ class Detector:
 
     def try_connect(self):
         """
-        Poll to wait for the first copilot connection.
+        Poll to wait for the first cogip-server connection.
         Disconnections/reconnections are handle directly by the client.
         """
         while(self.retry_connection):
             try:
                 self._sio.connect(
-                    self._copilot_url,
+                    self._server_url,
                     socketio_path="sio/socket.io",
+                    namespaces=["/detector"],
                     auth={
-                        "type": "detector",
                         "mode": "detection" if self._uart_port else "emulation"
                     }
                 )
@@ -121,7 +121,7 @@ class Detector:
     @property
     def try_reconnection(self) -> bool:
         """
-        Return true if Detector should continue to try to connect to the `Copilot`,
+        Return true if Detector should continue to try to connect to cogip-server,
         false otherwise.
         """
         return self._retry_connection
@@ -133,7 +133,7 @@ class Detector:
     @property
     def robot_pose(self) -> models.Pose:
         """
-        Last position of the robot send by `Copilot`.
+        Last position of the robot.
         """
         return self._robot_pose
 
@@ -266,4 +266,4 @@ class Detector:
         obstacles = self.generate_obstacles(robot_pose, filtered_distances)
         logger.debug(f"Generated obstacles: {obstacles}")
         if self._sio.connected:
-            self._sio.emit("obstacles", [o.dict() for o in obstacles])
+            self._sio.emit("obstacles", [o.dict() for o in obstacles], namespace="/detector")

@@ -13,10 +13,10 @@ from cogip.models import models
 
 class SocketioController(QtCore.QObject):
     """
-    This class controls the socket.io port used to communicate with the Copilot.
+    This class controls the socket.io port used to communicate with the server.
     Its main purpose is to get the shell and planner menus to update the interface,
     get the robot position to update its position, and send the commands
-    to the robot through the Copilot.
+    to the robot and to the planner.
 
     Attributes:
         signal_new_console_text:
@@ -32,7 +32,7 @@ class SocketioController(QtCore.QObject):
         signal_new_dyn_obstacles:
             Qt signal emitted on dynamic obstacles update
         signal_connected:
-            Qt signal emitted on Copilot connection state changes
+            Qt signal emitted on server connection state changes
         signal_exit:
             Qt signal emitted to exit Monitor
         signal_start_lidar_emulation:
@@ -59,7 +59,7 @@ class SocketioController(QtCore.QObject):
         Class constructor.
 
         Arguments:
-            url: URL to Copilot socket.io server
+            url: URL to socket.io server
         """
         super().__init__()
 
@@ -84,8 +84,9 @@ class SocketioController(QtCore.QObject):
     def try_connect(self):
         while(self._retry_connection):
             try:
-                self.sio.connect(self.url, socketio_path="sio/socket.io", auth={"type": "monitor"})
-            except socketio.exceptions.ConnectionError:
+                self.sio.connect(self.url, socketio_path="sio/socket.io", namespaces=["/monitor", "/dashboard"])
+            except socketio.exceptions.ConnectionError as ex:
+                print(ex)
                 time.sleep(2)
                 continue
             break
@@ -94,7 +95,9 @@ class SocketioController(QtCore.QObject):
         """
         Disconnect from socket.io server.
         """
-        self.sio.disconnect()
+        self._retry_connection = False
+        if self.sio.connected:
+            self.sio.disconnect()
 
     @qtSlot(str)
     def new_command(self, menu_name: str, command: str):
@@ -106,7 +109,7 @@ class SocketioController(QtCore.QObject):
             command: Command to send
         """
         self.signal_new_console_text.emit(f"Send '{command}' to {menu_name}")
-        self.sio.emit(menu_name + "_cmd", command)
+        self.sio.emit(menu_name + "_cmd", command, namespace="/dashboard")
 
     def on_menu(self, menu_name: str, data):
         menu = models.ShellMenu.parse_obj(data)
@@ -119,21 +122,18 @@ class SocketioController(QtCore.QObject):
         Define socket.io message handlers.
         """
 
-        @self.sio.event
+        @self.sio.event(namespace="/monitor")
         def connect():
             """
-            Callback on Copilot connection.
-            Send a break message: if the robot is booting, it will abort
-            automatic start of the planner.
+            Callback on server connection.
             """
-            self.signal_new_console_text.emit("Connected to Copilot")
-            self.sio.emit("break")
+            self.signal_new_console_text.emit("Connected to server")
             self.signal_connected.emit(True)
 
-        @self.sio.event
+        @self.sio.event(namespace="/monitor")
         def connect_error(data):
             """
-            Callback on Copilot connection error.
+            Callback on server connection error.
             """
             if (
                 data and
@@ -146,32 +146,32 @@ class SocketioController(QtCore.QObject):
                 self.signal_exit.emit()
                 return
             print("Connection error:", data)
-            self.signal_new_console_text.emit("Connection to Copilot failed.")
+            self.signal_new_console_text.emit("Connection to server failed.")
             self.signal_connected.emit(False)
 
-        @self.sio.event
+        @self.sio.event(namespace="/monitor")
         def disconnect():
             """
-            Callback on Copilot disconnection.
+            Callback on server disconnection.
             """
-            self.signal_new_console_text.emit("Disconnected from Copilot.")
+            self.signal_new_console_text.emit("Disconnected from server.")
             self.signal_connected.emit(False)
 
-        @self.sio.on("shell_menu")
+        @self.sio.on("shell_menu", namespace="/dashboard")
         def on_shell_menu(data):
             """
             Callback on shell menu message.
             """
             self.on_menu("shell", data)
 
-        @self.sio.on("planner_menu")
+        @self.sio.on("planner_menu", namespace="/dashboard")
         def on_planner_menu(data):
             """
             Callback on planner menu message.
             """
             self.on_menu("planner", data)
 
-        @self.sio.on("pose_current")
+        @self.sio.on("pose_current", namespace="/dashboard")
         def on_pose_current(data):
             """
             Callback on robot pose current message.
@@ -179,7 +179,7 @@ class SocketioController(QtCore.QObject):
             pose = models.Pose.parse_obj(data)
             self.signal_new_robot_pose_current.emit(pose)
 
-        @self.sio.on("pose_order")
+        @self.sio.on("pose_order", namespace="/dashboard")
         def on_pose_order(data):
             """
             Callback on robot pose order message.
@@ -187,7 +187,7 @@ class SocketioController(QtCore.QObject):
             pose = models.Pose.parse_obj(data)
             self.signal_new_robot_pose_order.emit(pose)
 
-        @self.sio.on("state")
+        @self.sio.on("state", namespace="/dashboard")
         def on_state(data):
             """
             Callback on robot state message.
@@ -197,7 +197,7 @@ class SocketioController(QtCore.QObject):
                 self.last_cycle = state.cycle
                 self.signal_new_robot_state.emit(state)
 
-        @self.sio.on("obstacles")
+        @self.sio.on("obstacles", namespace="/dashboard")
         def on_obstacles(data):
             """
             Callback on obstacles message.
@@ -205,14 +205,14 @@ class SocketioController(QtCore.QObject):
             obstacles = parse_obj_as(models.DynObstacleList, data)
             self.signal_new_dyn_obstacles.emit(obstacles)
 
-        @self.sio.on("start_lidar_emulation")
+        @self.sio.on("start_lidar_emulation", namespace="/monitor")
         def on_start_lidar_emulation():
             """
             Start Lidar emulation.
             """
             self.signal_start_lidar_emulation.emit()
 
-        @self.sio.on("stop_lidar_emulation")
+        @self.sio.on("stop_lidar_emulation", namespace="/monitor")
         def on_stop_lidar_emulation():
             """
             Stop Lidar emulation.
@@ -221,10 +221,10 @@ class SocketioController(QtCore.QObject):
 
     def emit_lidar_data(self, data: List[int]) -> None:
         """
-        Send Lidar data to Copilot.
+        Send Lidar data to server.
 
         Arguments:
             data: List of distances for each angle
         """
         if self.sio.connected:
-            self.sio.emit("lidar_data", data)
+            self.sio.emit("lidar_data", data, namespace="/monitor")

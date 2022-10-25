@@ -1,18 +1,14 @@
 from pathlib import Path
 
-from pydantic import BaseSettings, Field, FilePath
+from pydantic import AnyHttpUrl, BaseSettings, Field, FilePath
 
 from .codecs import VideoCodec
 
 
 class Settings(BaseSettings):
-    server_port: int = Field(
-        default=8081,
-        description="Web server port"
-    )
-    copilot_url: str = Field(
+    server_url: AnyHttpUrl = Field(
         "http://localhost:8080",
-        description="Copilot URL"
+        description="Server URL"
     )
     camera_device: Path = Field(
         default="/dev/v4l/by-id/usb-HBV_HD_CAMERA_HBV_HD_CAMERA-video-index0",
@@ -45,3 +41,11 @@ class Settings(BaseSettings):
 
     class Config:
         env_prefix = 'robotcam_'
+        fields = {
+            'id': {
+                'env': ["robot_id", "robotcam_id"]
+            },
+            'server_url': {
+                'env': 'cogip_server_url'
+            }
+        }
