@@ -1,32 +1,47 @@
 # Overview
 
-The COGIP simulation project provides a set of Python utilities developed by the COGIP robotic team.
-It is used during development, debugging and monitoring of its robot [firmware](https://github.com/cogip/mcu-firmware) and other test platforms.
-This robot is developed for [Eurobot](https://www.eurobot.org/), French robotic contest.
+This repository provides all Python tools developed by the COGIP robotic team.
+The team is developing a robot for [Eurobot](https://www.eurobot.org/), French robotic contest.
 
+All the tools are used during the game itself, or for development, debugging and monitoring of the robot and other test platforms.
 
-![Communication Overview](img/copilot/copilot.svg)
+## Robot Software Architecture
 
-The main component of the robot is a STM32 that runs [`mcu-firmware`](https://github.com/cogip/mcu-firmware).
-It is assiocated to a Raspberry Pi 4 that controls a camera, a touch screen and a Lidar.
-It runs the `Copilot`, `Detector` and `RobotCam` tools from this repository.
+The main components of the robot are:
 
-`mcu-firmware` (on STM32) and `Copilot` (on Raspberry Pi) communicate using Protobuf messages over a serial port.
+  - a STM32 that runs [`mcu-firmware`](https://github.com/cogip/mcu-firmware),
+  - a Raspberry Pi 4 that controls a camera, a touchscreen and a Lidar.
 
-`Copilot` is based on a web server, it provides a `Dashboard` accessible with web browsers on the network.
-It also provides a SocketIO server.
-Monitoring tools like `Monitor` from this repository are connected to the SocketIO server.
+The robot is assiocated with a central beacon having an upper view of the game area,
+composed of a Raspberry Pi 4, a camera and a touchscreen.
 
-`Copilot` received robot state and shell menus from `mcu-firmware` and emits SocketIO messages in JSON format to connected `Monitor`/`Dashboards`.
+![Robot Architecture Overview](img/cogip-overview-stm32.svg)
 
-`Monitor`/`Dashboards` can send commands to `Copilot` which forwards them to `mcu-firmware`.
+Tools running on the robot's Raspberry Pi 4 are:
 
-The touchscreen displays the `Copilot` dashboard using an web browser embedded in the Raspberry Pi.
+  - [`Copilot`](usage/copilot.md) driving the robot moves by communicating
+    with `mcu-firmware` (on STM32) using Protobuf messages over a serial port.
+  - [`Detector`](usage/detector.md) generating obstacles based on Lidar data.
+  - [`Robotcam`](usage/robotcam.md) reading and analyzing images from the camera.
 
-`Detector` reads Lidar data (or fake data sent by `Monitor` in emulation mode), builds dynamic obstacles
-and send them to `Copilot`, which forwards generated obstacles to `mcu-firmware` to compute avoidance path,
-and to `Monitor`/`Dashboards` for display.
+Tools running on the central beacon's Raspberry Pi 4 are:
 
-`RobotCam` controls the camera embedded in the robot, stream the video on the web server and detect samples using Aruco tags.
+  - [`Planner`](usage/planner.md) in charge of the game strategy.
+  - [`Beaconcam`](usage/beaconcam.md) reading and analyzing images of the game area from the camera.
+  - [`Server`](usage/server.md) connecting all components through a SocketIO server.
+    It also runs a web server providing a `Dashboard` to control and monitor the robot.
 
-This repository also provides some tools to help debugging other robot components.
+[`Monitor`](usage/monitor.md) is running on a PC connected to the SocketIO server.
+
+[`Dashboard`](usage/dashboard.md) is accessed through a web browser on the same network.
+
+The touchscreens display the `Dashboard` using an web browser embedded in the Raspberry Pi.
+
+## Emulation Software Architecture
+
+During development, an emulation environment is also available. In this case,
+all robot and beacon components are running on the development PC.
+
+![Emulation Architecture Overview](img/cogip-overview-emulation.svg)
+
+In this mode, fake Lidar data are provided by the `Monitor`.

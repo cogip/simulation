@@ -1,17 +1,19 @@
 # Monitor
 
 The `Monitor` is used to monitor the robot behavior during the game.
-It it connected to `Copilot` embedded in the robot through Socket.IO protocol.
 
-Only one `Monitor`can be connected to `Copilot`at the same time.
+It communicates on the `/monitor` and `/dashboard` namespaces of the SocketIO server
+running on the central beacon over Wifi.
+
+Only one `Monitor` can be connected to the SocketIO server at the same time.
 
 It can also provide fake Lidar data to `Detector` in emulation mode.
 
 The monitor provides a graphical interface, featuring:
 
-  * a 3D view of the table (in yellow) and the robot (in green)
+  * a 3D view of the table and the robot
 
-  * a menu giving access to the firmware's shell menu
+  * a menu giving access to the planner menu and firmware's shell menu
 
   * a button to add obstacles (in grey), move and resize them
 
@@ -19,13 +21,38 @@ The monitor provides a graphical interface, featuring:
 
   * visualization of ToF (red dots) and LIDAR (bleu dots) sensors detections
 
-  * visualization of obstacles detected in the firmware (in transparent red)
+  * visualization of obstacles detected using the Lidar (in transparent red)
 
   * charts window to visualize calibration data
 
-![GUI Overview](../img/monitor/gui_overview.png)
+  * dashboard window to visualize the `Dashboard`
 
-![Charts View](../img/monitor/charts_view.png)
+  * differents artifacts depending of current game rules
+
+![GUI Overview](../img/cogip-monitor-gui.png)
+
+![Charts View](../img/cogip-monitor-charts.png)
+
+## Data Flow
+
+![Monitor Data Flow](../img/cogip-monitor.svg)
+
+## Run Monitor
+
+To connect the `Monitor` to the `Server` running on the same development PC, run:
+
+```bash
+cogip-monitor http://localhost:8080
+```
+
+To connect the `Monitor` to the `Server` running on the Raspberry Pi
+in the central beacon, run:
+
+```bash
+cogip-monitor http://cogip-beacon
+```
+
+!!! note "Adapt URL and port depending on `Server` configuration"
 
 ## Command line options
 
@@ -36,23 +63,7 @@ Usage: cogip-monitor [URL]
   Launch COGIP Monitor.
 
 Arguments:
-  [URL]  URL to Copilot socket.io/web server  [env var: COPILOT_URL; default: http://copilot]
+  [URL]        URL to Copilot socket.io/web server
+               env var: COGIP_SERVER_URL
+               default: http://localhost:8080
 ```
-
-!!! note "Environnement variables can be set in the `.env` file."
-
-## Launch the monitor
-
-To connect the `Monitor` to the `Copilot` running on the same developmnet PC, run:
-
-```bash
-cogip-monitor http://localhost:8080
-```
-
-To connect the `Monitor` to the `Copilot` running on the Raspberry Pi in the robot, run:
-
-```bash
-cogip-monitor http://copilot
-```
-
-!!! note "Adapt URL and port depending on `Copilot` configuration"

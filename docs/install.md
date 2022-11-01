@@ -4,10 +4,9 @@
 
 Linux only.
 
-Tested on Ubuntu 20.04.
-The firmware compiled in native mode is not compatible with Ubuntu 20.10+.
+Tested on Ubuntu 22.04 (with Xorg instead of Wayland for proper display of the Monitor).
 
-Any Linux distribution with Python 3.8+ properly installed should be compatible.
+Any Linux distribution with Python 3.10+ properly installed should be compatible.
 
 ## Git LFS
 
@@ -32,7 +31,7 @@ git submodule update --init
 ## Debian packages
 
 ```bash
-sudo apt install python3.8 python3.8-dev python3-venv libxcb-xinerama0 socat protobuf-compiler
+sudo apt install python3 python3-dev python3-venv libxcb-xinerama0 socat protobuf-compiler
 ```
 
 ## Build mcu-firmware
@@ -45,7 +44,7 @@ Use the following command to build the native version of the firmware:
 
 ```bash
 # For the robot firmware
-make -C submodules/mcu-firmware/applications/cup2021 BOARD=cogip-native
+make -C submodules/mcu-firmware/applications/cup2022 BOARD=cogip-native
 
 # For the test platform
 make -C submodules/mcu-firmware/applications/app_test BOARD=cogip-native
@@ -57,7 +56,7 @@ Use the following command to build the ARM version of the firmware:
 
 ```bash
 # For the robot firmware
-make -C submodules/mcu-firmware/applications/cup2021 BOARD=cogip-cortex
+make -C submodules/mcu-firmware/applications/cup2022 BOARD=cogip-board
 
 # For the test platform
 make -C submodules/mcu-firmware/applications/app_test BOARD=cogip-nucleo-f446re
@@ -67,7 +66,7 @@ make -C submodules/mcu-firmware/applications/app_test BOARD=cogip-nucleo-f446re
 
 All tools can be install on the development PC.
 
-!!! note "Python 3.8 or more is required."
+!!! note "Python 3.10 or more is required."
 
 To setup a new environment, create a virtual env and install the package in dev mode:
 
@@ -79,7 +78,7 @@ pip install wheel
 pip install -e .
 ```
 
-`mcu-firmware` and `Copilot` can be run on the development PC.
+`mcu-firmware` and all Python tools can be run on the development PC.
 In this case, we have to create virtual serial ports to simulation the serial link between STM32 and Raspberry Pi:
 
 ```bash
@@ -94,10 +93,22 @@ make -C submodules/mcu-firmware/applications/app_test BOARD=cogip-native PORT="-
 
 !!! note "In RIOT, `-c` option specifies serial ports to use. First port being used for the shell, it is not configurable, so we just pass `/dev/null`."
 
+`Server` is run using:
+
+```bash
+cogip-server
+```
+
+`Planner` is run using:
+
+```bash
+cogip-planner
+```
+
 `Copilot` is run using:
 
 ```bash
-COPILOT_SERIAL_PORT=/tmp/ttyRPI cogip-copilot
+cogip-copilot -s /tmp/ttyRPI
 ```
 
 `Detector` is run using:
@@ -112,11 +123,13 @@ cogip-detector
 cogip-robotcam
 ```
 
-And finally `Monitor`is launched using:
+And finally `Monitor` is launched using:
 
 ```bash
 cogip-monitor http://localhost:8080
 ```
+
+The `Dashboard` is accessible using a web browser at `http://localhost:8080`.
 
 ## Packaging
 
@@ -128,7 +141,7 @@ python setup.py sdist
 
 This will produce `dist/cogip-tools-1.0.0.tar.gz`.
 
-This package can be copied to the Raspberry Pi and installed to deploy the `Copilot` and `RobotCam` tools:
+This package can be copied to the Raspberry Pi and installed to deploy the Python tools:
 
 ```bash
 pip install cogip-tools-1.0.0.tar.gz

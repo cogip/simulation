@@ -8,8 +8,6 @@ nav = mkdocs_gen_files.Nav()
 
 src_root = Path("cogip")
 for path in sorted(src_root.glob("**/*.py")):
-    if path.name in ["__init__.py", "__main__.py"]:
-        continue
     if path.stem.endswith("_pb2"):
         continue
     module_path = path.with_suffix("")
