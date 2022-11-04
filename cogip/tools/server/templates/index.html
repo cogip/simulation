@@ -202,9 +202,8 @@
         drawModule.resizeCanvas(); // draw background
         virtualKeyboard.init(); // initialize keyboard
 
-        io.connect(window.location.origin, {
-          path: "/sio/socket.io",
-          auth: { type: "dashboard" },
+        io.connect("/dashboard", {
+          path: "/sio/socket.io"
         })
           .on("connect", function () {
             socketModule.onConnection();

@@ -12,21 +12,21 @@ class SioEvents(socketio.ClientNamespace):
     """
 
     def __init__(self, detector: "detector.Detector"):
-        super().__init__()
+        super().__init__("/detector")
         self._detector = detector
 
     def on_connect(self):
         """
-        On connection to Copilot, start obstacles updater thread.
+        On connection to cogip-server, start obstacles updater thread.
         """
-        logger.info("Connected to Copilot")
+        logger.info("Connected to cogip-server")
         self._detector.start_obstacles_updater()
 
     def on_disconnect(self) -> None:
         """
-        On disconnection from Copilot, stop obstacles updater thread.
+        On disconnection from cogip-server, stop obstacles updater thread.
         """
-        logger.info("Disconnected from Copilot")
+        logger.info("Disconnected from cogip-server")
         self._detector.stop_obstacles_updater()
 
     def on_connect_error(self, data: Dict[str, Any]) -> None:
@@ -34,7 +34,7 @@ class SioEvents(socketio.ClientNamespace):
         On connection error, check if a Detector is already connected and exit,
         or retry connection.
         """
-        logger.error(f"Connect to Copilot error: {data = }")
+        logger.error(f"Connect to cogip-server error: {data = }")
         if (
                 data and
                 isinstance(data, dict) and
@@ -45,7 +45,7 @@ class SioEvents(socketio.ClientNamespace):
             self._detector.retry_connection = False
             return
 
-    def on_pose(self, data: Dict[str, Any]) -> None:
+    def on_pose_current(self, data: Dict[str, Any]) -> None:
         """
         Callback on robot pose message.
         """
@@ -55,5 +55,5 @@ class SioEvents(socketio.ClientNamespace):
         """
         Callback on Lidar data.
         """
-        logger.debug("Received lidar data from Copilot")
+        logger.debug("Received lidar data")
         self._detector.update_lidar_data([(d, 65535) for d in data])

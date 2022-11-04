@@ -22,7 +22,7 @@ required_packages = [
     "python-dotenv==0.19.2",
 
     # Packages specific to monitor
-    "PySide6==6.3.2;" + marker_platform_x86_64,
+    "PySide6==6.4.0.1;" + marker_platform_x86_64,
     "typer==0.4.1;" + marker_platform_x86_64,
 
     # Packages specific to Copilot and Robotcam
@@ -33,10 +33,11 @@ required_packages = [
     "opencv-contrib-python==4.5.5.64",
     "polling2==0.5.0",
     "protobuf==3.19.5",
-    "python-socketio==5.5.1",
+    "python-socketio==5.7.1",
     "requests==2.27.1",
     "uvicorn[standard]==0.17.6",
-    "websocket-client==1.3.1",
+    "watchfiles==0.17.0",
+    "websocket-client==1.4.1",
 
     # Packages specific to documentation
     "MarkupSafe==2.0.1;" + marker_platform_x86_64,
@@ -72,6 +73,14 @@ setup(
             "static/js/external/*",
             "templates/*"
         ],
+        "cogip.tools.server": [
+            "static/css/*",
+            "static/css/external/*",
+            "static/img/*",
+            "static/js/*",
+            "static/js/external/*",
+            "templates/*"
+        ],
         "cogip.tools.robotcam": [
             "data/*"
         ]
@@ -81,10 +90,11 @@ setup(
         'console_scripts': [
             'cogip-monitor=cogip.tools.monitor.main:main',
             'cogip-replay=cogip.tools.replay.main:main',
-            'cogip-copilot=cogip.tools.copilot.main:main',
+            'cogip-copilot=cogip.tools.copilot.__main__:main',
             'cogip-detector=cogip.tools.detector.__main__:main',
             'cogip-planner=cogip.tools.planner.__main__:main',
             'cogip-robotcam=cogip.tools.robotcam.main:main',
+            'cogip-server=cogip.tools.server.__main__:main',
             'cogip-lidarusb=cogip.tools.lidarusb.main:main',
             'cogip-lidarpf=cogip.tools.lidarpf.main:main'
         ]

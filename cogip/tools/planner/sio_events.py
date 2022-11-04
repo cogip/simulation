@@ -14,44 +14,39 @@ class SioEvents(socketio.ClientNamespace):
     """
 
     def __init__(self, planner: "planner.Planner"):
-        super().__init__()
+        super().__init__("/planner")
         self._planner = planner
         self._pose_reached = True
 
     def on_connect(self):
         """
-        On connection to Copilot.
+        On connection to cogip-server.
         """
-        logger.info("Connected to Copilot")
+        logger.info("Connected to cogip-server")
         self.on_reset()
 
     def on_disconnect(self) -> None:
         """
-        On disconnection from Copilot.
+        On disconnection from cogip-server.
         """
-        logger.info("Disconnected from Copilot")
+        logger.info("Disconnected from cogip-server")
 
     def on_connect_error(self, data: Dict[str, Any]) -> None:
         """
         On connection error, check if a Planner is already connected and exit,
         or retry connection.
         """
-        logger.error(f"Connect to Copilot error: {data = }")
         if (
                 data and
                 isinstance(data, dict) and
                 (message := data.get("message")) and
                 message == "A planner is already connected"
            ):
-            logger.error(message)
+            logger.error(f"Connection to cogip-server failed: {message}")
             self._planner.retry_connection = False
             return
-
-    def on_pose(self, data: Dict[str, Any]) -> None:
-        """
-        Callback on robot pose message.
-        """
-        self._planner.robot_pose = models.Pose.parse_obj(data)
+        else:
+            logger.error(f"Connection to cogip-server failed: {data = }")
 
     def on_reset(self) -> None:
         """
@@ -59,15 +54,33 @@ class SioEvents(socketio.ClientNamespace):
         """
         path.reset()
         self._pose_reached = True
-        self.emit("start_pose", path.pose().dict())
-        self.emit("planner_menu", menu.dict())
+        self.emit("pose_start", path.pose().dict())
+        self.emit("menu", menu.dict())
+
+    def on_pose_curent(self, data: Dict[str, Any]) -> None:
+        """
+        Callback on pose current message.
+        """
+        self._planner.robot_pose = models.Pose.parse_obj(data)
+
+    def on_pose_reached(self) -> None:
+        """
+        Callback on pose reached message.
+        """
+        self._pose_reached = True
+        if path.playing:
+            self._pose_reached = False
+            self.emit("pose_order", path.incr().dict())
 
     def on_command(self, cmd: str) -> None:
+        """
+        Callback on command message from dashboard.
+        """
         if cmd == "play":
             path.play()
             if self._pose_reached:
                 self._pose_reached = False
-                self.emit("pose_to_reach", path.incr().dict())
+                self.emit("pose_order", path.incr().dict())
 
         elif cmd == "stop":
             path.stop()
@@ -75,18 +88,12 @@ class SioEvents(socketio.ClientNamespace):
         elif cmd == "next":
             if self._pose_reached:
                 self._pose_reached = False
-                self.emit("pose_to_reach", path.incr().dict())
+                self.emit("pose_order", path.incr().dict())
 
         elif cmd == "prev":
             if self._pose_reached:
                 self._pose_reached = False
-                self.emit("pose_to_reach", path.decr().dict())
+                self.emit("pose_order", path.decr().dict())
 
         elif cmd == "reset":
             self.on_reset()
-
-    def on_pose_reached(self) -> None:
-        self._pose_reached = True
-        if path.playing:
-            self._pose_reached = False
-            self.emit("pose_to_reach", path.incr().dict())

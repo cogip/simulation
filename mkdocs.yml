@@ -14,10 +14,14 @@ nav:
   - Overview: index.md
   - Installation: install.md
   - Tools:
-    - usage/monitor.md
+    - usage/server.md
+    - usage/planner.md
     - usage/copilot.md
     - usage/detector.md
+    - usage/monitor.md
+    - usage/dashboard.md
     - usage/robotcam.md
+    - usage/beaconcam.md
     - usage/replay.md
     - usage/lidarusb.md
     - usage/lidarpf.md
@@ -40,8 +44,12 @@ plugins:
             - import sys
             - from unittest.mock import MagicMock
             - sys.modules["Shiboken"] = MagicMock()
-            - from cogip.tools.copilot import server as copilot_server
-            - copilot_server.AioSerial = MagicMock()
+            - from cogip.tools.copilot import pbcom
+            - pbcom.AioSerial = MagicMock()
+            - from PySide6.support.signature import parser
+            - parser.pyside_type_init = MagicMock()
+            - import asyncio
+            - asyncio.get_running_loop = MagicMock()
           selection:
             new_path_syntax: true
       watch:

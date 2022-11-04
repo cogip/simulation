@@ -346,7 +346,7 @@ class CakeLayerProperties(QtWidgets.QDialog):
 
         Arguments:
             parent: The parent widget
-            cake_layer__entity: The related cake layer entity
+            cake_layer_entity: The related cake layer entity
         """
         super().__init__(parent)
 

@@ -14,14 +14,14 @@ class Planner:
 
     def __init__(
             self,
-            copilot_url: str):
+            server_url: str):
         """
         Class constructor.
 
         Arguments:
-            copilot_url: Copilot URL
+            server_url: Server URL
         """
-        self._copilot_url = copilot_url
+        self._server_url = server_url
         self._retry_connection = True
         self._robot_pose = models.Pose()
         self._robot_pose_lock = threading.Lock()
@@ -31,22 +31,22 @@ class Planner:
 
     def connect(self):
         """
-        Connect to `Copilot` SocketIO server.
+        Connect to SocketIO server.
         """
         self.retry_connection = True
         threading.Thread(target=self.try_connect).start()
 
     def try_connect(self):
         """
-        Poll to wait for the first copilot connection.
+        Poll to wait for the first connection.
         Disconnections/reconnections are handle directly by the client.
         """
         while(self.retry_connection):
             try:
                 self._sio.connect(
-                    self._copilot_url,
+                    self._server_url,
                     socketio_path="sio/socket.io",
-                    auth={"type": "planner"}
+                    namespaces=["/planner"]
                 )
             except socketio.exceptions.ConnectionError:
                 time.sleep(2)
@@ -56,7 +56,7 @@ class Planner:
     @property
     def try_reconnection(self) -> bool:
         """
-        Return true if Planner should continue to try to connect to the `Copilot`,
+        Return true if Planner should continue to try to connect to the server,
         false otherwise.
         """
         return self._retry_connection
@@ -68,7 +68,7 @@ class Planner:
     @property
     def robot_pose(self) -> models.Pose:
         """
-        Last position of the robot send by `Copilot`.
+        Last position of the robot.
         """
         return self._robot_pose
 

@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 
-from .server import CopilotServer
+from .server import Server
 
 
 def create_app() -> FastAPI:
     """
     Create server and return FastAPI application for uvicorn/gunicorn.
     """
-    server = CopilotServer()
+    server = Server()
     return server.app
 
 

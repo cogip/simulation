@@ -20,9 +20,9 @@ from .socketiocontroller import SocketioController
 
 def main_opt(
         url: str = typer.Argument(
-            "http://copilot",
-            envvar="COPILOT_URL",
-            help="URL to Copilot socket.io/web server")) -> None:
+            "http://localhost:8080",
+            envvar="COGIP_SERVER_URL",
+            help="Server URL")) -> None:
     """
     Launch COGIP Monitor.
     """

@@ -4,7 +4,6 @@ from threading import Thread
 from fastapi import FastAPI
 from fastapi.responses import StreamingResponse
 import polling2
-import socketio
 from uvicorn.main import Server as UvicornServer
 
 from cogip import logger
@@ -15,7 +14,7 @@ class CameraServer():
     """
     Camera web server.
 
-    Handle FastAPI server to stream camera video and SocketIO client to send detected samples to Copilot.
+    Handle FastAPI server to stream camera video and SocketIO client to send detected samples to server.
     """
     _exiting: bool = False                              # True if Uvicorn server was ask to shutdown
     _last_frame: SharedMemory = None                    # Last generated frame to stream on web server
@@ -31,7 +30,6 @@ class CameraServer():
         CameraServer._exiting = False
 
         self.app = FastAPI(title="COGIP Robot Camera Streamer", debug=False)
-        self.sio = socketio.Client(logger=False, engineio_logger=False)
         self.register_endpoints()
 
         UvicornServer.handle_exit = self.handle_exit
@@ -50,17 +48,6 @@ class CameraServer():
 
         CameraServer._original_uvicorn_exit_handler(*args, **kwargs)
 
-    def sio_connect(self) -> bool:
-        """
-        Connect to Copilot's SocketIO server if application is not exiting.
-        Returning True stops polling for connection to succeed.
-        """
-        if self._exiting:
-            return True
-
-        self.sio.connect(self.settings.copilot_url, socketio_path="sio/socket.io")
-        return True
-
     def camera_connect(self) -> bool:
         if self._exiting:
             return True
@@ -77,7 +64,7 @@ class CameraServer():
     async def camera_streamer(self):
         """
         Frame generator.
-        Yield frames produced by [camera_handler][cogip.tools.robotcam.server.CameraServer.camera_handler].
+        Yield frames produced by [camera_handler][cogip.tools.robotcam.camera.CameraHandler.camera_handler].
         """
         while not self._exiting:
             yield bytes(self._last_frame.buf)
@@ -88,17 +75,7 @@ class CameraServer():
         async def startup_event():
             """
             Function called at FastAPI server startup.
-            Connect to Copilot's SocketIO server.
             """
-            # Poll in background to wait for the first copilot connection.
-            # Deconnections/reconnections are handle directly by the client.
-            Thread(target=lambda: polling2.poll(
-                self.sio_connect,
-                step=1,
-                ignore_exceptions=(socketio.exceptions.ConnectionError),
-                poll_forever=True
-            )).start()
-
             # Poll in background to wait for camera server connection through shared memory.
             Thread(target=lambda: polling2.poll(
                 self.camera_connect,
@@ -110,12 +87,8 @@ class CameraServer():
         async def shutdown_event():
             """
             Function called at FastAPI server shutdown.
-            Disconnect from Copilot's SocketIO server.
             """
-            self.sio.reconnection = False
-            self.sio.reconnection_attempts = -1
-            if self.sio.connected:
-                self.sio.disconnect()
+            pass
 
         @self.app.get("/")
         def index():
@@ -124,24 +97,3 @@ class CameraServer():
             """
             stream = self.camera_streamer() if CameraServer._last_frame else ""
             return StreamingResponse(stream, media_type="multipart/x-mixed-replace;boundary=frame")
-
-        @self.sio.event
-        def connect():
-            """
-            Callback on Copilot connection.
-            """
-            logger.info("Camera server connected to Copilot")
-
-        @self.sio.event
-        def connect_error(data):
-            """
-            Callback on Copilot connection error.
-            """
-            logger.info("Camera server connection to Copilot failed.")
-
-        @self.sio.event
-        def disconnect():
-            """
-            Callback on Copilot disconnection.
-            """
-            logger.info("Camera server disconnected from Copilot")

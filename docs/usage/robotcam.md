@@ -1,8 +1,11 @@
 # RobotCam
 
-The RobotCam tool is running on a Raspberry Pi embedded in the robot.
-It handles the robot camera, detect samples using Aruco markers and stream the video to a web server.
-It is connected to the `Copilot` SocketIO server to send detected samples.
+The `RobotCam` tool is running on the Raspberry Pi embedded in the robot.
+
+It communicates on the `/robotcam` namespace of the SocketIO server
+running on the central beacon over Wifi.
+
+It handles the robot camera, detect game elements using Aruco markers and stream the video to a web server.
 
 ## Run RobotCam
 
@@ -18,11 +21,8 @@ All variables can be defined in the `.env` file.
 Example of `.env` file with all default values:
 
 ```bash
-# Web server port
-ROBOTCAM_SERVER_PORT=8081
-
-# Copilot URL
-ROBOTCAM_COPILOT_URL="http://localhost:8080"
+# Server URL
+COGIP_SERVER_URL="http://localhost:8080"
 
 # Camera device
 ROBOTCAM_CAMERA_DEVICE="/dev/v4l/by-id/usb-HBV_HD_CAMERA_HBV_HD_CAMERA-video-index0"

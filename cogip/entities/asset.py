@@ -81,8 +81,7 @@ class AssetEntity(Qt3DCore.QEntity):
         Arguments:
             status: current loader status
         """
-
-        if status != Qt3DRender.QSceneLoader.Ready:
+        if status.value != Qt3DRender.QSceneLoader.Ready.value:  # .value is workaround to a Python binding bug in PySide6 6.4.
             return
 
         self.post_init()
