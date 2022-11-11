@@ -1,9 +1,15 @@
 import math
 import threading
 import time
-from typing import List, Optional, Tuple
+from typing import List
 
+from more_itertools import consecutive_groups
 import socketio
+
+try:
+    import ydlidar
+except:  # noqa
+    ydlidar = None
 
 from cogip import models
 from cogip.utils import ThreadLoop
@@ -20,50 +26,41 @@ class Detector:
 
     Build obstacles and send the list to the server.
     """
-    NB_ANGLES: int = 360
     NB_ANGLES_WITHOUT_OBSTACLE_TO_IGNORE: int = 3
 
     def __init__(
             self,
             server_url: str,
-            uart_port: Optional[str],
-            uart_speed: int,
             min_distance: int,
             max_distance: int,
-            min_intensity: int,
             obstacle_radius: int,
             obstacle_bb_margin: int,
             obstacle_bb_vertices: int,
             beacon_radius: int,
-            refresh_interval: float):
+            refresh_interval: float,
+            emulation: bool):
         """
         Class constructor.
 
         Arguments:
             server_url: server URL
-            uart_port: Serial port connected to the Lidar
-            uart_speed: Baud rate
-            server_url: Server URL
             min_distance: Minimum distance to detect an obstacle
             max_distance: Maximum distance to detect an obstacle
-            min_intensity: Minimum intensity required to validate a Lidar distance
             obstacle_radius: Radius of a dynamic obstacle
             obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
             obstacle_bb_vertices: Number of obstacle bounding box vertices
             beacon_radius: Radius of the opponent beacon support (a cylinder of 70mm diameter to a cube of 100mm width)
             refresh_interval: Interval between each update of the obstacle list (in seconds)
+            emulation: force emulation mode
         """
         self._server_url = server_url
-        self._uart_port = uart_port
-        self._uart_speed = uart_speed
         self._min_distance = min_distance
-        self._max_distance = max_distance
-        self._min_intensity = min_intensity
+        self._max_distance = max_distance - beacon_radius
         self._obstacle_radius = obstacle_radius
         self._obstacle_bb_margin = obstacle_bb_margin
         self._obstacle_bb_vertices = obstacle_bb_vertices
         self._beacon_radius = beacon_radius
-        self._retry_connection = True
+        self._refresh_interval = refresh_interval
         self._lidar_data: List[int] = list()
         self._lidar_data_lock = threading.Lock()
         self._robot_pose = models.Pose()
@@ -76,6 +73,35 @@ class Detector:
             logger=True
         )
 
+        self._lidar_reader_loop = ThreadLoop(
+            "Lidar reader loop",
+            refresh_interval,
+            self.read_lidar,
+            logger=True
+        )
+
+        self._laser: ydlidar.CYdLidar | None = None
+        self._scan:  ydlidar.LaserScan | None = None
+        uart_port: str | None = None
+        if ydlidar and not emulation:
+            for _, value in ydlidar.lidarPortList().items():
+                uart_port = value
+        if uart_port:
+            self._laser = ydlidar.CYdLidar()
+            self._laser.setlidaropt(ydlidar.LidarPropSerialPort, uart_port)
+            self._laser.setlidaropt(ydlidar.LidarPropSerialBaudrate, 230400)
+            self._laser.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE)
+            self._laser.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)
+            self._laser.setlidaropt(ydlidar.LidarPropSingleChannel, False)
+            self._laser.setlidaropt(ydlidar.LidarPropSampleRate, 5)
+            self._laser.setlidaropt(ydlidar.LidarPropIntenstiy, True)
+            self._laser.setlidaropt(ydlidar.LidarPropScanFrequency, 5.0)
+            self._laser.setlidaropt(ydlidar.LidarPropMaxRange, self._max_distance/1000)
+            self._laser.setlidaropt(ydlidar.LidarPropMinRange, self._min_distance/1000)
+            self._laser.setlidaropt(ydlidar.LidarPropInverted, False)
+
+            self._scan = ydlidar.LaserScan()
+
         self._sio = socketio.Client(logger=False)
         self._sio.register_namespace(SioEvents(self))
 
@@ -83,52 +109,45 @@ class Detector:
         """
         Connect to SocketIO server.
         """
-        self.retry_connection = True
         threading.Thread(target=self.try_connect).start()
 
-    def start_obstacles_updater(self) -> None:
+    def start(self) -> None:
         """
-        Start the thread updating obstacles list.
+        Start updating obstacles list.
         """
         self._obstacles_updater_loop.start()
+        if self._laser:
+            self._lidar_reader_loop.start()
+            self.start_lidar()
 
-    def stop_obstacles_updater(self) -> None:
+    def stop(self) -> None:
         """
-        Stop the thread updating obstacles list.
+        Stop updating obstacles list.
         """
         self._obstacles_updater_loop.stop()
+        if self._laser:
+            self._lidar_reader_loop.stop()
+            self.stop_lidar()
 
     def try_connect(self):
         """
         Poll to wait for the first cogip-server connection.
         Disconnections/reconnections are handle directly by the client.
         """
-        while(self.retry_connection):
+        while(True):
             try:
                 self._sio.connect(
                     self._server_url,
                     socketio_path="sio/socket.io",
                     namespaces=["/detector"],
                     auth={
-                        "mode": "detection" if self._uart_port else "emulation"
+                        "mode": "detection" if self._laser else "emulation"
                     }
                 )
             except socketio.exceptions.ConnectionError:
                 time.sleep(2)
                 continue
             break
-
-    @property
-    def try_reconnection(self) -> bool:
-        """
-        Return true if Detector should continue to try to connect to cogip-server,
-        false otherwise.
-        """
-        return self._retry_connection
-
-    @try_reconnection.setter
-    def try_reconnection(self, new_value: bool) -> None:
-        self._retry_connection = new_value
 
     @property
     def robot_pose(self) -> models.Pose:
@@ -142,31 +161,18 @@ class Detector:
         with self._robot_pose_lock:
             self._robot_pose = new_pose
 
-    def normalize_distance(self, distance: int, intensity: int) -> int:
+    def update_lidar_data(self, lidar_data: List[int]):
         """
-        Normalize a Lidar distance (for one angle) based on maximum and
-        minimum authorized distances, and minimum intensity of the Lidar signal.
-        """
-        if self._max_distance == 0:
-            return distance
-
-        if intensity < self._min_intensity or distance == 0 or distance > self._max_distance:
-            return self._max_distance
-
-        return distance
-
-    def update_lidar_data(self, lidar_data: List[Tuple[int, int]]):
-        """
-        Receive Lidar data and normalize them.
+        Receive Lidar data.
         """
         with self._lidar_data_lock:
-            self._lidar_data = [self.normalize_distance(d + self._beacon_radius, i) for d, i in lidar_data]
+            self._lidar_data[:] = lidar_data[:]
 
     def filter_distances(self) -> List[int]:
         """
         Find consecutive obstacles and keep the nearest obstacle at the middle.
         """
-        filtered_distances = [self._max_distance] * self.NB_ANGLES
+        filtered_distances = [self._max_distance] * 360
 
         # Find an angle without obstacle
         angles_without_obstacles = [i for i, d in enumerate(self._lidar_data) if d >= self._max_distance]
@@ -179,28 +185,28 @@ class Detector:
 
         # Iterate over all angles, starting by the first angle without obstacle
         first = start
-        while first < start + self.NB_ANGLES:
-            dist_min = self._lidar_data[first % self.NB_ANGLES]
+        while first < start + 360:
+            dist_min = self._lidar_data[first % 360]
 
             # Find the next angle with obstacle
             if dist_min >= self._max_distance:
                 first += 1
                 continue
 
-            # An angle (first) with obstacle is found, iterate until the next obstacle without obstacle
-            for last in range(first + 1, start + self.NB_ANGLES + 1):
-                dist_current = self._lidar_data[last % self.NB_ANGLES]
+            # An angle (first) with obstacle is found, iterate until the next angle without obstacle
+            for last in range(first + 1, start + 360 + 1):
+                dist_current = self._lidar_data[last % 360]
 
                 # Keep the nearest distance of consecutive obstacles
-                if dist_current < self._max_distance or self._lidar_data[(last + 1) % self.NB_ANGLES] < self._max_distance:
+                if dist_current < self._max_distance or self._lidar_data[(last + 1) % 360] < self._max_distance:
                     dist_min = dist_current if dist_current < dist_min else dist_min
                     continue
 
-                # Do not exit the loop only if NB_ANGLES_WITHOUT_OBSACLE_TO_IGNORE consecutive
+                # Do not exit the loop only if NB_ANGLES_WITHOUT_OBSTACLE_TO_IGNORE consecutive
                 # angles have no obstacle.
                 continue_loop = False
                 for next in range(last + 1, last + self.NB_ANGLES_WITHOUT_OBSTACLE_TO_IGNORE):
-                    if self._lidar_data[next % self.NB_ANGLES] < self._max_distance:
+                    if self._lidar_data[next % 360] < self._max_distance:
                         continue_loop = True
                         break
 
@@ -211,7 +217,7 @@ class Detector:
                 # Set its distance to the minimun distance of the range
                 last = last - 1
                 middle = first + int((last - first) / 2 + 0.5)
-                filtered_distances[middle % self.NB_ANGLES] = dist_min
+                filtered_distances[middle % 360] = dist_min
                 first = last + 1
                 break
             first += 1
@@ -228,10 +234,10 @@ class Detector:
             if distance < self._min_distance or distance >= self._max_distance:
                 continue
 
-            angle = (self.NB_ANGLES - angle) % self.NB_ANGLES
+            angle = (360 - angle) % 360
 
             # Compute obstacle position
-            obstacle_angle = math.radians((int(robot_pose.O) + angle) % self.NB_ANGLES)
+            obstacle_angle = math.radians((int(robot_pose.O) + angle) % 360)
             x = robot_pose.x + distance * math.cos(obstacle_angle)
             y = robot_pose.y + distance * math.sin(obstacle_angle)
 
@@ -256,7 +262,7 @@ class Detector:
 
     def process_lidar_data(self):
         """
-        Function executed in a thread loop to update and send dynmic obstacles.
+        Function executed in a thread loop to update and send dynamic obstacles.
         """
         with self._lidar_data_lock:
             filtered_distances = self.filter_distances()
@@ -267,3 +273,63 @@ class Detector:
         logger.debug(f"Generated obstacles: {obstacles}")
         if self._sio.connected:
             self._sio.emit("obstacles", [o.dict() for o in obstacles], namespace="/detector")
+
+    def start_lidar(self):
+        """
+        Start the Lidar.
+        """
+        if self._laser:
+            self._laser.initialize()
+            self._laser.turnOn()
+
+    def read_lidar(self):
+        """
+        Function executed in a thread loop to read Lidar data.
+        """
+        if not ydlidar.os_isOk():
+            return
+
+        ret = self._laser.doProcessSimple(self._scan)
+        if ret:
+            tmp_distances = [[] for _ in range(360)]
+            result = []
+
+            # Build a list of points for each integer degree
+            for point in self._scan.points:
+                angle_sym = math.floor(math.degrees(point.angle))
+                angle = angle_sym if angle_sym >= 0 else angle_sym + 360
+                if 0 <= angle < 360 and point.range > 0.0:
+                    tmp_distances[angle].append(point.range)
+
+            # Compute mean of points list for each degree.
+            empty_angles = []
+            for angle, distances in enumerate(tmp_distances):
+                distance = self._max_distance
+                if size := len(distances):
+                    distance = round(sum(distances) * 1000 / size)
+                else:
+                    empty_angles.append(angle)
+
+                result.append(distance + self._beacon_radius)
+
+            # If a degree has no valid point and is isolated (no other empty angle before and after)
+            # it is probably a bad value, so set it to the mean of surrounding degrees.
+            for group in consecutive_groups(empty_angles):
+                g = list(group)
+                if len(g) == 1:
+                    isolated = g[0]
+                    before = result[(isolated - 1) % 360]
+                    after = result[(isolated + 1) % 360]
+                    result[isolated] = round((before + after) / 2)
+
+            self.update_lidar_data(result)
+        else:
+            print("Failed to get Lidar Data")
+
+    def stop_lidar(self):
+        """
+        Stop the Lidar.
+        """
+        if self._laser:
+            self._laser.turnOff()
+            self._laser.disconnecting()

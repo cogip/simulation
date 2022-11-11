@@ -17,17 +17,17 @@ class SioEvents(socketio.ClientNamespace):
 
     def on_connect(self):
         """
-        On connection to cogip-server, start obstacles updater thread.
+        On connection to cogip-server, start detector threads.
         """
         logger.info("Connected to cogip-server")
-        self._detector.start_obstacles_updater()
+        self._detector.start()
 
     def on_disconnect(self) -> None:
         """
-        On disconnection from cogip-server, stop obstacles updater thread.
+        On disconnection from cogip-server, stop detector threads.
         """
         logger.info("Disconnected from cogip-server")
-        self._detector.stop_obstacles_updater()
+        self._detector.stop()
 
     def on_connect_error(self, data: Dict[str, Any]) -> None:
         """
@@ -56,4 +56,4 @@ class SioEvents(socketio.ClientNamespace):
         Callback on Lidar data.
         """
         logger.debug("Received lidar data")
-        self._detector.update_lidar_data([(d, 65535) for d in data])
+        self._detector.update_lidar_data(data)

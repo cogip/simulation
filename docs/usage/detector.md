@@ -13,11 +13,14 @@ and by `mcu-firmware` to compute avoidance path.
 ### Monitoring Mode
 
 Read data from lidar connected on a serial port of the Raspberry Pi.
+This is the default mode when a Lidar is connected, since the YDLidar SDK automatically
+detects the serial port to use.
 
 ### Emulation Mode
 
 Ask the `Monitor` to emulate the Lidar wich sends its data through the SocketIO server.
 The emulation mode is enabled if no Lidar is detected at startup.
+In case of a false detection, use the `--emulation` option.
 
 ## Data Flow
 

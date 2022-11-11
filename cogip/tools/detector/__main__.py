@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import logging
 from pathlib import Path
-from typing import Optional
 
 import typer
 from watchfiles import PythonFilter, run_process
@@ -11,7 +10,7 @@ from .detector import Detector
 
 
 def changes_callback(changes):
-    logger.info("Changes detected:", changes)
+    logger.info(f"Changes detected: {changes}")
 
 
 def run(*args, **kwargs) -> None:
@@ -25,30 +24,15 @@ def main_opt(
         help="Server URL",
         envvar="COGIP_SERVER_URL"
     ),
-    uart_port: Optional[str] = typer.Option(
-        None,
-        help="Serial port connected to the Lidar",
-        envvar="DETECTOR_UART_PORT"
-    ),
-    uart_speed: int = typer.Option(
-        230400,
-        help="Baud rate",
-        envvar="DETECTOR_UART_SPEED"
-    ),
     min_distance: int = typer.Option(
         150,
-        help="Minimum distance to detect an obstacle",
+        help="Minimum distance to detect an obstacle (mm)",
         envvar="DETECTOR_MIN_DISTANCE"
     ),
     max_distance: int = typer.Option(
-        1200,
-        help="Maximum distance to detect an obstacle",
+        2500,
+        help="Maximum distance to detect an obstacle (mm)",
         envvar="DETECTOR_MAX_DISTANCE"
-    ),
-    lidar_min_intensity: int = typer.Option(
-        1000,
-        help="Minimum intensity required to validate a Lidar distance",
-        envvar="DETECTOR_LIDAR_MIN_INTENSITY"
     ),
     obstacle_radius: int = typer.Option(
         500,
@@ -71,9 +55,15 @@ def main_opt(
         envvar="DETECTOR_OBSTACLE_RADIUS"
     ),
     refresh_interval: float = typer.Option(
-        0.1,
+        0.2,
         help="Interval between each update of the obstacle list (in seconds)",
         envvar="DETECTOR_REFRESH_INTERVAL"
+    ),
+    emulation: bool = typer.Option(
+        False,
+        "-e", "--emulation",
+        help="Force emulation mode.",
+        envvar=["DETECTOR_EMULATION"]
     ),
     reload: bool = typer.Option(
         False,
@@ -93,16 +83,14 @@ def main_opt(
 
     args = (
         server_url,
-        uart_port,
-        uart_speed,
         min_distance,
         max_distance,
-        lidar_min_intensity,
         obstacle_radius,
         obstacle_bb_margin,
         obstacle_bb_vertices,
         beacon_radius,
-        refresh_interval
+        refresh_interval,
+        emulation
     )
 
     if reload:
