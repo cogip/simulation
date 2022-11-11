@@ -96,8 +96,7 @@ setup(
             'cogip-planner=cogip.tools.planner.__main__:main',
             'cogip-robotcam=cogip.tools.robotcam.main:main',
             'cogip-server=cogip.tools.server.__main__:main',
-            'cogip-lidarusb=cogip.tools.lidarusb.main:main',
-            'cogip-lidarpf=cogip.tools.lidarpf.main:main'
+            'cogip-lidarusb=cogip.tools.lidarusb.main:main'
         ]
     }
 )

@@ -1,38 +1,14 @@
 # Lidar USB Viewer
 
-This tool displays a graphical view to render data provided by a HLS-LFCD2 Lidar connected to USB port.
+This tool displays a graphical view to render data provided by a YDLidar G2 connected to USB port.
 
 After installation (see [Install](../install.md)), the `Lidar USB Viewer` is launched with:
 ```bash
 $ cogip-lidarusb
 ```
 
-The `Lidar USB Viewer` requires a HLS-LFCD2 Lidar to be connected to an USB port using a Serial-USB converter.
+The serial port is detected automatically by the YDLidar SDK, so this tool has no specific options.
 
-By default, the serial ports are scanned, and if found, the first port will be used.
-
-If the right USB port is not automatically detected, it can be specified using command line option.
-
-##  Command line options
-
-```text
-$ cogip-lidarusb --help
-Usage: cogip-lidarusb [OPTIONS] [UART]
-
-  Starts the Lidar USB View tool.
-
-Arguments:
-  [UART]  The UART port to use  [default: (dynamic)]
-
-Options:
-  --install-completion [bash|zsh|fish|powershell|pwsh]
-                                  Install completion for the specified shell.
-  --show-completion [bash|zsh|fish|powershell|pwsh]
-                                  Show completion for the specified shell, to
-                                  copy it or customize the installation.
-
-  --help                          Show this message and exit.
-```
 ## Interface
 
 The graphical interface provides a polar chart and table view.
