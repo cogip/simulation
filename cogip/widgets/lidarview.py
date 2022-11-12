@@ -17,47 +17,54 @@ class LidarView(QtWidgets.QWidget):
         max_distance: max value of the distance range (use on the chart)
         max_intensity: max value of the intensity range (use on the chart)
         enable_plain_area: whether to display a line or an plain area for distance values
-        max_intensity_threshold: max value of the intensity threshold slider
+        max_intensity_threshold: max value of the intensity threshold slider (max value for YGLidar G2)
         new_filer: Qt signal emitted when the filter value is modified
         new_intensity_threshold: Qt signal emitted when the filter intensity threshold is modified
     """
     min_distance: int = 100
     max_distance: int = 5000
-    max_intensity: int = 12000
+    max_intensity: int = 1024
     enable_plain_area: bool = True
-    max_intensity_threshold: int = 20000
+    max_intensity_threshold: int = 1024
     new_filter: qtSignal(int) = qtSignal(int)
     new_intensity_threshold: qtSignal(int) = qtSignal(int)
+    nb_angles: int = 360
 
     def __init__(
             self,
             table_model: LidarTableModel,
+            angle_values: List[int],
             distance_values: List[int],
             intensity_values: List[int],
             distance_color: QtGui.QColor,
             intensity_color: QtGui.QColor,
+            nb_angles: int,
             parent=None):
         """
         Class constructor.
 
         Arguments:
             table_model: table model object
+            angle_values: angle values list
             distance_values: distance values list
             intensity_values: intensity values list
             distance_color: distance color
             intensity_color: intensity color
+            nb_angles: number of angles
             parent: The parent widget
         """
         super().__init__(parent)
 
         self.table_model = table_model
+        self.angle_values = angle_values
         self.distance_values = distance_values
         self.intensity_values = intensity_values
         self.distance_color = distance_color
         self.intensity_color = intensity_color
+        self.nb_angles = nb_angles
 
         self.first_index = self.table_model.createIndex(0, 1)
-        self.last_index = self.table_model.createIndex(359, 2)
+        self.last_index = self.table_model.createIndex(self.nb_angles - 1, 2)
 
         layout = QtWidgets.QHBoxLayout(self)
 
@@ -74,7 +81,7 @@ class LidarView(QtWidgets.QWidget):
 
         # Add axis
         self.degree_axis = QtCharts.QValueAxis(self.chart)
-        self.degree_axis.setRange(0, 360)
+        self.degree_axis.setRange(-180, 179)
         self.degree_axis.setLabelFormat("%d")
         self.degree_axis.setTickCount(17)
         self.degree_axis.setMinorTickCount(1)
@@ -96,10 +103,10 @@ class LidarView(QtWidgets.QWidget):
 
         # Add series
         self.distance_serie = QtCharts.QLineSeries(name="Distance")
-        self.distance_serie.replace([QtCore.QPointF(i, 0) for i in range(360)])
+        # self.distance_serie.replace([QtCore.QPointF(i, 0) for i in range(self.nb_angles)])
         if self.enable_plain_area:
             self.center_serie = QtCharts.QLineSeries()
-            self.center_serie.replace([QtCore.QPointF(i, 0) for i in range(360)])
+            # self.center_serie.replace([QtCore.QPointF(i, 0) for i in range(self.nb_angles)])
             self.distance_area_serie = QtCharts.QAreaSeries(
                 self.distance_serie, self.center_serie, name="Distance"
             )
@@ -112,7 +119,7 @@ class LidarView(QtWidgets.QWidget):
             self.distance_serie.attachAxis(self.distance_axis)
 
         self.intensity_serie = QtCharts.QLineSeries(name="Intensity")
-        self.intensity_serie.replace([QtCore.QPointF(i, 0) for i in range(360)])
+        # self.intensity_serie.replace([QtCore.QPointF(i, 0) for i in range(self.nb_angles)])
         self.chart.addSeries(self.intensity_serie)
         self.intensity_serie.attachAxis(self.degree_axis)
         self.intensity_serie.attachAxis(self.intensity_axis)
@@ -281,5 +288,9 @@ class LidarView(QtWidgets.QWidget):
         """
         self.table_model.dataChanged.emit(self.first_index, self.last_index, [QtCore.Qt.DisplayRole])
 
-        self.distance_serie.replace([QtCore.QPointF(i, self.distance_values[i]) for i in range(360)])
-        self.intensity_serie.replace([QtCore.QPointF(i, self.intensity_values[i]) for i in range(360)])
+        self.distance_serie.replace([
+            QtCore.QPointF(angle, value) for angle, value in zip(self.angle_values, self.distance_values)
+        ])
+        self.intensity_serie.replace([
+            QtCore.QPointF(angle, value) for angle, value in zip(self.angle_values, self.intensity_values)
+        ])

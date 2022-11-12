@@ -13,10 +13,14 @@ and by `mcu-firmware` to compute avoidance path.
 ### Monitoring Mode
 
 Read data from lidar connected on a serial port of the Raspberry Pi.
+This is the default mode when a Lidar is connected, since the YDLidar SDK automatically
+detects the serial port to use.
 
 ### Emulation Mode
 
 Ask the `Monitor` to emulate the Lidar wich sends its data through the SocketIO server.
+The emulation mode is enabled if no Lidar is detected at startup.
+In case of a false detection, use the `--emulation` option.
 
 ## Data Flow
 
@@ -41,24 +45,13 @@ Options:
                                   env var: COGIP_SERVER_URL
                                   default: http://localhost:8080
 
-  --uart-port TEXT                Serial port connected to the Lidar
-                                  env var: DETECTOR_UART_PORT
-
-  --uart-speed INTEGER            Baud rate
-                                  env var: DETECTOR_UART_SPEED
-                                  default: 230400
-
   --min-distance INTEGER          Minimum distance to detect an obstacle
                                   env var: DETECTOR_MIN_DISTANCE
                                   default: 150
 
   --max-distance INTEGER          Maximum distance to detect an obstacle
                                   env var: DETECTOR_MAX_DISTANCE
-                                  default: 1200
-
-  --lidar-min-intensity INTEGER   Minimum intensity required to validate a Lidar distance
-                                  env var: DETECTOR_LIDAR_MIN_INTENSITY
-                                  default: 1000
+                                  default: 2500
 
   --obstacle-radius INTEGER       Radius of a dynamic obstacle
                                   env var: DETECTOR_OBSTACLE_RADIUS
@@ -79,7 +72,10 @@ Options:
 
   --refresh-interval FLOAT        Interval between each update of the obstacle list (in seconds)
                                   env var: DETECTOR_REFRESH_INTERVAL
-                                  default: 0.1
+                                  default: 0.2
+
+  -e, --emulation                 Force emulation mode.
+                                  env var: DETECTOR_EMULATION
 
   -r, --reload                    Reload app on source file changes.
                                   env var: COGIP_RELOAD, DETECTOR_RELOAD

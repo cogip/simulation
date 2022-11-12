@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 from setuptools import setup, find_packages
 from pathlib import Path
 
@@ -16,6 +15,7 @@ marker_platform_x86_64 = "platform_machine=='x86_64'"
 
 required_packages = [
     # Common packages
+    "more_itertools==9.0.0",
     "py-spy==0.3.11",
     "pydantic==1.9.0",
     "pyserial==3.5",
@@ -38,6 +38,7 @@ required_packages = [
     "uvicorn[standard]==0.17.6",
     "watchfiles==0.17.0",
     "websocket-client==1.4.1",
+    "ydlidar @ git+https://git@github.com/YDLIDAR/YDLidar-SDK.git@V1.1.3#egg=ydlidar",
 
     # Packages specific to documentation
     "MarkupSafe==2.0.1;" + marker_platform_x86_64,
@@ -95,8 +96,7 @@ setup(
             'cogip-planner=cogip.tools.planner.__main__:main',
             'cogip-robotcam=cogip.tools.robotcam.main:main',
             'cogip-server=cogip.tools.server.__main__:main',
-            'cogip-lidarusb=cogip.tools.lidarusb.main:main',
-            'cogip-lidarpf=cogip.tools.lidarpf.main:main'
+            'cogip-lidarusb=cogip.tools.lidarusb.main:main'
         ]
     }
 )

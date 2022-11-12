@@ -24,7 +24,6 @@ nav:
     - usage/beaconcam.md
     - usage/replay.md
     - usage/lidarusb.md
-    - usage/lidarpf.md
   - Raspberry Pi OS: raspios.md
   - Developer's Doc:
     - Introduction: developers/developers.md

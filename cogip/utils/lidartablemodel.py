@@ -12,26 +12,32 @@ class LidarTableModel(QtCore.QAbstractTableModel):
 
     def __init__(
             self,
+            angle_values: List[float],
             distance_values: List[int],
             intensity_values: List[int],
             distance_color: QtGui.QColor,
-            intensity_color: QtGui.QColor):
+            intensity_color: QtGui.QColor,
+            nb_angles: int = 360):
         """Class constructor
 
         Arguments:
+            angle_values: angle values list
             distance_values: distance values list
             intensity_values: intensity values list
             distance_color: distance color
             intensity_color: intensity color
+            nb_angles: number of angles
         """
         super().__init__()
+        self.angle_values = angle_values
         self.distance_values = distance_values
         self.intensity_values = intensity_values
         self.distance_color = distance_color
         self.intensity_color = intensity_color
+        self.nb_angles = nb_angles
 
     def rowCount(self, parent):
-        return 360
+        return self.nb_angles
 
     def columnCount(self, parent):
         return 3
@@ -53,7 +59,7 @@ class LidarTableModel(QtCore.QAbstractTableModel):
 
         if role == QtCore.Qt.DisplayRole:
             if column == 0:
-                return row
+                return self.angle_values[row]
             if column == 1:
                 return self.distance_values[row]
             if column == 2:

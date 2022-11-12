@@ -17,11 +17,15 @@ RUN apt-get install -y --no-install-recommends xserver-xorg-video-all \
 # Install packages for Python
 RUN apt-get install -y --no-install-recommends python3-pip
 
+# Install packages required to build YDLidar Python package
+RUN apt-get install -y --no-install-recommends python3-dev git build-essential swig cmake pkg-config
+
 # Update Python packages
 RUN python3 -m pip install -U pip setuptools wheel
 
 # Pre-install some Python requirements for COGIP tools
 RUN python3 -m pip install \
+    more_itertools==9.0.0 \
     py-spy==0.3.11 \
     pydantic==1.9.0 \
     pyserial==3.5 \
@@ -32,11 +36,12 @@ RUN python3 -m pip install \
     Jinja2==3.0.3 \
     opencv-contrib-python==4.5.5.64 \
     polling2==0.5.0 \
-    protobuf==3.19.4 \
-    python-socketio==5.5.1 \
+    protobuf==3.19.5 \
+    python-socketio==5.7.1 \
     requests==2.27.1 \
     uvicorn[standard]==0.17.6 \
-    websocket-client==1.4.1
+    websocket-client==1.4.1 \
+    git+https://git@github.com/YDLIDAR/YDLidar-SDK.git@V1.1.3#egg=ydlidar
 
 # Configure locale, timezone and keyboard
 RUN rm -f /etc/localtime \

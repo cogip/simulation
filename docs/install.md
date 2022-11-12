@@ -31,7 +31,7 @@ git submodule update --init
 ## Debian packages
 
 ```bash
-sudo apt install python3 python3-dev python3-venv libxcb-xinerama0 socat protobuf-compiler
+sudo apt install python3 python3-dev python3-venv libxcb-xinerama0 socat protobuf-compiler git build-essential swig cmake pkg-config
 ```
 
 ## Build mcu-firmware
@@ -71,7 +71,7 @@ All tools can be install on the development PC.
 To setup a new environment, create a virtual env and install the package in dev mode:
 
 ```bash
-python3.8 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 pip install -U pip
 pip install wheel
