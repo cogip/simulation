@@ -25,37 +25,37 @@ def main_opt(
         envvar="COGIP_SERVER_URL"
     ),
     min_distance: int = typer.Option(
-        150,
+        150, min=0, max=1000,
         help="Minimum distance to detect an obstacle (mm)",
         envvar="DETECTOR_MIN_DISTANCE"
     ),
     max_distance: int = typer.Option(
-        2500,
+        2500, min=0, max=3000,
         help="Maximum distance to detect an obstacle (mm)",
         envvar="DETECTOR_MAX_DISTANCE"
     ),
     obstacle_radius: int = typer.Option(
-        500,
+        500, min=100, max=1000,
         help="Radius of a dynamic obstacle",
         envvar="DETECTOR_OBSTACLE_RADIUS"
     ),
     obstacle_bb_margin: float = typer.Option(
-        0.2,
+        0.2, min=0, max=1,
         help="Obstacle bounding box margin in percent of the radius",
         envvar="DETECTOR_OBSTACLE_BB_MARGIN"
     ),
     obstacle_bb_vertices: int = typer.Option(
-        6,
+        6, min=3, max=20,
         help="Number of obstacle bounding box vertices",
         envvar="DETECTOR_OBSTACLE_BB_VERTICES"
     ),
     beacon_radius: int = typer.Option(
-        35,
+        35, min=10, max=150,
         help="Radius of the opponent beacon support (a cylinder of 70mm diameter to a cube of 100mm width)",
         envvar="DETECTOR_OBSTACLE_RADIUS"
     ),
     refresh_interval: float = typer.Option(
-        0.2,
+        0.2, min=0.1, max=2.0,
         help="Interval between each update of the obstacle list (in seconds)",
         envvar="DETECTOR_REFRESH_INTERVAL"
     ),
