@@ -14,15 +14,15 @@ from cogip.models import models
 class SocketioController(QtCore.QObject):
     """
     This class controls the socket.io port used to communicate with the server.
-    Its main purpose is to get the shell and planner menus to update the interface,
+    Its main purpose is to get the shell and tool menus to update the interface,
     get the robot position to update its position, and send the commands
-    to the robot and to the planner.
+    to the robot and to the tools.
 
     Attributes:
         signal_new_console_text:
             Qt signal emitted to log messages in UI console
         signal_new_menu:
-            Qt signal emitted to load a new shell/planner menu
+            Qt signal emitted to load a new shell/tool menu
         signal_new_robot_pose_current:
             Qt signal emitted on robot pose current update
         signal_new_robot_pose_order:
@@ -69,7 +69,7 @@ class SocketioController(QtCore.QObject):
 
         self.menus: Dict[str, Optional[models.ShellMenu]] = {
             "shell": None,
-            "planner": None
+            "tool": None
         }
 
     def start(self):
@@ -105,7 +105,7 @@ class SocketioController(QtCore.QObject):
         Send a command to the robot.
 
         Arguments:
-            menu_name: menu to update ("shell", "planner", ...)
+            menu_name: menu to update ("shell", "tool", ...)
             command: Command to send
         """
         self.signal_new_console_text.emit(f"Send '{command}' to {menu_name}")
@@ -164,12 +164,12 @@ class SocketioController(QtCore.QObject):
             """
             self.on_menu("shell", data)
 
-        @self.sio.on("planner_menu", namespace="/dashboard")
-        def on_planner_menu(data):
+        @self.sio.on("tool_menu", namespace="/dashboard")
+        def on_tool_menu(data):
             """
-            Callback on planner menu message.
+            Callback on tool menu message.
             """
-            self.on_menu("planner", data)
+            self.on_menu("tool", data)
 
         @self.sio.on("pose_current", namespace="/dashboard")
         def on_pose_current(data):
