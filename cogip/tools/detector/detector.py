@@ -15,6 +15,7 @@ from cogip import models
 from cogip.utils import ThreadLoop
 from . import logger
 from .sio_events import SioEvents
+from .properties import Properties
 
 
 class Detector:
@@ -54,13 +55,15 @@ class Detector:
             emulation: force emulation mode
         """
         self._server_url = server_url
-        self._min_distance = min_distance
-        self._max_distance = max_distance - beacon_radius
-        self._obstacle_radius = obstacle_radius
-        self._obstacle_bb_margin = obstacle_bb_margin
-        self._obstacle_bb_vertices = obstacle_bb_vertices
-        self._beacon_radius = beacon_radius
-        self._refresh_interval = refresh_interval
+        self._properties = Properties(
+            min_distance=min_distance,
+            max_distance=max_distance,
+            obstacle_radius=obstacle_radius,
+            obstacle_bb_margin=obstacle_bb_margin,
+            obstacle_bb_vertices=obstacle_bb_vertices,
+            beacon_radius=beacon_radius,
+            refresh_interval=refresh_interval
+        )
         self._lidar_data: List[int] = list()
         self._lidar_data_lock = threading.Lock()
         self._robot_pose = models.Pose()
@@ -96,8 +99,8 @@ class Detector:
             self._laser.setlidaropt(ydlidar.LidarPropSampleRate, 5)
             self._laser.setlidaropt(ydlidar.LidarPropIntenstiy, True)
             self._laser.setlidaropt(ydlidar.LidarPropScanFrequency, 5.0)
-            self._laser.setlidaropt(ydlidar.LidarPropMaxRange, self._max_distance/1000)
-            self._laser.setlidaropt(ydlidar.LidarPropMinRange, self._min_distance/1000)
+            self._laser.setlidaropt(ydlidar.LidarPropMaxRange, (max_distance - beacon_radius)/1000)
+            self._laser.setlidaropt(ydlidar.LidarPropMinRange, min_distance/1000)
             self._laser.setlidaropt(ydlidar.LidarPropInverted, False)
 
             self._scan = ydlidar.LaserScan()
@@ -150,6 +153,10 @@ class Detector:
             break
 
     @property
+    def properties(self) -> Properties:
+        return self._properties
+
+    @property
     def robot_pose(self) -> models.Pose:
         """
         Last position of the robot.
@@ -176,10 +183,14 @@ class Detector:
         """
         Find consecutive obstacles and keep the nearest obstacle at the middle.
         """
-        filtered_distances = [self._max_distance] * 360
+        filtered_distances = [self.properties.max_distance - self.properties.beacon_radius] * 360
 
         # Find an angle without obstacle
-        angles_without_obstacles = [i for i, d in enumerate(self._lidar_data) if d >= self._max_distance]
+        angles_without_obstacles = [
+            i
+            for i, d in enumerate(self._lidar_data)
+            if d >= self.properties.max_distance - self.properties.beacon_radius
+        ]
 
         # Exit if no obstacle detected
         if len(angles_without_obstacles) == 0:
@@ -193,7 +204,7 @@ class Detector:
             dist_min = self._lidar_data[first % 360]
 
             # Find the next angle with obstacle
-            if dist_min >= self._max_distance:
+            if dist_min >= self.properties.max_distance - self.properties.beacon_radius:
                 first += 1
                 continue
 
@@ -202,7 +213,8 @@ class Detector:
                 dist_current = self._lidar_data[last % 360]
 
                 # Keep the nearest distance of consecutive obstacles
-                if dist_current < self._max_distance or self._lidar_data[(last + 1) % 360] < self._max_distance:
+                if dist_current < (self.properties.max_distance - self.properties.beacon_radius) or \
+                   self._lidar_data[(last + 1) % 360] < (self.properties.max_distance - self.properties.beacon_radius):
                     dist_min = dist_current if dist_current < dist_min else dist_min
                     continue
 
@@ -210,7 +222,7 @@ class Detector:
                 # angles have no obstacle.
                 continue_loop = False
                 for next in range(last + 1, last + self.NB_ANGLES_WITHOUT_OBSTACLE_TO_IGNORE):
-                    if self._lidar_data[next % 360] < self._max_distance:
+                    if self._lidar_data[next % 360] < self.properties.max_distance - self.properties.beacon_radius:
                         continue_loop = True
                         break
 
@@ -235,7 +247,8 @@ class Detector:
         obstacles = []
 
         for angle, distance in enumerate(distances):
-            if distance < self._min_distance or distance >= self._max_distance:
+            if distance < self.properties.min_distance or \
+               distance >= self.properties.max_distance - self.properties.beacon_radius:
                 continue
 
             angle = (360 - angle) % 360
@@ -246,19 +259,19 @@ class Detector:
             y = robot_pose.y + distance * math.sin(obstacle_angle)
 
             # Compute bounding box
-            bb_radius = self._obstacle_radius * (1 + self._obstacle_bb_margin)
+            bb_radius = self.properties.obstacle_radius * (1 + self.properties.obstacle_bb_margin)
             bb = [
                 models.Vertex(
-                    x=x + bb_radius * math.cos((tmp := (i * 2 * math.pi) / self._obstacle_bb_vertices)),
+                    x=x + bb_radius * math.cos((tmp := (i * 2 * math.pi) / self.properties.obstacle_bb_vertices)),
                     y=y + bb_radius * math.sin(tmp),
                 )
-                for i in range(self._obstacle_bb_vertices)
+                for i in range(self.properties.obstacle_bb_vertices)
             ]
 
             obstacles.append(models.DynRoundObstacle(
                 x=x,
                 y=y,
-                radius=self._obstacle_radius,
+                radius=self.properties.obstacle_radius,
                 bb=bb
             ))
 
@@ -308,13 +321,13 @@ class Detector:
             # Compute mean of points list for each degree.
             empty_angles = []
             for angle, distances in enumerate(tmp_distances):
-                distance = self._max_distance
+                distance = self.properties.max_distance - self.properties.beacon_radius
                 if size := len(distances):
                     distance = round(sum(distances) * 1000 / size)
                 else:
                     empty_angles.append(angle)
 
-                result.append(distance + self._beacon_radius)
+                result.append(distance + self.properties.beacon_radius)
 
             # If a degree has no valid point and is isolated (no other empty angle before and after)
             # it is probably a bad value, so set it to the mean of surrounding degrees.
