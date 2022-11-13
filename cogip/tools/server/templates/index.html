@@ -20,15 +20,15 @@
           <div class="nav nav-tabs" id="nav-tab" role="tablist">
             <button
               class="nav-link active"
-              id="nav-planner-tab"
+              id="nav-tool-tab"
               data-bs-toggle="tab"
-              data-bs-target="#nav-planner"
+              data-bs-target="#nav-tool"
               type="button"
               role="tab"
-              aria-controls="nav-planner"
+              aria-controls="nav-tool"
               aria-selected="false"
             >
-              Planner
+              Tool
             </button>
             <button
               class="nav-link"
@@ -47,9 +47,9 @@
         <div class="tab-content" id="nav-tabContent">
           <div
             class="tab-pane fade show active"
-            id="nav-planner"
+            id="nav-tool"
             role="tabpanel"
-            aria-labelledby="nav-planner-tab"
+            aria-labelledby="nav-tool-tab"
             tabindex="0"
           >
             ...
@@ -215,8 +215,8 @@
             socketModule.onMenu(menu, "shell", this);
             virtualKeyboard._actualize();
           })
-          .on("planner_menu", function (menu) {
-            socketModule.onMenu(menu, "planner", this);
+          .on("tool_menu", function (menu) {
+            socketModule.onMenu(menu, "tool", this);
             virtualKeyboard._actualize();
           })
           .on("pose_current", function (msg) {
