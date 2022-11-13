@@ -53,6 +53,7 @@ required_packages = [
     "pymdown-extensions==9.4;" + marker_platform_x86_64,
 
     # Packages specific to developers
+    "devtools==0.9.0;" + marker_platform_x86_64,
     "flake8==3.9.2;" + marker_platform_x86_64,
 ]
 
