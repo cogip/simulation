@@ -171,6 +171,13 @@ class SocketioController(QtCore.QObject):
             """
             self.on_menu("tool", data)
 
+        @self.sio.on("config", namespace="/dashboard")
+        def on_config(config):
+            """
+            Callback on config request.
+            """
+            debug("Config request:", config)  # TODO
+
         @self.sio.on("pose_current", namespace="/dashboard")
         def on_pose_current(data):
             """
