@@ -40,6 +40,9 @@ required_packages = [
     "websocket-client==1.4.1",
     "ydlidar @ git+https://git@github.com/YDLIDAR/YDLidar-SDK.git@V1.1.3#egg=ydlidar",
 
+    # Packages specific to build mcu-firmware
+    "toposort==1.7;" + marker_platform_x86_64,
+
     # Packages specific to documentation
     "MarkupSafe==2.0.1;" + marker_platform_x86_64,
     "mkdocs==1.3.0;" + marker_platform_x86_64,
