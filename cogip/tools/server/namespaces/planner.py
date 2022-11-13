@@ -1,7 +1,8 @@
 from typing import Any, Dict
+
 import socketio
 
-from .. import logger
+from .. import logger, server
 from ..context import Context
 from ..recorder import GameRecorder
 
@@ -10,8 +11,9 @@ class PlannerNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to planner.
     """
-    def __init__(self):
+    def __init__(self, cogip_server: "server.Server"):
         super().__init__("/planner")
+        self._cogip_server = cogip_server
         self._connected = False
         self._context = Context()
         self._recorder = GameRecorder()
@@ -27,12 +29,11 @@ class PlannerNamespace(socketio.AsyncNamespace):
         self._connected = False
         logger.info("Planner disconnected.")
 
-    async def on_menu(self, sid, menu):
+    async def on_register_menu(self, sid, data: Dict[str, Any]):
         """
-        Callback on menu.
+        Callback on register_menu.
         """
-        self._context.planner_menu = menu
-        await self.emit("planner_menu", menu, namespace="/dashboard")
+        await self._cogip_server.register_menu("planner", data)
 
     async def on_pose_start(self, sid, data: Dict[str, Any]):
         """

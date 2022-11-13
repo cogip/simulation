@@ -55,7 +55,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.menu_widgets: Dict[str, Dict[str, QtWidgets.QWidget]] = {
             "shell": {},
-            "planner": {}
+            "tool": {}
         }
 
         self.setWindowTitle('COGIP Monitor')
@@ -205,7 +205,7 @@ class MainWindow(QtWidgets.QMainWindow):
         # Shell menu
         self.current_menus: Dict[str, Optional[str]] = {
             "shell": None,
-            "planner": None
+            "tool": None
         }
 
         self.menu_tab_widget = QtWidgets.QTabWidget()
@@ -213,9 +213,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.menu_staked_widgets = {
             "shell": QtWidgets.QStackedWidget(),
-            "planner": QtWidgets.QStackedWidget()
+            "tool": QtWidgets.QStackedWidget()
         }
-        for menu_name in ["planner", "shell"]:
+        for menu_name in ["tool", "shell"]:
             self.menu_tab_widget.addTab(self.menu_staked_widgets[menu_name], menu_name)
 
             # Set a empty menu to allocate some space in the UI
@@ -339,57 +339,62 @@ class MainWindow(QtWidgets.QMainWindow):
         Once a menu has been build once, it is cached and reused.
 
         Arguments:
-            menu_name: menu to update ("shell", "planner", ...)
+            menu_name: menu to update ("shell", "tool", ...)
             new_menu: The new menu information sent by the firmware
         """
-        if self.current_menus[menu_name] == new_menu.name:
-            return
         self.current_menus[menu_name] = new_menu.name
 
         widget = self.menu_widgets[menu_name].get(new_menu.name)
         if not widget:
+            # Create a new menu
             widget = QtWidgets.QWidget()
             layout = QtWidgets.QVBoxLayout()
             widget.setLayout(layout)
+            self.menu_widgets[menu_name][new_menu.name] = widget
+            self.menu_staked_widgets[menu_name].addWidget(widget)
+        else:
+            # Clear menu to rebuild it in case it has changed
+            layout = widget.layout()
+            while layout.count():
+                child = layout.takeAt(0)
+                if child.widget():
+                    child.widget().deleteLater()
 
-            title = QtWidgets.QLabel(new_menu.name)
-            title.setTextFormat(QtCore.Qt.RichText)
-            title.setAlignment(QtCore.Qt.AlignHCenter)
-            title.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-            title.setStyleSheet("font-weight: bold; color: blue")
-            layout.addWidget(title)
+        title = QtWidgets.QLabel(new_menu.name)
+        title.setTextFormat(QtCore.Qt.RichText)
+        title.setAlignment(QtCore.Qt.AlignHCenter)
+        title.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        title.setStyleSheet("font-weight: bold; color: blue")
+        layout.addWidget(title)
 
-            for entry in new_menu.entries:
-                if entry.cmd[0] == '_':
-                    continue
-                cmd_widget = QtWidgets.QWidget()
-                cmd_layout = QtWidgets.QHBoxLayout()
-                cmd_layout.setContentsMargins(0, 0, 0, 0)
-                cmd_widget.setLayout(cmd_layout)
-                layout.addWidget(cmd_widget)
+        for entry in new_menu.entries:
+            if entry.cmd[0] == '_':
+                continue
+            cmd_widget = QtWidgets.QWidget()
+            cmd_layout = QtWidgets.QHBoxLayout()
+            cmd_layout.setContentsMargins(0, 0, 0, 0)
+            cmd_widget.setLayout(cmd_layout)
+            layout.addWidget(cmd_widget)
 
-                desc, args = split_command(entry.desc)
-                button = QtWidgets.QPushButton(desc)
-                cmd_layout.addWidget(button)
+            desc, args = split_command(entry.desc)
+            button = QtWidgets.QPushButton(desc)
+            cmd_layout.addWidget(button)
 
-                for arg in args:
-                    edit = QtWidgets.QLineEdit()
-                    edit.setPlaceholderText(arg)
-                    edit.setToolTip(arg)
-                    cmd_layout.addWidget(edit)
-                    edit.returnPressed.connect(
-                        lambda cmd=entry.cmd, layout=cmd_layout:
-                            self.build_command(menu_name, cmd, layout)
-                    )
-                button.clicked.connect(
+            for arg in args:
+                edit = QtWidgets.QLineEdit()
+                edit.setPlaceholderText(arg)
+                edit.setToolTip(arg)
+                cmd_layout.addWidget(edit)
+                edit.returnPressed.connect(
                     lambda cmd=entry.cmd, layout=cmd_layout:
                         self.build_command(menu_name, cmd, layout)
                 )
+            button.clicked.connect(
+                lambda cmd=entry.cmd, layout=cmd_layout:
+                    self.build_command(menu_name, cmd, layout)
+            )
 
-            layout.addStretch()
-
-            self.menu_widgets[new_menu.name] = widget
-            self.menu_staked_widgets[menu_name].addWidget(widget)
+        layout.addStretch()
 
         self.menu_staked_widgets[menu_name].setCurrentWidget(widget)
 
@@ -403,7 +408,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Emit the `signal_send_command` signal with the full command string as argument.
 
         Arguments:
-            menu_name: menu to update ("shell", "planner", ...)
+            menu_name: menu to update ("shell", "tool", ...)
             cmd: The command name
             layout: The command button containing the command arguments
         """

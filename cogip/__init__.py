@@ -3,6 +3,15 @@ import logging
 from dotenv import load_dotenv, find_dotenv
 
 
+# add devtools `debug` function to builtins
+try:
+    from devtools import debug
+except ImportError:
+    pass
+else:
+    __builtins__['debug'] = debug
+
+
 load_dotenv(find_dotenv(), verbose=False)
 
 logging.basicConfig(
