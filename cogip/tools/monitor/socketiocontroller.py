@@ -39,6 +39,8 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted to start Lidar emulation
         signal_stop_lidar_emulation:
             Qt signal emitted to stop Lidar emulation
+        signal_config_request:
+            Qt signal emitted to load a new shell/tool menu
         last_cycle:
             Record the last cycle to avoid sending the same data several times
     """
@@ -52,6 +54,7 @@ class SocketioController(QtCore.QObject):
     signal_exit: qtSignal = qtSignal()
     signal_start_lidar_emulation: qtSignal = qtSignal()
     signal_stop_lidar_emulation: qtSignal = qtSignal()
+    signal_config_request: qtSignal = qtSignal(dict)
     last_cycle: int = 0
 
     def __init__(self, url: str):
@@ -176,7 +179,7 @@ class SocketioController(QtCore.QObject):
             """
             Callback on config request.
             """
-            debug("Config request:", config)  # TODO
+            self.signal_config_request.emit(config)
 
         @self.sio.on("pose_current", namespace="/dashboard")
         def on_pose_current(data):
