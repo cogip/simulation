@@ -55,7 +55,7 @@ class SioEvents(socketio.ClientNamespace):
         path.reset()
         self._pose_reached = True
         self.emit("pose_start", path.pose().dict())
-        self.emit("menu", menu.dict())
+        self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
 
     def on_pose_curent(self, data: Dict[str, Any]) -> None:
         """
