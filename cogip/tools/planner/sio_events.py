@@ -24,6 +24,7 @@ class SioEvents(socketio.ClientNamespace):
         """
         logger.info("Connected to cogip-server")
         self.on_reset()
+        self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
 
     def on_disconnect(self) -> None:
         """
@@ -55,7 +56,6 @@ class SioEvents(socketio.ClientNamespace):
         path.reset()
         self._pose_reached = True
         self.emit("pose_start", path.pose().dict())
-        self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
 
     def on_pose_curent(self, data: Dict[str, Any]) -> None:
         """
