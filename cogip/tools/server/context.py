@@ -11,10 +11,12 @@ class Context(metaclass=Singleton):
     Server context class recording variables using in multiple namespaces.
 
     Attributes:
-        detector_mode:  Detector mode (detection or emulation)
-        planner_menu:   last received planner menu
-        shell_menu:     last received shell menu
+        detector_mode:      Detector mode (detection or emulation)
+        tool_menus:         all registered tool menus
+        current_tool_menu:  name of the currently selected tool menu
+        shell_menu:         last received shell menu
     """
     detector_mode: Literal["detection", "emulation"] | None = None
-    planner_menu: models.ShellMenu | None = None
+    tool_menus: Dict[str, models.ShellMenu] = field(default_factory=dict)
+    current_tool_menu: str | None = None
     shell_menu: Dict[int, models.ShellMenu] = field(default_factory=dict)
