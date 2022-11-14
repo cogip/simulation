@@ -1,6 +1,6 @@
 from threading import Thread
 import time
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import parse_obj_as
 from PySide6 import QtCore
@@ -113,6 +113,10 @@ class SocketioController(QtCore.QObject):
         """
         self.signal_new_console_text.emit(f"Send '{command}' to {menu_name}")
         self.sio.emit(menu_name + "_cmd", command, namespace="/dashboard")
+
+    @qtSlot(dict)
+    def config_updated(self, config: Dict[str, Any]):
+        self.sio.emit("config_updated", config, namespace="/dashboard")
 
     def on_menu(self, menu_name: str, data):
         menu = models.ShellMenu.parse_obj(data)
