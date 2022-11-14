@@ -161,6 +161,10 @@ class Detector:
         with self._robot_pose_lock:
             self._robot_pose = new_pose
 
+    def update_refresh_interval(self) -> None:
+        self._obstacles_updater_loop.interval = self._properties.refresh_interval
+        self._lidar_reader_loop.interval = self._properties.refresh_interval
+
     def update_lidar_data(self, lidar_data: List[int]):
         """
         Receive Lidar data.
