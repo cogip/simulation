@@ -41,6 +41,14 @@ class ThreadLoop:
                     self._logger.setLevel(logging.ERROR)
                 self._logger.addHandler(logging.StreamHandler())
 
+    @property
+    def interval(self) -> float:
+        return self._interval
+
+    @interval.setter
+    def interval(self, value: float) -> None:
+        self._interval = value
+
     def repeat(self) -> None:
         """
         Loop function executed in the thread.
