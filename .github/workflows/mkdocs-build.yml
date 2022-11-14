@@ -11,8 +11,6 @@ jobs:
     steps:
       - name: Git checkout
         uses: actions/checkout@v2
-        with:
-          lfs: 'true'
 
       - name: Set up Python 3.10
         uses: actions/setup-python@v2
