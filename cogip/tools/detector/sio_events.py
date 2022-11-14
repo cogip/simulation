@@ -64,6 +64,11 @@ class SioEvents(socketio.ClientNamespace):
         else:
             logger.warning(f"Unknown command: {cmd}")
 
+    def on_config_updated(self, config: Dict[str, Any]) -> None:
+        self._detector.properties.__setattr__(name := config["name"], config["value"])
+        if name == "refresh_interval":
+            self._detector.update_refresh_interval()
+
     def on_pose_current(self, data: Dict[str, Any]) -> None:
         """
         Callback on robot pose message.
