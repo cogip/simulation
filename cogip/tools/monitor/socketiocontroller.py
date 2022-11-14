@@ -1,6 +1,6 @@
 from threading import Thread
 import time
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 from pydantic import parse_obj_as
 from PySide6 import QtCore
@@ -39,6 +39,8 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted to start Lidar emulation
         signal_stop_lidar_emulation:
             Qt signal emitted to stop Lidar emulation
+        signal_config_request:
+            Qt signal emitted to load a new shell/tool menu
         last_cycle:
             Record the last cycle to avoid sending the same data several times
     """
@@ -52,6 +54,7 @@ class SocketioController(QtCore.QObject):
     signal_exit: qtSignal = qtSignal()
     signal_start_lidar_emulation: qtSignal = qtSignal()
     signal_stop_lidar_emulation: qtSignal = qtSignal()
+    signal_config_request: qtSignal = qtSignal(dict)
     last_cycle: int = 0
 
     def __init__(self, url: str):
@@ -110,6 +113,10 @@ class SocketioController(QtCore.QObject):
         """
         self.signal_new_console_text.emit(f"Send '{command}' to {menu_name}")
         self.sio.emit(menu_name + "_cmd", command, namespace="/dashboard")
+
+    @qtSlot(dict)
+    def config_updated(self, config: Dict[str, Any]):
+        self.sio.emit("config_updated", config, namespace="/dashboard")
 
     def on_menu(self, menu_name: str, data):
         menu = models.ShellMenu.parse_obj(data)
@@ -170,6 +177,13 @@ class SocketioController(QtCore.QObject):
             Callback on tool menu message.
             """
             self.on_menu("tool", data)
+
+        @self.sio.on("config", namespace="/dashboard")
+        def on_config(config):
+            """
+            Callback on config request.
+            """
+            self.signal_config_request.emit(config)
 
         @self.sio.on("pose_current", namespace="/dashboard")
         def on_pose_current(data):

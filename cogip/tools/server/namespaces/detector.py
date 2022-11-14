@@ -2,7 +2,7 @@ from typing import Any, Dict, List
 
 import socketio
 
-from .. import logger
+from .. import logger, server
 from ..context import Context
 from ..recorder import GameRecorder
 
@@ -11,8 +11,9 @@ class DetectorNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to detector.
     """
-    def __init__(self):
+    def __init__(self, cogip_server: "server.Server"):
         super().__init__("/detector")
+        self._cogip_server = cogip_server
         self._detector_sid: str | None = None
         self._context = Context()
         self._recorder = GameRecorder()
@@ -38,6 +39,12 @@ class DetectorNamespace(socketio.AsyncNamespace):
             await self.emit("stop_lidar_emulation", namespace="/monitor")
         logger.info("Detector disconnected.")
 
+    async def on_register_menu(self, sid, data: Dict[str, Any]):
+        """
+        Callback on register_menu.
+        """
+        await self._cogip_server.register_menu("detector", data)
+
     async def on_obstacles(self, sid, obstacles: List[Dict[str, Any]]):
         """
         Callback on obstacles message.
@@ -49,3 +56,9 @@ class DetectorNamespace(socketio.AsyncNamespace):
         await self.emit("obstacles", obstacles, namespace="/planner")
         await self.emit("obstacles", obstacles, namespace="/dashboard")
         await self._recorder.async_record({"obstacles": obstacles})
+
+    async def on_config(self, sid, config: Dict[str, Any]):
+        """
+        Callback on config message.
+        """
+        await self.emit("config", config, namespace="/dashboard")

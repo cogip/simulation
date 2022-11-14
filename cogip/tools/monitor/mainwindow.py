@@ -2,7 +2,7 @@ from functools import partial
 import json
 from pathlib import Path
 import re
-from typing import Dict, Optional, List, Tuple
+from typing import Any, Dict, Optional, List, Tuple
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
@@ -12,6 +12,7 @@ from cogip.widgets.chartsview import ChartsView
 from cogip.widgets.dashboard import Dashboard
 from cogip.widgets.gameview import GameView
 from cogip.widgets.help import HelpCameraControlDialog
+from cogip.widgets.properties import PropertiesDialog
 from cogip.models import Pose, ShellMenu, RobotState
 
 
@@ -29,6 +30,7 @@ class MainWindow(QtWidgets.QMainWindow):
       - a console recording the firmware output.
 
     Attributes:
+        signal_config_updated: Qt signal to update config
         signal_send_command: Qt signal to send a command to the firmware
         signal_add_obstacle: Qt signal to add an obstacle
         signal_load_obstacles: Qt signal to load obstacles
@@ -36,7 +38,7 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_load_cake_layers: Qt signal to load cake layers
         signal_save_cake_layers: Qt signal to save cake layers
     """
-
+    signal_config_updated: qtSignal = qtSignal(dict)
     signal_send_command: qtSignal = qtSignal(str, str)
     signal_add_obstacle: qtSignal = qtSignal()
     signal_load_obstacles: qtSignal = qtSignal(Path)
@@ -243,6 +245,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Help controls widget
         self.help_camera_control = HelpCameraControlDialog(self)
+
+        # Properties windows
+        self.properties = {}
 
         # Add view action
         self.view_charts_action = QtGui.QAction('Calibration Charts', self)
@@ -518,6 +523,23 @@ class MainWindow(QtWidgets.QMainWindow):
             state: True if connected, False if disconnected
         """
         self.connected_label.setText("Connected" if state else "Disconnected")
+
+    @qtSlot(dict)
+    def config_request(self, config: Dict[str, Any]):
+        properties = self.properties.get(config["namespace"])
+        if not properties:
+            properties = PropertiesDialog(config, self)
+            self.properties[config["namespace"]] = properties
+            properties.property_updated.connect(self.config_updated)
+        else:
+            properties.update_values(config)
+        properties.show()
+        properties.raise_()
+        properties.activateWindow()
+
+    @qtSlot(dict)
+    def config_updated(self, config: Dict[str, Any]):
+        self.signal_config_updated.emit(config)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         settings = QtCore.QSettings("COGIP", "monitor")

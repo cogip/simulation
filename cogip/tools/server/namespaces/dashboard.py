@@ -1,3 +1,4 @@
+from typing import Any, Dict
 import socketio
 
 from .. import logger
@@ -58,3 +59,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
         Callback on shell command message from dashboard.
         """
         await self.emit("command", cmd, namespace="/copilot")
+
+    async def on_config_updated(self, sid, config: Dict[str, Any]) -> None:
+        namespace = config.pop("namespace")
+        await self.emit("config_updated", config, namespace=namespace)

@@ -48,6 +48,7 @@ def main_opt(
 
     # Connect UI signals to Controller slots
     win.signal_send_command.connect(controller.new_command)
+    win.signal_config_updated.connect(controller.config_updated)
 
     # Connect UI signals to GameView slots
     win.signal_add_obstacle.connect(win.game_view.add_obstacle)
@@ -72,6 +73,7 @@ def main_opt(
     controller.signal_new_robot_state.connect(win.new_robot_state)
     controller.signal_connected.connect(win.connected)
     controller.signal_exit.connect(win.close)
+    controller.signal_config_request.connect(win.config_request)
 
     # Connect Controller signals to ChartsView slots
     controller.signal_new_robot_state.connect(win.charts_view.new_robot_state)
