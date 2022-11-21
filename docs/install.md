@@ -108,7 +108,7 @@ cogip-planner
 `Copilot` is run using:
 
 ```bash
-cogip-copilot -s /tmp/ttyRPI
+cogip-copilot -p /tmp/ttyRPI
 ```
 
 `Detector` is run using:
