@@ -8,10 +8,9 @@ from PySide6.QtCore import Slot as qtSlot
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
 
-from cogip.models import DynObstacleList, DynObstacleRect, Pose
+from cogip.models import Pose
 
 from .asset import AssetEntity
-from .dynobstacle import DynRectObstacleEntity, DynCircleObstacleEntity
 from .robot_order import RobotOrderEntity
 from .sensor import LidarSensor
 
@@ -90,62 +89,6 @@ class RobotEntity(AssetEntity):
             sensor = LidarSensor(asset_entity=self, **prop)
             self.sensors_update_timer.timeout.connect(sensor.update_hit)
             self.lidar_sensors.append(sensor)
-
-    def set_dyn_obstacles(self, dyn_obstacles: DynObstacleList) -> None:
-        """
-        Qt Slot
-
-        Display the dynamic obstacles detected by the robot.
-
-        Reuse already created dynamic obstacles to optimize performance
-        and memory consumption.
-
-        Arguments:
-            dyn_obstacles: List of obstacles sent by the firmware throught the serial port
-        """
-        # Store new and already existing dyn obstacles
-        current_rect_obstacles = []
-        current_round_obstacles = []
-
-        for dyn_obstacle in dyn_obstacles:
-            if isinstance(dyn_obstacle, DynObstacleRect):
-                if len(self.rect_obstacles_pool):
-                    obstacle = self.rect_obstacles_pool.pop(0)
-                    obstacle.setEnabled(True)
-                else:
-                    obstacle = DynRectObstacleEntity(self.parentEntity())
-
-                obstacle.set_position(x=dyn_obstacle.x, y=dyn_obstacle.y, rotation=dyn_obstacle.angle)
-                obstacle.set_size(length=dyn_obstacle.length_y, width=dyn_obstacle.length_x)
-                obstacle.set_bounding_box(dyn_obstacle.bb)
-
-                current_rect_obstacles.append(obstacle)
-            else:
-                # Round obstacle
-                if len(self.round_obstacles_pool):
-                    obstacle = self.round_obstacles_pool.pop(0)
-                    obstacle.setEnabled(True)
-                else:
-                    obstacle = DynCircleObstacleEntity(self.parentEntity())
-
-                obstacle.set_position(x=dyn_obstacle.x, y=dyn_obstacle.y, radius=dyn_obstacle.radius)
-                obstacle.set_bounding_box(dyn_obstacle.bb)
-
-                current_round_obstacles.append(obstacle)
-
-        # Disable remaining dyn obstacles
-        while len(self.rect_obstacles_pool):
-            dyn_obstacle = self.rect_obstacles_pool.pop(0)
-            dyn_obstacle.setEnabled(False)
-            current_rect_obstacles.append(dyn_obstacle)
-
-        while len(self.round_obstacles_pool):
-            dyn_obstacle = self.round_obstacles_pool.pop(0)
-            dyn_obstacle.setEnabled(False)
-            current_round_obstacles.append(dyn_obstacle)
-
-        self.rect_obstacles_pool = current_rect_obstacles
-        self.round_obstacles_pool = current_round_obstacles
 
     @qtSlot(Pose)
     def new_robot_pose_current(self, new_pose: Pose) -> None:

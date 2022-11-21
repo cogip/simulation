@@ -6,6 +6,11 @@ from .codecs import VideoCodec
 
 
 class Settings(BaseSettings):
+    id: int = Field(
+        default=1,
+        ge=1,
+        help="Robot ID"
+    )
     server_url: AnyHttpUrl = Field(
         "http://localhost:8080",
         description="Server URL"

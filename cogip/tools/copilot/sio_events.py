@@ -16,11 +16,13 @@ class SioEvents(socketio.AsyncClientNamespace):
         super().__init__("/copilot")
         self._copilot = copilot
 
-    def on_connect(self):
+    async def on_connect(self):
         """
         On connection to cogip-server.
         """
         logger.info("Connected to cogip-server")
+        if self._copilot.shell_menu:
+            await self.emit("menu", copilot.shell_menu.dict(exclude_defaults=True, exclude_unset=True))
 
     def on_disconnect(self) -> None:
         """

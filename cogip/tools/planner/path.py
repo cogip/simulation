@@ -50,38 +50,75 @@ class Path(BaseModel):
         self._playing = False
 
 
-path = Path(
-    index=0,
-    poses=[
-        models.PathPose(
-            x=225, y=1000-225, O=0,
-            max_speed_linear=models.SpeedEnum.MAX,
-            max_speed_angular=models.SpeedEnum.MAX,
-        ),
-        models.PathPose(
-            x=450+125+200+125+225, y=-1000+225, O=0,
-            max_speed_linear=models.SpeedEnum.MAX,
-            max_speed_angular=models.SpeedEnum.MAX,
-        ),
-        models.PathPose(
-            x=3000-225, y=-1000+225, O=90,
-            max_speed_linear=models.SpeedEnum.MAX,
-            max_speed_angular=models.SpeedEnum.MAX,
-        ),
-        models.PathPose(
-            x=3000-225, y=50+225, O=90,
-            max_speed_linear=models.SpeedEnum.MAX,
-            max_speed_angular=models.SpeedEnum.MAX,
-        ),
-        models.PathPose(
-            x=3000-(450+125+200+125+225), y=1000-225, O=180,
-            max_speed_linear=models.SpeedEnum.MAX,
-            max_speed_angular=models.SpeedEnum.MAX,
-        ),
-        models.PathPose(
-            x=225, y=1000-225, O=0,
-            max_speed_linear=models.SpeedEnum.MAX,
-            max_speed_angular=models.SpeedEnum.MAX,
-        )
-    ]
-)
+available_paths = [
+    Path(
+        index=0,
+        poses=[
+            models.PathPose(
+                x=225, y=1000-225, O=0,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            ),
+            models.PathPose(
+                x=450+125+200+125+225, y=-1000+225, O=0,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            ),
+            models.PathPose(
+                x=3000-225, y=-1000+225, O=90,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            ),
+            models.PathPose(
+                x=3000-225, y=50+225, O=90,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            ),
+            models.PathPose(
+                x=3000-(450+125+200+125+225), y=1000-225, O=180,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            ),
+            models.PathPose(
+                x=225, y=1000-225, O=0,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            )
+        ]
+    ),
+    Path(
+        index=0,
+        poses=[
+            models.PathPose(
+                x=3000-225, y=50+225, O=90,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            ),
+            models.PathPose(
+                x=3000-(450+125+200+125+225), y=1000-225, O=180,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            ),
+            models.PathPose(
+                x=225, y=1000-225, O=0,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            ),
+            models.PathPose(
+                x=450+125+200+125+225, y=-1000+225, O=0,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            ),
+            models.PathPose(
+                x=3000-225, y=-1000+225, O=90,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            ),
+            models.PathPose(
+                x=3000-225, y=50+225, O=90,
+                max_speed_linear=models.SpeedEnum.MAX,
+                max_speed_angular=models.SpeedEnum.MAX,
+            )
+        ]
+    )
+]

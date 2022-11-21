@@ -25,6 +25,13 @@ def main_opt(
         help="Server URL",
         envvar="COGIP_SERVER_URL"
     ),
+    id: int = typer.Option(
+        1,
+        "-i", "--id",
+        min=1,
+        help="Robot ID.",
+        envvar=["ROBOT_ID", "COPILOT_ID"]
+    ),
     serial_port: Path = typer.Option(
         "/dev/ttyUSB0",
         "-p", "--serial-port",
@@ -53,7 +60,7 @@ def main_opt(
     if debug:
         logger.setLevel(logging.DEBUG)
 
-    args = (server_url, serial_port, serial_baud)
+    args = (server_url, id, serial_port, serial_baud)
     if reload:
         watch_dir = Path(__file__).parent.parent.parent
         run_process(

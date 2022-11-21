@@ -15,6 +15,7 @@ marker_platform_x86_64 = "platform_machine=='x86_64'"
 
 required_packages = [
     # Common packages
+    "bidict==0.22.0",
     "more_itertools==9.0.0",
     "py-spy==0.3.11",
     "pydantic==1.9.0",

@@ -35,27 +35,30 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted on server connection state changes
         signal_exit:
             Qt signal emitted to exit Monitor
+        signal_add_robot:
+            Qt signal emitted to add a new robot
+        signal_del_robot:
+            Qt signal emitted to remove a robot
         signal_start_lidar_emulation:
             Qt signal emitted to start Lidar emulation
         signal_stop_lidar_emulation:
             Qt signal emitted to stop Lidar emulation
         signal_config_request:
             Qt signal emitted to load a new shell/tool menu
-        last_cycle:
-            Record the last cycle to avoid sending the same data several times
     """
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(str, models.ShellMenu)
-    signal_new_robot_pose_current: qtSignal = qtSignal(models.Pose)
-    signal_new_robot_pose_order: qtSignal = qtSignal(models.Pose)
-    signal_new_robot_state: qtSignal = qtSignal(models.RobotState)
+    signal_new_robot_pose_current: qtSignal = qtSignal(int, models.Pose)
+    signal_new_robot_pose_order: qtSignal = qtSignal(int, models.Pose)
+    signal_new_robot_state: qtSignal = qtSignal(int, models.RobotState)
     signal_new_dyn_obstacles: qtSignal = qtSignal(list)
     signal_connected: qtSignal = qtSignal(bool)
     signal_exit: qtSignal = qtSignal()
-    signal_start_lidar_emulation: qtSignal = qtSignal()
-    signal_stop_lidar_emulation: qtSignal = qtSignal()
+    signal_add_robot: qtSignal = qtSignal(int)
+    signal_del_robot: qtSignal = qtSignal(int)
+    signal_start_lidar_emulation: qtSignal = qtSignal(int)
+    signal_stop_lidar_emulation: qtSignal = qtSignal(int)
     signal_config_request: qtSignal = qtSignal(dict)
-    last_cycle: int = 0
 
     def __init__(self, url: str):
         """
@@ -70,10 +73,7 @@ class SocketioController(QtCore.QObject):
         self.sio = socketio.Client()
         self.register_handlers()
 
-        self.menus: Dict[str, Optional[models.ShellMenu]] = {
-            "shell": None,
-            "tool": None
-        }
+        self.menus: Dict[str, Optional[models.ShellMenu]] = {}
 
     def start(self):
         """
@@ -111,8 +111,12 @@ class SocketioController(QtCore.QObject):
             menu_name: menu to update ("shell", "tool", ...)
             command: Command to send
         """
+        name, _, robot_id = menu_name.partition(" ")
+        if name == "shell":
+            self.sio.emit("shell_cmd", (int(robot_id), command), namespace="/dashboard")
+        else:
+            self.sio.emit(f"{menu_name}_cmd", command, namespace="/dashboard")
         self.signal_new_console_text.emit(f"Send '{command}' to {menu_name}")
-        self.sio.emit(menu_name + "_cmd", command, namespace="/dashboard")
 
     @qtSlot(dict)
     def config_updated(self, config: Dict[str, Any]):
@@ -120,7 +124,7 @@ class SocketioController(QtCore.QObject):
 
     def on_menu(self, menu_name: str, data):
         menu = models.ShellMenu.parse_obj(data)
-        if self.menus[menu_name] != menu:
+        if self.menus.get(menu_name) != menu:
             self.menus[menu_name] = menu
             self.signal_new_menu.emit(menu_name, menu)
 
@@ -165,11 +169,11 @@ class SocketioController(QtCore.QObject):
             self.signal_connected.emit(False)
 
         @self.sio.on("shell_menu", namespace="/dashboard")
-        def on_shell_menu(data):
+        def on_shell_menu(robot_id: int, menu: Dict[str, Any]) -> None:
             """
             Callback on shell menu message.
             """
-            self.on_menu("shell", data)
+            self.on_menu(f"shell {robot_id}", menu)
 
         @self.sio.on("tool_menu", namespace="/dashboard")
         def on_tool_menu(data):
@@ -186,30 +190,28 @@ class SocketioController(QtCore.QObject):
             self.signal_config_request.emit(config)
 
         @self.sio.on("pose_current", namespace="/dashboard")
-        def on_pose_current(data):
+        def on_pose_current(robot_id: int, data: Dict[str, Any]) -> None:
             """
             Callback on robot pose current message.
             """
             pose = models.Pose.parse_obj(data)
-            self.signal_new_robot_pose_current.emit(pose)
+            self.signal_new_robot_pose_current.emit(robot_id, pose)
 
         @self.sio.on("pose_order", namespace="/dashboard")
-        def on_pose_order(data):
+        def on_pose_order(robot_id: int, data: Dict[str, Any]) -> None:
             """
             Callback on robot pose order message.
             """
             pose = models.Pose.parse_obj(data)
-            self.signal_new_robot_pose_order.emit(pose)
+            self.signal_new_robot_pose_order.emit(robot_id, pose)
 
         @self.sio.on("state", namespace="/dashboard")
-        def on_state(data):
+        def on_state(robot_id: int, data: Dict[str, Any]) -> None:
             """
             Callback on robot state message.
             """
             state = models.RobotState.parse_obj(data)
-            if state.cycle != self.last_cycle:
-                self.last_cycle = state.cycle
-                self.signal_new_robot_state.emit(state)
+            self.signal_new_robot_state.emit(robot_id, state)
 
         @self.sio.on("obstacles", namespace="/dashboard")
         def on_obstacles(data):
@@ -219,26 +221,41 @@ class SocketioController(QtCore.QObject):
             obstacles = parse_obj_as(models.DynObstacleList, data)
             self.signal_new_dyn_obstacles.emit(obstacles)
 
+        @self.sio.on("add_robot", namespace="/dashboard")
+        def on_add_robot(robot_id: int) -> None:
+            """
+            Add a new robot.
+            """
+            self.signal_add_robot.emit(robot_id)
+
+        @self.sio.on("del_robot", namespace="/dashboard")
+        def on_del_robot(robot_id: int) -> None:
+            """
+            Remove a robot.
+            """
+            self.signal_del_robot.emit(robot_id)
+
         @self.sio.on("start_lidar_emulation", namespace="/monitor")
-        def on_start_lidar_emulation():
+        def on_start_lidar_emulation(robot_id: int) -> None:
             """
             Start Lidar emulation.
             """
-            self.signal_start_lidar_emulation.emit()
+            self.signal_start_lidar_emulation.emit(robot_id)
 
         @self.sio.on("stop_lidar_emulation", namespace="/monitor")
-        def on_stop_lidar_emulation():
+        def on_stop_lidar_emulation(robot_id: int) -> None:
             """
             Stop Lidar emulation.
             """
-            self.signal_stop_lidar_emulation.emit()
+            self.signal_stop_lidar_emulation.emit(robot_id)
 
-    def emit_lidar_data(self, data: List[int]) -> None:
+    def emit_lidar_data(self, robot_id: int, data: List[int]) -> None:
         """
         Send Lidar data to server.
 
         Arguments:
+            robot_id: ID of the robot
             data: List of distances for each angle
         """
         if self.sio.connected:
-            self.sio.emit("lidar_data", data, namespace="/monitor")
+            self.sio.emit("lidar_data", (robot_id, data), namespace="/monitor")

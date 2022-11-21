@@ -19,8 +19,9 @@ class MonitorNamespace(socketio.AsyncNamespace):
             logger.error("Monitor connection refused: a monitor is already connected")
             raise ConnectionRefusedError("A monitor is already connected")
         self._connected = True
-        if self._context.detector_mode == "emulation":
-            await self.emit("start_lidar_emulation", namespace="/monitor")
+        for robot_id, mode in self._context.detector_modes.items():
+            if mode == "emulation":
+                await self.emit("start_lidar_emulation", robot_id, namespace="/monitor")
 
         logger.info("Monitor connected.")
 
@@ -28,11 +29,13 @@ class MonitorNamespace(socketio.AsyncNamespace):
         self._connected = False
         logger.info("Monitor disconnected.")
 
-    async def on_lidar_data(self, sid, lidar_data: List[int]):
+    async def on_lidar_data(self, sid, robot_id: int, lidar_data: List[int]):
         """
         Callback on lidar data.
 
         In emulation mode, receive Lidar data from the Monitor,
         and forward to the Detector in charge of computing dynamic obstacles.
         """
-        await self.emit("lidar_data", lidar_data, namespace="/detector")
+        detector_sid = self._context.detector_sids.inverse.get(robot_id)
+        if detector_sid:
+            await self.emit("lidar_data", lidar_data, to=detector_sid, namespace="/detector")

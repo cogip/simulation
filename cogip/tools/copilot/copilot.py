@@ -31,6 +31,7 @@ class Copilot:
     def __init__(
             self,
             server_url: str,
+            id: int,
             serial_port: Path,
             serial_baud: int):
         """
@@ -38,11 +39,14 @@ class Copilot:
 
         Arguments:
             server_url: server URL
+            id: robot id
             serial_port: serial port connected to STM32 device
             serial_baud: baud rate
         """
         self._server_url = server_url
+        self._id = id
         self._retry_connection = True
+        self._shell_menu: models.ShellMenu | None = None
 
         self._sio = socketio.AsyncClient(logger=False)
         self._sio_events = SioEvents(self)
@@ -67,6 +71,8 @@ class Copilot:
         self.retry_connection = True
         await self.try_connect()
 
+        await self._pbcom.send_serial_message(copilot_connected_uuid, None)
+
         await self._pbcom.run()
 
     async def try_connect(self):
@@ -79,7 +85,8 @@ class Copilot:
                 await self._sio.connect(
                     self._server_url,
                     socketio_path="sio/socket.io",
-                    namespaces=["/copilot"]
+                    namespaces=["/copilot"],
+                    auth={"id": self._id}
                 )
             except socketio.exceptions.ConnectionError:
                 time.sleep(2)
@@ -97,6 +104,10 @@ class Copilot:
     @try_reconnection.setter
     def try_reconnection(self, new_value: bool) -> None:
         self._retry_connection = new_value
+
+    @property
+    def shell_menu(self) -> models.ShellMenu | None:
+        return self._shell_menu
 
     @property
     def pbcom(self) -> PBCom:
@@ -122,9 +133,9 @@ class Copilot:
             await self._loop.run_in_executor(None, pb_menu.ParseFromString, message)
 
         menu = MessageToDict(pb_menu)
-        shell_menu = models.ShellMenu.parse_obj(menu)
+        self._shell_menu = models.ShellMenu.parse_obj(menu)
         if self._sio.connected:
-            await self._sio_events.emit("menu", shell_menu.dict(exclude_defaults=True, exclude_unset=True))
+            await self._sio_events.emit("menu", self._shell_menu.dict(exclude_defaults=True, exclude_unset=True))
 
     @pb_exception_handler
     async def handle_message_pose(self, message: bytes | None = None) -> None:

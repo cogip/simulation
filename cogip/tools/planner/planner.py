@@ -1,10 +1,14 @@
 import threading
 import time
+from typing import Dict
 
 import socketio
 
 from cogip import models
+from cogip.utils import ThreadLoop
 from .sio_events import SioEvents
+from .path import available_paths, Path
+from . import logger
 
 
 class Planner:
@@ -23,11 +27,20 @@ class Planner:
         """
         self._server_url = server_url
         self._retry_connection = True
-        self._robot_pose = models.Pose()
-        self._robot_pose_lock = threading.Lock()
-
+        self._paths: Dict[int, Path] = dict()
+        self._robot_pose: Dict[int, models.Pose()] = dict()
+        self._pose_reached: Dict[int, bool] = dict()
+        self._obstacles: Dict[int, models.DynObstacleList] = dict()
         self._sio = socketio.Client(logger=False)
-        self._sio.register_namespace(SioEvents(self))
+        self._sio_ns = SioEvents(self)
+        self._sio.register_namespace(self._sio_ns)
+
+        self._obstacles_sender_loop = ThreadLoop(
+            "Obstacles sender loop",
+            0.5,
+            self.send_obstacles,
+            logger=True
+        )
 
     def connect(self):
         """
@@ -65,14 +78,102 @@ class Planner:
     def try_reconnection(self, new_value: bool) -> None:
         self._retry_connection = new_value
 
-    @property
-    def robot_pose(self) -> models.Pose:
+    def start(self) -> None:
         """
-        Last position of the robot.
+        Start sending obstacles list.
         """
-        return self._robot_pose
+        self._obstacles_sender_loop.start()
 
-    @robot_pose.setter
-    def robot_pose(self, new_pose: models.Pose) -> None:
-        with self._robot_pose_lock:
-            self._robot_pose = new_pose
+    def stop(self) -> None:
+        """
+        Stop sending obstacles list.
+        """
+        self._obstacles_sender_loop.stop()
+
+    def add_robot(self, robot_id: int) -> None:
+        """
+        Add a new robot.
+        """
+        if self._paths.get(robot_id) is None:
+            self._paths[robot_id] = available_paths.pop(0)
+        self._robot_pose[robot_id] = models.Pose()
+        self._pose_reached[robot_id] = True
+        self._obstacles[robot_id] = []
+
+    def del_robot(self, robot_id: int) -> None:
+        """
+        Remove a robot.
+        """
+        del self._pose_reached[robot_id]
+        del self._robot_pose[robot_id]
+        del self._obstacles[robot_id]
+        path = self._paths.pop(robot_id)
+        path.reset()
+        available_paths.append(path)
+
+    def set_pose_current(self, robot_id: int, pose: models.Pose) -> None:
+        """
+        Pose reached action.
+        """
+        self._robot_pose[robot_id] = models.Pose.parse_obj(pose)
+
+    def set_pose_reached(self, robot_id: int) -> None:
+        """
+        Pose reached action.
+        """
+        self._pose_reached[robot_id] = True
+        if self._paths[robot_id].playing:
+            self._pose_reached[robot_id] = False
+            self._sio_ns.emit("pose_order", (robot_id, self._paths[robot_id].incr().dict()))
+
+    def set_obstacles(self, robot_id: int, obstacles: models.DynObstacleList) -> None:
+        self._obstacles[robot_id] = obstacles
+
+    def send_obstacles(self) -> None:
+        all_obstacles = sum(self._obstacles.values(), start=[])
+        self._sio_ns.emit("obstacles", [o.dict() for o in all_obstacles])
+
+    def reset(self) -> None:
+        list(map(self.cmd_reset, self._paths.keys()))
+
+    def command(self, cmd: str) -> None:
+        """
+        Execute command.
+        """
+        cmd_func = getattr(self, f"cmd_{cmd}", None)
+        if cmd_func:
+            list(map(cmd_func, self._paths.keys()))
+        else:
+            logger.warning(f"Unknown command: {cmd}")
+
+    def cmd_play(self, robot_id: int) -> None:
+        path = self._paths[robot_id]
+        path.play()
+        if self._pose_reached[robot_id]:
+            self._pose_reached[robot_id] = False
+            self._sio_ns.emit("pose_order", (robot_id, path.incr().dict()))
+
+    def cmd_stop(self, robot_id: int) -> None:
+        path = self._paths[robot_id]
+        path.stop()
+
+    def cmd_next(self, robot_id: int) -> None:
+        path = self._paths[robot_id]
+        if self._pose_reached[robot_id]:
+            self._pose_reached[robot_id] = False
+            self._sio_ns.emit("pose_order", (robot_id, path.incr().dict()))
+
+    def cmd_prev(self, robot_id: int) -> None:
+        path = self._paths[robot_id]
+        if self._pose_reached[robot_id]:
+            self._pose_reached[robot_id] = False
+            self._sio.emit("pose_order", (robot_id, path.decr().dict()))
+
+    def cmd_reset(self, robot_id: int) -> None:
+        """
+        Reset path.
+        """
+        path = self._paths[robot_id]
+        path.reset()
+        self._pose_reached[robot_id] = True
+        self._sio_ns.emit("pose_start", (robot_id, path.pose().dict()))
