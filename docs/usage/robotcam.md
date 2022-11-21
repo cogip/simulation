@@ -24,6 +24,9 @@ Example of `.env` file with all default values:
 # Server URL
 COGIP_SERVER_URL="http://localhost:8080"
 
+# Robot ID
+ROBOTCAM_ID=1
+
 # Camera device
 ROBOTCAM_CAMERA_DEVICE="/dev/v4l/by-id/usb-HBV_HD_CAMERA_HBV_HD_CAMERA-video-index0"
 

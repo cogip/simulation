@@ -45,6 +45,10 @@ Options:
                                   env var: COGIP_SERVER_URL
                                   default: http://localhost:8080
 
+  -i, --id INTEGER RANGE          Robot ID.
+                                  env var: ROBOT_ID, COPILOT_ID
+                                  default: 1; x>=1
+
   --min-distance INTEGER          Minimum distance to detect an obstacle
                                   env var: DETECTOR_MIN_DISTANCE
                                   default: 150
