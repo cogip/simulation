@@ -21,7 +21,7 @@ class RobotManualEntity(Qt3DCore.QEntity):
             when moving the robot using the mouse
     """
 
-    color: QtGui.QColor = QtGui.QColor.fromRgb(0, 102, 204, 100)
+    color: QtGui.QColor = QtGui.QColor.fromRgb(17, 70, 92, 100)
     enable_controller = qtSignal(bool)
 
     def __init__(
