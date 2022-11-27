@@ -30,6 +30,10 @@ Options:
                                   env var: COGIP_SERVER_URL
                                   default: http://localhost:8080
 
+  -i, --id INTEGER RANGE          Robot ID.
+                                  env var: ROBOT_ID, COPILOT_ID
+                                  default: 1; x>=1
+
   -p, --serial-port PATH          Serial port connected to STM32 device
                                   env var: COPILOT_SERIAL_PORT
                                   default: /dev/ttyUSB0

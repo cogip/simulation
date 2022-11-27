@@ -238,6 +238,7 @@ class ChartsView(QtWidgets.QDialog):
             parent: The parent widget
         """
         super().__init__(parent)
+        self.robot_id = 0
 
         self.setWindowTitle("Calibration Charts")
         self.setModal(False)
@@ -251,6 +252,11 @@ class ChartsView(QtWidgets.QDialog):
         self.layout.addWidget(self.linear_speed_chart, 0, 0)
         self.layout.addWidget(self.angular_speed_chart, 1, 0)
 
+        self.readSettings()
+
+    def set_robot_id(self, robot_id: int) -> None:
+        self.robot_id = robot_id
+        self.setWindowTitle(f"Calibration Charts for Robot {robot_id}")
         self.readSettings()
 
     @qtSlot(RobotState)
@@ -278,11 +284,11 @@ class ChartsView(QtWidgets.QDialog):
             event: The close event (unused)
         """
         settings = QtCore.QSettings("COGIP", "monitor")
-        settings.setValue("chartsview/geometry", self.saveGeometry())
+        settings.setValue(f"chartsview/geometry/{self.robot_id}", self.saveGeometry())
 
         self.closed.emit()
         super().closeEvent(event)
 
     def readSettings(self):
         settings = QtCore.QSettings("COGIP", "monitor")
-        self.restoreGeometry(settings.value("chartsview/geometry"))
+        self.restoreGeometry(settings.value(f"chartsview/geometry/{self.robot_id}"))

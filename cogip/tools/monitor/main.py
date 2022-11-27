@@ -11,10 +11,10 @@ os.environ["QT_LOGGING_RULES"] = "*.debug=false;qt.webenginecontext.info=false"
 from PySide6 import QtGui, QtWidgets
 import typer
 
-from cogip.entities.robot import RobotEntity
 from cogip.entities.table import TableEntity
 
 from .mainwindow import MainWindow
+from .robots import RobotManager
 from .socketiocontroller import SocketioController
 
 
@@ -43,8 +43,7 @@ def main_opt(
     win.game_view.add_asset(table_entity)
 
     # Create robot entity
-    robot_entity = RobotEntity()
-    win.game_view.add_asset(robot_entity)
+    robot_manager = RobotManager(win.game_view)
 
     # Connect UI signals to Controller slots
     win.signal_send_command.connect(controller.new_command)
@@ -57,26 +56,26 @@ def main_opt(
     win.signal_load_cake_layers.connect(win.game_view.load_cake_layers)
     win.signal_save_cake_layers.connect(win.game_view.save_cake_layers)
 
-    # Connect Controller signals to Robot slots
-    controller.signal_new_robot_pose_current.connect(robot_entity.new_robot_pose_current)
-    controller.signal_new_robot_pose_order.connect(robot_entity.new_robot_pose_order)
-    controller.signal_new_robot_state.connect(win.game_view.new_robot_state)
-    controller.signal_new_dyn_obstacles.connect(robot_entity.set_dyn_obstacles)
-    controller.signal_start_lidar_emulation.connect(robot_entity.start_lidar_emulation)
-    controller.signal_stop_lidar_emulation.connect(robot_entity.stop_lidar_emulation)
-    robot_entity.lidar_emit_data_signal.connect(controller.emit_lidar_data)
+    # Connect Controller signals to robot manager
+    controller.signal_new_robot_pose_current.connect(robot_manager.new_robot_pose_current)
+    controller.signal_new_robot_pose_order.connect(robot_manager.new_robot_pose_order)
+    controller.signal_new_dyn_obstacles.connect(robot_manager.set_dyn_obstacles)
+    controller.signal_add_robot.connect(robot_manager.add_robot)
+    controller.signal_del_robot.connect(robot_manager.del_robot)
+    controller.signal_start_lidar_emulation.connect(robot_manager.start_lidar_emulation)
+    controller.signal_stop_lidar_emulation.connect(robot_manager.stop_lidar_emulation)
+    robot_manager.lidar_emit_data_signal.connect(controller.emit_lidar_data)
 
     # Connect Controller signals to UI slots
     controller.signal_new_console_text.connect(win.log_text.append)
     controller.signal_new_menu.connect(win.load_menu)
+    controller.signal_add_robot.connect(win.add_robot)
+    controller.signal_del_robot.connect(win.del_robot)
     controller.signal_new_robot_pose_current.connect(win.new_robot_pose)
     controller.signal_new_robot_state.connect(win.new_robot_state)
     controller.signal_connected.connect(win.connected)
     controller.signal_exit.connect(win.close)
     controller.signal_config_request.connect(win.config_request)
-
-    # Connect Controller signals to ChartsView slots
-    controller.signal_new_robot_state.connect(win.charts_view.new_robot_state)
 
     # Show UI
     win.show()

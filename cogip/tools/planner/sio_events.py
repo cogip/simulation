@@ -1,11 +1,11 @@
 from typing import Any, Dict
+from pydantic import parse_obj_as
 
 import socketio
 
 from cogip import models
 from . import planner, logger
 from .menu import menu
-from .path import path
 
 
 class SioEvents(socketio.ClientNamespace):
@@ -16,20 +16,21 @@ class SioEvents(socketio.ClientNamespace):
     def __init__(self, planner: "planner.Planner"):
         super().__init__("/planner")
         self._planner = planner
-        self._pose_reached = True
 
     def on_connect(self):
         """
         On connection to cogip-server.
         """
-        logger.info("Connected to cogip-server")
-        self.on_reset()
+        self._planner.start()
+        self._planner.reset()
         self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
+        logger.info("Connected to cogip-server")
 
     def on_disconnect(self) -> None:
         """
         On disconnection from cogip-server.
         """
+        self._planner.stop()
         logger.info("Disconnected from cogip-server")
 
     def on_connect_error(self, data: Dict[str, Any]) -> None:
@@ -49,51 +50,48 @@ class SioEvents(socketio.ClientNamespace):
         else:
             logger.error(f"Connection to cogip-server failed: {data = }")
 
-    def on_reset(self) -> None:
+    def on_add_robot(self, robot_id: int) -> None:
+        """
+        Add a new robot.
+        """
+        self._planner.add_robot(robot_id)
+
+    def on_del_robot(self, robot_id: int) -> None:
+        """
+        Remove a robot.
+        """
+        self._planner.del_robot(robot_id)
+
+    def on_reset(self, robot_id: int) -> None:
         """
         Callback on reset message.
         """
-        path.reset()
-        self._pose_reached = True
-        self.emit("pose_start", path.pose().dict())
+        self._planner.cmd_reset(robot_id)
 
-    def on_pose_curent(self, data: Dict[str, Any]) -> None:
+    def on_pose_current(self, robot_id: int, pose: Dict[str, Any]) -> None:
         """
         Callback on pose current message.
         """
-        self._planner.robot_pose = models.Pose.parse_obj(data)
+        self._planner.set_pose_current(robot_id, models.Pose.parse_obj(pose))
 
-    def on_pose_reached(self) -> None:
+    def on_pose_reached(self, robot_id: int) -> None:
         """
         Callback on pose reached message.
         """
-        self._pose_reached = True
-        if path.playing:
-            self._pose_reached = False
-            self.emit("pose_order", path.incr().dict())
+        self._planner.set_pose_reached(robot_id)
 
     def on_command(self, cmd: str) -> None:
         """
         Callback on command message from dashboard.
         """
-        if cmd == "play":
-            path.play()
-            if self._pose_reached:
-                self._pose_reached = False
-                self.emit("pose_order", path.incr().dict())
 
-        elif cmd == "stop":
-            path.stop()
+        self._planner.command(cmd)
 
-        elif cmd == "next":
-            if self._pose_reached:
-                self._pose_reached = False
-                self.emit("pose_order", path.incr().dict())
-
-        elif cmd == "prev":
-            if self._pose_reached:
-                self._pose_reached = False
-                self.emit("pose_order", path.decr().dict())
-
-        elif cmd == "reset":
-            self.on_reset()
+    def on_obstacles(self, robot_id: int, obstacles: Dict[str, Any]):
+        """
+        Callback on obstacles message.
+        """
+        self._planner.set_obstacles(
+            robot_id,
+            parse_obj_as(models.DynObstacleList, obstacles)
+        )

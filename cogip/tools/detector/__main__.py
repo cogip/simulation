@@ -24,6 +24,13 @@ def main_opt(
         help="Server URL",
         envvar="COGIP_SERVER_URL"
     ),
+    id: int = typer.Option(
+        1,
+        "-i", "--id",
+        min=1,
+        help="Robot ID.",
+        envvar=["ROBOT_ID", "DETECTOR_ID"]
+    ),
     min_distance: int = typer.Option(
         150, min=0, max=1000,
         help="Minimum distance to detect an obstacle (mm)",
@@ -83,6 +90,7 @@ def main_opt(
 
     args = (
         server_url,
+        id,
         min_distance,
         max_distance,
         obstacle_radius,

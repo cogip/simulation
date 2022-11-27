@@ -2,7 +2,7 @@ from functools import partial
 import json
 from pathlib import Path
 import re
-from typing import Any, Dict, Optional, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
@@ -54,11 +54,10 @@ class MainWindow(QtWidgets.QMainWindow):
             url: URL of the copilot web server
         """
         super(MainWindow, self).__init__(*args, **kwargs)
-
-        self.menu_widgets: Dict[str, Dict[str, QtWidgets.QWidget]] = {
-            "shell": {},
-            "tool": {}
-        }
+        self.robot_status_row: Dict[int, int] = {}
+        self.charts_view: Dict[int, ChartsView] = {}
+        self.available_chart_views: List[ChartsView] = []
+        self.menu_widgets: Dict[str, Dict[str, QtWidgets.QWidget]] = {}
 
         self.setWindowTitle('COGIP Monitor')
 
@@ -72,7 +71,7 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu = menubar.addMenu('&File')
         obstacles_menu = menubar.addMenu('&Obstacles')
         cake_layers_menu = menubar.addMenu('&Cake Layers')
-        view_menu = menubar.addMenu('&View')
+        self.view_menu = menubar.addMenu('&View')
         help_menu = menubar.addMenu('&Help')
 
         # Toolbars
@@ -84,43 +83,29 @@ class MainWindow(QtWidgets.QMainWindow):
         # Status bar
         status_bar = self.statusBar()
 
-        cycle_label = QtWidgets.QLabel("Cycle:")
-        self.cycle_text = QtWidgets.QLabel()
-        self.cycle_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.cycle_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        status_bar.addPermanentWidget(cycle_label, 0)
-        status_bar.addPermanentWidget(self.cycle_text, 0)
-
-        pos_x_label = QtWidgets.QLabel("X:")
-        self.pos_x_text = QtWidgets.QLabel()
-        self.pos_x_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.pos_x_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        status_bar.addPermanentWidget(pos_x_label, 0)
-        status_bar.addPermanentWidget(self.pos_x_text, 0)
-
-        pos_y_label = QtWidgets.QLabel("Y:")
-        self.pos_y_text = QtWidgets.QLabel()
-        self.pos_y_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.pos_y_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        status_bar.addPermanentWidget(pos_y_label, 0)
-        status_bar.addPermanentWidget(self.pos_y_text, 0)
-
-        pos_angle_label = QtWidgets.QLabel("Angle:")
-        self.pos_angle_text = QtWidgets.QLabel()
-        self.pos_angle_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.pos_angle_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        status_bar.addPermanentWidget(pos_angle_label, 0)
-        status_bar.addPermanentWidget(self.pos_angle_text, 0)
-
-        pos_mode_label = QtWidgets.QLabel("Mode:")
-        self.pos_mode_text = QtWidgets.QLabel()
-        self.pos_mode_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.pos_mode_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        status_bar.addPermanentWidget(pos_mode_label, 0)
-        status_bar.addPermanentWidget(self.pos_mode_text, 0)
-
         self.connected_label = QtWidgets.QLabel("Disconnected")
-        status_bar.addPermanentWidget(self.connected_label, 0)
+        status_bar.addPermanentWidget(self.connected_label, 1)
+
+        status_widget = QtWidgets.QWidget()
+        status_bar.addPermanentWidget(status_widget)
+
+        self.status_layout = QtWidgets.QGridLayout()
+        status_widget.setLayout(self.status_layout)
+
+        cycle_label = QtWidgets.QLabel("Cycle")
+        self.status_layout.addWidget(cycle_label, 0, 1)
+
+        pos_x_label = QtWidgets.QLabel("X")
+        self.status_layout.addWidget(pos_x_label, 0, 2)
+
+        pos_y_label = QtWidgets.QLabel("Y")
+        self.status_layout.addWidget(pos_y_label, 0, 3)
+
+        pos_angle_label = QtWidgets.QLabel("Angle")
+        self.status_layout.addWidget(pos_angle_label, 0, 4)
+
+        pos_mode_label = QtWidgets.QLabel("Mode")
+        self.status_layout.addWidget(pos_mode_label, 0, 5)
 
         # Actions
         # Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons
@@ -204,41 +189,14 @@ class MainWindow(QtWidgets.QMainWindow):
         file_menu.addAction(dock.toggleViewAction())
         obstacles_menu.addAction(dock.toggleViewAction())
 
-        # Shell menu
-        self.current_menus: Dict[str, Optional[str]] = {
-            "shell": None,
-            "tool": None
-        }
-
         self.menu_tab_widget = QtWidgets.QTabWidget()
         self.central_layout.insertWidget(0, self.menu_tab_widget, 1)
 
-        self.menu_staked_widgets = {
-            "shell": QtWidgets.QStackedWidget(),
-            "tool": QtWidgets.QStackedWidget()
-        }
-        for menu_name in ["tool", "shell"]:
-            self.menu_tab_widget.addTab(self.menu_staked_widgets[menu_name], menu_name)
-
-            # Set a empty menu to allocate some space in the UI
-            empty_menu_widget = QtWidgets.QStackedWidget()
-            empty_menu_layout = QtWidgets.QVBoxLayout()
-            empty_menu_widget.setLayout(empty_menu_layout)
-            empty_menu_title = QtWidgets.QLabel("No menu loaded")
-            empty_menu_title.setTextFormat(QtCore.Qt.RichText)
-            empty_menu_title.setAlignment(QtCore.Qt.AlignHCenter)
-            empty_menu_title.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-            empty_menu_title.setStyleSheet("font-weight: bold; color: blue")
-            empty_menu_layout.addWidget(empty_menu_title)
-            empty_menu_layout.addStretch()
-            self.menu_staked_widgets[menu_name].addWidget(empty_menu_widget)
+        self.menu_staked_widgets: Dict[str, QtWidgets.QStackedWidget] = {}
 
         # GameView widget
         self.game_view = GameView()
         self.central_layout.insertWidget(1, self.game_view, 10)
-
-        # Charts widget
-        self.charts_view = ChartsView(self)
 
         # Dashboard widget
         self.dashboard = Dashboard(url, self)
@@ -250,19 +208,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.properties = {}
 
         # Add view action
-        self.view_charts_action = QtGui.QAction('Calibration Charts', self)
-        self.view_charts_action.setStatusTip('Display/Hide calibration charts')
-        self.view_charts_action.setCheckable(True)
-        self.view_charts_action.toggled.connect(self.charts_toggled)
-        self.charts_view.closed.connect(partial(self.view_charts_action.setChecked, False))
-        view_menu.addAction(self.view_charts_action)
-
         self.view_dashboard_action = QtGui.QAction('Dashboard', self)
         self.view_dashboard_action.setStatusTip('Display/Hide dashboard')
         self.view_dashboard_action.setCheckable(True)
         self.view_dashboard_action.toggled.connect(self.dashboard_toggled)
         self.dashboard.closed.connect(partial(self.view_dashboard_action.setChecked, False))
-        view_menu.addAction(self.view_dashboard_action)
+        self.view_menu.addAction(self.view_dashboard_action)
 
         # Add help action
         self.help_camera_control_action = QtGui.QAction('Camera control', self)
@@ -274,21 +225,26 @@ class MainWindow(QtWidgets.QMainWindow):
         self.readSettings()
 
     @qtSlot(bool)
-    def charts_toggled(self, checked: bool):
+    def charts_toggled(self, robot_id: int, checked: bool):
         """
         Qt Slot
 
         Show/hide the calibration charts.
 
         Arguments:
+            robot_id: ID of the robot corresponding to the chart view
             checked: Show action has checked or unchecked
         """
+        view = self.charts_view.get(robot_id)
+        if view is None:
+            return
+
         if checked:
-            self.charts_view.show()
-            self.charts_view.raise_()
-            self.charts_view.activateWindow()
+            view.show()
+            view.raise_()
+            view.activateWindow()
         else:
-            self.charts_view.close()
+            view.close()
 
     @qtSlot(bool)
     def dashboard_toggled(self, checked: bool):
@@ -307,32 +263,150 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.dashboard.close()
 
+    def update_view_menu(self):
+        """
+        Rebuild all the view menu to update the calibration charts sub-menu.
+        """
+        self.view_menu.clear()
+        if len(self.charts_view):
+            calibration_menu = self.view_menu.addMenu("Calibration Charts")
+            for robot_id, view in self.charts_view.items():
+                action = calibration_menu.addAction(f"Robot {robot_id}")
+                action.setCheckable(True)
+                action.toggled.connect(partial(self.charts_toggled, robot_id))
+                if view.isVisible():
+                    action.setChecked(True)
+                view.closed.connect(partial(action.setChecked, False))
+
+        self.view_menu.addAction(self.view_dashboard_action)
+
+    def add_robot(self, robot_id: int) -> None:
+        """
+        Add a new robot status bar.
+
+        Parameters:
+            robot_id: ID of the new robot
+        """
+        self.game_view.add_robot(robot_id)
+
+        # Status bar
+        if robot_id in self.robot_status_row:
+            return
+
+        row = self.status_layout.rowCount()
+        self.robot_status_row[robot_id] = row
+
+        title_text = QtWidgets.QLabel(f"Robot {robot_id}")
+        self.status_layout.addWidget(title_text, row, 0)
+
+        cycle_text = QtWidgets.QLabel()
+        cycle_text.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+        cycle_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        self.status_layout.addWidget(cycle_text, row, 1)
+
+        pos_x_text = QtWidgets.QLabel()
+        pos_x_text.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+        pos_x_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        self.status_layout.addWidget(pos_x_text, row, 2)
+
+        pos_y_text = QtWidgets.QLabel()
+        pos_y_text.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+        pos_y_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        self.status_layout.addWidget(pos_y_text, row, 3)
+
+        pos_angle_text = QtWidgets.QLabel()
+        pos_angle_text.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+        pos_angle_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        self.status_layout.addWidget(pos_angle_text, row, 4)
+
+        pos_mode_text = QtWidgets.QLabel()
+        pos_mode_text.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
+        pos_mode_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+        self.status_layout.addWidget(pos_mode_text, row, 5)
+
+        # Chart view
+        view = self.charts_view.get(robot_id)
+        if view is None:
+            if len(self.available_chart_views) == 0:
+                view = ChartsView(self)
+                self.available_chart_views.append(view)
+
+            view = self.available_chart_views.pop(0)
+            self.charts_view[robot_id] = view
+            view.set_robot_id(robot_id)
+            settings = QtCore.QSettings("COGIP", "monitor")
+            if settings.value(f"charts_checked/{robot_id}") == "true":
+                self.charts_toggled(robot_id, True)
+
+        self.update_view_menu()
+
+    def del_robot(self, robot_id: int) -> None:
+        """
+        Remove a robot.
+
+        Parameters:
+            robot_id: ID of the robot to remove
+        """
+        self.game_view.del_robot(robot_id)
+
+        # Status bar
+        row = self.robot_status_row.pop(robot_id)
+        if not row:
+            return
+
+        for i in range(6):
+            item = self.status_layout.itemAtPosition(row, i)
+            widget = item.widget()
+            widget.setParent(None)
+            self.status_layout.removeWidget(widget)
+
+        # Chart view
+        self.charts_toggled(robot_id, False)
+        view = self.charts_view.pop(robot_id, None)
+        if view is None:
+            return
+        self.available_chart_views.append(view)
+        view.closed.disconnect()
+        self.update_view_menu()
+
     @qtSlot(Pose)
-    def new_robot_pose(self, pose: Pose):
+    def new_robot_pose(self, robot_id: int, pose: Pose):
         """
         Qt Slot
 
         Update robot position information in the status bar.
 
         Arguments:
+            robot_id: ID of the robot
             pose: Robot pose
         """
-        self.pos_x_text.setText(f"{pose.x:> #6.2f}")
-        self.pos_y_text.setText(f"{pose.y:> #6.2f}")
-        self.pos_angle_text.setText(f"{pose.O:> #4.2f}")
+        row = self.robot_status_row.get(robot_id)
+        if not row:
+            return
+        self.status_layout.itemAtPosition(row, 2).widget().setText(f"{int(pose.x):> #6d}")
+        self.status_layout.itemAtPosition(row, 3).widget().setText(f"{int(pose.y):> #6d}")
+        self.status_layout.itemAtPosition(row, 4).widget().setText(f"{int(pose.O):> #4d}")
 
     @qtSlot(RobotState)
-    def new_robot_state(self, state: RobotState):
+    def new_robot_state(self, robot_id: int, state: RobotState):
         """
         Qt Slot
 
         Update robot state information in the status bar.
 
         Arguments:
+            robot_id: ID of the robot
             state: Robot state
         """
-        self.pos_mode_text.setText(state.mode.name)
-        self.cycle_text.setText(f"{state.cycle or 0:>#6d}")
+        row = self.robot_status_row.get(robot_id)
+        if not row:
+            return
+        self.status_layout.itemAtPosition(row, 1).widget().setText(f"{state.cycle or 0:>#6d}")
+        self.status_layout.itemAtPosition(row, 5).widget().setText(state.mode.name)
+
+        charts_view = self.charts_view.get(robot_id)
+        if charts_view:
+            charts_view.new_robot_state(state)
 
     @qtSlot(ShellMenu)
     def load_menu(self, menu_name: str, new_menu: ShellMenu):
@@ -347,7 +421,23 @@ class MainWindow(QtWidgets.QMainWindow):
             menu_name: menu to update ("shell", "tool", ...)
             new_menu: The new menu information sent by the firmware
         """
-        self.current_menus[menu_name] = new_menu.name
+        if menu_name not in self.menu_staked_widgets:
+            self.menu_staked_widgets[menu_name] = QtWidgets.QStackedWidget()
+            empty_menu_widget = QtWidgets.QStackedWidget()
+            empty_menu_layout = QtWidgets.QVBoxLayout()
+            empty_menu_widget.setLayout(empty_menu_layout)
+            empty_menu_title = QtWidgets.QLabel("No menu loaded")
+            empty_menu_title.setTextFormat(QtCore.Qt.RichText)
+            empty_menu_title.setAlignment(QtCore.Qt.AlignHCenter)
+            empty_menu_title.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
+            empty_menu_title.setStyleSheet("font-weight: bold; color: blue")
+            empty_menu_layout.addWidget(empty_menu_title)
+            empty_menu_layout.addStretch()
+            self.menu_staked_widgets[menu_name].addWidget(empty_menu_widget)
+            self.menu_tab_widget.addTab(self.menu_staked_widgets[menu_name], menu_name)
+
+        if menu_name not in self.menu_widgets:
+            self.menu_widgets[menu_name] = {}
 
         widget = self.menu_widgets[menu_name].get(new_menu.name)
         if not widget:
@@ -357,13 +447,13 @@ class MainWindow(QtWidgets.QMainWindow):
             widget.setLayout(layout)
             self.menu_widgets[menu_name][new_menu.name] = widget
             self.menu_staked_widgets[menu_name].addWidget(widget)
-        else:
-            # Clear menu to rebuild it in case it has changed
-            layout = widget.layout()
-            while layout.count():
-                child = layout.takeAt(0)
-                if child.widget():
-                    child.widget().deleteLater()
+
+        # Clear menu to rebuild it in case it has changed
+        layout = widget.layout()
+        while layout.count():
+            child = layout.takeAt(0)
+            if child.widget():
+                child.widget().deleteLater()
 
         title = QtWidgets.QLabel(new_menu.name)
         title.setTextFormat(QtCore.Qt.RichText)
@@ -545,7 +635,8 @@ class MainWindow(QtWidgets.QMainWindow):
         settings = QtCore.QSettings("COGIP", "monitor")
         settings.setValue("geometry", self.saveGeometry())
         settings.setValue("windowState", self.saveState())
-        settings.setValue("charts_checked", self.view_charts_action.isChecked())
+        for robot_id, view in self.charts_view.items():
+            settings.setValue(f"charts_checked/{robot_id}", view.isVisible())
         settings.setValue("dashboard_checked", self.view_dashboard_action.isChecked())
         settings.setValue("camera_params", json.dumps(self.game_view.get_camera_params()))
         super().closeEvent(event)
@@ -554,9 +645,6 @@ class MainWindow(QtWidgets.QMainWindow):
         settings = QtCore.QSettings("COGIP", "monitor")
         self.restoreGeometry(settings.value("geometry"))
         self.restoreState(settings.value("windowState"))
-        if settings.value("charts_checked") == "true":
-            self.charts_toggled(True)
-            self.view_charts_action.setChecked(True)
         if settings.value("dashboard_checked") == "true":
             self.dashboard_toggled(True)
             self.view_dashboard_action.setChecked(True)

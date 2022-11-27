@@ -12,7 +12,7 @@ class RobotOrderEntity(Qt3DCore.QEntity):
         color: Robot color
     """
 
-    color: QtGui.QColor = QtGui.QColor.fromRgb(100, 255, 100, 100)
+    color: QtGui.QColor = QtGui.QColor.fromRgb(10, 77, 18, 100)
 
     def __init__(self, parent: Qt3DCore.QEntity):
         """

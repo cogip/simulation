@@ -211,26 +211,34 @@
           .on("disconnect", function () {
             socketModule.onDisconnect();
           })
-          .on("shell_menu", function (menu) {
-            socketModule.onMenu(menu, "shell", this);
-            virtualKeyboard._actualize();
+          .on("shell_menu", function (robot_id, menu) {
+            if (robot_id == 1) {
+              socketModule.onMenu(menu, "shell", this);
+              virtualKeyboard._actualize();
+            }
           })
           .on("tool_menu", function (menu) {
             socketModule.onMenu(menu, "tool", this);
             virtualKeyboard._actualize();
           })
-          .on("pose_current", function (msg) {
-            drawModule.updatePoseCurrent(msg);
+          .on("pose_current", function (robot_id, msg) {
+            if (robot_id == 1) {
+              drawModule.updatePoseCurrent(msg);
+            }
           })
-          .on("pose_order", function (msg) {
-            drawModule.updatePoseOrder(msg);
+          .on("pose_order", function (robot_id, msg) {
+            if (robot_id == 1) {
+              drawModule.updatePoseOrder(msg);
+            }
           })
           .on("obstacles", function (msg) {
             drawModule.updateObstacles(msg);
           })
-          .on("state", function (msg) {
-            drawModule.displayMsg(msg); // uses message to display information in bottom page
-            drawModule.drawBoardElement(msg); // move robot
+          .on("state", function (robot_id, msg) {
+            if (robot_id == 1) {
+              drawModule.displayMsg(msg); // uses message to display information in bottom page
+              drawModule.drawBoardElement(msg); // move robot
+            }
           })
           .on("wizard", function (msg) {
             wizardModule.openWizardModal(msg, this);

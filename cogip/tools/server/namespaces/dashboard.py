@@ -16,8 +16,10 @@ class DashboardNamespace(socketio.AsyncNamespace):
     async def on_connect(self, sid, environ):
         logger.info("Dashboard connected.")
         await self.emit("tool_menu", self._context.tool_menus[self._context.current_tool_menu].dict(), to=sid)
-        if self._context.shell_menu:
-            await self.emit("shell_menu", self._context.shell_menu, to=sid)
+        for robot_id, menu in self._context.shell_menu.items():
+            await self.emit("shell_menu", (robot_id, menu.dict()), to=sid)
+        for robot_id in self._context.connected_robots:
+            await self.emit("add_robot", robot_id, to=sid)
 
     def on_disconnect(self, sid):
         logger.info("Dashboard disconnected.")
@@ -54,11 +56,11 @@ class DashboardNamespace(socketio.AsyncNamespace):
                 namespace, _, _ = self._context.current_tool_menu.partition("/")
                 await self.emit("command", cmd, namespace=f"/{namespace}")
 
-    async def on_shell_cmd(self, sid, cmd: str) -> None:
+    async def on_shell_cmd(self, sid, robot_id: int, cmd: str) -> None:
         """
         Callback on shell command message from dashboard.
         """
-        await self.emit("command", cmd, namespace="/copilot")
+        await self.emit("command", cmd, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
 
     async def on_config_updated(self, sid, config: Dict[str, Any]) -> None:
         namespace = config.pop("namespace")

@@ -32,6 +32,7 @@ class Detector:
     def __init__(
             self,
             server_url: str,
+            robot_id: int,
             min_distance: int,
             max_distance: int,
             obstacle_radius: int,
@@ -45,6 +46,7 @@ class Detector:
 
         Arguments:
             server_url: server URL
+            robot_id: robot id
             min_distance: Minimum distance to detect an obstacle
             max_distance: Maximum distance to detect an obstacle
             obstacle_radius: Radius of a dynamic obstacle
@@ -55,6 +57,7 @@ class Detector:
             emulation: force emulation mode
         """
         self._server_url = server_url
+        self._robot_id = robot_id
         self._properties = Properties(
             min_distance=min_distance,
             max_distance=max_distance,
@@ -144,6 +147,7 @@ class Detector:
                     socketio_path="sio/socket.io",
                     namespaces=["/detector"],
                     auth={
+                        "id": self._robot_id,
                         "mode": "detection" if self._laser else "emulation"
                     }
                 )

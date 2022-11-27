@@ -25,6 +25,7 @@ RUN python3 -m pip install -U pip setuptools wheel
 
 # Pre-install some Python requirements for COGIP tools
 RUN python3 -m pip install \
+    bidict==0.22.0 \
     more_itertools==9.0.0 \
     py-spy==0.3.11 \
     pydantic==1.9.0 \

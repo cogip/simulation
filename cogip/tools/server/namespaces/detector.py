@@ -14,30 +14,30 @@ class DetectorNamespace(socketio.AsyncNamespace):
     def __init__(self, cogip_server: "server.Server"):
         super().__init__("/detector")
         self._cogip_server = cogip_server
-        self._detector_sid: str | None = None
         self._context = Context()
         self._recorder = GameRecorder()
 
     async def on_connect(self, sid, environ, auth={}):
-        if self._detector_sid:
-            logger.error("Connection refused: a detector is already connected")
-            raise ConnectionRefusedError("A detector is already connected")
+        if isinstance(auth, dict) and (robot_id := auth.get("id")):
+            if sid not in self._context.detector_sids and robot_id in self._context.detector_sids.inverse:
+                raise ConnectionRefusedError(f"A detector with id '{robot_id}' is already connected")
+            self._context.detector_sids[sid] = robot_id
+            logger.info(f"Detector {robot_id} connected.")
+        else:
+            raise ConnectionRefusedError("Missing 'id' in 'auth' parameter")
 
         if (mode := auth.get("mode")) not in ["detection", "emulation"]:
             logger.error(f"Connection refused: unknown mode '{mode}'")
             raise ConnectionRefusedError(f"Unknown mode '{mode}'")
-        self._context.detector_mode = mode
+        self._context.detector_modes[robot_id] = mode
         if mode == "emulation":
-            await self.emit("start_lidar_emulation", namespace="/monitor")
-
-        self._detector_sid = sid
-        logger.info("Detector connected.")
+            await self.emit("start_lidar_emulation", robot_id, namespace="/monitor")
 
     async def on_disconnect(self, sid):
-        self._detector_sid = None
-        if self._context.detector_mode == "emulation":
-            await self.emit("stop_lidar_emulation", namespace="/monitor")
-        logger.info("Detector disconnected.")
+        robot_id = self._context.detector_sids.pop(sid)
+        if self._context.detector_modes[robot_id] == "emulation":
+            await self.emit("stop_lidar_emulation", robot_id, namespace="/monitor")
+        logger.info(f"Detector {robot_id} disconnected.")
 
     async def on_register_menu(self, sid, data: Dict[str, Any]):
         """
@@ -50,11 +50,10 @@ class DetectorNamespace(socketio.AsyncNamespace):
         Callback on obstacles message.
 
         Receive a list of obstacles, computed from Lidar data by the Detector.
-        These obstacles are sent to planner to compute avoidance path,
-        and to monitor/dashboards for display.
+        These obstacles are sent to planner to compute avoidance path.
         """
-        await self.emit("obstacles", obstacles, namespace="/planner")
-        await self.emit("obstacles", obstacles, namespace="/dashboard")
+        robot_id = self._context.detector_sids[sid]
+        await self.emit("obstacles", (robot_id, obstacles), namespace="/planner")
         await self._recorder.async_record({"obstacles": obstacles})
 
     async def on_config(self, sid, config: Dict[str, Any]):
