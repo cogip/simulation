@@ -91,3 +91,9 @@ class CopilotNamespace(socketio.AsyncNamespace):
         if state.get("mode", 0):
             self._recorder.recording = True
         await self._recorder.async_record({"state": (robot_id, state)})
+
+    async def on_actuators_state(self, sid, actuators_state: Dict[str, Any]):
+        """
+        Callback on actuators_state message.
+        """
+        await self.emit("actuators_state", actuators_state, namespace="/dashboard")
