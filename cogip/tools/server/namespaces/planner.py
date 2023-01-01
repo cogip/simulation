@@ -42,7 +42,8 @@ class PlannerNamespace(socketio.AsyncNamespace):
         Callback on pose start.
         Forward to pose to copilot.
         """
-        await self.emit("pose_start", pose, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
+        if robot_id in self._context.copilot_sids.inverse:
+            await self.emit("pose_start", pose, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
 
     async def on_pose_order(self, sid, robot_id: int, pose: Dict[str, Any]):
         """
