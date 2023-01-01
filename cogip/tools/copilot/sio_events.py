@@ -41,6 +41,18 @@ class SioEvents(socketio.AsyncClientNamespace):
 
     async def on_command(self, data):
         """
+        Callback on tool command message.
+        """
+        cmd, _, _ = data.partition(" ")
+        match cmd:
+            case "actuators_control":
+                # Start thread emitting actuators status
+                await self._copilot.pbcom.send_serial_message(copilot.actuators_thread_start_uuid, None)
+            case _:
+                logger.warning(f"Unknown command: {cmd}")
+
+    async def on_shell_command(self, data):
+        """
         Callback on shell command message.
 
         Build the Protobuf command message:
@@ -72,3 +84,10 @@ class SioEvents(socketio.AsyncClientNamespace):
         pb_pose_order = PB_PathPose()
         pose_order.copy_pb(pb_pose_order)
         await self._copilot.pbcom.send_serial_message(copilot.pose_order_uuid, pb_pose_order)
+
+    async def on_actuators_stop(self):
+        """
+        Callback on actuators_stop (from dashboard).
+        Forward to mcu-firmware.
+        """
+        await self._copilot.pbcom.send_serial_message(copilot.actuators_thread_stop_uuid, None)

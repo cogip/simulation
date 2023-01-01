@@ -20,6 +20,8 @@ copilot_disconnected_uuid: int = 1412808668
 pose_order_uuid: int = 1534060156
 pose_reached_uuid: int = 2736246403
 pose_start_uuid: int = 2741980922
+actuators_thread_start_uuid: int = 1525532810
+actuators_thread_stop_uuid: int = 3781855956
 
 
 class Copilot:
