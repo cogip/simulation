@@ -9,6 +9,7 @@ from PySide6.QtCore import Slot as qtSlot
 import socketio
 
 from cogip.models import models
+from cogip.models.actuators import ActuatorCommand, ActuatorsState
 
 
 class SocketioController(QtCore.QObject):
@@ -59,6 +60,7 @@ class SocketioController(QtCore.QObject):
     signal_start_lidar_emulation: qtSignal = qtSignal(int)
     signal_stop_lidar_emulation: qtSignal = qtSignal(int)
     signal_config_request: qtSignal = qtSignal(dict)
+    signal_actuators_state: qtSignal = qtSignal(ActuatorsState)
 
     def __init__(self, url: str):
         """
@@ -121,6 +123,32 @@ class SocketioController(QtCore.QObject):
     @qtSlot(dict)
     def config_updated(self, config: Dict[str, Any]):
         self.sio.emit("config_updated", config, namespace="/dashboard")
+
+    def new_actuator_command(self, robot_id: int, command: ActuatorCommand):
+        """
+        Send an actuator command to the robot.
+
+        Arguments:
+            robot_id: related robot id
+            command: actuator command to send
+        """
+        self.sio.emit(
+            "actuator_command",
+            data={
+                "robot_id": robot_id,
+                "command": command.dict()
+            },
+            namespace="/dashboard"
+        )
+
+    def actuators_closed(self, robot_id: str):
+        """
+        Request to stop emitting actuators state from the robot.
+
+        Arguments:
+            robot_id: related robot id
+        """
+        self.sio.emit("actuators_stop", data=robot_id, namespace="/dashboard")
 
     def on_menu(self, menu_name: str, data):
         menu = models.ShellMenu.parse_obj(data)
@@ -188,6 +216,14 @@ class SocketioController(QtCore.QObject):
             Callback on config request.
             """
             self.signal_config_request.emit(config)
+
+        @self.sio.on("actuators_state", namespace="/dashboard")
+        def on_actuators_state(actuators_state):
+            """
+            Callback on actuators_state message.
+            """
+            state = ActuatorsState.parse_obj(actuators_state)
+            self.signal_actuators_state.emit(state)
 
         @self.sio.on("pose_current", namespace="/dashboard")
         def on_pose_current(robot_id: int, data: Dict[str, Any]) -> None:

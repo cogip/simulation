@@ -48,6 +48,8 @@ def main_opt(
     # Connect UI signals to Controller slots
     win.signal_send_command.connect(controller.new_command)
     win.signal_config_updated.connect(controller.config_updated)
+    win.signal_actuators_closed.connect(controller.actuators_closed)
+    win.signal_new_actuator_command.connect(controller.new_actuator_command)
 
     # Connect UI signals to GameView slots
     win.signal_add_obstacle.connect(win.game_view.add_obstacle)
@@ -76,6 +78,7 @@ def main_opt(
     controller.signal_connected.connect(win.connected)
     controller.signal_exit.connect(win.close)
     controller.signal_config_request.connect(win.config_request)
+    controller.signal_actuators_state.connect(win.actuators_state)
 
     # Show UI
     win.show()
