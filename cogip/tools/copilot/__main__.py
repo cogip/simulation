@@ -77,10 +77,10 @@ def main_opt(
 
 def main():
     """
-    Launch COGIP Game Planner.
+    Launch COGIP Copilot.
 
     During installation of the simulation tools, `setuptools` is configured
-    to create the `cogip-planner` script using this function as entrypoint.
+    to create the `cogip-copilot` script using this function as entrypoint.
     """
     typer.run(main_opt)
 
