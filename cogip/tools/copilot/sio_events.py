@@ -1,11 +1,13 @@
 from typing import Any, Dict
 
+from pydantic import parse_obj_as
 import socketio
 
 from cogip import models
+from cogip.models.actuators import ServoCommand, PumpCommand, ActuatorCommand
 from . import copilot, logger
 from .menu import menu
-from .messages import PB_Command, PB_PathPose
+from .messages import PB_Command, PB_PathPose, PB_ActuatorCommand
 
 
 class SioEvents(socketio.AsyncClientNamespace):
@@ -91,3 +93,17 @@ class SioEvents(socketio.AsyncClientNamespace):
         Forward to mcu-firmware.
         """
         await self._copilot.pbcom.send_serial_message(copilot.actuators_thread_stop_uuid, None)
+
+    async def on_actuator_command(self, data: Dict[str, Any]):
+        """
+        Callback on actuator_command (from dashboard).
+        Forward to mcu-firmware.
+        """
+        command = parse_obj_as(ActuatorCommand, data)
+
+        pb_command = PB_ActuatorCommand()
+        if isinstance(command, ServoCommand):
+            command.pb_copy(pb_command.servo)
+        elif isinstance(command, PumpCommand):
+            command.pb_copy(pb_command.pump)
+        await self._copilot.pbcom.send_serial_message(copilot.actuators_command_uuid, pb_command)
