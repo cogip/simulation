@@ -6,7 +6,7 @@ from google.protobuf.json_format import MessageToDict
 import socketio
 
 from cogip import models
-from .messages import PB_Menu, PB_Pose, PB_State
+from .messages import PB_Menu, PB_Pose, PB_ActuatorsState, PB_State
 from .pbcom import PBCom, pb_exception_handler
 from .sio_events import SioEvents
 
@@ -22,6 +22,7 @@ pose_reached_uuid: int = 2736246403
 pose_start_uuid: int = 2741980922
 actuators_thread_start_uuid: int = 1525532810
 actuators_thread_stop_uuid: int = 3781855956
+actuators_state_uuid: int = 1538397045
 
 
 class Copilot:
@@ -59,7 +60,8 @@ class Copilot:
             menu_uuid: self.handle_message_menu,
             pose_order_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
-            pose_reached_uuid: self.handle_pose_reached
+            pose_reached_uuid: self.handle_pose_reached,
+            actuators_state_uuid: self.handle_actuators_state
         }
 
         self._pbcom = PBCom(serial_port, serial_baud, pb_message_handlers)
@@ -176,6 +178,26 @@ class Copilot:
         )
         if self._sio.connected:
             await self._sio_events.emit("state", state)
+
+    @pb_exception_handler
+    async def handle_actuators_state(self, message: bytes | None = None) -> None:
+        """
+        Send actuators state received from the robot to connected monitors.
+        """
+        pb_actuators_state = PB_ActuatorsState()
+
+        if message:
+            await self._loop.run_in_executor(None, pb_actuators_state.ParseFromString, message)
+
+        actuators_state = MessageToDict(
+            pb_actuators_state,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+            use_integers_for_enums=True
+        )
+        if self._sio.connected:
+            actuators_state["robot_id"] = self._id
+            await self._sio_events.emit("actuators_state", actuators_state)
 
     async def handle_pose_reached(self) -> None:
         """
