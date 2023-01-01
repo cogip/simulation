@@ -9,3 +9,23 @@ RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selectio
 RUN update-locale LANG=C
 
 RUN apt-get update && apt-get -y dist-upgrade && apt-get -y clean
+
+
+# Install Python 3.10.7 (same version as Ubuntu 22.10)
+
+ENV PYENV_ROOT /opt/pyenv
+ENV PYTHON_VERSION 3.10.7
+ENV PATH="${PYENV_ROOT}/bin:${PYENV_ROOT}/versions/${PYTHON_VERSION}/bin:${PATH}"
+
+RUN apt-get install -y \
+        make build-essential libssl-dev zlib1g-dev libbz2-dev \
+        libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev \
+        libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev \
+        git swig cmake pkg-config
+
+RUN curl https://pyenv.run | bash
+RUN CFLAGS="-fPIC" pyenv install -v ${PYTHON_VERSION}
+RUN ln -s ${PYENV_ROOT}/versions/${PYTHON_VERSION}/bin/python3 /usr/local/bin
+
+# Update Python packages
+RUN python3 -m pip install -U pip setuptools wheel

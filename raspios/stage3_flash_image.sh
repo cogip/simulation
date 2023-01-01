@@ -5,37 +5,30 @@ sudo -v
 
 SCRIPT=$(readlink -f $0)
 SCRIPT_DIR=`dirname $SCRIPT`
-ENV_FILE=${SCRIPT_DIR}/.env
+CONFIG_FILE=${SCRIPT_DIR}/config.env
 
-# Load .env file
-if [ -f ${ENV_FILE} ] ; then
-    source ${ENV_FILE}
+# Load config.env file
+if [ -f ${CONFIG_FILE} ] ; then
+    source ${CONFIG_FILE}
 fi
+
+source ${SCRIPT_DIR}/utils.sh
+
+ROBOT_ID=$(get_robot_id $@)
 
 # Check variables
-if [ -z "${SDCARD_DEV}" ] ; then
-    echo "Error: Variable SDCARD_DEV not defined (in .env file)"
-    exit 1
-fi
-if [ ! -b "${SDCARD_DEV_BOOT}" ] ; then
-    echo "Error: ${SDCARD_DEV_BOOT} not found"
-    exit 1
-fi
-if [ -z "${SDCARD_DEV_ROOTFS}" ] ; then
-    echo "Error: Variable SDCARD_DEV_ROOTFS not defined (in .env file)"
-    exit 1
-fi
-if [ ! -b "${SDCARD_DEV_BOOT}" ] ; then
-    echo "Error: ${SDCARD_DEV_BOOT} not found"
-    exit 1
-fi
-if [ ! -b "${SDCARD_DEV_ROOTFS}" ] ; then
-    echo "Error: ${SDCARD_DEV_ROOTFS} not found"
-    exit 1
+check_vars SDCARD_DEV SDCARD_DEV_BOOT SDCARD_DEV_ROOTFS SDCARD_DEV_BOOT SDCARD_DEV_ROOTFS
+
+# Variables depending on robot id
+if ((${ROBOT_ID} == 0))
+then
+    DOCKER_TAG=beacon
+else
+    DOCKER_TAG=robot
 fi
 
 WORKING_DIR=${SCRIPT_DIR}/work
-RASPIOS_COGIP_IMG="${WORKING_DIR}/raspios-bullseye-arm64-cogip.img"
+RASPIOS_COGIP_IMG="${WORKING_DIR}/raspios-bullseye-arm64-${DOCKER_TAG}.img"
 if [ ! -d "${WORKING_DIR}" ] ; then
     echo "Error: ${WORKING_DIR} not found"
     exit 1

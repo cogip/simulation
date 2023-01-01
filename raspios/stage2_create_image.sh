@@ -5,43 +5,54 @@ sudo -v
 
 SCRIPT=$(readlink -f $0)
 SCRIPT_DIR=`dirname $SCRIPT`
-ENV_FILE=${SCRIPT_DIR}/.env
+CONFIG_FILE=${SCRIPT_DIR}/config.env
 
-# Load .env file
-if [ -f ${ENV_FILE} ] ; then
-    source ${ENV_FILE}
+source ${SCRIPT_DIR}/utils.sh
+
+# Load config.env file
+if [ -f ${CONFIG_FILE} ] ; then
+    source ${CONFIG_FILE}
 fi
+
+ROBOT_ID=$(get_robot_id $@)
 
 # Check variables
-if [ -z "${IP_ADDRESS}" ] ; then
-    echo "Error: Variable IP_ADDRESS not defined (in .env file)"
-    exit 1
-fi
-if [ -z "${GATEWAY}" ] ; then
-    echo "Error: Variable GATEWAY not defined (in .env file)"
-    exit 1
-fi
-if [ -z "${WLAN_SSID}" ] ; then
-    echo "Error: Variable WLAN_SSID not defined (in .env file)"
-    exit 1
-fi
-if [ -z "${WLAN_PSK}" ] ; then
-    echo "Error: Variable WLAN_PSK not defined (in .env file)"
-    exit 1
+check_vars IP_ADDRESS_BEACON IP_ADDRESS_ROBOT1 IP_ADDRESS_ROBOT2 \
+           BEACON_VC4_V3D_DRIVER BEACON_SCREEN_WIDTH BEACON_SCREEN_HEIGHT \
+           ROBOT_VC4_V3D_DRIVER ROBOT_SCREEN_WIDTH ROBOT_SCREEN_HEIGHT \
+           GATEWAY WLAN_SSID WLAN_PSK
+
+# Variables depending on robot id
+if ((${ROBOT_ID} == 0))
+then
+    DOCKER_TAG=beacon
+    HOSTNAME=beacon
+    IP_ADDRESS=${IP_ADDRESS_BEACON}
+    VC4_V3D_DRIVER=${BEACON_VC4_V3D_DRIVER}
+    SCREEN_WIDTH=${BEACON_SCREEN_WIDTH}
+    SCREEN_HEIGHT=${BEACON_SCREEN_HEIGHT}
+else
+    DOCKER_TAG=robot
+    HOSTNAME=robot${ROBOT_ID}
+    IP_VAR=IP_ADDRESS_ROBOT${ROBOT_ID}
+    IP_ADDRESS=${!IP_VAR}
+    VC4_V3D_DRIVER=${ROBOT_VC4_V3D_DRIVER}
+    SCREEN_WIDTH=${ROBOT_SCREEN_WIDTH}
+    SCREEN_HEIGHT=${ROBOT_SCREEN_HEIGHT}
 fi
 
 WORKING_DIR=${SCRIPT_DIR}/work
 OVERLAY_ROOTFS=${SCRIPT_DIR}/overlay-rootfs
 OVERLAY_KERNEL=${SCRIPT_DIR}/overlay-kernel
 MOUNT_DIR=${WORKING_DIR}/mnt
-RASPIOS_COGIP_IMG="${WORKING_DIR}/raspios-bullseye-arm64-cogip.img"
-ROOTFS=${WORKING_DIR}/rootfs-custom.tar
+RASPIOS_COGIP_IMG="${WORKING_DIR}/raspios-bullseye-arm64-${DOCKER_TAG}.img"
+ROOTFS=${WORKING_DIR}/rootfs-${DOCKER_TAG}.tar
 RSYNC_FLAGS="-vh --progress --modify-window=1 --recursive --ignore-errors"
 
 rm -rf ${RASPIOS_COGIP_IMG} ${ROOTFS}
 
 # Extract rootfs
-container=$(docker run -d cogip/raspios:custom sleep infinity)
+container=$(docker run -d cogip/raspios:${DOCKER_TAG} sleep infinity)
 docker export -o ${ROOTFS} ${container}
 docker rm -f ${container}
 
@@ -94,6 +105,7 @@ if [ -d "${OVERLAY_KERNEL}" ] ; then
 fi
 sudo cp ${OVERLAY_ROOTFS}/etc/hostname ${MOUNT_DIR}/etc/hostname
 sudo cp ${OVERLAY_ROOTFS}/etc/hosts ${MOUNT_DIR}/etc/hosts
+sudo chmod 600 ${MOUNT_DIR}/etc/ssh/*_key
 
 # Fix boot and root devices
 IMGID="$(dd if="${RASPIOS_COGIP_IMG}" skip=440 bs=1 count=4 2>/dev/null | xxd -e | cut -f 2 -d' ')"
@@ -101,10 +113,24 @@ sudo sed -i "s/ROOTDEV/PARTUUID=${IMGID}/" ${MOUNT_DIR}/etc/fstab
 sudo sed -i "s/ROOTDEV/PARTUUID=${IMGID}/" ${MOUNT_DIR}/boot/cmdline.txt
 
 # Apply custom parameters
+
+# sudo cp ${MOUNT_DIR}/boot/config-${DOCKER_TAG}.txt ${MOUNT_DIR}/boot/config.txt
 sudo sed -i "s/IP_ADDRESS/${IP_ADDRESS}/" ${MOUNT_DIR}/etc/network/interfaces.d/wlan0
 sudo sed -i "s/GATEWAY/${GATEWAY}/" ${MOUNT_DIR}/etc/network/interfaces.d/wlan0
 sudo sed -i "s/WLAN_SSID/${WLAN_SSID}/" ${MOUNT_DIR}/etc/wpa_supplicant/wpa_supplicant.conf
 sudo sed -i "s/WLAN_PSK/${WLAN_PSK}/" ${MOUNT_DIR}/etc/wpa_supplicant/wpa_supplicant.conf
+sudo sed -i "s/HOSTNAME/${HOSTNAME}/" ${MOUNT_DIR}/etc/hostname
+sudo sed -i "s/HOSTNAME/${HOSTNAME}/" ${MOUNT_DIR}/etc/hosts
+sudo sed -i "s/IP_ADDRESS_BEACON/${IP_ADDRESS_BEACON}/" ${MOUNT_DIR}/etc/hosts
+sudo sed -i "s/IP_ADDRESS_ROBOT1/${IP_ADDRESS_ROBOT1}/" ${MOUNT_DIR}/etc/hosts
+sudo sed -i "s/IP_ADDRESS_ROBOT2/${IP_ADDRESS_ROBOT2}/" ${MOUNT_DIR}/etc/hosts
+sudo sed -i "s/ROBOT_ID/${ROBOT_ID}/" ${MOUNT_DIR}/home/pi/.xinitrc
+sudo sed -i "s/SCREEN_WIDTH/${SCREEN_WIDTH}/" ${MOUNT_DIR}/home/pi/.xinitrc
+sudo sed -i "s/SCREEN_HEIGHT/${SCREEN_HEIGHT}/" ${MOUNT_DIR}/home/pi/.xinitrc
+sudo sed -i "s/VC4_V3D_DRIVER/${VC4_V3D_DRIVER}/" ${MOUNT_DIR}/boot/config.txt
+sudo sed -i "s/SCREEN_WIDTH/${SCREEN_WIDTH}/" ${MOUNT_DIR}/boot/config.txt
+sudo sed -i "s/SCREEN_HEIGHT/${SCREEN_HEIGHT}/" ${MOUNT_DIR}/boot/config.txt
+sudo echo "ROBOT_ID=${ROBOT_ID}" | sudo tee -a ${MOUNT_DIR}/etc/environment 1> /dev/null
 
 sudo umount ${MOUNT_DIR}/boot
 sudo umount ${MOUNT_DIR}

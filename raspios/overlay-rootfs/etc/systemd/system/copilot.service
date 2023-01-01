@@ -9,9 +9,9 @@ Type=simple
 Restart=on-failure
 User=root
 WorkingDirectory=/tmp
-ExecStart=/usr/bin/python3 -m cogip.tools.copilot
+ExecStart=/usr/local/bin/python3 -m cogip.tools.copilot
 RestartSec=5
-EnvironmentFile=/etc/default/copilot
+EnvironmentFile=/etc/environment
 
 [Install]
 WantedBy=multi-user.target
