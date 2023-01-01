@@ -1,7 +1,8 @@
+from typing import Any, Dict
 import socketio
 
 from cogip import models
-from .. import logger
+from .. import logger, server
 from ..context import Context
 from ..recorder import GameRecorder
 
@@ -10,8 +11,9 @@ class CopilotNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to copilot.
     """
-    def __init__(self):
+    def __init__(self, cogip_server: "server.Server"):
         super().__init__("/copilot")
+        self._cogip_server = cogip_server
         self._context = Context()
         self._recorder = GameRecorder()
 
@@ -31,7 +33,8 @@ class CopilotNamespace(socketio.AsyncNamespace):
     async def on_disconnect(self, sid):
         robot_id = self._context.copilot_sids.pop(sid)
         self._context.connected_robots.remove(robot_id)
-        del self._context.shell_menu[robot_id]
+        if robot_id in self._context.shell_menu:
+            del self._context.shell_menu[robot_id]
         await self.emit("del_robot", robot_id, namespace="/planner")
         await self.emit("del_robot", robot_id, namespace="/dashboard")
         logger.info(f"Copilot {robot_id} disconnected.")
@@ -43,6 +46,14 @@ class CopilotNamespace(socketio.AsyncNamespace):
         robot_id = self._context.copilot_sids[sid]
         await self.emit("reset", robot_id, namespace="/planner")
         await self._recorder.async_do_rollover()
+
+    async def on_register_menu(self, sid, data: Dict[str, Any]):
+        """
+        Callback on register_menu.
+        """
+        robot_id = self._context.copilot_sids[sid]
+        data["menu"]["name"] = f"{data['menu']['name']} {robot_id}"
+        await self._cogip_server.register_menu(f"copilot/{robot_id}", data)
 
     async def on_pose_reached(self, sid) -> None:
         """

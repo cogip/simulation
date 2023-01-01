@@ -38,7 +38,7 @@ class Server:
         )
         self.sio.register_namespace(namespaces.DashboardNamespace())
         self.sio.register_namespace(namespaces.MonitorNamespace())
-        self.sio.register_namespace(namespaces.CopilotNamespace())
+        self.sio.register_namespace(namespaces.CopilotNamespace(self))
         self.sio.register_namespace(namespaces.DetectorNamespace(self))
         self.sio.register_namespace(namespaces.PlannerNamespace(self))
         self.sio.register_namespace(namespaces.RobotcamNamespace())

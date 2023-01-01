@@ -4,6 +4,7 @@ import socketio
 
 from cogip import models
 from . import copilot, logger
+from .menu import menu
 from .messages import PB_Command, PB_PathPose
 
 
@@ -22,7 +23,8 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         logger.info("Connected to cogip-server")
         if self._copilot.shell_menu:
-            await self.emit("menu", copilot.shell_menu.dict(exclude_defaults=True, exclude_unset=True))
+            await self.emit("menu", self._copilot.shell_menu.dict(exclude_defaults=True, exclude_unset=True))
+        await self.emit("register_menu", {"name": "copilot", "menu": menu.dict()})
 
     def on_disconnect(self) -> None:
         """
