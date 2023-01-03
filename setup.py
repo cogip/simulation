@@ -21,10 +21,10 @@ required_packages = [
     "pydantic==1.9.0",
     "pyserial==3.5",
     "python-dotenv==0.19.2",
+    "typer==0.4.1",
 
     # Packages specific to monitor
     "PySide6==6.4.0.1;" + marker_platform_x86_64,
-    "typer==0.4.1;" + marker_platform_x86_64,
 
     # Packages specific to Copilot and Robotcam
     "aiohttp==3.8.1",

@@ -4,8 +4,8 @@ xset s off
 xset s noblank
 
 unclutter &
-chromium-browser http://localhost:8080 \
-  --window-size=1024,600 \
+chromium-browser http://beacon:8080/?robot_id=ROBOT_ID \
+  --window-size=SCREEN_WIDTH,SCREEN_HEIGHT \
   --window-position=0,0 \
   --start-fullscreen \
   --kiosk \

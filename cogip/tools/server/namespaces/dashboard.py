@@ -53,15 +53,35 @@ class DashboardNamespace(socketio.AsyncNamespace):
                     namespace="/dashboard"
                 )
             else:
-                namespace, _, _ = self._context.current_tool_menu.partition("/")
-                await self.emit("command", cmd, namespace=f"/{namespace}")
+                split_ns = self._context.current_tool_menu.split("/")
+                namespace = split_ns.pop(0)
+                if namespace == "copilot":
+                    robot_id = int(split_ns.pop(0))
+                    sid = self._context.copilot_sids.inverse[robot_id]
+                    await self.emit("command", cmd, to=sid, namespace="/copilot")
+                else:
+                    await self.emit("command", cmd, namespace=f"/{namespace}")
 
     async def on_shell_cmd(self, sid, robot_id: int, cmd: str) -> None:
         """
         Callback on shell command message from dashboard.
         """
-        await self.emit("command", cmd, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
+        await self.emit("shell_command", cmd, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
 
     async def on_config_updated(self, sid, config: Dict[str, Any]) -> None:
         namespace = config.pop("namespace")
         await self.emit("config_updated", config, namespace=namespace)
+
+    async def on_actuators_stop(self, sid, robot_id):
+        """
+        Callback on actuators_stop message.
+        """
+        sid = self._context.copilot_sids.inverse[robot_id]
+        await self.emit("actuators_stop", to=sid, namespace="/copilot")
+
+    async def on_actuator_command(self, sid, data):
+        """
+        Callback on actuator_command message.
+        """
+        sid = self._context.copilot_sids.inverse[data["robot_id"]]
+        await self.emit("actuator_command", data=data["command"], to=sid, namespace="/copilot")

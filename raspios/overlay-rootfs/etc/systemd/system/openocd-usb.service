@@ -6,7 +6,7 @@ After=syslog.target network-online.target
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/openocd -f interface/rpi-cogip.cfg
+ExecStart=/usr/bin/openocd -c "bindto 0.0.0.0" -f interface/stlink.cfg -f target/stm32f4x.cfg
 Restart=on-failure
 RestartSec=10
 KillMode=process

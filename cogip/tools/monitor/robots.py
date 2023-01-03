@@ -49,7 +49,7 @@ class RobotManager(QtCore.QObject):
             return
 
         if len(self._available_robots) == 0:
-            robot = RobotEntity(self._game_view)
+            robot = RobotEntity(self._game_view.scene_entity)
             self._game_view.add_asset(robot)
             robot.lidar_emit_data_signal.connect(partial(self.emit_lidar_data, robot_id))
             robot.setEnabled(False)

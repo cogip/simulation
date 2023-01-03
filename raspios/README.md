@@ -16,7 +16,7 @@ See [Docker installation instructions](https://docs.docker.com/engine/install/).
  - ARM Emulation
 
 ```
-$ sudo apt-get docker install qemu binfmt-support qemu-user-static zerofree
+$ sudo apt-get install binfmt-support qemu-user-static zerofree
 $ docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 ```
 

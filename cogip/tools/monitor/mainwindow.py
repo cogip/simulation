@@ -12,8 +12,10 @@ from cogip.widgets.chartsview import ChartsView
 from cogip.widgets.dashboard import Dashboard
 from cogip.widgets.gameview import GameView
 from cogip.widgets.help import HelpCameraControlDialog
+from cogip.widgets.actuators import ActuatorsDialog
 from cogip.widgets.properties import PropertiesDialog
 from cogip.models import Pose, ShellMenu, RobotState
+from cogip.models.actuators import ActuatorsState, ActuatorCommand
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -37,6 +39,8 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_save_obstacles: Qt signal to save obstacles
         signal_load_cake_layers: Qt signal to load cake layers
         signal_save_cake_layers: Qt signal to save cake layers
+        signal_new_actuator_command: Qt signal to send actuator command to server
+        signal_actuators_closed: Qt signal to stop actuators state request
     """
     signal_config_updated: qtSignal = qtSignal(dict)
     signal_send_command: qtSignal = qtSignal(str, str)
@@ -45,6 +49,8 @@ class MainWindow(QtWidgets.QMainWindow):
     signal_save_obstacles: qtSignal = qtSignal(Path)
     signal_load_cake_layers: qtSignal = qtSignal(Path)
     signal_save_cake_layers: qtSignal = qtSignal(Path)
+    signal_new_actuator_command: qtSignal = qtSignal(int, object)
+    signal_actuators_closed: qtSignal = qtSignal(int)
 
     def __init__(self, url: str, *args, **kwargs):
         """
@@ -206,6 +212,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Properties windows
         self.properties = {}
+
+        # Actuators control windows
+        self.actuators_dialogs: dict[int, ActuatorsDialog] = {}
 
         # Add view action
         self.view_dashboard_action = QtGui.QAction('Dashboard', self)
@@ -630,6 +639,47 @@ class MainWindow(QtWidgets.QMainWindow):
     @qtSlot(dict)
     def config_updated(self, config: Dict[str, Any]):
         self.signal_config_updated.emit(config)
+
+    def actuators_state(self, actuators_state: ActuatorsState):
+        """
+        Receive current state of actuators.
+        Create the dialog window the first state, update it for subsequent states.
+
+        Arguments:
+            actuators_state: current actuators state
+        """
+        actuators_dialog = self.actuators_dialogs.get(actuators_state.robot_id)
+        if not actuators_dialog:
+            actuators_dialog = ActuatorsDialog(actuators_state, self)
+            self.actuators_dialogs[actuators_state.robot_id] = actuators_dialog
+            actuators_dialog.closed.connect(self.actuators_closed)
+            actuators_dialog.new_actuator_command.connect(self.new_actuator_command)
+        else:
+            actuators_dialog.update_actuators(actuators_state)
+        actuators_dialog.show()
+        actuators_dialog.raise_()
+        actuators_dialog.activateWindow()
+
+    def new_actuator_command(self, robot_id: int, command: ActuatorCommand):
+        """
+        Function called when an actuator control is modified in the actuators dialog.
+        Forward the command to server.
+
+        Arguments:
+            robot_id: related robot id
+            command: actuator command to send
+        """
+        self.signal_new_actuator_command.emit(robot_id, command)
+
+    def actuators_closed(self, robot_id: int):
+        """
+        Function called when the actuators dialog is closed.
+        Forward infomation to server, to stop emitting actuators state from the robot.
+
+        Arguments:
+            robot_id: related robot id
+        """
+        self.signal_actuators_closed.emit(robot_id)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         settings = QtCore.QSettings("COGIP", "monitor")

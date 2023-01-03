@@ -6,7 +6,7 @@ camera_auto_detect=0
 display_auto_detect=0
 
 # Enable DRM VC4 V3D driver
-dtoverlay=vc4-fkms-v3d
+dtoverlay=VC4_V3D_DRIVER
 max_framebuffers=2
 
 # Run in 64-bit mode
@@ -29,11 +29,11 @@ kernel=kernel8.img
 disable_splash=1
 boot_delay=0
 
-# Configure COGIP robot display
+# Configure COGIP beacon display
 hdmi_drive=1
 hdmi_group=2
 hdmi_mode=87
-hdmi_cvt 1024 600 60 6 0 0 0
+hdmi_cvt SCREEN_WIDTH SCREEN_HEIGHT 60 6 0 0 0
 
 #enable_uart=1
 

@@ -3,11 +3,11 @@ sudo -v
 
 SCRIPT=$(readlink -f $0)
 SCRIPT_DIR=`dirname $SCRIPT`
-ENV_FILE=${SCRIPT_DIR}/.env
+CONFIG_FILE=${SCRIPT_DIR}/configconfig.env
 
-# Load .env file
-if [ -f ${ENV_FILE} ] ; then
-    source ${ENV_FILE}
+# Load config.env file
+if [ -f ${CONFIG_FILE} ] ; then
+    source ${CONFIG_FILE}
 fi
 
 # Check variables
