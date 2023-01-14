@@ -1,11 +1,18 @@
 # Raspberry Pi OS Customization
 
 The [raspios](raspios/) directory provides a series of scripts to build and flash
-a custom Raspberry Pi OS image running COGIP tools (`Copilot` and `Robotcam`) on the Pi 4 embedded in the robot.
+a custom Raspberry Pi OS images running COGIP tools on the Pi 4
+embedded in the beacon and robots.
 
 It works by creating a Docker image based on Raspberry Pi OS Lite, use Dockerfiles
 to install/configure/remove softwares and services, extract and build the customized image,
 and flash it on a SDCard.
+
+## Nework Configuration
+
+Default network configuration is represented on the following schema:
+
+![Network Configuration](img/cogip-network.svg)
 
 ## Requirements
 
@@ -22,17 +29,12 @@ $ docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 ## Configuration
 
-Configuration is done by setting required variable in `.env` file in working directory.
+Configuration is done by setting required variables in `config.env` file in working directory.
+This file defines all parameters to customize Raspberry Pi OS for beacon and robots.
 
-Existing variables and example values:
-
-```
-IP_ADDRESS=192.168.1.12
-GATEWAY=192.168.1.1
-WLAN_SSID=My_SSI
-WLAN_PSK=<ssi_password>
-SDCARD_DEV=/dev/sdc
-```
+Variable `ROBOT_ID` can be set in the environment to specify the robot id.
+Id 0 specifies the beacon, 1-N the robots.
+This variable is required only for stages 2 and 3.
 
 ## Stage 0
 

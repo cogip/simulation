@@ -23,12 +23,14 @@ check_vars SDCARD_DEV SDCARD_DEV_BOOT SDCARD_DEV_ROOTFS SDCARD_DEV_BOOT SDCARD_D
 if ((${ROBOT_ID} == 0))
 then
     DOCKER_TAG=beacon
+    HOSTNAME=beacon
 else
     DOCKER_TAG=robot
+    HOSTNAME=robot${ROBOT_ID}
 fi
 
 WORKING_DIR=${SCRIPT_DIR}/work
-RASPIOS_COGIP_IMG="${WORKING_DIR}/raspios-bullseye-arm64-${DOCKER_TAG}.img"
+RASPIOS_COGIP_IMG="${WORKING_DIR}/raspios-bullseye-arm64-${HOSTNAME}.img"
 if [ ! -d "${WORKING_DIR}" ] ; then
     echo "Error: ${WORKING_DIR} not found"
     exit 1
