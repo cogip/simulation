@@ -23,12 +23,13 @@ class CopilotNamespace(socketio.AsyncNamespace):
                 raise ConnectionRefusedError(f"A copilot with id '{robot_id}' is already connected")
             self._context.copilot_sids[sid] = robot_id
             self._context.connected_robots.append(robot_id)
-            await self.emit("add_robot", robot_id, namespace="/planner")
-            await self.emit("add_robot", robot_id, namespace="/dashboard")
-
-            logger.info(f"Copilot {robot_id} connected.")
         else:
             raise ConnectionRefusedError("Missing 'id' in 'auth' parameter")
+
+    async def on_connected(self, sid, robot_id: int):
+        logger.info(f"Copilot {robot_id} connected.")
+        await self.emit("add_robot", robot_id, namespace="/planner")
+        await self.emit("add_robot", robot_id, namespace="/dashboard")
 
     async def on_disconnect(self, sid):
         robot_id = self._context.copilot_sids.pop(sid)

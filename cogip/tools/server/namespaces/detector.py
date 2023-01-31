@@ -22,7 +22,6 @@ class DetectorNamespace(socketio.AsyncNamespace):
             if sid not in self._context.detector_sids and robot_id in self._context.detector_sids.inverse:
                 raise ConnectionRefusedError(f"A detector with id '{robot_id}' is already connected")
             self._context.detector_sids[sid] = robot_id
-            logger.info(f"Detector {robot_id} connected.")
         else:
             raise ConnectionRefusedError("Missing 'id' in 'auth' parameter")
 
@@ -31,6 +30,11 @@ class DetectorNamespace(socketio.AsyncNamespace):
             raise ConnectionRefusedError(f"Unknown mode '{mode}'")
         self._context.detector_modes[robot_id] = mode
         if mode == "emulation":
+            await self.emit("start_lidar_emulation", robot_id, namespace="/monitor")
+
+    async def on_connected(self, sid, robot_id: int):
+        logger.info(f"Detector {robot_id} connected.")
+        if self._context.detector_modes[robot_id] == "emulation":
             await self.emit("start_lidar_emulation", robot_id, namespace="/monitor")
 
     async def on_disconnect(self, sid):

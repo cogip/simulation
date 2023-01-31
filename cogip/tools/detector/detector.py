@@ -157,6 +157,10 @@ class Detector:
             break
 
     @property
+    def robot_id(self) -> int:
+        return self._robot_id
+
+    @property
     def properties(self) -> Properties:
         return self._properties
 

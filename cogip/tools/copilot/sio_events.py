@@ -1,5 +1,7 @@
+import asyncio
 from typing import Any, Dict
 
+import polling2
 from pydantic import parse_obj_as
 import socketio
 
@@ -23,7 +25,15 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         On connection to cogip-server.
         """
+        await asyncio.to_thread(
+            polling2.poll,
+            lambda: self.client.connected is True,
+            step=1,
+            poll_forever=True
+        )
         logger.info("Connected to cogip-server")
+        await self.emit("connected", self._copilot.id)
+
         if self._copilot.shell_menu:
             await self.emit("menu", self._copilot.shell_menu.dict(exclude_defaults=True, exclude_unset=True))
         await self.emit("register_menu", {"name": "copilot", "menu": menu.dict()})

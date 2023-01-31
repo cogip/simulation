@@ -206,7 +206,7 @@
           path: "/sio/socket.io"
         })
           .on("connect", function () {
-            socketModule.onConnection();
+            socketModule.onConnection(this);
           })
           .on("disconnect", function () {
             socketModule.onDisconnect();

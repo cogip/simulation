@@ -23,9 +23,12 @@ class PlannerNamespace(socketio.AsyncNamespace):
             logger.error("Planner connection refused: a planner is already connected")
             raise ConnectionRefusedError("A planner is already connected")
         self._connected = True
+
+    async def on_connected(self, sid):
+        logger.info("Planner connected.")
         for robot_id in self._context.connected_robots:
             await self.emit("add_robot", robot_id, namespace="/planner")
-        logger.info("Planner connected.")
+            await self.emit("add_robot", robot_id, namespace="/dashboard")
 
     def on_disconnect(self, sid):
         self._connected = False

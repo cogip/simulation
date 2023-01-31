@@ -1,5 +1,6 @@
-export function onConnection() {
+export function onConnection(socket) {
   console.log("Connected to Server.");
+  socket.emit("connected");
   document.getElementById("connection").innerHTML =
     "<pre>Connected to " + window.location.origin + "</pre>";
 }

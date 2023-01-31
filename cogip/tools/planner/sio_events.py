@@ -1,6 +1,7 @@
 from typing import Any, Dict
 from pydantic import parse_obj_as
 
+import polling2
 import socketio
 
 from cogip import models
@@ -21,10 +22,12 @@ class SioEvents(socketio.ClientNamespace):
         """
         On connection to cogip-server.
         """
+        polling2.poll(lambda: self.client.connected is True, step=0.2, poll_forever=True)
+        logger.info("Connected to cogip-server")
+        self.emit("connected")
         self._planner.start()
         self._planner.reset()
         self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
-        logger.info("Connected to cogip-server")
 
     def on_disconnect(self) -> None:
         """

@@ -111,6 +111,10 @@ class Copilot:
         self._retry_connection = new_value
 
     @property
+    def id(self) -> int:
+        return self._id
+
+    @property
     def shell_menu(self) -> models.ShellMenu | None:
         return self._shell_menu
 

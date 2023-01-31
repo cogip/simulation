@@ -18,9 +18,11 @@ class RobotcamNamespace(socketio.AsyncNamespace):
             if sid not in robotcam_sids and robot_id in robotcam_sids.inverse:
                 raise ConnectionRefusedError(f"A robotcam with id '{robot_id}' is already connected")
             robotcam_sids[sid] = robot_id
-            logger.info(f"Robotcam {robot_id} connected.")
         else:
             raise ConnectionRefusedError("Missing 'id' in 'auth' parameter")
+
+    async def on_connected(self, sid, robot_id: int):
+        logger.info(f"Robotcam {robot_id} connected.")
 
     def on_disconnect(self, sid):
         robot_id = robotcam_sids.pop(sid)

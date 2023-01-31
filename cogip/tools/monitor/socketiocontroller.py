@@ -2,6 +2,7 @@ from threading import Thread
 import time
 from typing import Any, Dict, List, Optional
 
+import polling2
 from pydantic import parse_obj_as
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
@@ -161,11 +162,25 @@ class SocketioController(QtCore.QObject):
         Define socket.io message handlers.
         """
 
-        @self.sio.event(namespace="/monitor")
-        def connect():
+        @self.sio.on("connect", namespace="/dashboard")
+        def dashboard_connect():
             """
             Callback on server connection.
             """
+            polling2.poll(lambda: self.sio.connected is True, step=0.2, poll_forever=True)
+            self.sio.emit("connected", namespace="/dashboard")
+
+        @self.sio.on("monitor", namespace="/monitor")
+        def monitor_connect():
+            """
+            Callback on server connection.
+            """
+            polling2.poll(
+                lambda: self.sio.connected is True,
+                step=1,
+                poll_forever=True
+            )
+            self.sio.emit("connected", namespace="/monitor")
             self.signal_new_console_text.emit("Connected to server")
             self.signal_connected.emit(True)
 
