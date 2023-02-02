@@ -76,8 +76,8 @@ RUN chown -R pi /home/pi \
 RUN chown pi:pi -R /home/pi/.ssh \
  && chmod 700 /home/pi/.ssh \
  && chmod 600 /home/pi/.ssh/* \
- && chmod 600 /etc/ssh/ssh_host_*_key \
- && chmod 640 /etc/ssh/ssh_host_*_key.pub \
+ && chmod 600 /etc/ssh/ssh_host_* \
+ && chmod 640 /etc/ssh/ssh_host_*.pub \
  && systemctl enable ssh
 
 # Cleanup
@@ -107,8 +107,6 @@ COPY cogip-tools-*.tar.gz /root/
 RUN python3 -m pip install /root/cogip-tools-*.tar.gz \
  && rm /root/cogip-tools-*.tar.gz
 
-COPY overlay-rootfs/ /
-RUN chown -R pi: /home/pi
 
 FROM common as beacon
 
@@ -116,6 +114,11 @@ FROM common as beacon
 RUN systemctl enable server
 RUN systemctl enable planner
 #RUN systemctl enable beaconcam
+
+RUN apt-get install -y --no-install-recommends dnsmasq iptables
+COPY overlay-rootfs-beacon/ /
+RUN sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf && \
+    chmod +x /etc/rc.local
 
 
 FROM common as robot
@@ -127,3 +130,5 @@ RUN systemctl enable openocd
 RUN systemctl enable copilot
 RUN systemctl enable detector
 RUN systemctl enable robotcam
+
+RUN apt-get install -y --no-install-recommends ifmetric
