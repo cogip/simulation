@@ -94,5 +94,4 @@ class DashboardNamespace(socketio.AsyncNamespace):
         Callback on wizard message.
         """
         namespace = data.pop("namespace")
-        debug(f"Forward wizard to {namespace}", data)
         await self.emit("wizard", data, namespace=namespace)
