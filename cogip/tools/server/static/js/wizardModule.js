@@ -221,7 +221,7 @@ function formatWizardInput(showInput, typeInput, value, choices) {
       const campZone = document.createElement("div");
       campZone.setAttribute("id", "newZone");
 
-      const listCamp = ["purple", "yellow"];
+      const listCamp = ["blue", "green"];
 
       listCamp.forEach((camp) => {
         const active = camp === value ? "active" : "";
