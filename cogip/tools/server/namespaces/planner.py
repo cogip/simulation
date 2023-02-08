@@ -65,3 +65,11 @@ class PlannerNamespace(socketio.AsyncNamespace):
         These obstacles are sent to planner to monitor/dashboards for display.
         """
         await self.emit("obstacles", obstacles, namespace="/dashboard")
+
+    async def on_wizard(self, sid, message: list[dict[str, Any]]):
+        """
+        Callback on wizard message.
+        Forward to dashboard.
+        """
+        message["namespace"] = "/planner"
+        await self.emit("wizard", message, namespace="/dashboard")
