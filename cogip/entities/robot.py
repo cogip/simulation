@@ -66,7 +66,7 @@ class RobotEntity(AssetEntity):
         one by degree around the top of the robot.
         """
 
-        radius = 65.0/2
+        radius = 65.0 / 2
 
         sensors_properties = []
 

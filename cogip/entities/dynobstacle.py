@@ -103,7 +103,7 @@ class DynRectObstacleEntity(DynBaseObstacleEntity):
 
         self.position = (x, y, rotation)
 
-        self.transform.setTranslation(QtGui.QVector3D(x, y, self.mesh.zExtent()/2))
+        self.transform.setTranslation(QtGui.QVector3D(x, y, self.mesh.zExtent() / 2))
         self.transform.setRotationZ(rotation)
 
 
@@ -141,5 +141,5 @@ class DynCircleObstacleEntity(DynBaseObstacleEntity):
             return
         self.position = (x, y, radius)
 
-        self.transform.setTranslation(QtGui.QVector3D(x, y, self.mesh.length()/2))
+        self.transform.setTranslation(QtGui.QVector3D(x, y, self.mesh.length() / 2))
         self.mesh.setRadius(radius)

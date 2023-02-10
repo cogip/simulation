@@ -62,7 +62,7 @@ class ObstacleEntity(Qt3DCore.QEntity):
         self.addComponent(self.material)
 
         self.transform = Qt3DCore.QTransform(self)
-        self.transform.setTranslation(QtGui.QVector3D(x, y, self.mesh.zExtent()/2))
+        self.transform.setTranslation(QtGui.QVector3D(x, y, self.mesh.zExtent() / 2))
         self.transform.setRotationZ(rotation)
         self.addComponent(self.transform)
 
@@ -112,7 +112,7 @@ class ObstacleEntity(Qt3DCore.QEntity):
         to set the bottom on Z=0.
         """
         translation = self.transform.translation()
-        translation.setZ(zExtent/2)
+        translation.setZ(zExtent / 2)
         self.transform.setTranslation(translation)
 
     @qtSlot(int)

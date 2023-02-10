@@ -88,7 +88,7 @@ class SocketioController(QtCore.QObject):
         Thread(target=self.try_connect).start()
 
     def try_connect(self):
-        while(self._retry_connection):
+        while self._retry_connection:
             try:
                 self.sio.connect(self.url, socketio_path="sio/socket.io", namespaces=["/monitor", "/dashboard"])
             except socketio.exceptions.ConnectionError as ex:
@@ -189,12 +189,10 @@ class SocketioController(QtCore.QObject):
             """
             Callback on server connection error.
             """
-            if (
-                data and
-                isinstance(data, dict) and
-                (message := data.get("message")) and
-                message == "A monitor is already connected"
-               ):
+            if data \
+               and isinstance(data, dict) \
+               and (message := data.get("message")) \
+               and message == "A monitor is already connected":
                 print(f"Error: {message}.")
                 self._retry_connection = False
                 self.signal_exit.emit()

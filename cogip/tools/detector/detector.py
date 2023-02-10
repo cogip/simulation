@@ -87,7 +87,7 @@ class Detector:
         )
 
         self._laser: ydlidar.CYdLidar | None = None
-        self._scan:  ydlidar.LaserScan | None = None
+        self._scan: ydlidar.LaserScan | None = None
         uart_port: str | None = None
         if ydlidar and not emulation:
             for _, value in ydlidar.lidarPortList().items():
@@ -102,8 +102,8 @@ class Detector:
             self._laser.setlidaropt(ydlidar.LidarPropSampleRate, 5)
             self._laser.setlidaropt(ydlidar.LidarPropIntenstiy, True)
             self._laser.setlidaropt(ydlidar.LidarPropScanFrequency, 5.0)
-            self._laser.setlidaropt(ydlidar.LidarPropMaxRange, (max_distance - beacon_radius)/1000)
-            self._laser.setlidaropt(ydlidar.LidarPropMinRange, min_distance/1000)
+            self._laser.setlidaropt(ydlidar.LidarPropMaxRange, (max_distance - beacon_radius) / 1000)
+            self._laser.setlidaropt(ydlidar.LidarPropMinRange, min_distance / 1000)
             self._laser.setlidaropt(ydlidar.LidarPropInverted, False)
 
             self._scan = ydlidar.LaserScan()
@@ -140,7 +140,7 @@ class Detector:
         Poll to wait for the first cogip-server connection.
         Disconnections/reconnections are handle directly by the client.
         """
-        while(True):
+        while True:
             try:
                 self._sio.connect(
                     self._server_url,
