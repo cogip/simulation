@@ -24,6 +24,7 @@ actuators_thread_start_uuid: int = 1525532810
 actuators_thread_stop_uuid: int = 3781855956
 actuators_state_uuid: int = 1538397045
 actuators_command_uuid: int = 2552455996
+pid_request_uuid: int = 3438831927
 
 
 class Copilot:

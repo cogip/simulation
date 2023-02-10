@@ -60,6 +60,9 @@ class SioEvents(socketio.AsyncClientNamespace):
             case "actuators_control":
                 # Start thread emitting actuators status
                 await self._copilot.pbcom.send_serial_message(copilot.actuators_thread_start_uuid, None)
+            case "pid_config":
+                # Request pid state
+                await self._copilot.pbcom.send_serial_message(copilot.pid_request_uuid, None)
             case _:
                 logger.warning(f"Unknown command: {cmd}")
 
