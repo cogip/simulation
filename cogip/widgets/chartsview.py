@@ -6,7 +6,7 @@ from PySide6 import QtCharts, QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Slot as qtSlot
 from PySide6.QtCore import Signal as qtSignal
 
-from cogip.models import RobotState, CtrlModeEnum
+from cogip.models import RobotState
 
 
 class ChartView(QtWidgets.QWidget):
@@ -164,21 +164,16 @@ class ChartView(QtWidgets.QWidget):
         self.recalculate_range_x()
 
     def new_robot_state(
-            self, mode: CtrlModeEnum, cycle: int,
+            self, cycle: int,
             current: Optional[float], order: Optional[float]) -> None:
         """
         Add a new point on the chart view.
 
         Arguments:
-            mode: Current mode
             cycle: Current cycle
             current: Current value
             order: Order value
         """
-        if mode == CtrlModeEnum.STOP:
-            self.need_reset = True
-            return
-
         if self.need_reset:
             self.need_reset = False
             self.reset()
@@ -269,10 +264,10 @@ class ChartsView(QtWidgets.QDialog):
         Arguments:
             state: New robot state
         """
-        self.linear_speed_chart.new_robot_state(state.mode, state.cycle,
+        self.linear_speed_chart.new_robot_state(state.cycle,
                                                 state.speed_current.distance,
                                                 state.speed_order.distance)
-        self.angular_speed_chart.new_robot_state(state.mode, state.cycle,
+        self.angular_speed_chart.new_robot_state(state.cycle,
                                                  state.speed_current.angle,
                                                  state.speed_order.angle)
 
