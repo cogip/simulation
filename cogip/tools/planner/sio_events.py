@@ -40,12 +40,10 @@ class SioEvents(socketio.ClientNamespace):
         On connection error, check if a Planner is already connected and exit,
         or retry connection.
         """
-        if (
-                data and
-                isinstance(data, dict) and
-                (message := data.get("message")) and
-                message == "A planner is already connected"
-           ):
+        if data \
+           and isinstance(data, dict) \
+           and (message := data.get("message")) \
+           and message == "A planner is already connected":
             logger.error(f"Connection to cogip-server failed: {message}")
             self._planner.retry_connection = False
             return

@@ -88,7 +88,7 @@ class PBCom:
         After decoding, first byte is the message type, following bytes are
         the Protobuf encoded message (if any).
         """
-        while(True):
+        while True:
             # Read next message
             message = await self._serial_port.readline_async()
             message = message.rstrip(b"\n")

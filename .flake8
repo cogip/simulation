@@ -8,4 +8,4 @@ exclude =
     cogip/tools/copilot/messages
 max-line-length = 127
 #max-complexity = 10
-ignore = E226,W504,E241,E275,E121
+ignore =

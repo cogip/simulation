@@ -40,12 +40,10 @@ class SioEvents(socketio.ClientNamespace):
         or retry connection.
         """
         logger.error(f"Connect to cogip-server error: {data = }")
-        if (
-                data and
-                isinstance(data, dict) and
-                (message := data.get("message")) and
-                message == "A detector is already connected"
-           ):
+        if data \
+           and isinstance(data, dict) \
+           and (message := data.get("message")) \
+           and message == "A detector is already connected":
             logger.error(message)
             self._detector.retry_connection = False
             return

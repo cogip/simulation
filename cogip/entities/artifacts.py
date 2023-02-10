@@ -1,3 +1,4 @@
+# flake8: noqa
 from typing import Dict, Tuple
 
 from PySide6 import QtCore, QtGui, QtWidgets

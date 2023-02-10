@@ -104,7 +104,7 @@ class EventFilter(QtCore.QObject):
 
             if event.type() == QtCore.QEvent.MouseMove:
                 if event.buttons() == QtCore.Qt.MouseButton.MiddleButton:
-                    self.game_view.rotate(0, 0, (delta.x() + delta.y())/2)
+                    self.game_view.rotate(0, 0, (delta.x() + delta.y()) / 2)
                 elif event.buttons() == QtCore.Qt.MouseButton.RightButton:
                     self.game_view.rotate(delta.y(), delta.x(), 0)
                 else:
@@ -399,8 +399,8 @@ class GameView(QtWidgets.QWidget):
         delta.setZ(0)
         rot_z = self.root_transform.rotationZ()
         delta = QtGui.QVector3D(
-            delta.x()*math.cos(math.radians(rot_z)) + delta.y()*math.sin(math.radians(rot_z)),
-            delta.y()*math.cos(math.radians(rot_z)) - delta.x()*math.sin(math.radians(rot_z)),
+            delta.x() * math.cos(math.radians(rot_z)) + delta.y() * math.sin(math.radians(rot_z)),
+            delta.y() * math.cos(math.radians(rot_z)) - delta.x() * math.sin(math.radians(rot_z)),
             0
         )
         self.new_move_delta.emit(delta)

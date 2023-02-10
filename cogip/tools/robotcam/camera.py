@@ -112,7 +112,7 @@ class CameraHandler():
         self._detector_params.errorCorrectionRate = 0.6
         self._detector_params.aprilTagMinClusterPixels = 5
         self._detector_params.aprilTagMaxNmaxima = 10
-        self._detector_params.aprilTagCriticalRad = 10*math.pi/180
+        self._detector_params.aprilTagCriticalRad = 10 * math.pi / 180
         self._detector_params.aprilTagMaxLineFitMse = 10.0
         self._detector_params.aprilTagMinWhiteBlackDiff = 5
         self._detector_params.aprilTagDeglitch = 0
@@ -270,7 +270,7 @@ class CameraHandler():
         # Record coords by marker id to sort them by id
         coords_by_id = {}
 
-        if(np.any(ids)):
+        if (np.any(ids)):
             # Estimate position of markers
             rvecs, tvecs, marker_points = cv2.aruco.estimatePoseSingleMarkers(
                 corners,

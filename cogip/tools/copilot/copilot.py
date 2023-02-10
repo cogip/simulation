@@ -85,7 +85,7 @@ class Copilot:
         Poll to wait for the first connection.
         Disconnections/reconnections are handle directly by the client.
         """
-        while(self.retry_connection):
+        while self.retry_connection:
             try:
                 await self._sio.connect(
                     self._server_url,

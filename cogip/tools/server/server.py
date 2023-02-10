@@ -58,10 +58,10 @@ class Server:
 
         # Mount static files
         current_dir = Path(__file__).parent
-        self.app.mount("/static", StaticFiles(directory=current_dir/"static"), name="static")
+        self.app.mount("/static", StaticFiles(directory=current_dir / "static"), name="static")
 
         # Create HTML templates
-        self.templates = Jinja2Templates(directory=current_dir/"templates")
+        self.templates = Jinja2Templates(directory=current_dir / "templates")
 
         # Register routes
         self.app.include_router(routes.RootRouter(self.templates), prefix="")
