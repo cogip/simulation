@@ -1,5 +1,6 @@
 from typing import Any, Dict, List
 
+import polling2
 import socketio
 
 from cogip import models
@@ -20,7 +21,9 @@ class SioEvents(socketio.ClientNamespace):
         """
         On connection to cogip-server, start detector threads.
         """
+        polling2.poll(lambda: self.client.connected is True, step=0.2, poll_forever=True)
         logger.info("Connected to cogip-server")
+        self.emit("connected", self._detector.robot_id)
         self.emit("register_menu", {"name": "detector", "menu": menu.dict()})
         self._detector.start()
 

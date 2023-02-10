@@ -14,6 +14,9 @@ class DashboardNamespace(socketio.AsyncNamespace):
         self._context = Context()
 
     async def on_connect(self, sid, environ):
+        pass
+
+    async def on_connected(self, sid):
         logger.info("Dashboard connected.")
         await self.emit("tool_menu", self._context.tool_menus[self._context.current_tool_menu].dict(), to=sid)
         for robot_id, menu in self._context.shell_menu.items():
@@ -85,3 +88,10 @@ class DashboardNamespace(socketio.AsyncNamespace):
         """
         sid = self._context.copilot_sids.inverse[data["robot_id"]]
         await self.emit("actuator_command", data=data["command"], to=sid, namespace="/copilot")
+
+    async def on_wizard(self, sid, data: dict[str, Any]):
+        """
+        Callback on wizard message.
+        """
+        namespace = data.pop("namespace")
+        await self.emit("wizard", data, namespace=namespace)

@@ -19,11 +19,12 @@ class MonitorNamespace(socketio.AsyncNamespace):
             logger.error("Monitor connection refused: a monitor is already connected")
             raise ConnectionRefusedError("A monitor is already connected")
         self._connected = True
+
+    async def on_connected(self, sid):
+        logger.info("Monitor connected.")
         for robot_id, mode in self._context.detector_modes.items():
             if mode == "emulation":
                 await self.emit("start_lidar_emulation", robot_id, namespace="/monitor")
-
-        logger.info("Monitor connected.")
 
     def on_disconnect(self, sid):
         self._connected = False

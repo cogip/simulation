@@ -1,8 +1,9 @@
 let socket = null;
-let type = null;
+let message = null;
 
 export function openWizardModal(msg, send_socket) {
   socket = send_socket;
+  message = msg;
 
   let wizardName = document.getElementById("wizardName");
   wizardName.style.display = "inline"; // show
@@ -21,7 +22,6 @@ export function openWizardModal(msg, send_socket) {
     msgImg.parentNode.removeChild(msgImg);
   }
 
-  type = msg.type;
   switch (msg.type) {
     case "boolean":
       displayHeaderModal();
@@ -141,11 +141,8 @@ document
           : wizardInput.value;
     }
 
-    socket.emit("wizard", {
-      type: type,
-      name: wizardName.textContent,
-      value: submittedValue,
-    });
+    message.value = submittedValue;
+    socket.emit("wizard", message);
 
     document.getElementById("wizardModal").style.display = "none"; // hide
   });
@@ -221,7 +218,7 @@ function formatWizardInput(showInput, typeInput, value, choices) {
       const campZone = document.createElement("div");
       campZone.setAttribute("id", "newZone");
 
-      const listCamp = ["purple", "yellow"];
+      const listCamp = ["blue", "green"];
 
       listCamp.forEach((camp) => {
         const active = camp === value ? "active" : "";

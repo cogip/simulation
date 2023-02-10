@@ -139,7 +139,7 @@ class SpeedEnum(IntEnum):
     MAX = 2
 
 
-class PathPose(BaseModel):
+class PathPose(Pose):
     """
         Class representing a position in a path.
 
@@ -151,19 +151,13 @@ class PathPose(BaseModel):
             max_speed_angular: max speed angular
             allow_reverse: reverse mode
     """
-    x: float = 0.0
-    y: float = 0.0
-    O: float = 0.0
     max_speed_linear: SpeedEnum = SpeedEnum.NORMAL
     max_speed_angular: SpeedEnum = SpeedEnum.NORMAL
     allow_reverse: bool = True
 
-    def mirror(self):
-        """
-        Mirror the position.
-        """
-        self.x = -self.x
-        self.O = -self.O  # noqa
+    @property
+    def pose(self) -> Pose:
+        return Pose(**self.dict())
 
     def copy_pb(self, pb_path_pose: PB_PathPose) -> None:
         """

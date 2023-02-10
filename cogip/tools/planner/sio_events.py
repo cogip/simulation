@@ -1,6 +1,7 @@
 from typing import Any, Dict
 from pydantic import parse_obj_as
 
+import polling2
 import socketio
 
 from cogip import models
@@ -21,10 +22,11 @@ class SioEvents(socketio.ClientNamespace):
         """
         On connection to cogip-server.
         """
-        self._planner.start()
-        self._planner.reset()
-        self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
+        polling2.poll(lambda: self.client.connected is True, step=0.2, poll_forever=True)
         logger.info("Connected to cogip-server")
+        self.emit("connected")
+        self._planner.start()
+        self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
 
     def on_disconnect(self) -> None:
         """
@@ -64,9 +66,9 @@ class SioEvents(socketio.ClientNamespace):
 
     def on_reset(self, robot_id: int) -> None:
         """
-        Callback on reset message.
+        Callback on reset message from copilot.
         """
-        self._planner.cmd_reset(robot_id)
+        self._planner.add_robot(robot_id)
 
     def on_pose_current(self, robot_id: int, pose: Dict[str, Any]) -> None:
         """
@@ -95,3 +97,9 @@ class SioEvents(socketio.ClientNamespace):
             robot_id,
             parse_obj_as(models.DynObstacleList, obstacles)
         )
+
+    def on_wizard(self, message: dict[str, Any]):
+        """
+        Callback on wizard message.
+        """
+        self._planner.wizard_response(message)

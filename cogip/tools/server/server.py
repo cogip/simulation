@@ -31,6 +31,7 @@ class Server:
         # Create FastAPI application
         self.app = FastAPI(title="COGIP Web Monitor", debug=False)
         self.sio = socketio.AsyncServer(
+            always_connect=False,
             async_mode="asgi",
             cors_allowed_origins="*",
             logger=False,

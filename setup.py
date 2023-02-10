@@ -55,7 +55,7 @@ required_packages = [
 
     # Packages specific to developers
     "devtools==0.9.0;" + marker_platform_x86_64,
-    "flake8==3.9.2;" + marker_platform_x86_64,
+    "flake8==6.0.0;" + marker_platform_x86_64,
 ]
 
 setup(
