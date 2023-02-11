@@ -211,7 +211,7 @@ class PropertiesDialog(QtWidgets.QDialog):
             event: The close event (unused)
         """
         settings = QtCore.QSettings("COGIP", "monitor")
-        settings.setValue(f"properties/{self._config['namespace']}", self.saveGeometry())
+        settings.setValue(f"properties/{self._config['namespace']}/{self._config['title']}", self.saveGeometry())
 
         self.closed.emit()
         event.accept()
@@ -219,4 +219,4 @@ class PropertiesDialog(QtWidgets.QDialog):
 
     def readSettings(self):
         settings = QtCore.QSettings("COGIP", "monitor")
-        self.restoreGeometry(settings.value(f"properties/{self._config['namespace']}"))
+        self.restoreGeometry(settings.value(f"properties/{self._config['namespace']}/{self._config['title']}"))

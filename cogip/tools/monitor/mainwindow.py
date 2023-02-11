@@ -619,10 +619,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @qtSlot(dict)
     def config_request(self, config: Dict[str, Any]):
-        properties = self.properties.get(config["namespace"])
+        properties = self.properties.get(f'{config["namespace"]}/{config["title"]}')
         if not properties:
             properties = PropertiesDialog(config, self)
-            self.properties[config["namespace"]] = properties
+            self.properties[f'{config["namespace"]}/{config["title"]}'] = properties
             properties.property_updated.connect(self.config_updated)
         else:
             properties.update_values(config)
