@@ -9,7 +9,8 @@ from cogip import models
 from cogip.models.actuators import ServoCommand, PumpCommand, ActuatorCommand
 from . import copilot, logger
 from .menu import menu
-from .messages import PB_Command, PB_PathPose, PB_ActuatorCommand
+from .messages import PB_ActuatorCommand, PB_Command, PB_PathPose
+from .pid import PidEnum
 
 
 class SioEvents(socketio.AsyncClientNamespace):
@@ -120,3 +121,13 @@ class SioEvents(socketio.AsyncClientNamespace):
         elif isinstance(command, PumpCommand):
             command.pb_copy(pb_command.pump)
         await self._copilot.pbcom.send_serial_message(copilot.actuators_command_uuid, pb_command)
+
+    async def on_config_updated(self, config: Dict[str, Any]) -> None:
+        """
+        Callback on config_updated from dashboard.
+        Update pid PB message and send it back to firmware.
+        """
+        parent, _, name = config["name"].partition("/")
+        if parent and name:
+            setattr(self._copilot._pb_pids.pids[PidEnum[parent]], name, config["value"])
+            await self._copilot.pbcom.send_serial_message(copilot.pid_uuid, self._copilot._pb_pids)

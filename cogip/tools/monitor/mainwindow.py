@@ -359,7 +359,8 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         for i in range(6):
-            item = self.status_layout.itemAtPosition(row, i)
+            if not (item := self.status_layout.itemAtPosition(row, i)):
+                continue
             widget = item.widget()
             widget.setParent(None)
             self.status_layout.removeWidget(widget)

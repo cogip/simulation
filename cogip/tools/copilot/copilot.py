@@ -1,4 +1,5 @@
 import asyncio
+import copy
 from pathlib import Path
 import time
 
@@ -6,8 +7,9 @@ from google.protobuf.json_format import MessageToDict
 import socketio
 
 from cogip import models
-from .messages import PB_Menu, PB_Pose, PB_ActuatorsState, PB_State
+from .messages import PB_ActuatorsState, PB_Menu, PB_Pids, PB_Pose, PB_State
 from .pbcom import PBCom, pb_exception_handler
+from .pid import Pid, Pids
 from .sio_events import SioEvents
 
 
@@ -25,6 +27,7 @@ actuators_thread_stop_uuid: int = 3781855956
 actuators_state_uuid: int = 1538397045
 actuators_command_uuid: int = 2552455996
 pid_request_uuid: int = 3438831927
+pid_uuid: int = 4159164681
 
 
 class Copilot:
@@ -52,6 +55,7 @@ class Copilot:
         self._id = id
         self._retry_connection = True
         self._shell_menu: models.ShellMenu | None = None
+        self._pb_pids = PB_Pids()
 
         self._sio = socketio.AsyncClient(logger=False)
         self._sio_events = SioEvents(self)
@@ -63,7 +67,8 @@ class Copilot:
             pose_order_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
             pose_reached_uuid: self.handle_pose_reached,
-            actuators_state_uuid: self.handle_actuators_state
+            actuators_state_uuid: self.handle_actuators_state,
+            pid_uuid: self.handle_pid
         }
 
         self._pbcom = PBCom(serial_port, serial_baud, pb_message_handlers)
@@ -204,6 +209,46 @@ class Copilot:
         if self._sio.connected:
             actuators_state["robot_id"] = self._id
             await self._sio_events.emit("actuators_state", actuators_state)
+
+    @pb_exception_handler
+    async def handle_pid(self, message: bytes | None = None) -> None:
+        """
+        Send pids state received from the robot to connected dashboards.
+        """
+        self._pb_pids = PB_Pids()
+        if message:
+            await self._loop.run_in_executor(None, self._pb_pids.ParseFromString, message)
+
+        pid_list: list[Pid] = []
+        for pb_pid in self._pb_pids.pids:
+            pid_list.append(
+                Pid(
+                    id=pb_pid.id,
+                    kp=pb_pid.kp,
+                    ki=pb_pid.ki,
+                    kd=pb_pid.kd,
+                    integral_term_limit=pb_pid.integral_term_limit
+                )
+            )
+        pids = Pids(pids=pid_list)
+
+        # Get JSON Schema
+        pids_schema = pids.schema()
+        # Add namespace in JSON Schema
+        pids_schema["namespace"] = "/copilot"
+        # Add current values in JSON Schema
+        values = []
+        for pid in pids.pids:
+            pid_schema = copy.deepcopy(pid.schema())
+            pid_schema["title"] = pid.id.name
+            for prop, value in pid.dict().items():
+                if prop == "id":
+                    continue
+                pid_schema["properties"][prop]["value"] = value
+            values.append(pid_schema)
+        pids_schema["properties"]["pids"]["value"] = values
+        # Send config
+        await self._sio_events.emit("config", pids_schema)
 
     async def handle_pose_reached(self) -> None:
         """
