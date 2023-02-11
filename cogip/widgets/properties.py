@@ -162,14 +162,29 @@ class PropertiesDialog(QtWidgets.QDialog):
         """
         super().__init__(parent)
         self._config = config
-        self._properties: OrderedDict[str, IntegerProperty] = collections.OrderedDict()
+        self._properties: OrderedDict[str, IntegerProperty | NumberProperty] = collections.OrderedDict()
         self.setWindowTitle(config["title"])
         self.setModal(False)
 
         layout = QtWidgets.QGridLayout()
         self.setLayout(layout)
 
-        for name, props in config["properties"].items():
+        self.add_properties(config["properties"], layout)
+
+        self.readSettings()
+
+    def add_properties(self, props: dict[str, Any], layout: QtWidgets.QGridLayout, parent: str = ""):
+        """
+        Add properties.
+
+        Arguments:
+            props:  properties to add
+            layout: parent layout
+            parent: parent property name if any
+        """
+        for name, props in props.items():
+            if parent:
+                name = f"{parent}/{name}"
             match type := props["type"]:
                 case "integer":
                     self._properties[name] = IntegerProperty(name, props, layout)
@@ -177,10 +192,16 @@ class PropertiesDialog(QtWidgets.QDialog):
                 case "number":
                     self._properties[name] = NumberProperty(name, props, layout)
                     self._properties[name].value_updated.connect(self.value_updated)
+                case "array":
+                    values = props["value"]
+                    for value in values:
+                        box = QtWidgets.QGroupBox(value["title"])
+                        layout.addWidget(box, layout.rowCount(), 0, 1, -1)
+                        box_layout = QtWidgets.QGridLayout()
+                        box.setLayout(box_layout)
+                        self.add_properties(value["properties"], box_layout, parent=value["title"])
                 case _:
                     logger.error(f"Unsupported property type: {type}")
-
-        self.readSettings()
 
     def update_values(self, config: Dict[str, Any]):
         """
