@@ -6,6 +6,7 @@ from typing import Any
 import socketio
 
 from cogip import models
+from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils import ThreadLoop
 from . import actions, logger, menu, sio_events
 from .camp import Camp
@@ -321,6 +322,14 @@ class Planner:
                     return
                 self._game_context.strategy = new_strategy
                 self.reset()
+                match new_strategy:
+                    case Strategy.AngularSpeedTest:
+                        controller = ControllerEnum.ANGULAR_SPEED_TEST
+                    case Strategy.LinearSpeedTest:
+                        controller = ControllerEnum.LINEAR_SPEED_TEST
+                    case _:
+                        controller = ControllerEnum.QUADPID
+                self._sio_ns.emit("set_controller", controller.value)
                 logger.info(f'Wizard: New strategy: {self._game_context.strategy.name}')
             case chose_start_pose if chose_start_pose.startswith("Choose Start Position"):
                 if robot := self._robots.get(robot_id := message.get("robot_id")):

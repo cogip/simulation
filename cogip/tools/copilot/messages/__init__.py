@@ -17,3 +17,4 @@ from .PB_SpeedEnum_pb2 import PB_SpeedEnum  # noqa
 from .PB_Actuators_pb2 import PB_ServoCommand, PB_PumpCommand, PB_ActuatorCommand, PB_ActuatorsState  # noqa
 from .PB_Pid_pb2 import PB_Pid, PB_Pids  # noqa
 from .PB_PidEnum_pb2 import PB_PidEnum  # noqa
+from .PB_Controller_pb2 import PB_ControllerEnum, PB_Controller  # noqa

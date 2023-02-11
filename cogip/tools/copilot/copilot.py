@@ -28,6 +28,7 @@ actuators_state_uuid: int = 1538397045
 actuators_command_uuid: int = 2552455996
 pid_request_uuid: int = 3438831927
 pid_uuid: int = 4159164681
+controller_uuid: int = 2750239003
 
 
 class Copilot:

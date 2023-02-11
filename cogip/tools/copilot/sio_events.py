@@ -9,7 +9,7 @@ from cogip import models
 from cogip.models.actuators import ServoCommand, PumpCommand, ActuatorCommand
 from . import copilot, logger
 from .menu import menu
-from .messages import PB_ActuatorCommand, PB_Command, PB_PathPose
+from .messages import PB_ActuatorCommand, PB_Command, PB_PathPose, PB_Controller
 from .pid import PidEnum
 
 
@@ -131,3 +131,12 @@ class SioEvents(socketio.AsyncClientNamespace):
         if parent and name:
             setattr(self._copilot._pb_pids.pids[PidEnum[parent]], name, config["value"])
             await self._copilot.pbcom.send_serial_message(copilot.pid_uuid, self._copilot._pb_pids)
+
+    async def on_set_controller(self, controller: int):
+        """
+        Callback on set_controller message.
+        Forward to firmware.
+        """
+        pb_controller = PB_Controller()
+        pb_controller.id = controller
+        await self._copilot.pbcom.send_serial_message(copilot.controller_uuid, pb_controller)
