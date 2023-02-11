@@ -247,7 +247,18 @@ class ChartsView(QtWidgets.QDialog):
         self.layout.addWidget(self.linear_speed_chart, 0, 0)
         self.layout.addWidget(self.angular_speed_chart, 1, 0)
 
+        reset_button = QtWidgets.QPushButton("Reset")
+        self.layout.addWidget(reset_button)
+        reset_button.clicked.connect(self.reset)
+
         self.readSettings()
+
+    def reset(self):
+        """
+        Reset charts.
+        """
+        self.linear_speed_chart.reset()
+        self.angular_speed_chart.reset()
 
     def set_robot_id(self, robot_id: int) -> None:
         self.robot_id = robot_id
