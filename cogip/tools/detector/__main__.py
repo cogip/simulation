@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 from pathlib import Path
+from typing import Optional
 
 import typer
 from watchfiles import PythonFilter, run_process
@@ -30,6 +31,12 @@ def main_opt(
         min=1,
         help="Robot ID.",
         envvar=["ROBOT_ID", "DETECTOR_ID"]
+    ),
+    lidar_port: Optional[Path] = typer.Option(
+        None,
+        "-p", "--lidar-port",
+        help="Serial port connected to the Lidar",
+        envvar="DETECTOR_LIDAR_PORT"
     ),
     min_distance: int = typer.Option(
         150, min=0, max=1000,
@@ -91,6 +98,7 @@ def main_opt(
     args = (
         server_url,
         id,
+        lidar_port,
         min_distance,
         max_distance,
         obstacle_radius,
