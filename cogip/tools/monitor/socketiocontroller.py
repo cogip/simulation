@@ -41,6 +41,8 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted to add a new robot
         signal_del_robot:
             Qt signal emitted to remove a robot
+        signal_wizard_request:
+            Qt signal emitted to forward wizard requests
         signal_start_lidar_emulation:
             Qt signal emitted to start Lidar emulation
         signal_stop_lidar_emulation:
@@ -58,6 +60,8 @@ class SocketioController(QtCore.QObject):
     signal_exit: qtSignal = qtSignal()
     signal_add_robot: qtSignal = qtSignal(int)
     signal_del_robot: qtSignal = qtSignal(int)
+    signal_wizard_request: qtSignal = qtSignal(dict)
+    signal_close_wizard: qtSignal = qtSignal()
     signal_start_lidar_emulation: qtSignal = qtSignal(int)
     signal_stop_lidar_emulation: qtSignal = qtSignal(int)
     signal_config_request: qtSignal = qtSignal(dict)
@@ -124,6 +128,10 @@ class SocketioController(QtCore.QObject):
     @qtSlot(dict)
     def config_updated(self, config: Dict[str, Any]):
         self.sio.emit("config_updated", config, namespace="/dashboard")
+
+    @qtSlot(dict)
+    def wizard_response(self, response: dict[str, Any]):
+        self.sio.emit("wizard", response, namespace="/dashboard")
 
     def new_actuator_command(self, robot_id: int, command: ActuatorCommand):
         """
@@ -283,6 +291,20 @@ class SocketioController(QtCore.QObject):
             Remove a robot.
             """
             self.signal_del_robot.emit(robot_id)
+
+        @self.sio.on("wizard", namespace="/dashboard")
+        def on_wizard_request(data: Dict[str, Any]) -> None:
+            """
+            Wizard request.
+            """
+            self.signal_wizard_request.emit(data)
+
+        @self.sio.on("close_wizard", namespace="/dashboard")
+        def on_close_wizard() -> None:
+            """
+            Close wizard.
+            """
+            self.signal_close_wizard.emit()
 
         @self.sio.on("start_lidar_emulation", namespace="/monitor")
         def on_start_lidar_emulation(robot_id: int) -> None:

@@ -6,7 +6,7 @@ import socketio
 
 from cogip import models
 from . import planner, logger
-from .menu import menu
+from .menu import menu, wizard_test_menu
 
 
 class SioEvents(socketio.ClientNamespace):
@@ -27,6 +27,7 @@ class SioEvents(socketio.ClientNamespace):
         self.emit("connected")
         self._planner.start()
         self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
+        self.emit("register_menu", {"name": "wizard", "menu": wizard_test_menu.dict()})
 
     def on_disconnect(self) -> None:
         """
@@ -84,7 +85,6 @@ class SioEvents(socketio.ClientNamespace):
         """
         Callback on command message from dashboard.
         """
-
         self._planner.command(cmd)
 
     def on_obstacles(self, robot_id: int, obstacles: Dict[str, Any]):

@@ -212,6 +212,10 @@ class Planner:
         """
         Execute a command from the menu.
         """
+        if cmd.startswith("wizard_"):
+            self.cmd_wizard_test(cmd)
+            return
+
         if not (cmd_func := getattr(self, f"cmd_{cmd}", None)):
             logger.warning(f"Unknown command: {cmd}")
             return
@@ -323,5 +327,98 @@ class Planner:
                     start_position = int(message["value"])
                     self._start_positions[robot_id] = start_position
                     robot.set_pose_start(self._game_context.get_start_pose(start_position))
+            case wizard_test_response if wizard_test_response.startswith("Wizard Test"):
+                logger.info(f"Wizard test response: {name} = {message['value']}")
             case _:
                 logger.warning(f"Wizard: Unknown type: {name}")
+
+    def cmd_wizard_test(self, cmd: str):
+        match cmd:
+            case "wizard_boolean":
+                message = {
+                    "name": "Wizard Test Boolean",
+                    "type": "boolean",
+                    "value": True
+                }
+            case "wizard_integer":
+                message = {
+                    "name": "Wizard Test Integer",
+                    "type": "integer",
+                    "value": 42
+                }
+            case "wizard_floating":
+                message = {
+                    "name": "Wizard Test Float",
+                    "type": "floating",
+                    "value": 66.6
+                }
+            case "wizard_str":
+                message = {
+                    "name": "Wizard Test String",
+                    "type": "str",
+                    "value": "cogip"
+                }
+            case "wizard_message":
+                message = {
+                    "name": "Wizard Test Message",
+                    "type": "message",
+                    "value": "Hello Robot!"
+                }
+            case "wizard_choice_integer":
+                message = {
+                    "name": "Wizard Test Choice Integer",
+                    "type": "choice_integer",
+                    "choices": [1, 2, 3],
+                    "value": 2
+                }
+            case "wizard_choice_floating":
+                message = {
+                    "name": "Wizard Test Choice Float",
+                    "type": "choice_floating",
+                    "choices": [1.1, 2.2, 3.3],
+                    "value": 2.2
+                }
+            case "wizard_choice_str":
+                message = {
+                    "name": "Wizard Test Choice String",
+                    "type": "choice_str",
+                    "choices": ["one", "two", "tree"],
+                    "value": "two"
+                }
+            case "wizard_select_integer":
+                message = {
+                    "name": "Wizard Test Select Integer",
+                    "type": "select_integer",
+                    "choices": [1, 2, 3],
+                    "value": [1, 3]
+                }
+            case "wizard_select_floating":
+                message = {
+                    "name": "Wizard Test Select Float",
+                    "type": "select_floating",
+                    "choices": [1.1, 2.2, 3.3],
+                    "value": [1.1, 3.3]
+                }
+            case "wizard_select_str":
+                message = {
+                    "name": "Wizard Test Select String",
+                    "type": "select_str",
+                    "choices": ["one", "two", "tree"],
+                    "value": ["one", "tree"]
+                }
+            case "wizard_camp":
+                message = {
+                    "name": "Wizard Test Camp",
+                    "type": "camp",
+                    "value": "green"
+                }
+            case "wizard_camera":
+                message = {
+                    "name": "Wizard Test Camera",
+                    "type": "camera"
+                }
+            case _:
+                logger.warning(f"Wizard test unsupported: {cmd}")
+                return
+
+        self._sio_ns.emit("wizard", message)
