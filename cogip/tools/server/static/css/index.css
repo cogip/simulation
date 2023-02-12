@@ -97,6 +97,7 @@ pre {
   margin-bottom: 0px;
   padding-bottom: 0px;
   font-size: 15px;
+  color:#6c757d;
 }
 
 #board {
@@ -110,9 +111,9 @@ pre {
 #buttonCameraModal {
   z-index: 2;
   position: relative;
-  right: -49;
+  right: -49px;
   margin-top: 10px;
-  top: 410;
+  top: 410px;
 }
 
 #buttonRefresh {
@@ -134,7 +135,7 @@ pre {
 .btn-close {
   z-index: 2;
   position: absolute;
-  right: 15;
+  right: 15px;
   opacity: 1;
 }
 
@@ -206,8 +207,8 @@ input[type='checkbox']:checked {
 
 .btn-blue {
   color: #000;
-  background-color: #005CE6;
-  border-color: #005CE6;
+  background-color: #005CE6 !important;
+  border-color: #005CE6 !important;
   height: 30px;
   width: 100px;
   margin-right: 15px;
@@ -215,8 +216,8 @@ input[type='checkbox']:checked {
 
 .btn-green {
   color: #000;
-  background-color: #00AA12;
-  border-color: #00AA12;
+  background-color: #00AA12 !important;
+  border-color: #00AA12 !important;
   height: 30px;
   width: 100px;
 }
