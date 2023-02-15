@@ -28,6 +28,7 @@ nav:
   - Developer's Doc:
     - Introduction: developers/developers.md
     - Modules: reference/
+    - Dashboard: developers/dashboard.md
 
 plugins:
   - mkdocstrings:
