@@ -95,3 +95,4 @@ class DashboardNamespace(socketio.AsyncNamespace):
         """
         namespace = data.pop("namespace")
         await self.emit("wizard", data, namespace=namespace)
+        await self.emit("close_wizard")

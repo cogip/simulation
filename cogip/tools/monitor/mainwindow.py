@@ -14,6 +14,7 @@ from cogip.widgets.gameview import GameView
 from cogip.widgets.help import HelpCameraControlDialog
 from cogip.widgets.actuators import ActuatorsDialog
 from cogip.widgets.properties import PropertiesDialog
+from cogip.widgets.wizard import WizardDialog
 from cogip.models import Pose, ShellMenu, RobotState
 from cogip.models.actuators import ActuatorsState, ActuatorCommand
 
@@ -33,6 +34,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     Attributes:
         signal_config_updated: Qt signal to update config
+        signal_wizard_response: Qt signal to emit wizard response
         signal_send_command: Qt signal to send a command to the firmware
         signal_add_obstacle: Qt signal to add an obstacle
         signal_load_obstacles: Qt signal to load obstacles
@@ -43,6 +45,7 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_actuators_closed: Qt signal to stop actuators state request
     """
     signal_config_updated: qtSignal = qtSignal(dict)
+    signal_wizard_response: qtSignal = qtSignal(dict)
     signal_send_command: qtSignal = qtSignal(str, str)
     signal_add_obstacle: qtSignal = qtSignal()
     signal_load_obstacles: qtSignal = qtSignal(Path)
@@ -639,6 +642,25 @@ class MainWindow(QtWidgets.QMainWindow):
     @qtSlot(dict)
     def config_updated(self, config: Dict[str, Any]):
         self.signal_config_updated.emit(config)
+
+    @qtSlot(dict)
+    def wizard_request(self, message: dict[str, Any]):
+        self.wizard = WizardDialog(message, self)
+        self.wizard.response.connect(self.wizard_response)
+        self.wizard.show()
+        self.wizard.raise_()
+        self.wizard.activateWindow()
+
+    @qtSlot()
+    def close_wizard(self):
+        if self.wizard:
+            self.wizard.close()
+            self.wizard = None
+
+    @qtSlot(dict)
+    def wizard_response(self, response: dict[str, Any]):
+        self.signal_wizard_response.emit(response)
+        self.wizard = None
 
     def actuators_state(self, actuators_state: ActuatorsState):
         """

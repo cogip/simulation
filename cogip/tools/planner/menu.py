@@ -12,3 +12,22 @@ menu = models.ShellMenu(
         models.MenuEntry(cmd="reset", desc="Reset")
     ]
 )
+
+wizard_test_menu = models.ShellMenu(
+    name="Wizard Test",
+    entries=[
+        models.MenuEntry(cmd="wizard_boolean", desc="Boolean"),
+        models.MenuEntry(cmd="wizard_integer", desc="Integer"),
+        models.MenuEntry(cmd="wizard_floating", desc="Float"),
+        models.MenuEntry(cmd="wizard_str", desc="String"),
+        models.MenuEntry(cmd="wizard_message", desc="Message"),
+        models.MenuEntry(cmd="wizard_choice_integer", desc="Choice Integer"),
+        models.MenuEntry(cmd="wizard_choice_floating", desc="Choice Float"),
+        models.MenuEntry(cmd="wizard_choice_str", desc="Choice String"),
+        models.MenuEntry(cmd="wizard_select_integer", desc="Select Integer"),
+        models.MenuEntry(cmd="wizard_select_floating", desc="Select Float"),
+        models.MenuEntry(cmd="wizard_select_str", desc="Select String"),
+        models.MenuEntry(cmd="wizard_camp", desc="Camp"),
+        models.MenuEntry(cmd="wizard_camera", desc="Camera")
+    ]
+)
