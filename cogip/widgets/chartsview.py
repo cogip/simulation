@@ -6,7 +6,7 @@ from PySide6 import QtCharts, QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Slot as qtSlot
 from PySide6.QtCore import Signal as qtSignal
 
-from cogip.models import RobotState, CtrlModeEnum
+from cogip.models import RobotState
 
 
 class ChartView(QtWidgets.QWidget):
@@ -164,21 +164,16 @@ class ChartView(QtWidgets.QWidget):
         self.recalculate_range_x()
 
     def new_robot_state(
-            self, mode: CtrlModeEnum, cycle: int,
+            self, cycle: int,
             current: Optional[float], order: Optional[float]) -> None:
         """
         Add a new point on the chart view.
 
         Arguments:
-            mode: Current mode
             cycle: Current cycle
             current: Current value
             order: Order value
         """
-        if mode == CtrlModeEnum.STOP:
-            self.need_reset = True
-            return
-
         if self.need_reset:
             self.need_reset = False
             self.reset()
@@ -252,7 +247,18 @@ class ChartsView(QtWidgets.QDialog):
         self.layout.addWidget(self.linear_speed_chart, 0, 0)
         self.layout.addWidget(self.angular_speed_chart, 1, 0)
 
+        reset_button = QtWidgets.QPushButton("Reset")
+        self.layout.addWidget(reset_button)
+        reset_button.clicked.connect(self.reset)
+
         self.readSettings()
+
+    def reset(self):
+        """
+        Reset charts.
+        """
+        self.linear_speed_chart.reset()
+        self.angular_speed_chart.reset()
 
     def set_robot_id(self, robot_id: int) -> None:
         self.robot_id = robot_id
@@ -269,10 +275,10 @@ class ChartsView(QtWidgets.QDialog):
         Arguments:
             state: New robot state
         """
-        self.linear_speed_chart.new_robot_state(state.mode, state.cycle,
+        self.linear_speed_chart.new_robot_state(state.cycle,
                                                 state.speed_current.distance,
                                                 state.speed_order.distance)
-        self.angular_speed_chart.new_robot_state(state.mode, state.cycle,
+        self.angular_speed_chart.new_robot_state(state.cycle,
                                                  state.speed_current.angle,
                                                  state.speed_order.angle)
 

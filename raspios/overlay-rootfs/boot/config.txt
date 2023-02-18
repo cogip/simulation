@@ -41,4 +41,5 @@ dtoverlay=sdtweak,overclock_50=100
 initial_turbo=10
 
 dtoverlay=uart2
+dtoverlay=uart4
 dtoverlay=uart5

@@ -395,7 +395,7 @@ class CameraHandler():
             """
             polling2.poll(lambda: self.sio.connected is True, step=0.2, poll_forever=True)
             logger.info("Camera handler: connected to server")
-            self.emit("connected", self.settings.id)
+            self.sio.emit("connected", self.settings.id, namespace="/robotcam")
 
         @self.sio.event(namespace="/robotcam")
         def connect_error(data):

@@ -77,28 +77,6 @@ export function displayMsg(msg) {
     msgHTML.removeChild(msgHTML.firstChild);
   }
 
-  let mode = null;
-  switch (msg.mode) {
-    case 0:
-      mode = "STOP";
-      break;
-    case 1:
-      mode = "IDLE";
-      break;
-    case 2:
-      mode = "BLOCKED";
-      break;
-    case 3:
-      mode = "RUNNING";
-      break;
-    case 4:
-      mode = "RUNNING_SPEED";
-      break;
-    case 5:
-      mode = "PASSTHROUGH";
-      break;
-  }
-
   if (
     pose_current !== undefined &&
     !isNaN(pose_current.x) &&
@@ -109,7 +87,7 @@ export function displayMsg(msg) {
       2
     )} / Y: ${pose_current.y.toFixed(2)} / Angle: ${pose_current.O.toFixed(
       2
-    )} / Mode: ${mode}`;
+    )}`;
 
     msgHTML.appendChild(formatMsg);
   }

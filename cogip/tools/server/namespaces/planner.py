@@ -73,3 +73,10 @@ class PlannerNamespace(socketio.AsyncNamespace):
         """
         message["namespace"] = "/planner"
         await self.emit("wizard", message, namespace="/dashboard")
+
+    async def on_set_controller(self, sid, controller: int):
+        """
+        Callback on set_controller message.
+        Forward to copilot.
+        """
+        await self.emit("set_controller", controller, namespace="/copilot")

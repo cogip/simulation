@@ -129,6 +129,22 @@ class BackAndForthAction(Action):
         return 1000000.0
 
 
+class SpeedTestAction(Action):
+    """
+    Dummy action for pid calibration.
+    Same dummy pose in loop.
+    """
+    def __init__(self):
+        super().__init__("Pid calibration action")
+        self.pose = Pose()
+        self.pose.after_pose_func = lambda sio: self.poses.append(self.pose)
+        self.poses = [self.pose]
+
+    @property
+    def weight(self) -> float:
+        return 1000000.0
+
+
 class ApprovalActions(Actions):
     def __init__(self):
         super().__init__()
@@ -149,8 +165,16 @@ class GameActions(Actions):
         super().__init__()
 
 
+class SpeedTestActions(Actions):
+    def __init__(self):
+        super().__init__()
+        self.append(SpeedTestAction())
+
+
 action_classes = {
     Strategy.Approval: ApprovalActions,
     Strategy.Game: GameActions,
-    Strategy.BackAndForth: BackAndForthActions
+    Strategy.BackAndForth: BackAndForthActions,
+    Strategy.AngularSpeedTest: SpeedTestActions,
+    Strategy.LinearSpeedTest: SpeedTestActions,
 }

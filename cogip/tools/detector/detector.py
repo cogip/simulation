@@ -33,6 +33,7 @@ class Detector:
             self,
             server_url: str,
             robot_id: int,
+            lidar_port: str | None,
             min_distance: int,
             max_distance: int,
             obstacle_radius: int,
@@ -47,6 +48,7 @@ class Detector:
         Arguments:
             server_url: server URL
             robot_id: robot id
+            lidar_port: Serial port connected to the Lidar
             min_distance: Minimum distance to detect an obstacle
             max_distance: Maximum distance to detect an obstacle
             obstacle_radius: Radius of a dynamic obstacle
@@ -58,6 +60,7 @@ class Detector:
         """
         self._server_url = server_url
         self._robot_id = robot_id
+        self._lidar_port = lidar_port
         self._properties = Properties(
             min_distance=min_distance,
             max_distance=max_distance,
@@ -88,13 +91,12 @@ class Detector:
 
         self._laser: ydlidar.CYdLidar | None = None
         self._scan: ydlidar.LaserScan | None = None
-        uart_port: str | None = None
-        if ydlidar and not emulation:
+        if ydlidar and not emulation and not self._lidar_port:
             for _, value in ydlidar.lidarPortList().items():
-                uart_port = value
-        if uart_port:
+                self._lidar_port = value
+        if self._lidar_port:
             self._laser = ydlidar.CYdLidar()
-            self._laser.setlidaropt(ydlidar.LidarPropSerialPort, uart_port)
+            self._laser.setlidaropt(ydlidar.LidarPropSerialPort, self._lidar_port)
             self._laser.setlidaropt(ydlidar.LidarPropSerialBaudrate, 230400)
             self._laser.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE)
             self._laser.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)

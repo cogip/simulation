@@ -59,27 +59,6 @@ class ShellMenu(BaseModel):
     entries: List[MenuEntry]
 
 
-class CtrlModeEnum(IntEnum):
-    """
-    Enum containing all internal modes of the robot
-
-    Attributes:
-        STOP:
-        IDLE:
-        BLOCKED:
-        RUNNING:
-        RUNNING_SPEED:
-        PASSTHROUGH:
-
-    """
-    STOP = 0,
-    IDLE = 1,
-    BLOCKED = 2,
-    RUNNING = 3,
-    RUNNING_SPEED = 4,
-    PASSTHROUGH = 5
-
-
 class Vertex(BaseModel):
     """
     Represents a point in 2D/3D coordinates.
@@ -233,14 +212,12 @@ class RobotState(BaseModel):
     It is given by the firmware through the serial port.
 
     Attributes:
-        mode: Current robot mode
         pose_order: Position to reach
         cycle: Current cycle
         speed_current: Current speed
         speed_order: Speed order
         path: Computed path
     """
-    mode: CtrlModeEnum
     pose_current: Pose = Pose()
     pose_order: Pose = Pose()
     cycle: int = 0

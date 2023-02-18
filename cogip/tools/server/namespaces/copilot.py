@@ -47,6 +47,7 @@ class CopilotNamespace(socketio.AsyncNamespace):
         robot_id = self._context.copilot_sids[sid]
         await self.emit("reset", robot_id, namespace="/planner")
         await self._recorder.async_do_rollover()
+        self._recorder.recording = True
 
     async def on_register_menu(self, sid, data: Dict[str, Any]):
         """
@@ -89,8 +90,6 @@ class CopilotNamespace(socketio.AsyncNamespace):
         """
         robot_id = self._context.copilot_sids[sid]
         await self.emit("state", (robot_id, state), namespace="/dashboard")
-        if state.get("mode", 0):
-            self._recorder.recording = True
         await self._recorder.async_record({"state": (robot_id, state)})
 
     async def on_actuators_state(self, sid, actuators_state: Dict[str, Any]):
@@ -98,3 +97,15 @@ class CopilotNamespace(socketio.AsyncNamespace):
         Callback on actuators_state message.
         """
         await self.emit("actuators_state", actuators_state, namespace="/dashboard")
+
+    async def on_pid(self, sid, pid: dict[str, Any]):
+        """
+        Callback on pid message.
+        """
+        await self.emit("pid", pid, namespace="/dashboard")
+
+    async def on_config(self, sid, config: Dict[str, Any]):
+        """
+        Callback on config message.
+        """
+        await self.emit("config", config, namespace="/dashboard")

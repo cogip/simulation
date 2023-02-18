@@ -20,13 +20,13 @@ RUN python3 -m pip install \
     devtools==0.10.0 \
     more_itertools==9.0.0 \
     py-spy==0.3.11 \
-    pydantic==1.9.0 \
+    pydantic==1.10.4 \
     pyserial==3.5 \
     python-dotenv==0.19.2 \
-    typer==0.4.1 \
+    typer[all]==0.7.0 \
     aiohttp==3.8.1 \
     aioserial==1.3.0 \
-    fastapi==0.75.0 \
+    fastapi==0.91.0 \
     Jinja2==3.0.3 \
     opencv-contrib-python==4.5.5.64 \
     polling2==0.5.0 \

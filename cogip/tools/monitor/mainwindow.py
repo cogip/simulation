@@ -28,7 +28,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
       - a menu bar,
       - a tool bar with buttons to add/load/save obstacles,
-      - a status bar with robot position and mode,
+      - a status bar with robot position,
       - a menu with commands available in the current firmware shell menu,
       - a console recording the firmware output.
 
@@ -112,9 +112,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         pos_angle_label = QtWidgets.QLabel("Angle")
         self.status_layout.addWidget(pos_angle_label, 0, 4)
-
-        pos_mode_label = QtWidgets.QLabel("Mode")
-        self.status_layout.addWidget(pos_mode_label, 0, 5)
 
         # Actions
         # Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons
@@ -331,11 +328,6 @@ class MainWindow(QtWidgets.QMainWindow):
         pos_angle_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
         self.status_layout.addWidget(pos_angle_text, row, 4)
 
-        pos_mode_text = QtWidgets.QLabel()
-        pos_mode_text.setAlignment(QtCore.Qt.AlignCenter | QtCore.Qt.AlignVCenter)
-        pos_mode_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        self.status_layout.addWidget(pos_mode_text, row, 5)
-
         # Chart view
         view = self.charts_view.get(robot_id)
         if view is None:
@@ -367,7 +359,8 @@ class MainWindow(QtWidgets.QMainWindow):
             return
 
         for i in range(6):
-            item = self.status_layout.itemAtPosition(row, i)
+            if not (item := self.status_layout.itemAtPosition(row, i)):
+                continue
             widget = item.widget()
             widget.setParent(None)
             self.status_layout.removeWidget(widget)
@@ -414,7 +407,6 @@ class MainWindow(QtWidgets.QMainWindow):
         if not row:
             return
         self.status_layout.itemAtPosition(row, 1).widget().setText(f"{state.cycle or 0:>#6d}")
-        self.status_layout.itemAtPosition(row, 5).widget().setText(state.mode.name)
 
         charts_view = self.charts_view.get(robot_id)
         if charts_view:
@@ -628,10 +620,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @qtSlot(dict)
     def config_request(self, config: Dict[str, Any]):
-        properties = self.properties.get(config["namespace"])
+        properties = self.properties.get(f'{config["namespace"]}/{config["title"]}')
         if not properties:
             properties = PropertiesDialog(config, self)
-            self.properties[config["namespace"]] = properties
+            self.properties[f'{config["namespace"]}/{config["title"]}'] = properties
             properties.property_updated.connect(self.config_updated)
         else:
             properties.update_values(config)

@@ -49,6 +49,10 @@ Options:
                                   env var: ROBOT_ID, COPILOT_ID
                                   default: 1; x>=1
 
+  -p, --uart-port PATH            Serial port connected to the Lidar
+                                  env var: DETECTOR_LIDAR_PORT
+                                  default: None (autodetect)
+
   --min-distance INTEGER          Minimum distance to detect an obstacle
                                   env var: DETECTOR_MIN_DISTANCE
                                   default: 150

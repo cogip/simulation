@@ -20,7 +20,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
       - a menu bar,
       - a tool bar with buttons to load a trace file,
-      - a status bar with robot position and mode,
+      - a status bar with robot position,
       - a slider with buttons to start/stop playback
 
     Attributes:
@@ -85,13 +85,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pos_angle_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
         status_bar.addPermanentWidget(pos_angle_label, 0)
         status_bar.addPermanentWidget(self.pos_angle_text, 0)
-
-        pos_mode_label = QtWidgets.QLabel("Mode:")
-        self.pos_mode_text = QtWidgets.QLabel()
-        self.pos_mode_text.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.pos_mode_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
-        status_bar.addPermanentWidget(pos_mode_label, 0)
-        status_bar.addPermanentWidget(self.pos_mode_text, 0)
 
         # Actions
         # Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons
@@ -190,7 +183,6 @@ class MainWindow(QtWidgets.QMainWindow):
         Arguments:
             state: Robot state
         """
-        self.pos_mode_text.setText(state.mode.name)
         self.cycle_text.setText(f"{state.cycle or 0:>#6d}")
         self.pos_x_text.setText(f"{state.pose_current.x:> #6.2f}")
         self.pos_y_text.setText(f"{state.pose_current.y:> #6.2f}")
