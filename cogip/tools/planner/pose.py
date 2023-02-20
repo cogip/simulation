@@ -4,6 +4,7 @@ from pydantic import validator
 import socketio
 
 from cogip.models.models import PathPose
+from cogip.tools import planner
 from .camp import Camp
 
 
@@ -12,26 +13,26 @@ class Pose(PathPose):
     Pose class used in actions.
     A function can be executed before moving and an other once it is reached.
     """
-    before_pose_func: Callable[[socketio.ClientNamespace], None] = lambda sio: None
-    after_pose_func: Callable[[socketio.ClientNamespace], None] = lambda sio: None
+    before_pose_func: Callable[[socketio.ClientNamespace], None] = lambda planner: None
+    after_pose_func: Callable[[socketio.ClientNamespace], None] = lambda planner: None
 
-    def act_before_pose(self, sio: socketio.ClientNamespace) -> None:
+    def act_before_pose(self, planner: "planner.planner.Planner") -> None:
         """
         Function executed before the robot starts moving.
 
         Parameters:
-            sio: SocketIO client to emit message to the server
+            planner: the planner object to send it information or orders
         """
-        self.before_pose_func(sio)
+        self.before_pose_func(planner)
 
-    def act_after_pose(self, sio: socketio.ClientNamespace) -> None:
+    def act_after_pose(self, planner: "planner.planner.Planner") -> None:
         """
         Function executed once the pose is reached.
 
         Parameters:
-            sio: SocketIO client to emit message to the server
+            planner: the planner object to send it information or orders
         """
-        self.after_pose_func(sio)
+        self.after_pose_func(planner)
 
     @property
     def path_pose(self) -> PathPose:

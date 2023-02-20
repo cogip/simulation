@@ -8,7 +8,7 @@ import socketio
 from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils import ThreadLoop
-from . import actions, logger, menu, sio_events
+from . import actions, logger, menu, pose, sio_events
 from .camp import Camp
 from .context import GameContext
 from .robot import Robot
@@ -38,6 +38,7 @@ class Planner:
         self._game_context = GameContext()
         self._robots: dict[int, Robot] = {}
         self._start_positions: dict[int, int] = {}
+        self._pose_orders: dict[int, pose.Pose] = {}
         self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
         self._obstacles: dict[int, models.DynObstacleList] = {}
         self._start_pose_menu_entries: dict[int, models.MenuEntry] = {}
@@ -103,7 +104,7 @@ class Planner:
         """
         if robot_id in self._robots:
             self.del_robot(robot_id)
-        self._robots[robot_id] = (robot := Robot(robot_id, self._sio_ns))
+        self._robots[robot_id] = (robot := Robot(robot_id, self))
         robot.set_pose_start(self._game_context.get_start_pose(self._start_positions.get(robot_id, robot_id)))
         self.update_start_pose_commands()
         self._obstacles[robot_id] = []
@@ -150,9 +151,22 @@ class Planner:
         for robot_id in robot_ids:
             self.add_robot(robot_id)
 
+    def set_pose_start(self, robot_id: int, pose_start: pose.Pose):
+        """
+        Set the start position of the robot for the next game.
+        """
+        self._sio_ns.emit("pose_start", (robot_id, pose_start.pose.dict()))
+
+    def set_pose_order(self, robot_id: int, pose_order: pose.Pose):
+        """
+        Set the current position order of the robot.
+        """
+        self._pose_orders[robot_id] = pose_order
+        self._sio_ns.emit("pose_order", (robot_id, pose_order.pose.dict()))
+
     def set_pose_current(self, robot_id: int, pose: models.Pose) -> None:
         """
-        Set current pose to reach for a robot.
+        Set current pose of a robot.
         """
         if not (robot := self._robots.get(robot_id)):
             return
