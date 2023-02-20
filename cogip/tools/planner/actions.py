@@ -1,9 +1,8 @@
 from functools import partial
 from typing import Callable, NewType
 
-import socketio
-
 from cogip.models.models import SpeedEnum
+from cogip.tools import planner
 from .pose import AdaptedPose, Pose
 from .strategy import Strategy
 from . import robot
@@ -31,8 +30,8 @@ class Action:
         self.potential_score = potential_score
         self.robot: "robot.Robot" | None = None
         self.poses: list[Pose] = []
-        self.before_action_func: Callable[[socketio.ClientNamespace], None] = lambda sio: None
-        self.after_action_func: Callable[[socketio.ClientNamespace], None] = lambda sio: None
+        self.before_action_func: Callable[["planner.planner.Planner"], None] = lambda planner: None
+        self.after_action_func: Callable[["planner.planner.Planner"], None] = lambda planner: None
 
     @property
     def weight(self) -> float:
@@ -43,23 +42,23 @@ class Action:
         """
         return self.direct_score + 0.5 * self.potential_score
 
-    def act_before_action(self, sio: socketio.ClientNamespace) -> None:
+    def act_before_action(self, planner: "planner.planner.Planner") -> None:
         """
         Function executed before the action starts.
 
         Parameters:
-            sio: SocketIO client to emit message to the server
+            planner: the planner object to send it information or orders
         """
-        self.before_action_func(sio)
+        self.before_action_func(planner)
 
-    def act_after_action(self, sio: socketio.ClientNamespace) -> None:
+    def act_after_action(self, planner: "planner.planner.Planner") -> None:
         """
         Function executed after the action ends.
 
         Parameters:
-            sio: SocketIO client to emit message to the server
+            planner: the planner object to send it information or orders
         """
-        self.after_action_func(sio)
+        self.after_action_func(planner)
 
 
 class Actions(list[Action]):
@@ -81,7 +80,7 @@ class ApprovalAction(Action):
         super().__init__("Approval action")
         self.reset()
 
-    def reset(self, sio: socketio.ClientNamespace | None = None) -> None:
+    def reset(self, planner: "planner.planner.Planner | None" = None) -> None:
         self.poses = [
             AdaptedPose(x=300, y=-700, O=0, max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL),
             AdaptedPose(x=2700, y=-700, O=180, max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL)
@@ -103,7 +102,7 @@ class BackAndForthAction(Action):
         super().__init__("BackAnForth action", actions)
         self.before_action_func = self.compute_poses
 
-    def compute_poses(self, sio: socketio.ClientNamespace) -> None:
+    def compute_poses(self, planner: "planner.planner.Planner") -> None:
         x = 3000 - self.robot.pose_current.x
         y = -self.robot.pose_current.y
         angle = self.robot.pose_current.O
@@ -121,7 +120,7 @@ class BackAndForthAction(Action):
         self.poses.append(pose1)
         self.poses.append(pose2)
 
-    def append_pose(self, pose: Pose, sio: socketio.ClientNamespace) -> None:
+    def append_pose(self, pose: Pose, planner: "planner.planner.Planner") -> None:
         self.poses.append(pose)
 
     @property
@@ -137,7 +136,7 @@ class SpeedTestAction(Action):
     def __init__(self):
         super().__init__("Pid calibration action")
         self.pose = Pose()
-        self.pose.after_pose_func = lambda sio: self.poses.append(self.pose)
+        self.pose.after_pose_func = lambda planner: self.poses.append(self.pose)
         self.poses = [self.pose]
 
     @property

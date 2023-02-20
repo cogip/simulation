@@ -1,14 +1,15 @@
+from cogip.tools import planner
 from cogip.models import models
-from . import actions, context, pose, sio_events
+from . import actions, context, pose
 
 
 class Robot:
     """
     Class representing a robot context.
     """
-    def __init__(self, robot_id: int, sio: sio_events.SioEvents):
+    def __init__(self, robot_id: int, planner: "planner.planner.Planner"):
         self.robot_id = robot_id
-        self.sio = sio
+        self.planner = planner
         self.game_context = context.GameContext()
         self.action: actions.Action | None = None
         self._pose_reached: bool = True
@@ -23,8 +24,8 @@ class Robot:
         self.pose_current = pose.pose
         self.pose_order = pose
         self._pose_reached = True
-        self.sio.emit("pose_start", (self.robot_id, self.pose_order.pose.dict()))
-        self.pose_order.act_after_pose(self.sio)
+        self.planner.set_pose_start(self.robot_id, self.pose_order)
+        self.pose_order.act_after_pose(self.planner)
 
     @property
     def pose_reached(self) -> bool:
@@ -37,11 +38,11 @@ class Robot:
         If reached, a new pose and new action is selected.
         """
         if reached and not self.pose_reached and self.pose_order:
-            self.pose_order.act_after_pose(self.sio)
+            self.pose_order.act_after_pose(self.planner)
         self._pose_reached = reached
         self.pose_order = None
         if self.action and len(self.action.poses) == 0:
-            self.action.act_after_action(self.sio)
+            self.action.act_after_action(self.planner)
             self.action = None
 
     def next_pose(self) -> pose.Pose | None:
@@ -55,8 +56,8 @@ class Robot:
             return None
 
         self.pose_order = self.action.poses.pop(0)
-        self.pose_order.act_before_pose(self.sio)
-        self.sio.emit("pose_order", (self.robot_id, self.pose_order.path_pose.dict()))
+        self.pose_order.act_before_pose(self.planner)
+        self.planner.set_pose_order(self.robot_id, self.pose_order)
         return self.pose_order
 
     def set_action(self, action: "actions.Action"):
@@ -64,5 +65,5 @@ class Robot:
         Set current action.
         """
         self.action = action
-        self.action.act_before_action(self.sio)
+        self.action.act_before_action(self.planner)
         self.next_pose()
