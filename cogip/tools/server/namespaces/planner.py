@@ -80,3 +80,11 @@ class PlannerNamespace(socketio.AsyncNamespace):
         Forward to copilot.
         """
         await self.emit("set_controller", controller, namespace="/copilot")
+
+    async def on_path(self, sid, robot_id: int, path: list[dict[str, float]]):
+        """
+        Callback on robot path.
+        Forward the path to dashboard.
+        """
+        await self.emit("path", (robot_id, path), namespace="/dashboard")
+        await self._recorder.async_record({"pose_order": (robot_id, path)})

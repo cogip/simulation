@@ -3,6 +3,7 @@
 let pose_current = undefined;
 let pose_order = undefined;
 let obstacles = [];
+let path = [];
 
 export function updatePoseCurrent(new_pose) {
   pose_current = new_pose;
@@ -129,13 +130,11 @@ export function drawBoardElement(msg) {
   }
 
   // draw path
-  if (msg.path !== undefined && msg.path.length) {
-    for (let i = 0; i < msg.path.length - 1; i++) {
-      const startPoint = msg.path[i];
-      const endPoint = msg.path[i + 1];
+  for (let i = 0; i < path.length - 1; i++) {
+    const startPoint = path[i];
+    const endPoint = path[i + 1];
 
-      drawPath(startPoint, endPoint, context);
-    }
+    drawPath(startPoint, endPoint, context);
   }
 
   // draw obstacles
@@ -144,6 +143,12 @@ export function drawBoardElement(msg) {
       drawObstacles(obstacle, context);
     });
   }
+}
+
+export function recordPath(msg) {
+  // Just record path.
+  // It is updated on board each time drawBoardElement() is called (on state reception).
+  path = msg;
 }
 
 function drawRobot(x, y, O, context) {

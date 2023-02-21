@@ -83,6 +83,9 @@ def main_opt(
     controller.signal_close_wizard.connect(win.close_wizard)
     controller.signal_actuators_state.connect(win.actuators_state)
 
+    # Connect Controller signals to GameView slots
+    controller.signal_new_robot_path.connect(win.game_view.new_robot_path)
+
     # Show UI
     win.show()
     # win.showFullScreen()

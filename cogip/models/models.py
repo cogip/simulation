@@ -223,7 +223,6 @@ class RobotState(BaseModel):
     cycle: int = 0
     speed_current: Speed = Speed()
     speed_order: Speed = Speed()
-    path: List[Vertex] = []
 
 
 class Obstacle(BaseModel):
