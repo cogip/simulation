@@ -215,6 +215,11 @@
               drawModule.drawBoardElement(msg); // move robot
             }
           })
+          .on("path", function (robot_id, msg) {
+            if (robot_id == 1) {
+              drawModule.recordPath(msg);
+            }
+          })
           .on("wizard", function (msg) {
             wizardModule.openWizardModal(msg, this);
             virtualKeyboard._actualize();

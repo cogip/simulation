@@ -163,6 +163,9 @@ class Planner:
         """
         self._pose_orders[robot_id] = pose_order
         self._sio_ns.emit("pose_order", (robot_id, pose_order.pose.dict()))
+        self._sio_ns.emit(
+            "path", (robot_id, [self._robots[robot_id].pose_current.dict(), pose_order.pose.dict()])
+        )
 
     def set_pose_current(self, robot_id: int, pose: models.Pose) -> None:
         """
