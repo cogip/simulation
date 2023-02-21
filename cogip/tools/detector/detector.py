@@ -36,9 +36,6 @@ class Detector:
             lidar_port: str | None,
             min_distance: int,
             max_distance: int,
-            obstacle_radius: int,
-            obstacle_bb_margin: int,
-            obstacle_bb_vertices: int,
             beacon_radius: int,
             refresh_interval: float,
             emulation: bool):
@@ -51,9 +48,6 @@ class Detector:
             lidar_port: Serial port connected to the Lidar
             min_distance: Minimum distance to detect an obstacle
             max_distance: Maximum distance to detect an obstacle
-            obstacle_radius: Radius of a dynamic obstacle
-            obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
-            obstacle_bb_vertices: Number of obstacle bounding box vertices
             beacon_radius: Radius of the opponent beacon support (a cylinder of 70mm diameter to a cube of 100mm width)
             refresh_interval: Interval between each update of the obstacle list (in seconds)
             emulation: force emulation mode
@@ -64,9 +58,6 @@ class Detector:
         self._properties = Properties(
             min_distance=min_distance,
             max_distance=max_distance,
-            obstacle_radius=obstacle_radius,
-            obstacle_bb_margin=obstacle_bb_margin,
-            obstacle_bb_vertices=obstacle_bb_vertices,
             beacon_radius=beacon_radius,
             refresh_interval=refresh_interval
         )
@@ -268,21 +259,10 @@ class Detector:
             x = robot_pose.x + distance * math.cos(obstacle_angle)
             y = robot_pose.y + distance * math.sin(obstacle_angle)
 
-            # Compute bounding box
-            bb_radius = self.properties.obstacle_radius * (1 + self.properties.obstacle_bb_margin)
-            bb = [
-                models.Vertex(
-                    x=x + bb_radius * math.cos((tmp := (i * 2 * math.pi) / self.properties.obstacle_bb_vertices)),
-                    y=y + bb_radius * math.sin(tmp),
-                )
-                for i in range(self.properties.obstacle_bb_vertices)
-            ]
-
             obstacles.append(models.DynRoundObstacle(
                 x=x,
                 y=y,
-                radius=self.properties.obstacle_radius,
-                bb=bb
+                radius=0.0
             ))
 
         return obstacles
