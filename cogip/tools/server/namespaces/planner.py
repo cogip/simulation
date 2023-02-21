@@ -88,3 +88,9 @@ class PlannerNamespace(socketio.AsyncNamespace):
         """
         await self.emit("path", (robot_id, path), namespace="/dashboard")
         await self._recorder.async_record({"pose_order": (robot_id, path)})
+
+    async def on_config(self, sid, config: dict[str, Any]):
+        """
+        Callback on config message.
+        """
+        await self.emit("config", config, namespace="/dashboard")
