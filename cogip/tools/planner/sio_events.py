@@ -87,6 +87,12 @@ class SioEvents(socketio.ClientNamespace):
         """
         self._planner.command(cmd)
 
+    def on_config_updated(self, config: dict[str, Any]) -> None:
+        """
+        Callback on config update from dashboard.
+        """
+        self._planner.update_config(config)
+
     def on_obstacles(self, robot_id: int, obstacles: Dict[str, Any]):
         """
         Callback on obstacles message.

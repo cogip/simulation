@@ -9,7 +9,8 @@ menu = models.ShellMenu(
         models.MenuEntry(cmd="play", desc="Play"),
         models.MenuEntry(cmd="stop", desc="Stop"),
         models.MenuEntry(cmd="next", desc="Next"),
-        models.MenuEntry(cmd="reset", desc="Reset")
+        models.MenuEntry(cmd="reset", desc="Reset"),
+        models.MenuEntry(cmd="config", desc="Configuration")
     ]
 )
 

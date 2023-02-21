@@ -24,6 +24,31 @@ def main_opt(
         help="Server URL",
         envvar="COGIP_SERVER_URL"
     ),
+    obstacle_radius: int = typer.Option(
+        500, min=100, max=1000,
+        help="Radius of a dynamic obstacle",
+        envvar="PLANNER_OBSTACLE_RADIUS"
+    ),
+    obstacle_bb_margin: float = typer.Option(
+        0.2, min=0, max=1,
+        help="Obstacle bounding box margin in percent of the radius",
+        envvar="PLANNER_OBSTACLE_BB_MARGIN"
+    ),
+    obstacle_bb_vertices: int = typer.Option(
+        6, min=3, max=20,
+        help="Number of obstacle bounding box vertices",
+        envvar="PLANNER_OBSTACLE_BB_VERTICES"
+    ),
+    obstacle_sender_interval: float = typer.Option(
+        0.2, min=0.1, max=2.0,
+        help="Interval between each send of obstacles to dashboards (in seconds)",
+        envvar="PLANNER_OBSTACLE_SENDER_INTERVAL"
+    ),
+    path_refresh_interval: float = typer.Option(
+        0.2, min=0.1, max=2.0,
+        help="Interval between each update of robot paths (in seconds)",
+        envvar="PLANNER_PATH_REFRESH_INTERVAL"
+    ),
     reload: bool = typer.Option(
         False,
         "-r", "--reload",
@@ -40,7 +65,14 @@ def main_opt(
     if debug:
         logger.setLevel(logging.DEBUG)
 
-    args = (server_url,)
+    args = (
+        server_url,
+        obstacle_radius,
+        obstacle_bb_margin,
+        obstacle_bb_vertices,
+        obstacle_sender_interval,
+        path_refresh_interval
+    )
 
     if reload:
         watch_dir = Path(__file__).parent.parent.parent

@@ -1,4 +1,5 @@
 from functools import partial
+import math
 import threading
 import time
 from typing import Any
@@ -11,6 +12,7 @@ from cogip.utils import ThreadLoop
 from . import actions, logger, menu, pose, sio_events
 from .camp import Camp
 from .context import GameContext
+from .properties import Properties
 from .robot import Robot
 from .strategy import Strategy
 
@@ -22,14 +24,31 @@ class Planner:
 
     def __init__(
             self,
-            server_url: str):
+            server_url: str,
+            obstacle_radius: int,
+            obstacle_bb_margin: float,
+            obstacle_bb_vertices: int,
+            obstacle_sender_interval: float,
+            path_refresh_interval: float):
         """
         Class constructor.
 
         Arguments:
             server_url: Server URL
+            obstacle_radius: Radius of a dynamic obstacle
+            obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
+            obstacle_bb_vertices: Number of obstacle bounding box vertices
+            obstacle_sender_interval: Interval between each send of obstacles to dashboards (in seconds)
+            path_refresh_interval: Interval between each update of robot paths (in seconds)
         """
         self._server_url = server_url
+        self._properties = Properties(
+            obstacle_radius=obstacle_radius,
+            obstacle_bb_margin=obstacle_bb_margin,
+            obstacle_bb_vertices=obstacle_bb_vertices,
+            obstacle_sender_interval=obstacle_sender_interval,
+            path_refresh_interval=path_refresh_interval
+        )
         self._retry_connection = True
         self._sio = socketio.Client(logger=False)
         self._sio_ns = sio_events.SioEvents(self)
@@ -42,10 +61,11 @@ class Planner:
         self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
         self._obstacles: dict[int, models.DynObstacleList] = {}
         self._start_pose_menu_entries: dict[int, models.MenuEntry] = {}
+        self._avoidance_path_updaters: dict[int, ThreadLoop] = {}
 
         self._obstacles_sender_loop = ThreadLoop(
             "Obstacles sender loop",
-            0.2,
+            obstacle_sender_interval,
             self.send_obstacles,
             logger=True
         )
@@ -108,6 +128,13 @@ class Planner:
         robot.set_pose_start(self._game_context.get_start_pose(self._start_positions.get(robot_id, robot_id)))
         self.update_start_pose_commands()
         self._obstacles[robot_id] = []
+        self._avoidance_path_updaters[robot_id] = ThreadLoop(
+            f"Avoidance path updater {robot_id}",
+            self._properties.path_refresh_interval,
+            partial(self.update_avoidance_path, robot_id),
+            logger=True
+        )
+        self._avoidance_path_updaters[robot_id].start()
 
     def del_robot(self, robot_id: int) -> None:
         """
@@ -115,6 +142,8 @@ class Planner:
         """
         del self._robots[robot_id]
         self.update_start_pose_commands()
+        self._avoidance_path_updaters[robot_id].stop()
+        del self._avoidance_path_updaters[robot_id]
 
     def update_start_pose_commands(self):
         """
@@ -220,11 +249,34 @@ class Planner:
         return action
 
     def set_obstacles(self, robot_id: int, obstacles: models.DynObstacleList) -> None:
+        """
+        Store obstacles detected by a robot sent by Detector.
+        Add bounding box and radius.
+        """
+        bb_radius = self._properties.obstacle_radius * (1 + self._properties.obstacle_bb_margin)
+        for obstacle in obstacles:
+            obstacle.radius = self._properties.obstacle_radius
+            obstacle.bb = [
+                models.Vertex(
+                    x=obstacle.x + bb_radius * math.cos(
+                        (tmp := (i * 2 * math.pi) / self._properties.obstacle_bb_vertices)
+                    ),
+                    y=obstacle.y + bb_radius * math.sin(tmp),
+                )
+                for i in range(self._properties.obstacle_bb_vertices)
+            ]
+
         self._obstacles[robot_id] = obstacles
 
     def send_obstacles(self) -> None:
         all_obstacles = sum(self._obstacles.values(), start=[])
         self._sio_ns.emit("obstacles", [o.dict() for o in all_obstacles])
+
+    def update_avoidance_path(self, robot_id: int):
+        """
+        Compute avoidance path for a robot, given its current pose, pose order and obstacles.
+        """
+        pass
 
     def command(self, cmd: str) -> None:
         """
@@ -234,11 +286,35 @@ class Planner:
             self.cmd_wizard_test(cmd)
             return
 
+        if cmd == "config":
+            # Get JSON Schema
+            schema = self._properties.schema()
+            # Add namespace in JSON Schema
+            schema["namespace"] = "/planner"
+            # Add current values in JSON Schema
+            for prop, value in self._properties.dict().items():
+                schema["properties"][prop]["value"] = value
+            # Send config
+            self._sio_ns.emit("config", schema)
+            return
+
         if not (cmd_func := getattr(self, f"cmd_{cmd}", None)):
             logger.warning(f"Unknown command: {cmd}")
             return
 
         cmd_func()
+
+    def update_config(self, config: dict[str, Any]) -> None:
+        """
+        Update a Planner property with the value sent by the dashboard.
+        """
+        self._properties.__setattr__(name := config["name"], config["value"])
+        match name:
+            case "obstacle_sender_interval":
+                self._obstacles_sender_loop.interval = self._properties.path_refresh_interval
+            case "path_refresh_interval":
+                for thread in self._avoidance_path_updaters.values():
+                    thread.interval = self._properties.path_refresh_interval
 
     def cmd_play(self) -> None:
         """
