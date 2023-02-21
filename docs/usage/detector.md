@@ -61,21 +61,9 @@ Options:
                                   env var: DETECTOR_MAX_DISTANCE
                                   default: 2500
 
-  --obstacle-radius INTEGER       Radius of a dynamic obstacle
-                                  env var: DETECTOR_OBSTACLE_RADIUS
-                                  default: 500
-
-  --obstacle-bb-margin FLOAT      Obstacle bounding box margin in percent of the radius
-                                  env var: DETECTOR_OBSTACLE_BB_MARGIN
-                                  default: 0.2
-
-  --obstacle-bb-vertices INTEGER  Number of obstacle bounding box vertices
-                                  env var: DETECTOR_OBSTACLE_BB_VERTICES
-                                  default: 6
-
   --beacon-radius INTEGER         Radius of the opponent beacon support
                                   (a cylinder of 70mm diameter to a cube of 100mm width)
-                                  env var: DETECTOR_OBSTACLE_RADIUS
+                                  env var: DETECTOR_BEACON_RADIUS
                                   default: 35
 
   --refresh-interval FLOAT        Interval between each update of the obstacle list (in seconds)

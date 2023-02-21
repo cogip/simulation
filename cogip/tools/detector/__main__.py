@@ -48,25 +48,10 @@ def main_opt(
         help="Maximum distance to detect an obstacle (mm)",
         envvar="DETECTOR_MAX_DISTANCE"
     ),
-    obstacle_radius: int = typer.Option(
-        500, min=100, max=1000,
-        help="Radius of a dynamic obstacle",
-        envvar="DETECTOR_OBSTACLE_RADIUS"
-    ),
-    obstacle_bb_margin: float = typer.Option(
-        0.2, min=0, max=1,
-        help="Obstacle bounding box margin in percent of the radius",
-        envvar="DETECTOR_OBSTACLE_BB_MARGIN"
-    ),
-    obstacle_bb_vertices: int = typer.Option(
-        6, min=3, max=20,
-        help="Number of obstacle bounding box vertices",
-        envvar="DETECTOR_OBSTACLE_BB_VERTICES"
-    ),
     beacon_radius: int = typer.Option(
         35, min=10, max=150,
         help="Radius of the opponent beacon support (a cylinder of 70mm diameter to a cube of 100mm width)",
-        envvar="DETECTOR_OBSTACLE_RADIUS"
+        envvar="DETECTOR_BEACON_RADIUS"
     ),
     refresh_interval: float = typer.Option(
         0.2, min=0.1, max=2.0,
@@ -101,9 +86,6 @@ def main_opt(
         lidar_port,
         min_distance,
         max_distance,
-        obstacle_radius,
-        obstacle_bb_margin,
-        obstacle_bb_vertices,
         beacon_radius,
         refresh_interval,
         emulation
