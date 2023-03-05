@@ -20,17 +20,17 @@ class Pid(BaseModel):
         description="PID name"
     )
     kp: float = Field(
-        ..., ge=0, le=1000, multiple_of=0.01,
+        ..., ge=0, le=100000, multiple_of=0.001,
         title="KP",
         description="KP value"
     )
     ki: float = Field(
-        ..., ge=0, le=1000, multiple_of=0.01,
+        ..., ge=0, le=100000, multiple_of=0.001,
         title="KI",
         description="KI value"
     )
     kd: float = Field(
-        ..., ge=0, le=1000, multiple_of=0.01,
+        ..., ge=0, le=100000, multiple_of=0.001,
         title="KD",
         description="KD value"
     )

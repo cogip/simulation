@@ -104,6 +104,7 @@ class NumberProperty(QtCore.QObject):
         layout.addWidget(label, row, 0)
 
         self._value = QtWidgets.QDoubleSpinBox()
+        self._value.setDecimals(4)
         self._value.valueChanged.connect(self.value_changed)
         if minimum is not None:
             self._value.setMinimum(minimum)

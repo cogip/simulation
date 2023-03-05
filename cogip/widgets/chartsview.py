@@ -30,10 +30,10 @@ class ChartView(QtWidgets.QWidget):
 
     need_reset: bool = False
     slider_events_disabled: bool = False
-    default_range_max_x: int = 100
-    default_range_max_y: int = 20
-    range_max_x: int = default_range_max_x
-    range_max_y: int = default_range_max_y
+    default_range_max_x: float = 100
+    default_range_max_y: float = 0.5
+    range_max_x: float = default_range_max_x
+    range_max_y: float = default_range_max_y
     zoom_max: int = 10
 
     def __init__(self, parent=None, name: Optional[str] = None):
