@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x13PB_Controller.proto\"/\n\rPB_Controller\x12\x1e\n\x02id\x18\x01 \x01(\x0e\x32\x12.PB_ControllerEnum*O\n\x11PB_ControllerEnum\x12\x0b\n\x07QUADPID\x10\x00\x12\x16\n\x12\x41NGULAR_SPEED_TEST\x10\x01\x12\x15\n\x11LINEAR_SPEED_TEST\x10\x02\x62\x06proto3'
+  serialized_pb=b'\n\x13PB_Controller.proto\"/\n\rPB_Controller\x12\x1e\n\x02id\x18\x01 \x01(\x0e\x32\x12.PB_ControllerEnum*i\n\x11PB_ControllerEnum\x12\x0b\n\x07QUADPID\x10\x00\x12\x16\n\x12\x41NGULAR_SPEED_TEST\x10\x01\x12\x15\n\x11LINEAR_SPEED_TEST\x10\x02\x12\x18\n\x14LINEAR_POSE_DISABLED\x10\x03\x62\x06proto3'
 )
 
 _PB_CONTROLLERENUM = _descriptor.EnumDescriptor(
@@ -45,11 +45,16 @@ _PB_CONTROLLERENUM = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='LINEAR_POSE_DISABLED', index=3, number=3,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=72,
-  serialized_end=151,
+  serialized_end=177,
 )
 _sym_db.RegisterEnumDescriptor(_PB_CONTROLLERENUM)
 
@@ -57,6 +62,7 @@ PB_ControllerEnum = enum_type_wrapper.EnumTypeWrapper(_PB_CONTROLLERENUM)
 QUADPID = 0
 ANGULAR_SPEED_TEST = 1
 LINEAR_SPEED_TEST = 2
+LINEAR_POSE_DISABLED = 3
 
 
 
