@@ -257,4 +257,5 @@ class Copilot:
 
         Forward info to the planner.
         """
-        await self._sio_events.emit("pose_reached")
+        if self._sio.connected:
+            await self._sio_events.emit("pose_reached")
