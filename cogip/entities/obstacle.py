@@ -33,8 +33,8 @@ class ObstacleEntity(Qt3DCore.QEntity):
             x: int = 0,
             y: int = 1000,
             rotation: int = 0,
-            length: int = 400,
-            width: int = 400,
+            length: int = 225,
+            width: int = 225,
             height: int = 350):
         """
         Class constructor.
