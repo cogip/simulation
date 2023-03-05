@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\x12PB_Actuators.proto\"~\n\x08PB_Servo\x12%\n\x05group\x18\x01 \x01(\x0e\x32\x16.PB_ActuatorsGroupEnum\x12\r\n\x05order\x18\x02 \x01(\r\x12\x19\n\x02id\x18\x03 \x01(\x0e\x32\r.PB_ServoEnum\x12\x10\n\x08position\x18\x04 \x01(\r\x12\x0f\n\x07\x63ommand\x18\x05 \x01(\r\"\x84\x01\n\x07PB_Pump\x12%\n\x05group\x18\x01 \x01(\x0e\x32\x16.PB_ActuatorsGroupEnum\x12\r\n\x05order\x18\x02 \x01(\r\x12\x18\n\x02id\x18\x03 \x01(\x0e\x32\x0c.PB_PumpEnum\x12\x11\n\tactivated\x18\x04 \x01(\x08\x12\x16\n\x0eunder_pressure\x18\x05 \x01(\x08\"G\n\x11PB_ActuatorsState\x12\x19\n\x06servos\x18\x01 \x03(\x0b\x32\t.PB_Servo\x12\x17\n\x05pumps\x18\x02 \x03(\x0b\x32\x08.PB_Pump\"K\n\x0fPB_ServoCommand\x12\x19\n\x02id\x18\x01 \x01(\x0e\x32\r.PB_ServoEnum\x12\x0f\n\x07\x63ommand\x18\x02 \x01(\r\x12\x0c\n\x04time\x18\x03 \x01(\r\";\n\x0ePB_PumpCommand\x12\x18\n\x02id\x18\x01 \x01(\x0e\x32\x0c.PB_PumpEnum\x12\x0f\n\x07\x63ommand\x18\x02 \x01(\x08\"c\n\x12PB_ActuatorCommand\x12!\n\x05servo\x18\x01 \x01(\x0b\x32\x10.PB_ServoCommandH\x00\x12\x1f\n\x04pump\x18\x02 \x01(\x0b\x32\x0f.PB_PumpCommandH\x00\x42\t\n\x07\x63ommand*+\n\x14PB_ActuatorsTypeEnum\x12\t\n\x05SERVO\x10\x00\x12\x08\n\x04PUMP\x10\x01*%\n\x15PB_ActuatorsGroupEnum\x12\x0c\n\x08NO_GROUP\x10\x00*\xd7\x01\n\x0cPB_ServoEnum\x12\n\n\x06UNUSED\x10\x00\x12\x14\n\x10\x41RM_CENTRAL_BASE\x10\x01\x12\x13\n\x0f\x41RM_CENTRAL_MID\x10\x02\x12\x14\n\x10\x41RM_CENTRAL_HEAD\x10\x03\x12\x14\n\x10\x41RM_CENTRAL_LIFT\x10\x05\x12\x12\n\x0e\x41RM_RIGHT_BASE\x10\t\x12\x12\n\x0e\x41RM_RIGHT_HEAD\x10\n\x12\x11\n\rARM_LEFT_BASE\x10\x0b\x12\x11\n\rARM_LEFT_HEAD\x10\x0c\x12\x0b\n\x07STORAGE\x10\x04\x12\t\n\x05WHEEL\x10\r*J\n\x0bPB_PumpEnum\x12\x11\n\rARM_LEFT_PUMP\x10\x00\x12\x14\n\x10\x41RM_CENTRAL_PUMP\x10\x01\x12\x12\n\x0e\x41RM_RIGHT_PUMP\x10\x02\x62\x06proto3'
+  serialized_pb=b'\n\x12PB_Actuators.proto\"~\n\x08PB_Servo\x12%\n\x05group\x18\x01 \x01(\x0e\x32\x16.PB_ActuatorsGroupEnum\x12\r\n\x05order\x18\x02 \x01(\r\x12\x19\n\x02id\x18\x03 \x01(\x0e\x32\r.PB_ServoEnum\x12\x10\n\x08position\x18\x04 \x01(\r\x12\x0f\n\x07\x63ommand\x18\x05 \x01(\r\"\x84\x01\n\x07PB_Pump\x12%\n\x05group\x18\x01 \x01(\x0e\x32\x16.PB_ActuatorsGroupEnum\x12\r\n\x05order\x18\x02 \x01(\r\x12\x18\n\x02id\x18\x03 \x01(\x0e\x32\x0c.PB_PumpEnum\x12\x11\n\tactivated\x18\x04 \x01(\x08\x12\x16\n\x0eunder_pressure\x18\x05 \x01(\x08\"\x90\x01\n\x08PB_Motor\x12%\n\x05group\x18\x01 \x01(\x0e\x32\x16.PB_ActuatorsGroupEnum\x12\r\n\x05order\x18\x02 \x01(\r\x12\x19\n\x02id\x18\x03 \x01(\x0e\x32\r.PB_MotorEnum\x12\x11\n\tactivated\x18\x04 \x01(\x08\x12\x11\n\tdirection\x18\x05 \x01(\x08\x12\r\n\x05speed\x18\x06 \x01(\r\"b\n\x11PB_ActuatorsState\x12\x19\n\x06servos\x18\x01 \x03(\x0b\x32\t.PB_Servo\x12\x17\n\x05pumps\x18\x02 \x03(\x0b\x32\x08.PB_Pump\x12\x19\n\x06motors\x18\x03 \x03(\x0b\x32\t.PB_Motor\"K\n\x0fPB_ServoCommand\x12\x19\n\x02id\x18\x01 \x01(\x0e\x32\r.PB_ServoEnum\x12\x0f\n\x07\x63ommand\x18\x02 \x01(\r\x12\x0c\n\x04time\x18\x03 \x01(\r\";\n\x0ePB_PumpCommand\x12\x18\n\x02id\x18\x01 \x01(\x0e\x32\x0c.PB_PumpEnum\x12\x0f\n\x07\x63ommand\x18\x02 \x01(\x08\"N\n\x0fPB_MotorCommand\x12\x19\n\x02id\x18\x01 \x01(\x0e\x32\r.PB_MotorEnum\x12\x11\n\tdirection\x18\x03 \x01(\x08\x12\r\n\x05speed\x18\x04 \x01(\r\"\x86\x01\n\x12PB_ActuatorCommand\x12!\n\x05servo\x18\x01 \x01(\x0b\x32\x10.PB_ServoCommandH\x00\x12\x1f\n\x04pump\x18\x02 \x01(\x0b\x32\x0f.PB_PumpCommandH\x00\x12!\n\x05motor\x18\x03 \x01(\x0b\x32\x10.PB_MotorCommandH\x00\x42\t\n\x07\x63ommand*6\n\x14PB_ActuatorsTypeEnum\x12\t\n\x05SERVO\x10\x00\x12\x08\n\x04PUMP\x10\x01\x12\t\n\x05MOTOR\x10\x02*%\n\x15PB_ActuatorsGroupEnum\x12\x0c\n\x08NO_GROUP\x10\x00* \n\x0cPB_ServoEnum\x12\x10\n\x0cUNUSED_SERVO\x10\x00*\x1e\n\x0bPB_PumpEnum\x12\x0f\n\x0bUNUSED_PUMP\x10\x00*2\n\x0cPB_MotorEnum\x12\x10\n\x0cUNUSED_MOTOR\x10\x00\x12\x10\n\x0c\x43\x45NTRAL_LIFT\x10\x01\x62\x06proto3'
 )
 
 _PB_ACTUATORSTYPEENUM = _descriptor.EnumDescriptor(
@@ -40,11 +40,16 @@ _PB_ACTUATORSTYPEENUM = _descriptor.EnumDescriptor(
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='MOTOR', index=2, number=2,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=597,
-  serialized_end=640,
+  serialized_start=887,
+  serialized_end=941,
 )
 _sym_db.RegisterEnumDescriptor(_PB_ACTUATORSTYPEENUM)
 
@@ -64,8 +69,8 @@ _PB_ACTUATORSGROUPENUM = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=642,
-  serialized_end=679,
+  serialized_start=943,
+  serialized_end=980,
 )
 _sym_db.RegisterEnumDescriptor(_PB_ACTUATORSGROUPENUM)
 
@@ -78,65 +83,15 @@ _PB_SERVOENUM = _descriptor.EnumDescriptor(
   create_key=_descriptor._internal_create_key,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='UNUSED', index=0, number=0,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='ARM_CENTRAL_BASE', index=1, number=1,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='ARM_CENTRAL_MID', index=2, number=2,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='ARM_CENTRAL_HEAD', index=3, number=3,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='ARM_CENTRAL_LIFT', index=4, number=5,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='ARM_RIGHT_BASE', index=5, number=9,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='ARM_RIGHT_HEAD', index=6, number=10,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='ARM_LEFT_BASE', index=7, number=11,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='ARM_LEFT_HEAD', index=8, number=12,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='STORAGE', index=9, number=4,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='WHEEL', index=10, number=13,
+      name='UNUSED_SERVO', index=0, number=0,
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=682,
-  serialized_end=897,
+  serialized_start=982,
+  serialized_end=1014,
 )
 _sym_db.RegisterEnumDescriptor(_PB_SERVOENUM)
 
@@ -149,46 +104,53 @@ _PB_PUMPENUM = _descriptor.EnumDescriptor(
   create_key=_descriptor._internal_create_key,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='ARM_LEFT_PUMP', index=0, number=0,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='ARM_CENTRAL_PUMP', index=1, number=1,
-      serialized_options=None,
-      type=None,
-      create_key=_descriptor._internal_create_key),
-    _descriptor.EnumValueDescriptor(
-      name='ARM_RIGHT_PUMP', index=2, number=2,
+      name='UNUSED_PUMP', index=0, number=0,
       serialized_options=None,
       type=None,
       create_key=_descriptor._internal_create_key),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=899,
-  serialized_end=973,
+  serialized_start=1016,
+  serialized_end=1046,
 )
 _sym_db.RegisterEnumDescriptor(_PB_PUMPENUM)
 
 PB_PumpEnum = enum_type_wrapper.EnumTypeWrapper(_PB_PUMPENUM)
+_PB_MOTORENUM = _descriptor.EnumDescriptor(
+  name='PB_MotorEnum',
+  full_name='PB_MotorEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  create_key=_descriptor._internal_create_key,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNUSED_MOTOR', index=0, number=0,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+    _descriptor.EnumValueDescriptor(
+      name='CENTRAL_LIFT', index=1, number=1,
+      serialized_options=None,
+      type=None,
+      create_key=_descriptor._internal_create_key),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=1048,
+  serialized_end=1098,
+)
+_sym_db.RegisterEnumDescriptor(_PB_MOTORENUM)
+
+PB_MotorEnum = enum_type_wrapper.EnumTypeWrapper(_PB_MOTORENUM)
 SERVO = 0
 PUMP = 1
+MOTOR = 2
 NO_GROUP = 0
-UNUSED = 0
-ARM_CENTRAL_BASE = 1
-ARM_CENTRAL_MID = 2
-ARM_CENTRAL_HEAD = 3
-ARM_CENTRAL_LIFT = 5
-ARM_RIGHT_BASE = 9
-ARM_RIGHT_HEAD = 10
-ARM_LEFT_BASE = 11
-ARM_LEFT_HEAD = 12
-STORAGE = 4
-WHEEL = 13
-ARM_LEFT_PUMP = 0
-ARM_CENTRAL_PUMP = 1
-ARM_RIGHT_PUMP = 2
+UNUSED_SERVO = 0
+UNUSED_PUMP = 0
+UNUSED_MOTOR = 0
+CENTRAL_LIFT = 1
 
 
 
@@ -312,6 +274,73 @@ _PB_PUMP = _descriptor.Descriptor(
 )
 
 
+_PB_MOTOR = _descriptor.Descriptor(
+  name='PB_Motor',
+  full_name='PB_Motor',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='group', full_name='PB_Motor.group', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='order', full_name='PB_Motor.order', index=1,
+      number=2, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='id', full_name='PB_Motor.id', index=2,
+      number=3, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='activated', full_name='PB_Motor.activated', index=3,
+      number=4, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='direction', full_name='PB_Motor.direction', index=4,
+      number=5, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='speed', full_name='PB_Motor.speed', index=5,
+      number=6, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=286,
+  serialized_end=430,
+)
+
+
 _PB_ACTUATORSSTATE = _descriptor.Descriptor(
   name='PB_ActuatorsState',
   full_name='PB_ActuatorsState',
@@ -334,6 +363,13 @@ _PB_ACTUATORSSTATE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='motors', full_name='PB_ActuatorsState.motors', index=2,
+      number=3, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -346,8 +382,8 @@ _PB_ACTUATORSSTATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=285,
-  serialized_end=356,
+  serialized_start=432,
+  serialized_end=530,
 )
 
 
@@ -392,8 +428,8 @@ _PB_SERVOCOMMAND = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=358,
-  serialized_end=433,
+  serialized_start=532,
+  serialized_end=607,
 )
 
 
@@ -431,8 +467,54 @@ _PB_PUMPCOMMAND = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=435,
-  serialized_end=494,
+  serialized_start=609,
+  serialized_end=668,
+)
+
+
+_PB_MOTORCOMMAND = _descriptor.Descriptor(
+  name='PB_MotorCommand',
+  full_name='PB_MotorCommand',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='PB_MotorCommand.id', index=0,
+      number=1, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='direction', full_name='PB_MotorCommand.direction', index=1,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='speed', full_name='PB_MotorCommand.speed', index=2,
+      number=4, type=13, cpp_type=3, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=670,
+  serialized_end=748,
 )
 
 
@@ -458,6 +540,13 @@ _PB_ACTUATORCOMMAND = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='motor', full_name='PB_ActuatorCommand.motor', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -475,36 +564,47 @@ _PB_ACTUATORCOMMAND = _descriptor.Descriptor(
       create_key=_descriptor._internal_create_key,
     fields=[]),
   ],
-  serialized_start=496,
-  serialized_end=595,
+  serialized_start=751,
+  serialized_end=885,
 )
 
 _PB_SERVO.fields_by_name['group'].enum_type = _PB_ACTUATORSGROUPENUM
 _PB_SERVO.fields_by_name['id'].enum_type = _PB_SERVOENUM
 _PB_PUMP.fields_by_name['group'].enum_type = _PB_ACTUATORSGROUPENUM
 _PB_PUMP.fields_by_name['id'].enum_type = _PB_PUMPENUM
+_PB_MOTOR.fields_by_name['group'].enum_type = _PB_ACTUATORSGROUPENUM
+_PB_MOTOR.fields_by_name['id'].enum_type = _PB_MOTORENUM
 _PB_ACTUATORSSTATE.fields_by_name['servos'].message_type = _PB_SERVO
 _PB_ACTUATORSSTATE.fields_by_name['pumps'].message_type = _PB_PUMP
+_PB_ACTUATORSSTATE.fields_by_name['motors'].message_type = _PB_MOTOR
 _PB_SERVOCOMMAND.fields_by_name['id'].enum_type = _PB_SERVOENUM
 _PB_PUMPCOMMAND.fields_by_name['id'].enum_type = _PB_PUMPENUM
+_PB_MOTORCOMMAND.fields_by_name['id'].enum_type = _PB_MOTORENUM
 _PB_ACTUATORCOMMAND.fields_by_name['servo'].message_type = _PB_SERVOCOMMAND
 _PB_ACTUATORCOMMAND.fields_by_name['pump'].message_type = _PB_PUMPCOMMAND
+_PB_ACTUATORCOMMAND.fields_by_name['motor'].message_type = _PB_MOTORCOMMAND
 _PB_ACTUATORCOMMAND.oneofs_by_name['command'].fields.append(
   _PB_ACTUATORCOMMAND.fields_by_name['servo'])
 _PB_ACTUATORCOMMAND.fields_by_name['servo'].containing_oneof = _PB_ACTUATORCOMMAND.oneofs_by_name['command']
 _PB_ACTUATORCOMMAND.oneofs_by_name['command'].fields.append(
   _PB_ACTUATORCOMMAND.fields_by_name['pump'])
 _PB_ACTUATORCOMMAND.fields_by_name['pump'].containing_oneof = _PB_ACTUATORCOMMAND.oneofs_by_name['command']
+_PB_ACTUATORCOMMAND.oneofs_by_name['command'].fields.append(
+  _PB_ACTUATORCOMMAND.fields_by_name['motor'])
+_PB_ACTUATORCOMMAND.fields_by_name['motor'].containing_oneof = _PB_ACTUATORCOMMAND.oneofs_by_name['command']
 DESCRIPTOR.message_types_by_name['PB_Servo'] = _PB_SERVO
 DESCRIPTOR.message_types_by_name['PB_Pump'] = _PB_PUMP
+DESCRIPTOR.message_types_by_name['PB_Motor'] = _PB_MOTOR
 DESCRIPTOR.message_types_by_name['PB_ActuatorsState'] = _PB_ACTUATORSSTATE
 DESCRIPTOR.message_types_by_name['PB_ServoCommand'] = _PB_SERVOCOMMAND
 DESCRIPTOR.message_types_by_name['PB_PumpCommand'] = _PB_PUMPCOMMAND
+DESCRIPTOR.message_types_by_name['PB_MotorCommand'] = _PB_MOTORCOMMAND
 DESCRIPTOR.message_types_by_name['PB_ActuatorCommand'] = _PB_ACTUATORCOMMAND
 DESCRIPTOR.enum_types_by_name['PB_ActuatorsTypeEnum'] = _PB_ACTUATORSTYPEENUM
 DESCRIPTOR.enum_types_by_name['PB_ActuatorsGroupEnum'] = _PB_ACTUATORSGROUPENUM
 DESCRIPTOR.enum_types_by_name['PB_ServoEnum'] = _PB_SERVOENUM
 DESCRIPTOR.enum_types_by_name['PB_PumpEnum'] = _PB_PUMPENUM
+DESCRIPTOR.enum_types_by_name['PB_MotorEnum'] = _PB_MOTORENUM
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 PB_Servo = _reflection.GeneratedProtocolMessageType('PB_Servo', (_message.Message,), {
@@ -520,6 +620,13 @@ PB_Pump = _reflection.GeneratedProtocolMessageType('PB_Pump', (_message.Message,
   # @@protoc_insertion_point(class_scope:PB_Pump)
   })
 _sym_db.RegisterMessage(PB_Pump)
+
+PB_Motor = _reflection.GeneratedProtocolMessageType('PB_Motor', (_message.Message,), {
+  'DESCRIPTOR' : _PB_MOTOR,
+  '__module__' : 'PB_Actuators_pb2'
+  # @@protoc_insertion_point(class_scope:PB_Motor)
+  })
+_sym_db.RegisterMessage(PB_Motor)
 
 PB_ActuatorsState = _reflection.GeneratedProtocolMessageType('PB_ActuatorsState', (_message.Message,), {
   'DESCRIPTOR' : _PB_ACTUATORSSTATE,
@@ -541,6 +648,13 @@ PB_PumpCommand = _reflection.GeneratedProtocolMessageType('PB_PumpCommand', (_me
   # @@protoc_insertion_point(class_scope:PB_PumpCommand)
   })
 _sym_db.RegisterMessage(PB_PumpCommand)
+
+PB_MotorCommand = _reflection.GeneratedProtocolMessageType('PB_MotorCommand', (_message.Message,), {
+  'DESCRIPTOR' : _PB_MOTORCOMMAND,
+  '__module__' : 'PB_Actuators_pb2'
+  # @@protoc_insertion_point(class_scope:PB_MotorCommand)
+  })
+_sym_db.RegisterMessage(PB_MotorCommand)
 
 PB_ActuatorCommand = _reflection.GeneratedProtocolMessageType('PB_ActuatorCommand', (_message.Message,), {
   'DESCRIPTOR' : _PB_ACTUATORCOMMAND,
