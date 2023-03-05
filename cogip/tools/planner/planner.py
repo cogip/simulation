@@ -135,6 +135,7 @@ class Planner:
             logger=True
         )
         self._avoidance_path_updaters[robot_id].start()
+        self._sio_ns.emit("set_controller", (robot_id, robot.controller.value))
 
     def del_robot(self, robot_id: int) -> None:
         """
@@ -180,6 +181,13 @@ class Planner:
         for robot_id in robot_ids:
             self.add_robot(robot_id)
 
+    def reset_controllers(self):
+        new_controller = self._game_context.default_controller
+        for robot_id, robot in self._robots:
+            if robot.controller == new_controller:
+                continue
+            robot.controller = new_controller
+            self._sio_ns.emit("set_controller", (robot_id, new_controller.value))
     def set_pose_start(self, robot_id: int, pose_start: pose.Pose):
         """
         Set the start position of the robot for the next game.
@@ -415,14 +423,7 @@ class Planner:
                     return
                 self._game_context.strategy = new_strategy
                 self.reset()
-                match new_strategy:
-                    case Strategy.AngularSpeedTest:
-                        controller = ControllerEnum.ANGULAR_SPEED_TEST
-                    case Strategy.LinearSpeedTest:
-                        controller = ControllerEnum.LINEAR_SPEED_TEST
-                    case _:
-                        controller = ControllerEnum.QUADPID
-                self._sio_ns.emit("set_controller", controller.value)
+                self.reset_controllers()
                 logger.info(f'Wizard: New strategy: {self._game_context.strategy.name}')
             case chose_start_pose if chose_start_pose.startswith("Choose Start Position"):
                 if robot := self._robots.get(robot_id := message.get("robot_id")):

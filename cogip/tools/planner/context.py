@@ -1,3 +1,4 @@
+from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.singleton import Singleton
 from .camp import Camp
 from .pose import AdaptedPose, Pose
@@ -32,6 +33,16 @@ class GameContext(metaclass=Singleton):
         """
         self.playing = False
         self.score = 0
+
+    @property
+    def default_controller(self) -> ControllerEnum:
+        match self._strategy:
+            case Strategy.AngularSpeedTest:
+                return ControllerEnum.ANGULAR_SPEED_TEST
+            case Strategy.LinearSpeedTest:
+                return ControllerEnum.LINEAR_SPEED_TEST
+            case _:
+                return ControllerEnum.QUADPID
 
     @classmethod
     def get_start_pose(cls, n: int) -> Pose | None:
