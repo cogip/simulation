@@ -9,6 +9,7 @@ from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 import socketio
 
+from cogip import logger
 from cogip.models import models
 from cogip.models.actuators import ActuatorCommand, ActuatorsState
 
@@ -179,18 +180,16 @@ class SocketioController(QtCore.QObject):
             Callback on server connection.
             """
             polling2.poll(lambda: self.sio.connected is True, step=0.2, poll_forever=True)
+            logger.info("Dashboard connected to cogip-server")
             self.sio.emit("connected", namespace="/dashboard")
 
-        @self.sio.on("monitor", namespace="/monitor")
+        @self.sio.on("connect", namespace="/monitor")
         def monitor_connect():
             """
             Callback on server connection.
             """
-            polling2.poll(
-                lambda: self.sio.connected is True,
-                step=1,
-                poll_forever=True
-            )
+            polling2.poll(lambda: self.sio.connected is True, step=0.2, poll_forever=True)
+            logger.info("Monitor connected to cogip-server")
             self.sio.emit("connected", namespace="/monitor")
             self.signal_new_console_text.emit("Connected to server")
             self.signal_connected.emit(True)
@@ -204,21 +203,29 @@ class SocketioController(QtCore.QObject):
                and isinstance(data, dict) \
                and (message := data.get("message")) \
                and message == "A monitor is already connected":
-                print(f"Error: {message}.")
+                logger.error(f"Error: {message}.")
                 self._retry_connection = False
                 self.signal_exit.emit()
                 return
-            print("Connection error:", data)
+            logger.error("Monitor connection error:", data)
             self.signal_new_console_text.emit("Connection to server failed.")
             self.signal_connected.emit(False)
 
+        @self.sio.event(namespace="/dashboard")
+        def dashboard_disconnect():
+            """
+            Callback on server disconnection.
+            """
+            logger.info("Dashboard disconnected from cogip-server")
+
         @self.sio.event(namespace="/monitor")
-        def disconnect():
+        def monitor_disconnect():
             """
             Callback on server disconnection.
             """
             self.signal_new_console_text.emit("Disconnected from server.")
             self.signal_connected.emit(False)
+            logger.info("Monitor disconnected from cogip-server")
 
         @self.sio.on("shell_menu", namespace="/dashboard")
         def on_shell_menu(robot_id: int, menu: Dict[str, Any]) -> None:
