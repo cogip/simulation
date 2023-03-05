@@ -15,6 +15,7 @@ class Robot:
         self._pose_reached: bool = True
         self.pose_current: models.Pose | None = None
         self.pose_order: pose.Pose | None = None
+        self.controller: ControllerEnum = self.game_context.default_controller
 
     def set_pose_start(self, pose: pose.Pose):
         """

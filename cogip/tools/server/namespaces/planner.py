@@ -74,12 +74,12 @@ class PlannerNamespace(socketio.AsyncNamespace):
         message["namespace"] = "/planner"
         await self.emit("wizard", message, namespace="/dashboard")
 
-    async def on_set_controller(self, sid, controller: int):
+    async def on_set_controller(self, sid, robot_id, controller: int):
         """
         Callback on set_controller message.
         Forward to copilot.
         """
-        await self.emit("set_controller", controller, namespace="/copilot")
+        await self.emit("set_controller", controller, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
 
     async def on_path(self, sid, robot_id: int, path: list[dict[str, float]]):
         """
