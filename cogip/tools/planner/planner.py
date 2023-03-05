@@ -62,7 +62,6 @@ class Planner:
         self._obstacles: dict[int, models.DynObstacleList] = {}
         self._start_pose_menu_entries: dict[int, models.MenuEntry] = {}
         self._avoidance_path_updaters: dict[int, ThreadLoop] = {}
-
         self._obstacles_sender_loop = ThreadLoop(
             "Obstacles sender loop",
             obstacle_sender_interval,
@@ -127,7 +126,6 @@ class Planner:
         self._robots[robot_id] = (robot := Robot(robot_id, self))
         robot.set_pose_start(self._game_context.get_start_pose(self._start_positions.get(robot_id, robot_id)))
         self.update_start_pose_commands()
-        self._obstacles[robot_id] = []
         self._avoidance_path_updaters[robot_id] = ThreadLoop(
             f"Avoidance path updater {robot_id}",
             self._properties.path_refresh_interval,
@@ -256,15 +254,20 @@ class Planner:
         action.robot = robot
         return action
 
-    def set_obstacles(self, robot_id: int, obstacles: models.DynObstacleList) -> None:
+    def set_obstacles(self, robot_id: int, obstacles: list[models.Vertex]) -> None:
         """
         Store obstacles detected by a robot sent by Detector.
         Add bounding box and radius.
         """
+        if not (robot := self._robots.get(robot_id)):
+            return
+
+        robot.obstacles = []
+
         bb_radius = self._properties.obstacle_radius * (1 + self._properties.obstacle_bb_margin)
         for obstacle in obstacles:
-            obstacle.radius = self._properties.obstacle_radius
-            obstacle.bb = [
+            radius = self._properties.obstacle_radius
+            bb = [
                 models.Vertex(
                     x=obstacle.x + bb_radius * math.cos(
                         (tmp := (i * 2 * math.pi) / self._properties.obstacle_bb_vertices)
@@ -273,12 +276,19 @@ class Planner:
                 )
                 for i in range(self._properties.obstacle_bb_vertices)
             ]
+            robot.obstacles.append(models.DynRoundObstacle(
+                x=obstacle.x,
+                y=obstacle.y,
+                radius=radius,
+                bb=bb
+            ))
 
-        self._obstacles[robot_id] = obstacles
+    @property
+    def all_obstacles(self) -> list[models.DynObstacleList]:
+        return sum([robot.obstacles for robot in self._robots.values()], start=[])
 
     def send_obstacles(self) -> None:
-        all_obstacles = sum(self._obstacles.values(), start=[])
-        self._sio_ns.emit("obstacles", [o.dict() for o in all_obstacles])
+        self._sio_ns.emit("obstacles", [o.dict(exclude_defaults=True) for o in self.all_obstacles])
 
     def update_avoidance_path(self, robot_id: int):
         """

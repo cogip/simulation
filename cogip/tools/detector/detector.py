@@ -241,11 +241,11 @@ class Detector:
 
         return filtered_distances
 
-    def generate_obstacles(self, robot_pose: models.Pose, distances: List[int]):
+    def generate_obstacles(self, robot_pose: models.Pose, distances: List[int]) -> list[models.Vertex]:
         """
         Update obstacles list from lidar data.
         """
-        obstacles = []
+        obstacles: list[models.Vertex] = []
 
         for angle, distance in enumerate(distances):
             if distance < self.properties.min_distance or \
@@ -259,11 +259,7 @@ class Detector:
             x = robot_pose.x + distance * math.cos(obstacle_angle)
             y = robot_pose.y + distance * math.sin(obstacle_angle)
 
-            obstacles.append(models.DynRoundObstacle(
-                x=x,
-                y=y,
-                radius=0.0
-            ))
+            obstacles.append(models.Vertex(x=x, y=y))
 
         return obstacles
 
@@ -279,7 +275,7 @@ class Detector:
         obstacles = self.generate_obstacles(robot_pose, filtered_distances)
         logger.debug(f"Generated obstacles: {obstacles}")
         if self._sio.connected:
-            self._sio.emit("obstacles", [o.dict() for o in obstacles], namespace="/detector")
+            self._sio.emit("obstacles", [o.dict(exclude_defaults=True) for o in obstacles], namespace="/detector")
 
     def start_lidar(self):
         """

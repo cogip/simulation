@@ -99,7 +99,7 @@ class SioEvents(socketio.ClientNamespace):
         """
         self._planner.set_obstacles(
             robot_id,
-            parse_obj_as(models.DynObstacleList, obstacles)
+            parse_obj_as(list[models.Vertex], obstacles)
         )
 
     def on_wizard(self, message: dict[str, Any]):
