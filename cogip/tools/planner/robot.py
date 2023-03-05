@@ -18,6 +18,7 @@ class Robot:
         self.pose_order: pose.Pose | None = None
         self.last_avoidance_pose: pose.Pose | None = None
         self.controller: ControllerEnum = self.game_context.default_controller
+        self.obstacles: models.DynObstacleList = []
 
     def set_pose_start(self, pose: pose.Pose):
         """
