@@ -95,10 +95,10 @@ class EventFilter(QtCore.QObject):
             self.game_view.translate(0, 0, event.angleDelta().y() / 5)
 
         elif isinstance(event, QtGui.QMouseEvent):
-            new_pos = event.globalPos()
+            new_pos = event.globalPosition().toPoint()
             if not self._last_mouse_pos:
                 self._last_mouse_pos = new_pos
-            new_pos = event.globalPos()
+            new_pos = event.globalPosition().toPoint()
             delta = new_pos - self._last_mouse_pos
             self._last_mouse_pos = new_pos
 
