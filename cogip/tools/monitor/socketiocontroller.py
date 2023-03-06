@@ -52,6 +52,8 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted to stop Lidar emulation
         signal_config_request:
             Qt signal emitted to load a new shell/tool menu
+        signal_planner_reset:
+            Qt signal emitted on Planner reset command
     """
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(str, models.ShellMenu)
@@ -70,6 +72,7 @@ class SocketioController(QtCore.QObject):
     signal_stop_lidar_emulation: qtSignal = qtSignal(int)
     signal_config_request: qtSignal = qtSignal(dict)
     signal_actuators_state: qtSignal = qtSignal(ActuatorsState)
+    signal_planner_reset: qtSignal = qtSignal()
 
     def __init__(self, url: str):
         """
@@ -337,6 +340,13 @@ class SocketioController(QtCore.QObject):
             Stop Lidar emulation.
             """
             self.signal_stop_lidar_emulation.emit(robot_id)
+
+        @self.sio.on("cmd_reset", namespace="/monitor")
+        def on_cmd_reset() -> None:
+            """
+            Reset command from Planner.
+            """
+            self.signal_planner_reset.emit()
 
     def emit_lidar_data(self, robot_id: int, data: List[int]) -> None:
         """
