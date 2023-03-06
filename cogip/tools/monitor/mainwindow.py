@@ -703,6 +703,13 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         self.signal_actuators_closed.emit(robot_id)
 
+    def planner_reset(self):
+        """
+        Reset all charts on Planner reset.
+        """
+        for chart_view in self.charts_view.values():
+            chart_view.reset()
+
     def closeEvent(self, event: QtGui.QCloseEvent):
         settings = QtCore.QSettings("COGIP", "monitor")
         settings.setValue("geometry", self.saveGeometry())

@@ -369,6 +369,7 @@ class Planner:
         Reset command from the menu.
         """
         self.reset()
+        self._sio_ns.emit("cmd_reset")
 
     def cmd_choose_camp(self) -> None:
         """

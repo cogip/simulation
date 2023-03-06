@@ -94,3 +94,9 @@ class PlannerNamespace(socketio.AsyncNamespace):
         Callback on config message.
         """
         await self.emit("config", config, namespace="/dashboard")
+
+    async def on_cmd_reset(self, sid):
+        """
+        Callback on cmd_reset message.
+        """
+        await self.emit("cmd_reset", namespace="/monitor")
