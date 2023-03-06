@@ -93,7 +93,7 @@ def main_opt(
 
     controller.start()
 
-    ret = app.exec_()
+    ret = app.exec()
 
     controller.stop()
 
