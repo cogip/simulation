@@ -82,6 +82,7 @@ def main_opt(
     controller.signal_wizard_request.connect(win.wizard_request)
     controller.signal_close_wizard.connect(win.close_wizard)
     controller.signal_actuators_state.connect(win.actuators_state)
+    controller.signal_planner_reset.connect(win.planner_reset)
 
     # Connect Controller signals to GameView slots
     controller.signal_new_robot_path.connect(win.game_view.new_robot_path)
