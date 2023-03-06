@@ -543,7 +543,9 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select file to load obstacles",
             dir="",
-            filter="JSON Files (*.json)"
+            filter="JSON Files (*.json)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
         )
         if filename:
             self.signal_load_obstacles.emit(Path(filename))
@@ -559,7 +561,9 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select file to save obstacles",
             dir="",
-            filter="JSON Files (*.json)"
+            filter="JSON Files (*.json)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
         )
         if filename:
             self.signal_save_obstacles.emit(Path(filename))
@@ -575,7 +579,9 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select file to load cake layers",
             dir="",
-            filter="JSON Files (*.json)"
+            filter="JSON Files (*.json)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
         )
         if filename:
             self.signal_load_cake_layers.emit(Path(filename))
@@ -592,6 +598,8 @@ class MainWindow(QtWidgets.QMainWindow):
             caption="Select file to save cake layers",
             dir="",
             filter="JSON Files (*.json)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
         )
         if filename:
             self.signal_save_cake_layers.emit(Path(filename))
