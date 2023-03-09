@@ -25,7 +25,7 @@ def main_opt(
         envvar="COGIP_SERVER_URL"
     ),
     obstacle_radius: int = typer.Option(
-        500, min=100, max=1000,
+        330, min=100, max=1000,
         help="Radius of a dynamic obstacle",
         envvar="PLANNER_OBSTACLE_RADIUS"
     ),
