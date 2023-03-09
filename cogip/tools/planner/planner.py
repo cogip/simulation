@@ -15,6 +15,7 @@ from .context import GameContext
 from .properties import Properties
 from .robot import Robot
 from .strategy import Strategy
+from .avoidance import avoidance
 
 
 class Planner:
@@ -57,7 +58,6 @@ class Planner:
         self._game_context = GameContext()
         self._robots: dict[int, Robot] = {}
         self._start_positions: dict[int, int] = {}
-        self._pose_orders: dict[int, pose.Pose] = {}
         self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
         self._obstacles: dict[int, models.DynObstacleList] = {}
         self._start_pose_menu_entries: dict[int, models.MenuEntry] = {}
@@ -186,6 +186,7 @@ class Planner:
                 continue
             robot.controller = new_controller
             self._sio_ns.emit("set_controller", (robot_id, new_controller.value))
+
     def set_pose_start(self, robot_id: int, pose_start: pose.Pose):
         """
         Set the start position of the robot for the next game.
@@ -196,11 +197,10 @@ class Planner:
         """
         Set the current position order of the robot.
         """
-        self._pose_orders[robot_id] = pose_order
-        self._sio_ns.emit("pose_order", (robot_id, pose_order.pose.dict()))
-        self._sio_ns.emit(
-            "path", (robot_id, [self._robots[robot_id].pose_current.dict(), pose_order.pose.dict()])
-        )
+        if not (robot := self._robots[robot_id]):
+            return
+
+        robot.pose_order = pose_order
 
     def set_pose_current(self, robot_id: int, pose: models.Pose) -> None:
         """
@@ -215,6 +215,10 @@ class Planner:
         Set pose reached for a robot.
         """
         if not (robot := self._robots.get(robot_id)):
+            return
+
+        if len(robot.avoidance_path) > 1:
+            # The pose reached is intermediate, do nothing.
             return
 
         # Set pose reached
@@ -264,9 +268,9 @@ class Planner:
 
         robot.obstacles = []
 
-        bb_radius = self._properties.obstacle_radius * (1 + self._properties.obstacle_bb_margin)
+        radius = self._properties.obstacle_radius
+        bb_radius = radius * (1 + self._properties.obstacle_bb_margin)
         for obstacle in obstacles:
-            radius = self._properties.obstacle_radius
             bb = [
                 models.Vertex(
                     x=obstacle.x + bb_radius * math.cos(
@@ -294,7 +298,60 @@ class Planner:
         """
         Compute avoidance path for a robot, given its current pose, pose order and obstacles.
         """
-        pass
+        if not (robot := self._robots[robot_id]):
+            return
+
+        if not robot.pose_order or not robot.pose_current:
+            return
+
+        path = avoidance.get_path(
+            robot.pose_current,
+            robot.pose_order,
+            robot.obstacles,
+            avoidance.AvoidanceStrategy.VisibilityRoadmap
+        )
+
+        if len(path) == 0:
+            # TODO
+            logger.warning("No path found")
+            # robot.avoidance_path = []
+            return
+
+        if len(path) == 1:
+            # Only one pose in path means the pose order is reached and robot is waiting next order,
+            # so do nothing.
+            robot.avoidance_path = []
+            return
+
+        if len(path) == 2:
+            # Final pose
+            new_controller = ControllerEnum.QUADPID
+        else:
+            # Intermediate pose
+            new_controller = ControllerEnum.QUADPID
+
+            if len(robot.avoidance_path):
+                last_delta_x = abs(int(path[1].x - robot.avoidance_path[0].x))
+                last_delta_y = abs(int((path[1].y) - robot.avoidance_path[0].y))
+                if last_delta_x < 20 and last_delta_y < 20:
+                    return
+
+            next_delta_x = path[2].x - path[1].x
+            next_delta_y = path[2].y - path[1].y
+
+            path[1].O = math.degrees(math.atan2(next_delta_y, next_delta_x))  # noqa
+            path[1].allow_reverse = False
+
+        robot.avoidance_path = path[1:]
+
+        if robot.controller != new_controller:
+            robot.controller = new_controller
+            self._sio_ns.emit("set_controller", (robot_id, robot.controller.value))
+
+        self._sio_ns.emit("pose_order", (robot_id, path[1].path_pose.dict(exclude_defaults=True)))
+
+        # Emit full path for dashboard
+        self._sio_ns.emit("path", (robot_id, [pose.pose.dict(exclude_defaults=True) for pose in path]))
 
     def command(self, cmd: str) -> None:
         """
