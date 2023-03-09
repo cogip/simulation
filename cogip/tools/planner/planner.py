@@ -334,7 +334,7 @@ class Planner:
             pose_current,
             pose_order,
             robot.obstacles,
-            avoidance.AvoidanceStrategy.VisibilityRoadmap
+            avoidance.AvoidanceStrategy.VisibilityRoadMap
         )
 
         if len(path) == 0:
