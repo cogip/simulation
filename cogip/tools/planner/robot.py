@@ -16,9 +16,11 @@ class Robot:
         self._pose_reached: bool = True
         self.pose_current: models.Pose | None = None
         self.pose_order: pose.Pose | None = None
-        self.last_avoidance_pose: pose.Pose | None = None
+        self.avoidance_path: list[pose.Pose] = []
+        self.last_avoidance_pose_current: models.Pose | None = None
+        self.last_emitted_pose_order: models.PathPose | None = None
         self.controller: ControllerEnum = self.game_context.default_controller
-        self.obstacles: models.DynObstacleList = []
+        self.obstacles: list[models.Vertex] = []
 
     def set_pose_start(self, pose: pose.Pose):
         """
@@ -28,7 +30,7 @@ class Robot:
         self.pose_current = pose.pose
         self.pose_order = pose
         self._pose_reached = True
-        self.last_avoidance_pose = None
+        self.avoidance_path = []
         self.planner.set_pose_start(self.robot_id, self.pose_order)
         self.pose_order.act_after_pose(self.planner)
 
@@ -46,7 +48,7 @@ class Robot:
             self.pose_order.act_after_pose(self.planner)
         self._pose_reached = reached
         self.pose_order = None
-        self.last_avoidance_pose = None
+        self.avoidance_path = []
         if self.action and len(self.action.poses) == 0:
             self.action.act_after_action(self.planner)
             self.action = None

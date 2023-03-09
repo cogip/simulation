@@ -15,6 +15,7 @@ from .context import GameContext
 from .properties import Properties
 from .robot import Robot
 from .strategy import Strategy
+from .avoidance import avoidance
 
 
 class Planner:
@@ -57,7 +58,6 @@ class Planner:
         self._game_context = GameContext()
         self._robots: dict[int, Robot] = {}
         self._start_positions: dict[int, int] = {}
-        self._pose_orders: dict[int, pose.Pose] = {}
         self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
         self._obstacles: dict[int, models.DynObstacleList] = {}
         self._start_pose_menu_entries: dict[int, models.MenuEntry] = {}
@@ -181,11 +181,12 @@ class Planner:
 
     def reset_controllers(self):
         new_controller = self._game_context.default_controller
-        for robot_id, robot in self._robots:
+        for robot_id, robot in self._robots.items():
             if robot.controller == new_controller:
                 continue
             robot.controller = new_controller
             self._sio_ns.emit("set_controller", (robot_id, new_controller.value))
+
     def set_pose_start(self, robot_id: int, pose_start: pose.Pose):
         """
         Set the start position of the robot for the next game.
@@ -196,11 +197,13 @@ class Planner:
         """
         Set the current position order of the robot.
         """
-        self._pose_orders[robot_id] = pose_order
-        self._sio_ns.emit("pose_order", (robot_id, pose_order.pose.dict()))
-        self._sio_ns.emit(
-            "path", (robot_id, [self._robots[robot_id].pose_current.dict(), pose_order.pose.dict()])
-        )
+        if not (robot := self._robots.get(robot_id)):
+            return
+
+        robot.pose_order = pose_order
+
+        if self._game_context.strategy in [Strategy.LinearSpeedTest, Strategy.AngularSpeedTest]:
+            self._sio_ns.emit("pose_order", (robot_id, pose_order.pose.dict()))
 
     def set_pose_current(self, robot_id: int, pose: models.Pose) -> None:
         """
@@ -215,6 +218,12 @@ class Planner:
         Set pose reached for a robot.
         """
         if not (robot := self._robots.get(robot_id)):
+            return
+
+        robot.last_avoidance_pose_current = None
+
+        if len(robot.avoidance_path) > 1:
+            # The pose reached is intermediate, do nothing.
             return
 
         # Set pose reached
@@ -266,7 +275,6 @@ class Planner:
 
         bb_radius = self._properties.obstacle_radius * (1 + self._properties.obstacle_bb_margin)
         for obstacle in obstacles:
-            radius = self._properties.obstacle_radius
             bb = [
                 models.Vertex(
                     x=obstacle.x + bb_radius * math.cos(
@@ -274,12 +282,12 @@ class Planner:
                     ),
                     y=obstacle.y + bb_radius * math.sin(tmp),
                 )
-                for i in range(self._properties.obstacle_bb_vertices)
+                for i in reversed(range(self._properties.obstacle_bb_vertices))
             ]
             robot.obstacles.append(models.DynRoundObstacle(
                 x=obstacle.x,
                 y=obstacle.y,
-                radius=radius,
+                radius=self._properties.obstacle_radius,
                 bb=bb
             ))
 
@@ -294,7 +302,90 @@ class Planner:
         """
         Compute avoidance path for a robot, given its current pose, pose order and obstacles.
         """
-        pass
+        if self._game_context.strategy in [Strategy.LinearSpeedTest, Strategy.AngularSpeedTest]:
+            return
+
+        if not (robot := self._robots.get(robot_id)):
+            return
+
+        robot.avoidance_path = []
+
+        if not robot.pose_order or not robot.pose_current:
+            return
+
+        if robot.pose_order.pose == robot.pose_current:
+            return
+
+        # Work with a local copy because pose reached events can set these attributes to None in the main thread.
+        pose_order = robot.pose_order.copy()
+        pose_current = robot.pose_current.copy()
+
+        # Check if robot has moved enough since the last avoidance path was computed
+        if robot.last_avoidance_pose_current and \
+           robot.last_avoidance_pose_current != pose_current and \
+           (dist := math.dist(
+                (pose_current.x, pose_current.y),
+                (robot.last_avoidance_pose_current.x, robot.last_avoidance_pose_current.y))) < 20:
+            logger.debug(f"Robot {robot_id}: Skip avoidance path update (current pose too close: {dist})")
+            return
+        robot.last_avoidance_pose_current = pose_current.copy()
+
+        path = avoidance.get_path(
+            pose_current,
+            pose_order,
+            robot.obstacles,
+            avoidance.AvoidanceStrategy.VisibilityRoadmap
+        )
+
+        if len(path) == 0:
+            logger.debug(f"Robot {robot_id}: No path found")
+            robot.last_avoidance_pose_current = None
+            robot.avoidance_path = []
+            return
+
+        if len(path) == 1:
+            # Only one pose in path means the pose order is reached and robot is waiting next order,
+            # so do nothing.
+            robot.avoidance_path = []
+            return
+
+        if len(path) == 2:
+            # Final pose
+            new_controller = ControllerEnum.QUADPID
+        else:
+            # Intermediate pose
+            new_controller = ControllerEnum.LINEAR_POSE_DISABLED
+            # new_controller = ControllerEnum.QUADPID
+
+            if len(robot.avoidance_path):
+                dist = math.dist((path[1].x, path[1].y), (robot.avoidance_path[0].x, robot.avoidance_path[0].y))
+                if dist < 20:
+                    logger.debug(f"Robot {robot_id}: Skip avoidance path update (new pose too close: {dist})")
+                    return
+                logger.debug(f"Robot {robot_id}: Update avoidance path")
+
+            next_delta_x = path[2].x - path[1].x
+            next_delta_y = path[2].y - path[1].y
+
+            path[1].O = math.degrees(math.atan2(next_delta_y, next_delta_x))  # noqa
+            path[1].allow_reverse = True
+
+        robot.avoidance_path = path[1:]
+        new_pose_order = path[1].path_pose
+
+        if robot.last_emitted_pose_order == new_pose_order:
+            return
+
+        robot.last_emitted_pose_order = new_pose_order.copy()
+
+        if robot.controller != new_controller:
+            robot.controller = new_controller
+            self._sio_ns.emit("set_controller", (robot_id, robot.controller.value))
+
+        self._sio_ns.emit("pose_order", (robot_id, new_pose_order.dict(exclude_defaults=True)))
+
+        # Emit full path for dashboard
+        self._sio_ns.emit("path", (robot_id, [pose.pose.dict(exclude_defaults=True) for pose in path]))
 
     def command(self, cmd: str) -> None:
         """
