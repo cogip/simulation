@@ -194,6 +194,9 @@ class DynRoundObstacle(BaseModel):
     radius: float
     bb: List[Vertex] = []
 
+    def contains(self, point: Vertex) -> bool:
+        return (point.x - self.x) * (point.x - self.x) + (point.y - self.y) * (point.y - self.y) <= self.radius ** 2
+
     def __hash__(self):
         """
         Hash function to allow this class to be used as a key in a dict.
