@@ -268,8 +268,7 @@ class Planner:
 
         robot.obstacles = []
 
-        radius = self._properties.obstacle_radius
-        bb_radius = radius * (1 + self._properties.obstacle_bb_margin)
+        bb_radius = self._properties.obstacle_radius * (1 + self._properties.obstacle_bb_margin)
         for obstacle in obstacles:
             bb = [
                 models.Vertex(
@@ -278,12 +277,12 @@ class Planner:
                     ),
                     y=obstacle.y + bb_radius * math.sin(tmp),
                 )
-                for i in range(self._properties.obstacle_bb_vertices)
+                for i in reversed(range(self._properties.obstacle_bb_vertices))
             ]
             robot.obstacles.append(models.DynRoundObstacle(
                 x=obstacle.x,
                 y=obstacle.y,
-                radius=radius,
+                radius=self._properties.obstacle_radius,
                 bb=bb
             ))
 
