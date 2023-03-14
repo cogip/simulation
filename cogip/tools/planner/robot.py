@@ -17,6 +17,7 @@ class Robot:
         self.pose_current: models.Pose | None = None
         self.pose_order: pose.Pose | None = None
         self.avoidance_path: list[pose.Pose] = []
+        self.last_avoidance_pose_current: models.Pose | None = None
         self.controller: ControllerEnum = self.game_context.default_controller
         self.obstacles: models.DynObstacleList = []
 

@@ -217,6 +217,8 @@ class Planner:
         if not (robot := self._robots.get(robot_id)):
             return
 
+        robot.last_avoidance_pose_current = None
+
         if len(robot.avoidance_path) > 1:
             # The pose reached is intermediate, do nothing.
             return
@@ -303,6 +305,14 @@ class Planner:
         if not robot.pose_order or not robot.pose_current:
             return
 
+        # Check if robot has moved enough since the last avoidance path was computed
+        if robot.last_avoidance_pose_current and robot.last_avoidance_pose_current != robot.pose_current and math.dist(
+                (robot.pose_current.x, robot.pose_current.y),
+                (robot.last_avoidance_pose_current.x, robot.last_avoidance_pose_current.y)) < 20:
+            print("same pose")
+            return
+        robot.last_avoidance_pose_current = robot.pose_current.copy(deep=True)
+
         path = avoidance.get_path(
             robot.pose_current,
             robot.pose_order,
@@ -327,13 +337,16 @@ class Planner:
             new_controller = ControllerEnum.QUADPID
         else:
             # Intermediate pose
-            new_controller = ControllerEnum.QUADPID
+            new_controller = ControllerEnum.LINEAR_POSE_DISABLED
+            # new_controller = ControllerEnum.QUADPID
 
             if len(robot.avoidance_path):
                 last_delta_x = abs(int(path[1].x - robot.avoidance_path[0].x))
                 last_delta_y = abs(int((path[1].y) - robot.avoidance_path[0].y))
                 if last_delta_x < 20 and last_delta_y < 20:
+                    print("skip pose update")
                     return
+                print("update pose")
 
             next_delta_x = path[2].x - path[1].x
             next_delta_y = path[2].y - path[1].y
