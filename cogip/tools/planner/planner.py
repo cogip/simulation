@@ -15,7 +15,7 @@ from .context import GameContext
 from .properties import Properties
 from .robot import Robot
 from .strategy import Strategy
-from .avoidance import avoidance
+from .avoidance.avoidance import Avoidance, AvoidanceStrategy
 
 
 class Planner:
@@ -26,6 +26,7 @@ class Planner:
     def __init__(
             self,
             server_url: str,
+            robot_width: int,
             obstacle_radius: int,
             obstacle_bb_margin: float,
             obstacle_bb_vertices: int,
@@ -36,7 +37,8 @@ class Planner:
 
         Arguments:
             server_url: Server URL
-            obstacle_radius: Radius of a dynamic obstacle
+            robot_width: Width of the robot (in )
+            obstacle_radius: Radius of a dynamic obstacle (in mm)
             obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
             obstacle_bb_vertices: Number of obstacle bounding box vertices
             obstacle_sender_interval: Interval between each send of obstacles to dashboards (in seconds)
@@ -44,6 +46,7 @@ class Planner:
         """
         self._server_url = server_url
         self._properties = Properties(
+            robot_width=robot_width,
             obstacle_radius=obstacle_radius,
             obstacle_bb_margin=obstacle_bb_margin,
             obstacle_bb_vertices=obstacle_bb_vertices,
@@ -61,6 +64,7 @@ class Planner:
         self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
         self._obstacles: dict[int, models.DynObstacleList] = {}
         self._start_pose_menu_entries: dict[int, models.MenuEntry] = {}
+        self._avoidance: dict[int, Avoidance] = {}
         self._avoidance_path_updaters: dict[int, ThreadLoop] = {}
         self._obstacles_sender_loop = ThreadLoop(
             "Obstacles sender loop",
@@ -126,6 +130,7 @@ class Planner:
         self._robots[robot_id] = (robot := Robot(robot_id, self))
         robot.set_pose_start(self._game_context.get_start_pose(self._start_positions.get(robot_id, robot_id)))
         self.update_start_pose_commands()
+        self._avoidance[robot_id] = Avoidance(robot_id, self._properties)
         self._avoidance_path_updaters[robot_id] = ThreadLoop(
             f"Avoidance path updater {robot_id}",
             self._properties.path_refresh_interval,
@@ -141,6 +146,7 @@ class Planner:
         """
         del self._robots[robot_id]
         self.update_start_pose_commands()
+        del self._avoidance[robot_id]
         self._avoidance_path_updaters[robot_id].stop()
         del self._avoidance_path_updaters[robot_id]
 
@@ -273,7 +279,8 @@ class Planner:
 
         robot.obstacles = []
 
-        bb_radius = self._properties.obstacle_radius * (1 + self._properties.obstacle_bb_margin)
+        bb_radius = self._properties.obstacle_radius + self._properties.robot_width / 2
+
         for obstacle in obstacles:
             bb = [
                 models.Vertex(
@@ -310,6 +317,9 @@ class Planner:
 
         robot.avoidance_path = []
 
+        if not (avoidance := self._avoidance.get(robot_id)):
+            return
+
         if not robot.pose_order or not robot.pose_current:
             return
 
@@ -334,7 +344,7 @@ class Planner:
             pose_current,
             pose_order,
             robot.obstacles,
-            avoidance.AvoidanceStrategy.VisibilityRoadMap
+            AvoidanceStrategy.VisibilityRoadMap
         )
 
         if len(path) == 0:
