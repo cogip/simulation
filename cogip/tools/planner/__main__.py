@@ -24,6 +24,11 @@ def main_opt(
         help="Server URL",
         envvar="COGIP_SERVER_URL"
     ),
+    robot_width: int = typer.Option(
+        330, min=100, max=1000,
+        help="Width of the robot (in mm)",
+        envvar="PLANNER_ROBOT_WIDTH"
+    ),
     obstacle_radius: int = typer.Option(
         500, min=100, max=1000,
         help="Radius of a dynamic obstacle",
@@ -67,6 +72,7 @@ def main_opt(
 
     args = (
         server_url,
+        robot_width,
         obstacle_radius,
         obstacle_bb_margin,
         obstacle_bb_vertices,

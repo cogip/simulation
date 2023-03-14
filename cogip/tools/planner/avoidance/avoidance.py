@@ -1,9 +1,9 @@
 from enum import IntEnum
 
 from cogip import models
-from cogip.utils.singleton import Singleton
 from .visibility_road_map import visibility_road_map
 from .. import pose
+from ..properties import Properties
 
 
 borders = [
@@ -40,52 +40,88 @@ fixed_obstacles = [
     ]
 ]
 
-robot_width = 330
-
 
 class AvoidanceStrategy(IntEnum):
     Disabled = 0
     VisibilityRoadMap = 1
 
 
-def get_path(
-        pose_current: models.Pose,
-        goal: pose.Pose,
-        obstacles: list[models.Vertex],
-        strategy: AvoidanceStrategy = AvoidanceStrategy.Disabled) -> list[pose.Pose]:
-    match strategy:
-        case AvoidanceStrategy.VisibilityRoadMap:
-            return VisibilityRoadMapWrapper().get_path(pose_current, goal, obstacles)
-        case _:
-            return [pose.Pose(**pose_current.dict()), goal.copy()]
+class Avoidance:
+    def __init__(self, robot_id: int, properties: Properties):
+        self.robot_id = robot_id
+        self.properties = properties
+        self.visibility_road_map = VisibilityRoadMapWrapper(robot_id, self.properties.plot)
+        self.last_robot_width: int = -1
+        self.last_expand: int = -1
+
+    def get_path(
+            self,
+            pose_current: models.Pose,
+            goal: pose.Pose,
+            obstacles: models.DynObstacleList,
+            strategy: AvoidanceStrategy = AvoidanceStrategy.Disabled) -> list[pose.Pose]:
+        match strategy:
+            case AvoidanceStrategy.VisibilityRoadMap:
+                expand = int(self.properties.robot_width * self.properties.obstacle_bb_margin)
+                if self.last_robot_width != self.properties.robot_width or self.last_expand != expand:
+                    self.visibility_road_map.set_properties(self.properties.robot_width, expand)
+                    self.last_robot_width = self.properties.robot_width
+                    self.last_expand = expand
+                return self.visibility_road_map.get_path(pose_current, goal, obstacles)
+            case _:
+                return [pose.Pose(**pose_current.dict()), goal.copy()]
 
 
-class VisibilityRoadMapWrapper(metaclass=Singleton):
-    def __init__(self):
-        # Convert fixed obstacles
+class VisibilityRoadMapWrapper:
+    def __init__(self, robot_id: int):
+        self.robot_width: int = 0
         self.fixed_obstacles: list[visibility_road_map.ObstaclePolygon] = []
-        x_list, y_list = list(zip(*[(int(v.x), int(v.y)) for v in borders]))
-        self.fixed_obstacles.append(visibility_road_map.ObstaclePolygon(list(x_list), list(y_list)))
+
+    def set_properties(self, robot_width: int, expand: int):
+        self.robot_width = robot_width
+        self.expand = expand
+        self.fixed_obstacles.clear()
+
         for obstacle in fixed_obstacles:
             x_list, y_list = list(zip(*[(int(v.x), int(v.y)) for v in obstacle]))
-            self.fixed_obstacles.append(visibility_road_map.ObstaclePolygon(list(x_list), list(y_list)))
+            x_list = list(x_list)
+            y_list = list(y_list)
+            x_list.append(x_list[0])
+            y_list.append(y_list[0])
 
-        self.expand_distance = robot_width / 2
+            self.fixed_obstacles.append(visibility_road_map.ObstaclePolygon(x_list, y_list, expand))
+
+        self.visibility_road_map = visibility_road_map.VisibilityRoadMap(
+            x_min=borders[0].x + robot_width / 2,
+            x_max=borders[2].x - robot_width / 2,
+            y_min=borders[2].y + robot_width / 2,
+            y_max=borders[0].y - robot_width / 2,
+            fixed_obstacles=self.fixed_obstacles
+        )
 
     def get_path(
             self,
             start: models.Pose,
             goal: pose.Pose,
-            obstacles: list[models.Vertex]) -> list[pose.Pose]:
-        converted_obstacles = self.fixed_obstacles.copy()
+            obstacles: models.DynObstacleList) -> list[pose.Pose]:
+        converted_obstacles = []
+
         for obstacle in obstacles:
             if not isinstance(obstacle, models.DynRoundObstacle):
                 continue
             x_list, y_list = list(zip(*[(int(v.x), int(v.y)) for v in obstacle.bb]))
-            converted_obstacles.append(visibility_road_map.ObstaclePolygon(list(x_list), list(y_list)))
+            x_list = list(x_list)
+            y_list = list(y_list)
+            x_list.append(x_list[0])
+            y_list.append(y_list[0])
+            converted_obstacles.append(visibility_road_map.ObstaclePolygon(
+                x_list,
+                y_list,
+                self.expand
+            ))
 
         # Compute path
-        rx, ry = visibility_road_map.VisibilityRoadMap(self.expand_distance).planning(
+        rx, ry = self.visibility_road_map.planning(
             start.x, start.y,
             goal.x, goal.y, converted_obstacles)
 

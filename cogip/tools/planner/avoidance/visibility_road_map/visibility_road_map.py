@@ -6,7 +6,9 @@ author: Atsushi Sakai (@Atsushi_twi)
 
 """
 
+from copy import deepcopy
 import math
+
 import numpy as np
 
 from .geometry import Geometry
@@ -14,12 +16,39 @@ from .dijkstra_search import DijkstraSearch
 
 
 class VisibilityRoadMap:
-    def __init__(self, expand_distance, do_plot=False):
-        self.expand_distance = expand_distance
+    def __init__(
+            self,
+            x_min: float,
+            x_max: float,
+            y_min: float,
+            y_max: float,
+            fixed_obstacles: list["ObstaclePolygon"] = [],
+            do_plot: bool = False):
+        self.x_min = x_min
+        self.x_max = x_max
+        self.y_min = y_min
+        self.y_max = y_max
         self.do_plot = do_plot
 
-    def planning(self, start_x, start_y, goal_x, goal_y, obstacles):
-        nodes = self.generate_visibility_nodes(start_x, start_y, goal_x, goal_y, obstacles)
+        self.fixed_nodes: list[DijkstraSearch.Node] = []
+
+        for obstacle in fixed_obstacles:
+            for (vx, vy) in zip(obstacle.cvx_list, obstacle.cvy_list):
+                if vx < self.x_min or \
+                   vx > self.x_max or \
+                   vy < self.y_min or \
+                   vy > self.y_max:
+                    continue
+                self.fixed_nodes.append(DijkstraSearch.Node(vx, vy))
+
+    def planning(
+            self,
+            start_x: float, start_y: float,
+            goal_x: float, goal_y: float,
+            obstacles: list["ObstaclePolygon"]):
+        nodes = deepcopy(self.fixed_nodes)
+
+        nodes.extend(self.generate_visibility_nodes(start_x, start_y, goal_x, goal_y, obstacles))
 
         road_map_info = self.generate_road_map_info(nodes, obstacles)
 
@@ -33,41 +62,28 @@ class VisibilityRoadMap:
 
         return rx, ry
 
-    def generate_visibility_nodes(self, start_x, start_y, goal_x, goal_y, obstacles):
+    def generate_visibility_nodes(
+            self,
+            start_x: float, start_y: float,
+            goal_x: float, goal_y: float,
+            obstacles: list["ObstaclePolygon"]):
         # add start and goal as nodes
         nodes = [DijkstraSearch.Node(start_x, start_y),
                  DijkstraSearch.Node(goal_x, goal_y, 0, None)]
 
         # add vertexes in configuration space as nodes
         for obstacle in obstacles:
-
-            cvx_list, cvy_list = self.calc_vertexes_in_configuration_space(
-                obstacle.x_list, obstacle.y_list)
-
-            for (vx, vy) in zip(cvx_list, cvy_list):
+            for (vx, vy) in zip(obstacle.cvx_list, obstacle.cvy_list):
+                if vx < self.x_min or vx > self.x_max or vy < self.y_min or vy > self.y_max:
+                    continue
                 nodes.append(DijkstraSearch.Node(vx, vy))
 
         return nodes
 
-    def calc_vertexes_in_configuration_space(self, x_list, y_list):
-        x_list = x_list[0:-1]
-        y_list = y_list[0:-1]
-        cvx_list, cvy_list = [], []
-
-        n_data = len(x_list)
-
-        for index in range(n_data):
-            offset_x, offset_y = self.calc_offset_xy(
-                x_list[index - 1], y_list[index - 1],
-                x_list[index], y_list[index],
-                x_list[(index + 1) % n_data], y_list[(index + 1) % n_data],
-            )
-            cvx_list.append(offset_x)
-            cvy_list.append(offset_y)
-
-        return cvx_list, cvy_list
-
-    def generate_road_map_info(self, nodes, obstacles):
+    def generate_road_map_info(
+            self,
+            nodes: list[DijkstraSearch.Node],
+            obstacles: list["ObstaclePolygon"]) -> list[int]:
         road_map_info_list = []
 
         for target_node in nodes:
@@ -103,35 +119,34 @@ class VisibilityRoadMap:
 
         return True
 
-    def calc_offset_xy(self, px, py, x, y, nx, ny):
-        p_vec = math.atan2(y - py, x - px)
-        n_vec = math.atan2(ny - y, nx - x)
-        offset_vec = math.atan2(math.sin(p_vec) + math.sin(n_vec),
-                                math.cos(p_vec) + math.cos(
-                                    n_vec)) + math.pi / 2.0
-        offset_x = x + self.expand_distance * math.cos(offset_vec)
-        offset_y = y + self.expand_distance * math.sin(offset_vec)
-        return offset_x, offset_y
-
 
 class ObstaclePolygon:
-    def __init__(self, x_list, y_list):
+    def __init__(self, x_list: list[float], y_list: list[float], expand_distance: float = 0.0):
         self.x_list = x_list
         self.y_list = y_list
+        self.expand_distance = expand_distance
+        self.cvx_list: list[float] = []
+        self.cvy_list: list[float] = []
 
-        self.close_polygon()
-        self.make_clockwise()
+        # Disable checks and fixes because obstacles must be correctly generated,
+        # but keep it for further debugging.
+        # self.close_polygon()
+        # self.make_clockwise()
+
+        self.calc_vertexes_in_configuration_space()
 
     def make_clockwise(self):
         if not self.is_clockwise():
+            print("not clockwise")
             self.x_list = list(reversed(self.x_list))
             self.y_list = list(reversed(self.y_list))
 
     def is_clockwise(self):
         n_data = len(self.x_list)
-        eval_sum = sum([(self.x_list[i + 1] - self.x_list[i]) *
-                        (self.y_list[i + 1] + self.y_list[i])
-                        for i in range(n_data - 1)])
+        eval_sum = sum([
+            (self.x_list[i + 1] - self.x_list[i]) * (self.y_list[i + 1] + self.y_list[i])
+            for i in range(n_data - 1)
+        ])
         eval_sum += (self.x_list[0] - self.x_list[n_data - 1]) * \
                     (self.y_list[0] + self.y_list[n_data - 1])
         return eval_sum >= 0
@@ -144,3 +159,31 @@ class ObstaclePolygon:
 
         self.x_list.append(self.x_list[0])
         self.y_list.append(self.y_list[0])
+
+    def calc_vertexes_in_configuration_space(self):
+        x_list = self.x_list[0:-1]
+        y_list = self.y_list[0:-1]
+        n_data = len(x_list)
+
+        for index in range(n_data):
+            offset_x, offset_y = self.calc_offset_xy(
+                x_list[index - 1], y_list[index - 1],
+                x_list[index], y_list[index],
+                x_list[(index + 1) % n_data], y_list[(index + 1) % n_data],
+            )
+            self.cvx_list.append(offset_x)
+            self.cvy_list.append(offset_y)
+
+    def calc_offset_xy(
+            self,
+            px: float, py: float,
+            x: float, y: float,
+            nx: float, ny: float) -> tuple[float, float]:
+        p_vec = math.atan2(y - py, x - px)
+        n_vec = math.atan2(ny - y, nx - x)
+        offset_vec = math.atan2(math.sin(p_vec) + math.sin(n_vec),
+                                math.cos(p_vec) + math.cos(
+                                    n_vec)) + math.pi / 2.0
+        offset_x = x + self.expand_distance * math.cos(offset_vec)
+        offset_y = y + self.expand_distance * math.sin(offset_vec)
+        return offset_x, offset_y

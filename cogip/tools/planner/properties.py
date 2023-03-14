@@ -2,6 +2,11 @@ from pydantic import BaseModel, Field
 
 
 class Properties(BaseModel):
+    robot_width: int = Field(
+        ..., ge=100, le=1000,
+        title="Robot_width",
+        description="Width of the robot (mm)"
+    )
     obstacle_radius: int = Field(
         ..., ge=100, le=1000,
         title="Obstacle Radius",
