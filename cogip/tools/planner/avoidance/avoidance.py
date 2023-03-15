@@ -43,7 +43,8 @@ fixed_obstacles = [
 
 class AvoidanceStrategy(IntEnum):
     Disabled = 0
-    VisibilityRoadMap = 1
+    VisibilityRoadMapQuadPid = 1
+    VisibilityRoadMapLinearPoseDisabled = 2
 
 
 class Avoidance:
@@ -61,7 +62,7 @@ class Avoidance:
             obstacles: models.DynObstacleList,
             strategy: AvoidanceStrategy = AvoidanceStrategy.Disabled) -> list[pose.Pose]:
         match strategy:
-            case AvoidanceStrategy.VisibilityRoadMap:
+            case AvoidanceStrategy.VisibilityRoadMapQuadPid | AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
                 expand = int(self.properties.robot_width * self.properties.obstacle_bb_margin)
                 if self.last_robot_width != self.properties.robot_width or self.last_expand != expand:
                     self.visibility_road_map.set_properties(self.properties.robot_width, expand)
