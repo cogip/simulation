@@ -352,7 +352,7 @@ class Planner:
             next_delta_y = path[2].y - path[1].y
 
             path[1].O = math.degrees(math.atan2(next_delta_y, next_delta_x))  # noqa
-            path[1].allow_reverse = False
+            path[1].allow_reverse = True
 
         robot.avoidance_path = path[1:]
 
