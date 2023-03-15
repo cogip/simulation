@@ -355,12 +355,18 @@ class Planner:
             path[1].allow_reverse = True
 
         robot.avoidance_path = path[1:]
+        new_pose_order = path[1].path_pose
+
+        if robot.last_emitted_pose_order == new_pose_order:
+            return
+
+        robot.last_emitted_pose_order = new_pose_order.copy()
 
         if robot.controller != new_controller:
             robot.controller = new_controller
             self._sio_ns.emit("set_controller", (robot_id, robot.controller.value))
 
-        self._sio_ns.emit("pose_order", (robot_id, path[1].path_pose.dict(exclude_defaults=True)))
+        self._sio_ns.emit("pose_order", (robot_id, new_pose_order.dict(exclude_defaults=True)))
 
         # Emit full path for dashboard
         self._sio_ns.emit("path", (robot_id, [pose.pose.dict(exclude_defaults=True) for pose in path]))
