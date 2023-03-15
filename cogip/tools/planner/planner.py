@@ -182,7 +182,7 @@ class Planner:
 
     def reset_controllers(self):
         new_controller = self._game_context.default_controller
-        for robot_id, robot in self._robots:
+        for robot_id, robot in self._robots.items():
             if robot.controller == new_controller:
                 continue
             robot.controller = new_controller
@@ -202,6 +202,9 @@ class Planner:
             return
 
         robot.pose_order = pose_order
+
+        if self._game_context.strategy in [Strategy.LinearSpeedTest, Strategy.AngularSpeedTest]:
+            self._sio_ns.emit("pose_order", (robot_id, pose_order.pose.dict()))
 
     def set_pose_current(self, robot_id: int, pose: models.Pose) -> None:
         """
@@ -300,6 +303,9 @@ class Planner:
         """
         Compute avoidance path for a robot, given its current pose, pose order and obstacles.
         """
+        if self._game_context.strategy in [Strategy.LinearSpeedTest, Strategy.AngularSpeedTest]:
+            return
+
         if not (robot := self._robots[robot_id]):
             return
 
