@@ -3,6 +3,7 @@ from cogip.utils.singleton import Singleton
 from .camp import Camp
 from .pose import AdaptedPose, Pose
 from .strategy import Strategy
+from .avoidance.avoidance import AvoidanceStrategy
 
 
 class GameContext(metaclass=Singleton):
@@ -11,7 +12,8 @@ class GameContext(metaclass=Singleton):
     """
     def __init__(self):
         self.camp = Camp()
-        self._strategy = Strategy.Approval
+        self._strategy = Strategy.BackAndForth
+        self._avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
         self.playing: bool = False
         self.score: int = 0
 
@@ -25,6 +27,18 @@ class GameContext(metaclass=Singleton):
     @strategy.setter
     def strategy(self, s: Strategy):
         self._strategy = s
+        self.reset()
+
+    @property
+    def avoidance_strategy(self) -> AvoidanceStrategy:
+        """
+        Selected avoidance strategy.
+        """
+        return self._avoidance_strategy
+
+    @avoidance_strategy.setter
+    def avoidance_strategy(self, s: AvoidanceStrategy):
+        self._avoidance_strategy = s
         self.reset()
 
     def reset(self):
