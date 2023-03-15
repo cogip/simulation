@@ -16,6 +16,7 @@ from .properties import Properties
 from .robot import Robot
 from .strategy import Strategy
 from .avoidance import avoidance
+from .avoidance.avoidance import AvoidanceStrategy
 
 
 class Planner:
@@ -317,7 +318,7 @@ class Planner:
             robot.pose_current,
             robot.pose_order,
             robot.obstacles,
-            avoidance.AvoidanceStrategy.VisibilityRoadMap
+            self._game_context.avoidance_strategy
         )
 
         if len(path) == 0:
@@ -337,8 +338,11 @@ class Planner:
             new_controller = ControllerEnum.QUADPID
         else:
             # Intermediate pose
-            new_controller = ControllerEnum.LINEAR_POSE_DISABLED
-            # new_controller = ControllerEnum.QUADPID
+            match self._game_context.avoidance_strategy:
+                case AvoidanceStrategy.Disabled | AvoidanceStrategy.VisibilityRoadMapQuadPid:
+                    new_controller = ControllerEnum.QUADPID
+                case AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
+                    new_controller = ControllerEnum.LINEAR_POSE_DISABLED
 
             if len(robot.avoidance_path):
                 last_delta_x = abs(int(path[1].x - robot.avoidance_path[0].x))
@@ -475,6 +479,21 @@ class Planner:
             }
         )
 
+    def cmd_choose_avoidance(self) -> None:
+        """
+        Choose avoidance strategy command from the menu.
+        Send avoidance strategy wizard message.
+        """
+        self._sio_ns.emit(
+            "wizard",
+            {
+                "name": "Choose Avoidance",
+                "type": "choice_str",
+                "choices": [e.name for e in AvoidanceStrategy],
+                "value": self._game_context.avoidance_strategy.name
+            }
+        )
+
     def cmd_choose_start_position(self, robot_id) -> None:
         """
         Choose start position command from the menu.
@@ -511,6 +530,13 @@ class Planner:
                 self.reset()
                 self.reset_controllers()
                 logger.info(f'Wizard: New strategy: {self._game_context.strategy.name}')
+            case "Choose Avoidance":
+                new_strategy = AvoidanceStrategy[message["value"]]
+                if self._game_context.avoidance_strategy == new_strategy:
+                    return
+                self._game_context.avoidance_strategy = new_strategy
+                self.reset()
+                logger.info(f'Wizard: New avoidance strategy: {self._game_context.avoidance_strategy.name}')
             case chose_start_pose if chose_start_pose.startswith("Choose Start Position"):
                 if robot := self._robots.get(robot_id := message.get("robot_id")):
                     start_position = int(message["value"])

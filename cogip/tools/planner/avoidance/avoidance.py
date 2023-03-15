@@ -45,7 +45,8 @@ robot_width = 330
 
 class AvoidanceStrategy(IntEnum):
     Disabled = 0
-    VisibilityRoadMap = 1
+    VisibilityRoadMapQuadPid = 1
+    VisibilityRoadMapLinearPoseDisabled = 2
 
 
 def get_path(
@@ -54,7 +55,7 @@ def get_path(
         obstacles: list[models.Vertex],
         strategy: AvoidanceStrategy = AvoidanceStrategy.Disabled) -> list[pose.Pose]:
     match strategy:
-        case AvoidanceStrategy.VisibilityRoadMap:
+        case AvoidanceStrategy.VisibilityRoadMapQuadPid | AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
             return VisibilityRoadMapWrapper().get_path(pose_current, goal, obstacles)
         case _:
             return [pose.Pose(**pose_current.dict()), goal.copy()]
