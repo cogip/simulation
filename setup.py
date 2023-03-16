@@ -73,7 +73,7 @@ setup(
     package_data={
         "cogip.tools.copilot": [
             "static/css/*",
-            "static/css/external/*",
+            "static/css/purged/*",
             "static/img/*",
             "static/js/*",
             "static/js/external/*",
@@ -81,7 +81,7 @@ setup(
         ],
         "cogip.tools.server": [
             "static/css/*",
-            "static/css/external/*",
+            "static/css/purged/*",
             "static/img/*",
             "static/js/*",
             "static/js/external/*",
