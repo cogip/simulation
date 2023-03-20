@@ -83,9 +83,13 @@ class ApprovalAction(Action):
         self.reset()
 
     def reset(self, planner: "planner.planner.Planner | None" = None) -> None:
+        #self.poses = [
+        #    AdaptedPose(x=300, y=-700, O=0, max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL),
+        #    AdaptedPose(x=2700, y=-700, O=180, max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL)
+        #]
         self.poses = [
-            AdaptedPose(x=300, y=-700, O=0, max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL),
-            AdaptedPose(x=2700, y=-700, O=180, max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL)
+            AdaptedPose(x=225, y=-775, O=0, max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL),
+            AdaptedPose(x=725, y=-775, O=0, max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL)
         ]
         self.poses[-1].after_pose_func = self.reset
 

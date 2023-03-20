@@ -16,14 +16,15 @@ function trap_ctrlc ()
 
 trap "trap_ctrlc" 2
 
-socat pty,raw,echo=0,link=/tmp/ttySTM32 pty,raw,echo=0,link=/tmp/ttyRPI &
+mkdir -p /tmp/socat
+socat pty,raw,echo=0,link=/tmp/socat/ttySTM32 pty,raw,echo=0,link=/tmp/socat/ttyRPI &
 
 #make -C ../mcu-firmware/applications/app_test BOARD=cogip-native all -j
 #mate-terminal --command="make -C ../mcu-firmware/applications/app_test BOARD=cogip-native PORT=\"-c /dev/null -c /tmp/ttySTM32\" term" &
 
 cogip-server &
 cogip-planner &
-cogip-copilot -p /tmp/ttyRPI &
+cogip-copilot -p /tmp/socat/ttyRPI &
 cogip-detector &
 cogip-monitor http://localhost:8080 &
 

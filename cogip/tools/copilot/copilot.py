@@ -20,6 +20,7 @@ state_uuid: int = 3422642571
 copilot_connected_uuid: int = 1132911482
 copilot_disconnected_uuid: int = 1412808668
 pose_order_uuid: int = 1534060156
+pose_intermediate_reached_uuid: int = 2669694306
 pose_reached_uuid: int = 2736246403
 pose_start_uuid: int = 2741980922
 actuators_thread_start_uuid: int = 1525532810
@@ -67,6 +68,7 @@ class Copilot:
             menu_uuid: self.handle_message_menu,
             pose_order_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
+            pose_intermediate_reached_uuid: self.handle_pose_intermediate_reached,
             pose_reached_uuid: self.handle_pose_reached,
             actuators_state_uuid: self.handle_actuators_state,
             pid_uuid: self.handle_pid
@@ -250,6 +252,15 @@ class Copilot:
         pids_schema["properties"]["pids"]["value"] = values
         # Send config
         await self._sio_events.emit("config", pids_schema)
+
+    async def handle_pose_intermediate_reached(self) -> None:
+        """
+        Handle intermediate pose reached message.
+
+        Forward info to the planner.
+        """
+        if self._sio.connected:
+            await self._sio_events.emit("pose_intermediate_reached")
 
     async def handle_pose_reached(self) -> None:
         """

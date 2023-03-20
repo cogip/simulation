@@ -44,7 +44,7 @@ class Robot:
         Set pose reached.
         If reached, a new pose and new action is selected.
         """
-        if reached and not self.pose_reached and self.pose_order:
+        if reached and not self._pose_reached and self.pose_order:
             self.pose_order.act_after_pose(self.planner)
         self._pose_reached = reached
         self.pose_order = None

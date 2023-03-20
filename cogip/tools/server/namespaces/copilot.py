@@ -57,6 +57,16 @@ class CopilotNamespace(socketio.AsyncNamespace):
         data["menu"]["name"] = f"{data['menu']['name']} {robot_id}"
         await self._cogip_server.register_menu(f"copilot/{robot_id}", data)
 
+    async def on_pose_intermediate_reached(self, sid) -> None:
+        """
+        Callback on pose intermediate reached message.
+        """
+
+        print("HERE2")
+
+        robot_id = self._context.copilot_sids[sid]
+        await self.emit("pose_intermediate_reached", robot_id, namespace="/planner")
+
     async def on_pose_reached(self, sid) -> None:
         """
         Callback on pose reached message.

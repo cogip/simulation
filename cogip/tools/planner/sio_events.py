@@ -75,6 +75,12 @@ class SioEvents(socketio.ClientNamespace):
         """
         self._planner.set_pose_current(robot_id, models.Pose.parse_obj(pose))
 
+    def on_pose_intermediate_reached(self, robot_id: int) -> None:
+        """
+        Callback on pose reached message.
+        """
+        self._planner.set_pose_intermediate_reached(robot_id)
+
     def on_pose_reached(self, robot_id: int) -> None:
         """
         Callback on pose reached message.

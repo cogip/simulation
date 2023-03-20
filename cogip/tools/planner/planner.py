@@ -214,6 +214,17 @@ class Planner:
             return
         robot.pose_current = models.Pose.parse_obj(pose)
 
+    def set_pose_intermediate_reached(self, robot_id: int) -> None:
+        """
+        Set pose intermediate reached for a robot.
+        """
+        if not (robot := self._robots.get(robot_id)):
+            return
+
+        print("HERE");
+
+        robot.last_avoidance_pose_current = None
+
     def set_pose_reached(self, robot_id: int) -> None:
         """
         Set pose reached for a robot.
@@ -222,10 +233,6 @@ class Planner:
             return
 
         robot.last_avoidance_pose_current = None
-
-        if len(robot.avoidance_path) > 1:
-            # The pose reached is intermediate, do nothing.
-            return
 
         # Set pose reached
         robot.pose_reached = True
@@ -428,6 +435,7 @@ class Planner:
 
         self._game_context.playing = True
         list(map(self.set_pose_reached, self._robots.keys()))
+        list(map(self.set_pose_intermediate_reached, self._robots.keys()))
 
     def cmd_stop(self) -> None:
         """
