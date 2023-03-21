@@ -539,16 +539,19 @@ class Planner:
         """
         Handle wizard response sent from the dashboard.
         """
+        if (value := message["value"]) is None:
+            return
+
         match name := message.get("name"):
             case "Choose Camp":
-                new_camp = Camp.Colors[message["value"]]
+                new_camp = Camp.Colors[value]
                 if self._camp.color == new_camp:
                     return
                 self._camp.color = new_camp
                 self.reset()
                 logger.info(f"Wizard: New camp: {self._camp.color.name}")
             case "Choose Strategy":
-                new_strategy = Strategy[message["value"]]
+                new_strategy = Strategy[value]
                 if self._game_context.strategy == new_strategy:
                     return
                 self._game_context.strategy = new_strategy
@@ -556,7 +559,7 @@ class Planner:
                 self.reset_controllers()
                 logger.info(f'Wizard: New strategy: {self._game_context.strategy.name}')
             case "Choose Avoidance":
-                new_strategy = AvoidanceStrategy[message["value"]]
+                new_strategy = AvoidanceStrategy[value]
                 if self._game_context.avoidance_strategy == new_strategy:
                     return
                 self._game_context.avoidance_strategy = new_strategy
@@ -564,11 +567,11 @@ class Planner:
                 logger.info(f'Wizard: New avoidance strategy: {self._game_context.avoidance_strategy.name}')
             case chose_start_pose if chose_start_pose.startswith("Choose Start Position"):
                 if robot := self._robots.get(robot_id := message.get("robot_id")):
-                    start_position = int(message["value"])
+                    start_position = int(value)
                     self._start_positions[robot_id] = start_position
                     robot.set_pose_start(self._game_context.get_start_pose(start_position))
             case wizard_test_response if wizard_test_response.startswith("Wizard Test"):
-                logger.info(f"Wizard test response: {name} = {message['value']}")
+                logger.info(f"Wizard test response: {name} = {value}")
             case _:
                 logger.warning(f"Wizard: Unknown type: {name}")
 

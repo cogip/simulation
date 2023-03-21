@@ -325,7 +325,7 @@ class WizardDialog(QtWidgets.QDialog):
         super().__init__(parent)
         self.message = message
         self.setWindowTitle(self.message["name"])
-        self.setModal(True)
+        self.setModal(False)
         self.setMinimumWidth(300)
 
         match wizard_type := self.message["type"]:
@@ -346,8 +346,14 @@ class WizardDialog(QtWidgets.QDialog):
                 return
 
         self.wizard.response.connect(self.respond)
+        self.rejected.connect(self.force_close)
 
     def respond(self, response: str | list[str]):
         self.message["value"] = response
         self.response.emit(self.message)
-        self.close()
+        self.accept()
+
+    def force_close(self):
+        self.message["value"] = None
+        self.response.emit(self.message)
+        self.accept()
