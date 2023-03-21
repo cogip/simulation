@@ -87,7 +87,7 @@ class Detector:
                 self._lidar_port = value
         if self._lidar_port:
             self._laser = ydlidar.CYdLidar()
-            self._laser.setlidaropt(ydlidar.LidarPropSerialPort, self._lidar_port)
+            self._laser.setlidaropt(ydlidar.LidarPropSerialPort, str(self._lidar_port))
             self._laser.setlidaropt(ydlidar.LidarPropSerialBaudrate, 230400)
             self._laser.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE)
             self._laser.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)
