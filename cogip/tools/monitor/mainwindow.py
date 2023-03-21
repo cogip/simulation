@@ -67,6 +67,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.charts_view: Dict[int, ChartsView] = {}
         self.available_chart_views: List[ChartsView] = []
         self.menu_widgets: Dict[str, Dict[str, QtWidgets.QWidget]] = {}
+        self.wizard: WizardDialog | None = None
 
         self.setWindowTitle('COGIP Monitor')
 
@@ -654,6 +655,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @qtSlot()
     def close_wizard(self):
         if self.wizard:
+            self.wizard.response.disconnect(self.wizard_response)
             self.wizard.close()
             self.wizard = None
 
