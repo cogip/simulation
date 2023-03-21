@@ -4,6 +4,7 @@ from cogip import models
 menu = models.ShellMenu(
     name="Planner",
     entries=[
+        models.MenuEntry(cmd="game_wizard", desc="Wizard"),
         models.MenuEntry(cmd="choose_camp", desc="Choose camp"),
         models.MenuEntry(cmd="choose_strategy", desc="Choose strategy"),
         models.MenuEntry(cmd="choose_avoidance", desc="Choose avoidance"),

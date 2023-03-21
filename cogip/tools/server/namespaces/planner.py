@@ -100,3 +100,10 @@ class PlannerNamespace(socketio.AsyncNamespace):
         Callback on cmd_reset message.
         """
         await self.emit("cmd_reset", namespace="/monitor")
+
+    async def on_close_wizard(self, sid):
+        """
+        Callback on close_wizard message.
+        """
+        await self.emit("close_wizard", namespace="/dashboard")
+
