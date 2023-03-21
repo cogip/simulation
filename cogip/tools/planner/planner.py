@@ -16,6 +16,7 @@ from .properties import Properties
 from .robot import Robot
 from .strategy import Strategy
 from .avoidance.avoidance import Avoidance, AvoidanceStrategy
+from .wizard import GameWizard
 
 
 class Planner:
@@ -72,6 +73,7 @@ class Planner:
             self.send_obstacles,
             logger=True
         )
+        self._game_wizard = GameWizard(self)
 
     def connect(self):
         """
@@ -420,6 +422,10 @@ class Planner:
             self._sio_ns.emit("config", schema)
             return
 
+        if cmd == "game_wizard":
+            self._game_wizard.start()
+            return
+
         if not (cmd_func := getattr(self, f"cmd_{cmd}", None)):
             logger.warning(f"Unknown command: {cmd}")
             return
@@ -570,6 +576,8 @@ class Planner:
                     start_position = int(value)
                     self._start_positions[robot_id] = start_position
                     robot.set_pose_start(self._game_context.get_start_pose(start_position))
+            case game_wizard_response if game_wizard_response.startswith("Game Wizard"):
+                self._game_wizard.response(message)
             case wizard_test_response if wizard_test_response.startswith("Wizard Test"):
                 logger.info(f"Wizard test response: {name} = {value}")
             case _:
