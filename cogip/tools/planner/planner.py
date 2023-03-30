@@ -146,6 +146,7 @@ class Planner:
         """
         Remove a robot.
         """
+        self._robots[robot_id].starter.close()
         del self._robots[robot_id]
         self.update_start_pose_commands()
         del self._avoidance[robot_id]
