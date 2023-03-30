@@ -119,3 +119,9 @@ class PlannerNamespace(socketio.AsyncNamespace):
         Callback on game_start message.
         """
         await self.emit("game_start", namespace="/copilot")
+
+    async def on_score(self, sid, score: int):
+        """
+        Callback on score message.
+        """
+        await self.emit("score", score, namespace="/dashboard")

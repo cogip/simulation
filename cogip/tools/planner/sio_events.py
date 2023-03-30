@@ -124,3 +124,9 @@ class SioEvents(socketio.ClientNamespace):
         Callback on wizard message.
         """
         self._planner.wizard_response(message)
+
+    def on_game_end(self, robot_id: int) -> None:
+        """
+        Callback on game end message.
+        """
+        self._planner.game_end(robot_id)
