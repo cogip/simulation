@@ -54,6 +54,8 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted to load a new shell/tool menu
         signal_planner_reset:
             Qt signal emitted on Planner reset command
+        signal_starter_changed:
+            Qt signal emitted the starter state has changed
     """
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(str, models.ShellMenu)
@@ -73,6 +75,7 @@ class SocketioController(QtCore.QObject):
     signal_config_request: qtSignal = qtSignal(dict)
     signal_actuators_state: qtSignal = qtSignal(ActuatorsState)
     signal_planner_reset: qtSignal = qtSignal()
+    signal_starter_changed: qtSignal = qtSignal(int, bool)
 
     def __init__(self, url: str):
         """
@@ -165,6 +168,10 @@ class SocketioController(QtCore.QObject):
             robot_id: related robot id
         """
         self.sio.emit("actuators_stop", data=robot_id, namespace="/dashboard")
+
+    @qtSlot(int, bool)
+    def starter_changed(self, robot_id, pushed: bool):
+        self.sio.emit("starter_changed", (robot_id, pushed), namespace="/monitor")
 
     def on_menu(self, menu_name: str, data):
         menu = models.ShellMenu.parse_obj(data)
@@ -347,6 +354,13 @@ class SocketioController(QtCore.QObject):
             Reset command from Planner.
             """
             self.signal_planner_reset.emit()
+
+        @self.sio.on("starter_changed", namespace="/monitor")
+        def on_starter_changed(robot_id: int, pushed: bool) -> None:
+            """
+            Change the state of a starter.
+            """
+            self.signal_starter_changed.emit(robot_id, pushed)
 
     def emit_lidar_data(self, robot_id: int, data: List[int]) -> None:
         """

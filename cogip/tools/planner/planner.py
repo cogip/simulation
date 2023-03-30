@@ -130,6 +130,7 @@ class Planner:
         if robot_id in self._robots:
             self.del_robot(robot_id)
         self._robots[robot_id] = (robot := Robot(robot_id, self, virtual))
+        self._sio_ns.emit("starter_changed", (robot_id, robot.starter.is_pressed))
         robot.set_pose_start(self._game_context.get_start_pose(self._start_positions.get(robot_id, robot_id)))
         self.update_start_pose_commands()
         self._avoidance[robot_id] = Avoidance(robot_id, self._properties)
@@ -152,6 +153,12 @@ class Planner:
         del self._avoidance[robot_id]
         self._avoidance_path_updaters[robot_id].stop()
         del self._avoidance_path_updaters[robot_id]
+
+    def starter_changed(self, robot_id: int, pushed: bool) -> None:
+        if not (robot := self._robots.get(robot_id)):
+            return
+        if not robot.virtual:
+            self._sio_ns.emit("starter_changed", (robot_id, pushed))
 
     def update_start_pose_commands(self):
         """
