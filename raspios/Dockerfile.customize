@@ -57,6 +57,11 @@ RUN for filename in /var/lib/systemd/rfkill/*:wlan; do echo 0 > $filename; done
 # Disable dhcpcd to use static IP
 RUN systemctl disable dhcpcd.service
 
+# Install and configure pigpiod service
+RUN apt-get install -y --no-install-recommends pigpio && \
+    sed -i "s#ExecStart=/usr/bin/pigpiod -l#ExecStart=/usr/bin/pigpiod -g#" /lib/systemd/system/pigpiod.service && \
+    systemctl enable pigpiod
+
 # Add custom configuration files
 ADD overlay-rootfs /
 
