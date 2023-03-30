@@ -13,6 +13,7 @@ class GameWizard:
         self.game_context = GameContext()
         self.step = 0
         self.robot_index = 0
+        self.started = False
 
         self.steps = [
             (self.request_camp, self.response_camp),
@@ -26,6 +27,7 @@ class GameWizard:
     def reset(self):
         self.step = 0
         self.robot_index = 0
+        self.started = False
 
     def start(self):
         self.reset()
@@ -144,6 +146,8 @@ class GameWizard:
         self.planner.reset()
 
         # TODO: wait for starter
+        self.started = True
         self.planner._sio_ns.emit("close_wizard")
         self.planner.reset()
+        self.planner._sio_ns.emit("game_start")
         self.planner.cmd_play()
