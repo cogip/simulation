@@ -45,6 +45,8 @@ class Robot:
                 pin_factory=PiGPIOFactory(host=f"robot{robot_id}")
             )
 
+        starter.when_pressed = partial(planner.starter_changed, robot_id, True)
+        starter.when_released = partial(planner.starter_changed, robot_id, False)
         self.starter = starter
 
     def set_pose_start(self, pose: pose.Pose):
