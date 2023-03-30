@@ -51,6 +51,7 @@ def main_opt(
     win.signal_wizard_response.connect(controller.wizard_response)
     win.signal_actuators_closed.connect(controller.actuators_closed)
     win.signal_new_actuator_command.connect(controller.new_actuator_command)
+    win.signal_starter_changed.connect(controller.starter_changed)
 
     # Connect UI signals to GameView slots
     win.signal_add_obstacle.connect(win.game_view.add_obstacle)
@@ -74,6 +75,7 @@ def main_opt(
     controller.signal_new_menu.connect(win.load_menu)
     controller.signal_add_robot.connect(win.add_robot)
     controller.signal_del_robot.connect(win.del_robot)
+    controller.signal_starter_changed.connect(win.starter_changed)
     controller.signal_new_robot_pose_current.connect(win.new_robot_pose)
     controller.signal_new_robot_state.connect(win.new_robot_state)
     controller.signal_connected.connect(win.connected)

@@ -43,6 +43,7 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_save_cake_layers: Qt signal to save cake layers
         signal_new_actuator_command: Qt signal to send actuator command to server
         signal_actuators_closed: Qt signal to stop actuators state request
+        signal_starter_changed: Qt signal emitted the starter state has changed
     """
     signal_config_updated: qtSignal = qtSignal(dict)
     signal_wizard_response: qtSignal = qtSignal(dict)
@@ -54,6 +55,7 @@ class MainWindow(QtWidgets.QMainWindow):
     signal_save_cake_layers: qtSignal = qtSignal(Path)
     signal_new_actuator_command: qtSignal = qtSignal(int, object)
     signal_actuators_closed: qtSignal = qtSignal(int)
+    signal_starter_changed: qtSignal = qtSignal(int, bool)
 
     def __init__(self, url: str, *args, **kwargs):
         """
@@ -64,6 +66,7 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         super(MainWindow, self).__init__(*args, **kwargs)
         self.robot_status_row: Dict[int, int] = {}
+        self.robot_starters: dict[int, QtWidgets.QCheckBox] = {}
         self.charts_view: Dict[int, ChartsView] = {}
         self.available_chart_views: List[ChartsView] = []
         self.menu_widgets: Dict[str, Dict[str, QtWidgets.QWidget]] = {}
@@ -113,6 +116,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         pos_angle_label = QtWidgets.QLabel("Angle")
         self.status_layout.addWidget(pos_angle_label, 0, 4)
+
+        starter_label = QtWidgets.QLabel("Starter")
+        self.status_layout.addWidget(starter_label, 0, 5)
 
         # Actions
         # Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons
@@ -330,6 +336,11 @@ class MainWindow(QtWidgets.QMainWindow):
         pos_angle_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
         self.status_layout.addWidget(pos_angle_text, row, 4)
 
+        self.robot_starters[robot_id] = (starter_checkbox := QtWidgets.QCheckBox())
+        self.status_layout.addWidget(starter_checkbox, row, 5)
+        starter_checkbox.setEnabled(virtual)
+        starter_checkbox.toggled.connect(partial(self.starter_toggled, robot_id))
+
         # Chart view
         view = self.charts_view.get(robot_id)
         if view is None:
@@ -360,7 +371,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not row:
             return
 
-        for i in range(6):
+        for i in range(7):
             if not (item := self.status_layout.itemAtPosition(row, i)):
                 continue
             widget = item.widget()
@@ -712,6 +723,13 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         for chart_view in self.charts_view.values():
             chart_view.reset()
+
+    def starter_toggled(self, robot_id: int, checked: bool):
+        self.signal_starter_changed.emit(robot_id, checked)
+
+    def starter_changed(self, robot_id: int, checked: bool):
+        if starter_checkbox := self.robot_starters.get(robot_id):
+            starter_checkbox.setChecked(checked)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         settings = QtCore.QSettings("COGIP", "monitor")

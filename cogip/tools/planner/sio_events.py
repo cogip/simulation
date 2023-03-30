@@ -63,6 +63,23 @@ class SioEvents(socketio.ClientNamespace):
         """
         self._planner.del_robot(robot_id)
 
+    def on_starter_changed(self, robot_id: int, pushed: bool) -> None:
+        """
+        Signal received from the Monitor when the starter state changes in emulation mode.
+        """
+        if not (robot := self._planner._robots.get(robot_id)):
+            return
+        if not robot.virtual:
+            return
+        if not (starter := robot.starter):
+            return
+        if not (starter := self._planner._robots[robot_id].starter):
+            return
+        if pushed:
+            starter.pin.drive_low()
+        else:
+            starter.pin.drive_high()
+
     def on_reset(self, robot_id: int) -> None:
         """
         Callback on reset message from copilot.

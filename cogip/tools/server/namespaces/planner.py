@@ -102,6 +102,12 @@ class PlannerNamespace(socketio.AsyncNamespace):
         """
         await self.emit("cmd_reset", namespace="/monitor")
 
+    async def on_starter_changed(self, sid, robot_id: int, pushed: bool):
+        """
+        Callback on starter_pushed message.
+        """
+        await self.emit("starter_changed", (robot_id, pushed), namespace="/monitor")
+
     async def on_close_wizard(self, sid):
         """
         Callback on close_wizard message.
