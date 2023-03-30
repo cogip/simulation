@@ -21,19 +21,23 @@ class CopilotNamespace(socketio.AsyncNamespace):
         if isinstance(auth, dict) and (robot_id := auth.get("id")):
             if sid not in self._context.copilot_sids and robot_id in self._context.copilot_sids.inverse:
                 raise ConnectionRefusedError(f"A copilot with id '{robot_id}' is already connected")
-            self._context.copilot_sids[sid] = robot_id
-            self._context.connected_robots.append(robot_id)
         else:
             raise ConnectionRefusedError("Missing 'id' in 'auth' parameter")
 
-    async def on_connected(self, sid, robot_id: int):
+    async def on_connected(self, sid, robot_id: int, virtual: bool):
         logger.info(f"Copilot {robot_id} connected.")
-        await self.emit("add_robot", robot_id, namespace="/planner")
-        await self.emit("add_robot", robot_id, namespace="/dashboard")
+        self._context.copilot_sids[sid] = robot_id
+        self._context.connected_robots.append(robot_id)
+        if virtual:
+            self._context.virtual_robots.append(robot_id)
+        await self.emit("add_robot", (robot_id, virtual), namespace="/planner")
+        await self.emit("add_robot", (robot_id, virtual), namespace="/dashboard")
 
     async def on_disconnect(self, sid):
         robot_id = self._context.copilot_sids.pop(sid)
         self._context.connected_robots.remove(robot_id)
+        if robot_id in self._context.virtual_robots:
+            self._context.virtual_robots.remove(robot_id)
         if robot_id in self._context.shell_menu:
             del self._context.shell_menu[robot_id]
         await self.emit("del_robot", robot_id, namespace="/planner")

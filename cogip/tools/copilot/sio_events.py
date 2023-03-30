@@ -1,4 +1,5 @@
 import asyncio
+import platform
 from typing import Any, Dict
 
 import polling2
@@ -33,7 +34,7 @@ class SioEvents(socketio.AsyncClientNamespace):
             poll_forever=True
         )
         logger.info("Connected to cogip-server")
-        await self.emit("connected", self._copilot.id)
+        await self.emit("connected", (self._copilot.id, (platform.machine() != "aarch64")))
 
         if self._copilot.shell_menu:
             await self.emit("menu", self._copilot.shell_menu.dict(exclude_defaults=True, exclude_unset=True))

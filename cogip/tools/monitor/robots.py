@@ -38,12 +38,13 @@ class RobotManager(QtCore.QObject):
             self.add_robot(i + 1)
             self.del_robot(i + 1)
 
-    def add_robot(self, robot_id: int) -> None:
+    def add_robot(self, robot_id: int, virtual: bool = False) -> None:
         """
         Add a new robot.
 
         Parameters:
             robot_id: ID of the new robot
+            virtual: whether the robot is virtual or not
         """
         if robot_id in self._robots:
             return
