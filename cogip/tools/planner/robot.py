@@ -8,9 +8,10 @@ class Robot:
     """
     Class representing a robot context.
     """
-    def __init__(self, robot_id: int, planner: "planner.planner.Planner"):
+    def __init__(self, robot_id: int, planner: "planner.planner.Planner", virtual: bool):
         self.robot_id = robot_id
         self.planner = planner
+        self.virtual = virtual
         self.game_context = context.GameContext()
         self.action: actions.Action | None = None
         self._pose_reached: bool = True

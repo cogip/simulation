@@ -64,7 +64,7 @@ class SocketioController(QtCore.QObject):
     signal_new_dyn_obstacles: qtSignal = qtSignal(list)
     signal_connected: qtSignal = qtSignal(bool)
     signal_exit: qtSignal = qtSignal()
-    signal_add_robot: qtSignal = qtSignal(int)
+    signal_add_robot: qtSignal = qtSignal(int, bool)
     signal_del_robot: qtSignal = qtSignal(int)
     signal_wizard_request: qtSignal = qtSignal(dict)
     signal_close_wizard: qtSignal = qtSignal()
@@ -300,11 +300,11 @@ class SocketioController(QtCore.QObject):
             self.signal_new_dyn_obstacles.emit(obstacles)
 
         @self.sio.on("add_robot", namespace="/dashboard")
-        def on_add_robot(robot_id: int) -> None:
+        def on_add_robot(robot_id: int, virtual: bool) -> None:
             """
             Add a new robot.
             """
-            self.signal_add_robot.emit(robot_id)
+            self.signal_add_robot.emit(robot_id, virtual)
 
         @self.sio.on("del_robot", namespace="/dashboard")
         def on_del_robot(robot_id: int) -> None:

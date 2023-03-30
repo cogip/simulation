@@ -27,8 +27,9 @@ class PlannerNamespace(socketio.AsyncNamespace):
     async def on_connected(self, sid):
         logger.info("Planner connected.")
         for robot_id in self._context.connected_robots:
-            await self.emit("add_robot", robot_id, namespace="/planner")
-            await self.emit("add_robot", robot_id, namespace="/dashboard")
+            virtual = robot_id in self._context.virtual_robots
+            await self.emit("add_robot", (robot_id, virtual), namespace="/planner")
+            await self.emit("add_robot", (robot_id, virtual), namespace="/dashboard")
 
     def on_disconnect(self, sid):
         self._connected = False

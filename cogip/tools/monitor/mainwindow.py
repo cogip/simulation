@@ -290,12 +290,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.view_menu.addAction(self.view_dashboard_action)
 
-    def add_robot(self, robot_id: int) -> None:
+    def add_robot(self, robot_id: int, virtual: bool) -> None:
         """
         Add a new robot status bar.
 
         Parameters:
             robot_id: ID of the new robot
+            virtual: whether the robot is virtual or not
         """
         self.game_view.add_robot(robot_id)
 

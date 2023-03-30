@@ -51,11 +51,11 @@ class SioEvents(socketio.ClientNamespace):
         else:
             logger.error(f"Connection to cogip-server failed: {data = }")
 
-    def on_add_robot(self, robot_id: int) -> None:
+    def on_add_robot(self, robot_id: int, virtual: bool) -> None:
         """
         Add a new robot.
         """
-        self._planner.add_robot(robot_id)
+        self._planner.add_robot(robot_id, virtual)
 
     def on_del_robot(self, robot_id: int) -> None:
         """
@@ -67,7 +67,7 @@ class SioEvents(socketio.ClientNamespace):
         """
         Callback on reset message from copilot.
         """
-        self._planner.add_robot(robot_id)
+        self._planner.add_robot(robot_id, self._planner._robots[robot_id].virtual)
 
     def on_pose_current(self, robot_id: int, pose: Dict[str, Any]) -> None:
         """

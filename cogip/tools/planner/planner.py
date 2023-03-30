@@ -123,13 +123,13 @@ class Planner:
         """
         self._obstacles_sender_loop.stop()
 
-    def add_robot(self, robot_id: int) -> None:
+    def add_robot(self, robot_id: int, virtual: bool) -> None:
         """
         Add a new robot.
         """
         if robot_id in self._robots:
             self.del_robot(robot_id)
-        self._robots[robot_id] = (robot := Robot(robot_id, self))
+        self._robots[robot_id] = (robot := Robot(robot_id, self, virtual))
         robot.set_pose_start(self._game_context.get_start_pose(self._start_positions.get(robot_id, robot_id)))
         self.update_start_pose_commands()
         self._avoidance[robot_id] = Avoidance(robot_id, self._properties)
@@ -181,11 +181,11 @@ class Planner:
         self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
 
         # Remove robots and add them again to reset all robots.
-        robot_ids = list(self._robots.keys())
-        for robot_id in robot_ids:
+        robots = {robot_id: robot.virtual for robot_id, robot in self._robots.items()}
+        for robot_id, _ in robots.items():
             self.del_robot(robot_id)
-        for robot_id in robot_ids:
-            self.add_robot(robot_id)
+        for robot_id, virtual in robots.items():
+            self.add_robot(robot_id, virtual)
 
     def reset_controllers(self):
         new_controller = self._game_context.default_controller

@@ -21,6 +21,7 @@ class Context(metaclass=Singleton):
         current_tool_menu:  name of the currently selected tool menu
         shell_menu:         last received shell menu
         connected_robots:   list of robots already connected
+        virtual_robots:     list of virtual robots connected
     """
     copilot_sids = bidict()
     detector_sids = bidict()
@@ -30,3 +31,4 @@ class Context(metaclass=Singleton):
     current_tool_menu: str | None = None
     shell_menu: Dict[int, models.ShellMenu] = field(default_factory=dict)
     connected_robots: List[int] = field(default_factory=list)
+    virtual_robots: list[int] = field(default_factory=list)
