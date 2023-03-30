@@ -108,3 +108,8 @@ class PlannerNamespace(socketio.AsyncNamespace):
         """
         await self.emit("close_wizard", namespace="/dashboard")
 
+    async def on_game_start(self, sid):
+        """
+        Callback on game_start message.
+        """
+        await self.emit("game_start", namespace="/copilot")

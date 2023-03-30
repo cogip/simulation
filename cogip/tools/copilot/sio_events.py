@@ -141,3 +141,10 @@ class SioEvents(socketio.AsyncClientNamespace):
         pb_controller = PB_Controller()
         pb_controller.id = controller
         await self._copilot.pbcom.send_serial_message(copilot.controller_uuid, pb_controller)
+
+    async def on_game_start(self):
+        """
+        Callback on game_start message.
+        Forward to firmware.
+        """
+        await self._copilot.pbcom.send_serial_message(copilot.game_start_uuid, None)
