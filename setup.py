@@ -26,12 +26,14 @@ required_packages = [
     # Packages specific to monitor
     "PySide6==6.4.0.1;" + marker_platform_x86_64,
 
-    # Packages specific to Copilot and Robotcam
+    # Packages specific to Server, Planner, Copilot, Detector and Robotcam
     "aiohttp==3.8.1",
     "aioserial==1.3.0",
     "fastapi==0.91.0",
+    "gpiozero==1.6.2",
     "Jinja2==3.0.3",
     "opencv-contrib-python==4.5.5.64",
+    "pigpio==1.78",
     "polling2==0.5.0",
     "protobuf==3.19.5",
     "python-socketio==5.7.1",

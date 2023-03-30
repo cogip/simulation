@@ -1,3 +1,8 @@
+from functools import partial
+from gpiozero import Button
+from gpiozero.pins.mock import MockFactory
+from gpiozero.pins.pigpio import PiGPIOFactory
+
 from cogip.models import models
 from cogip.tools import planner
 from cogip.tools.copilot.controller import ControllerEnum
@@ -21,7 +26,26 @@ class Robot:
         self.last_avoidance_pose_current: models.Pose | None = None
         self.last_emitted_pose_order: models.PathPose | None = None
         self.controller: ControllerEnum = self.game_context.default_controller
-        self.obstacles: list[models.Vertex] = []
+        self.obstacles: models.DynObstacleList = []
+        self.starter: Button | None = None
+
+        if virtual:
+            starter = Button(
+                17 if robot_id == 1 else 27,
+                pull_up=True,
+                bounce_time=0.1,
+                pin_factory=MockFactory()
+            )
+        else:
+            starter = Button(
+                17,
+                pull_up=None,
+                bounce_time=None,
+                active_state=False,
+                pin_factory=PiGPIOFactory(host=f"robot{robot_id}")
+            )
+
+        self.starter = starter
 
     def set_pose_start(self, pose: pose.Pose):
         """
