@@ -264,6 +264,10 @@ class Planner:
         if not new_pose_order and (new_action := self.get_action(robot_id)):
             robot.set_action(new_action)
 
+    def game_end(self, robot_id: int):
+        self.cmd_stop()
+        self._sio_ns.emit("score", self._game_context.score)
+
     def get_action(self, robot_id: int) -> actions.Action | None:
         """
         Get a new action for a robot.
@@ -676,6 +680,9 @@ class Planner:
                     "name": "Wizard Test Camera",
                     "type": "camera"
                 }
+            case "wizard_score":
+                self._sio_ns.emit("score", 100)
+                return
             case _:
                 logger.warning(f"Wizard test unsupported: {cmd}")
                 return

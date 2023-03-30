@@ -113,3 +113,10 @@ class CopilotNamespace(socketio.AsyncNamespace):
         Callback on config message.
         """
         await self.emit("config", config, namespace="/dashboard")
+
+    async def on_game_end(self, sid) -> None:
+        """
+        Callback on game end message.
+        """
+        robot_id = self._context.copilot_sids[sid]
+        await self.emit("game_end", robot_id, namespace="/planner")

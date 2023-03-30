@@ -31,6 +31,7 @@ wizard_test_menu = models.ShellMenu(
         models.MenuEntry(cmd="wizard_select_floating", desc="Select Float"),
         models.MenuEntry(cmd="wizard_select_str", desc="Select String"),
         models.MenuEntry(cmd="wizard_camp", desc="Camp"),
-        models.MenuEntry(cmd="wizard_camera", desc="Camera")
+        models.MenuEntry(cmd="wizard_camera", desc="Camera"),
+        models.MenuEntry(cmd="wizard_score", desc="Score")
     ]
 )
