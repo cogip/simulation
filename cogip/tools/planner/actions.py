@@ -96,7 +96,7 @@ class ApprovalAction(Action):
 class BackAndForthAction(Action):
     """
     Example action that generate its poses depending of the robot's pose
-    at the begining of the action.
+    at the beginning of the action.
     The robot will go from the current position to its opposite position in loop.
     """
     def __init__(self, actions: Actions):

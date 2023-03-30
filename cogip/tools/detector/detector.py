@@ -240,7 +240,7 @@ class Detector:
                     continue
 
                 # Only keep one angle at the middle of the consecutive angles with obstacles
-                # Set its distance to the minimun distance of the range
+                # Set its distance to the minimum distance of the range
                 last = last - 1
                 middle = first + int((last - first) / 2 + 0.5)
                 filtered_distances[middle % 360] = dist_min

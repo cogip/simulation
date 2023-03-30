@@ -44,7 +44,7 @@ class Pose(PathPose):
 class AdaptedPose(Pose):
     """
     Like a Pose, but its values are automatically adapted to selected camp
-    during initialisation.
+    during initialization.
     So to define static positions in actions, we can use this class to set pose related
     to the default camp, and if the camp changes, the pose will be adapted on reset.
     """
@@ -56,13 +56,13 @@ class AdaptedPose(Pose):
     @validator('y')
     def adapt_y(cls, v, **kwargs):
         """
-        Validator to adapte Y depending on the camp at initialisation.
+        Validator to adapt Y depending on the camp at initialization.
         """
         return Camp().adapt_y(v)
 
     @validator('O')
     def adapt_O(cls, v, **kwargs):
         """
-        Validator to adapte the angle depending on the camp at initialisation.
+        Validator to adapt the angle depending on the camp at initialization.
         """
         return Camp().adapt_angle(v)

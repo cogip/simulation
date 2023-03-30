@@ -140,7 +140,7 @@ class RobotManager(QtCore.QObject):
         and memory consumption.
 
         Arguments:
-            dyn_obstacles: List of obstacles sent by the firmware throught the serial port
+            dyn_obstacles: List of obstacles sent by the firmware through the serial port
         """
         # Store new and already existing dyn obstacles
         current_rect_obstacles = []

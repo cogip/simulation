@@ -261,7 +261,7 @@ class CakeLayerEntity(Qt3DCore.QEntity):
 
         Slot called on a ```released``` mouse event on the cake layer.
 
-        If this event occurs juste after a ```pressed``` event, it is only a mouse click,
+        If this event occurs just after a ```pressed``` event, it is only a mouse click,
         so display the property window.
 
         Emit a signal to re-enable the camera controller after moving the cake layer.

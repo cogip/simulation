@@ -82,7 +82,7 @@ class Pose(Vertex):
 
     Attributes:
         x: X position
-        y: Y postion
+        y: Y position
         O: Rotation
     """
     O: float = 0.0

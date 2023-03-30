@@ -688,7 +688,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def actuators_closed(self, robot_id: int):
         """
         Function called when the actuators dialog is closed.
-        Forward infomation to server, to stop emitting actuators state from the robot.
+        Forward information to server, to stop emitting actuators state from the robot.
 
         Arguments:
             robot_id: related robot id
