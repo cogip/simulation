@@ -26,7 +26,7 @@ class RobotEntity(AssetEntity):
         lidar_emit_data_signal: Qt Signal emitting Lidar data
         order_robot:: Entity that represents the robot next destination
     """
-    asset_path: Path = Path("assets/robot2022.dae")
+    asset_path: Path = Path("assets/robot2023.dae")
     sensors_update_interval: int = 5
     lidar_emit_interval: int = 20
     lidar_emit_data_signal: qtSignal = qtSignal(list)
