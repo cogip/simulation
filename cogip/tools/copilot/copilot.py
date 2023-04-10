@@ -31,6 +31,7 @@ pid_uuid: int = 4159164681
 controller_uuid: int = 2750239003
 game_start_uuid: int = 3138845474
 game_end_uuid: int = 1532296089
+game_reset_uuid: int = 1549868731
 
 
 class Copilot:

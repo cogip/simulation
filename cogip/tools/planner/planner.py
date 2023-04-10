@@ -159,6 +159,8 @@ class Planner:
             return
         if not robot.virtual:
             self._sio_ns.emit("starter_changed", (robot_id, pushed))
+        if pushed:
+            self._sio_ns.emit("game_reset", robot_id)
 
     def update_start_pose_commands(self):
         """
