@@ -64,6 +64,9 @@ RUN apt-get install -y --no-install-recommends pigpio && \
     sed -i "s#ExecStart=/usr/bin/pigpiod -l#ExecStart=/usr/bin/pigpiod -g#" /lib/systemd/system/pigpiod.service && \
     systemctl enable pigpiod
 
+# Install i2c packages
+RUN apt-get install -y --no-install-recommends i2c-tools libi2c-dev
+
 # Add custom configuration files
 ADD overlay-rootfs /
 

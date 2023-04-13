@@ -43,3 +43,6 @@ initial_turbo=10
 dtoverlay=uart2
 dtoverlay=uart4
 dtoverlay=uart5
+
+dtparam=i2c_arm=on
+dtparam=i2c1=on
