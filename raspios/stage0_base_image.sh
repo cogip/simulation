@@ -3,7 +3,7 @@ sudo -v
 
 SCRIPT=$(readlink -f $0)
 SCRIPT_DIR=`dirname $SCRIPT`
-CONFIG_FILE=${SCRIPT_DIR}/configconfig.env
+CONFIG_FILE=${SCRIPT_DIR}/config.env
 
 # Load config.env file
 if [ -f ${CONFIG_FILE} ] ; then
