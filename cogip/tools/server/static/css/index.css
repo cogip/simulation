@@ -37,9 +37,8 @@ h1 {
   border-right: 1px solid var(--grey-color) !important;
 }
 
-#nav-shell-tab,
 #nav-tool-tab {
-  width: 50%;
+  width: 100%;
 }
 
 #nav-tab {
@@ -53,7 +52,6 @@ h1 {
   color:var(--grey-color);
 }
 
-#nav-shell-tab.active,
 #nav-tool-tab.active {
   border-color: var(--grey-color) !important;
   background-color: var(--red-cogip);
