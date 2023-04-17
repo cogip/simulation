@@ -5,6 +5,11 @@ from .visibility_road_map import visibility_road_map
 from .. import pose
 from ..properties import Properties
 
+try:
+    from .debug import DebugWindow
+except ImportError:
+    DebugWindow = bool
+
 
 borders = [
     models.Vertex(x=0, y=1000),
@@ -74,7 +79,11 @@ class Avoidance:
 
 
 class VisibilityRoadMapWrapper:
-    def __init__(self, robot_id: int):
+    def __init__(self, robot_id: int, do_plot: bool = False):
+        if DebugWindow and do_plot:
+            self.win = DebugWindow(robot_id)
+        else:
+            self.win = None
         self.robot_width: int = 0
         self.fixed_obstacles: list[visibility_road_map.ObstaclePolygon] = []
 
@@ -92,12 +101,16 @@ class VisibilityRoadMapWrapper:
 
             self.fixed_obstacles.append(visibility_road_map.ObstaclePolygon(x_list, y_list, expand))
 
+        if self.win:
+            self.win.fixed_obstacles = self.fixed_obstacles[:]
+
         self.visibility_road_map = visibility_road_map.VisibilityRoadMap(
             x_min=borders[0].x + robot_width / 2,
             x_max=borders[2].x - robot_width / 2,
             y_min=borders[2].y + robot_width / 2,
             y_max=borders[0].y - robot_width / 2,
-            fixed_obstacles=self.fixed_obstacles
+            fixed_obstacles=self.fixed_obstacles,
+            win=self.win
         )
 
     def get_path(
@@ -105,6 +118,11 @@ class VisibilityRoadMapWrapper:
             start: models.Pose,
             goal: pose.Pose,
             obstacles: models.DynObstacleList) -> list[pose.Pose]:
+        if self.win:
+            self.win.reset()
+            self.win.point_start = start
+            self.win.point_goal = goal.pose
+
         converted_obstacles = []
 
         for obstacle in obstacles:
@@ -120,11 +138,18 @@ class VisibilityRoadMapWrapper:
                 y_list,
                 self.expand
             ))
+        if self.win:
+            self.win.dyn_obstacles.extend(converted_obstacles)
+            self.win.update()
 
         # Compute path
         rx, ry = self.visibility_road_map.planning(
             start.x, start.y,
             goal.x, goal.y, converted_obstacles)
+
+        if self.win:
+            self.win.path = [(x, y) for x, y in zip(rx, ry)]
+            self.win.update()
 
         # Convert computed path in the planner format
         path = [pose.Pose(x=x, y=y) for x, y in zip(rx, ry)]

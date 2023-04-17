@@ -54,6 +54,12 @@ def main_opt(
         help="Interval between each update of robot paths (in seconds)",
         envvar="PLANNER_PATH_REFRESH_INTERVAL"
     ),
+    plot: bool = typer.Option(
+        False,
+        "-p", "--plot",
+        help="Display avoidance graph in realtime",
+        envvar=["PLANNER_PLOT"]
+    ),
     reload: bool = typer.Option(
         False,
         "-r", "--reload",
@@ -77,7 +83,8 @@ def main_opt(
         obstacle_bb_margin,
         obstacle_bb_vertices,
         obstacle_sender_interval,
-        path_refresh_interval
+        path_refresh_interval,
+        plot
     )
 
     if reload:

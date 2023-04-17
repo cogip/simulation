@@ -14,6 +14,11 @@ import numpy as np
 from .geometry import Geometry
 from .dijkstra_search import DijkstraSearch
 
+try:
+    from ..debug import DebugWindow
+except ImportError:
+    DebugWindow = bool
+
 
 class VisibilityRoadMap:
     def __init__(
@@ -23,12 +28,12 @@ class VisibilityRoadMap:
             y_min: float,
             y_max: float,
             fixed_obstacles: list["ObstaclePolygon"] = [],
-            do_plot: bool = False):
+            win: DebugWindow | None = None):
         self.x_min = x_min
         self.x_max = x_max
         self.y_min = y_min
         self.y_max = y_max
-        self.do_plot = do_plot
+        self.win = win
 
         self.fixed_nodes: list[DijkstraSearch.Node] = []
 
@@ -52,7 +57,10 @@ class VisibilityRoadMap:
 
         road_map_info = self.generate_road_map_info(nodes, obstacles)
 
-        rx, ry = DijkstraSearch().search(
+        if self.win:
+            self.plot_road_map(nodes, road_map_info)
+
+        rx, ry = DijkstraSearch(self.win).search(
             start_x, start_y,
             goal_x, goal_y,
             [node.x for node in nodes],
@@ -77,6 +85,10 @@ class VisibilityRoadMap:
                 if vx < self.x_min or vx > self.x_max or vy < self.y_min or vy > self.y_max:
                     continue
                 nodes.append(DijkstraSearch.Node(vx, vy))
+
+        if self.win:
+            self.win.visibility_nodes = [(node.x, node.y) for node in nodes]
+            self.win.update()
 
         return nodes
 
@@ -118,6 +130,16 @@ class VisibilityRoadMap:
                 return False
 
         return True
+
+    def plot_road_map(self, nodes: list[DijkstraSearch.Node], road_map_info_list: list[int]):
+        if not self.win:
+            return
+
+        self.win.road_map.clear()
+        for i, node in enumerate(nodes):
+            for index in road_map_info_list[i]:
+                self.win.road_map.append((node.x, node.y, nodes[index].x, nodes[index].y))
+        self.win.update()
 
 
 class ObstaclePolygon:

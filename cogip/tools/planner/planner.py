@@ -32,7 +32,8 @@ class Planner:
             obstacle_bb_margin: float,
             obstacle_bb_vertices: int,
             obstacle_sender_interval: float,
-            path_refresh_interval: float):
+            path_refresh_interval: float,
+            plot: bool):
         """
         Class constructor.
 
@@ -44,6 +45,7 @@ class Planner:
             obstacle_bb_vertices: Number of obstacle bounding box vertices
             obstacle_sender_interval: Interval between each send of obstacles to dashboards (in seconds)
             path_refresh_interval: Interval between each update of robot paths (in seconds)
+            plot: Display avoidance graph in realtime
         """
         self._server_url = server_url
         self._properties = Properties(
@@ -52,7 +54,8 @@ class Planner:
             obstacle_bb_margin=obstacle_bb_margin,
             obstacle_bb_vertices=obstacle_bb_vertices,
             obstacle_sender_interval=obstacle_sender_interval,
-            path_refresh_interval=path_refresh_interval
+            path_refresh_interval=path_refresh_interval,
+            plot=plot
         )
         self._retry_connection = True
         self._sio = socketio.Client(logger=False)
