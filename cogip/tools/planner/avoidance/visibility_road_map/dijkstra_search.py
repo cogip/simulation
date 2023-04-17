@@ -9,6 +9,11 @@ author: Atsushi Sakai (@Atsushi_twi)
 import math
 import numpy as np
 
+try:
+    from ..debug import DebugWindow
+except ImportError:
+    DebugWindow = bool
+
 
 class DijkstraSearch:
     class Node:
@@ -27,8 +32,8 @@ class DijkstraSearch:
             return str(self.x) + "," + str(self.y) + "," + str(
                 self.cost) + "," + str(self.parent)
 
-    def __init__(self):
-        pass
+    def __init__(self, win: DebugWindow | None = None):
+        self.win = win
 
     def search(self, sx, sy, gx, gy, node_x, node_y, edge_ids_list):
         """
@@ -62,6 +67,11 @@ class DijkstraSearch:
 
             current_id = min(open_set, key=lambda o: open_set[o].cost)
             current_node = open_set[current_id]
+
+            if self.win:
+                # show graph
+                if len(close_set.keys()) % 2 == 0:
+                    self.win.graph.append((current_node.x, current_node.y))
 
             # Remove the item from the open set
             del open_set[current_id]

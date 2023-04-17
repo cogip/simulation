@@ -32,6 +32,11 @@ class Properties(BaseModel):
         title="Path Refresh Interval",
         description="Interval between each update of robot paths (seconds)"
     )
+    plot: bool = Field(
+        ...,
+        title="Debug Plot",
+        description="Display avoidance graph in realtime"
+    )
 
     class Config:
         title = "Planner Properties"
