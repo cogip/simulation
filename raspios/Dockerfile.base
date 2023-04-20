@@ -11,10 +11,10 @@ RUN update-locale LANG=C
 RUN apt-get update && apt-get -y dist-upgrade && apt-get -y clean
 
 
-# Install Python 3.10.7 (same version as Ubuntu 22.10)
+# Install Python 3.11.2
 
 ENV PYENV_ROOT /opt/pyenv
-ENV PYTHON_VERSION 3.10.7
+ENV PYTHON_VERSION 3.11.2
 ENV PATH="${PYENV_ROOT}/bin:${PYENV_ROOT}/versions/${PYTHON_VERSION}/bin:${PATH}"
 
 RUN apt-get install -y \
