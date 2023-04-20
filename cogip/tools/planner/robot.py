@@ -20,13 +20,16 @@ class Robot:
         self.game_context = context.GameContext()
         self.action: actions.Action | None = None
         self._pose_reached: bool = True
-        self.pose_current: models.Pose | None = None
-        self.pose_order: pose.Pose | None = None
+        self._pose_current: models.Pose | None = None
+        self._pose_order: pose.Pose | None = None
         self.avoidance_path: list[pose.Pose] = []
         self.last_avoidance_pose_current: models.Pose | None = None
         self.last_emitted_pose_order: models.PathPose | None = None
-        self.controller: ControllerEnum = self.game_context.default_controller
-        self.obstacles: models.DynObstacleList = []
+        self._controller: ControllerEnum = self.game_context.default_controller
+        controllers = self.planner._shared_properties["controllers"]
+        controllers[robot_id] = self._controller
+        self.planner._shared_properties["controllers"] = controllers
+        self._obstacles: models.DynObstacleList = []
         self.starter: Button | None = None
 
         if virtual:
@@ -79,6 +82,50 @@ class Robot:
         if self.action and len(self.action.poses) == 0:
             self.action.act_after_action(self.planner)
             self.action = None
+
+    @property
+    def pose_current(self) -> models.Pose:
+        return self._pose_current
+
+    @pose_current.setter
+    def pose_current(self, new_pose: models.Pose):
+        self._pose_current = new_pose
+        self.planner._shared_poses_current[self.robot_id] = new_pose.dict(exclude_unset=True)
+
+    @property
+    def pose_order(self) -> pose.Pose | None:
+        return self._pose_order
+
+    @pose_order.setter
+    def pose_order(self, new_pose: pose.Pose | None):
+        self._pose_order = new_pose
+        if new_pose is None and self.robot_id in self.planner._shared_poses_order:
+            del self.planner._shared_poses_order[self.robot_id]
+        elif new_pose is not None:
+            self.planner._shared_poses_order[self.robot_id] = new_pose.path_pose.dict(exclude_unset=True)
+
+    @property
+    def controller(self) -> ControllerEnum:
+        return self._controller
+
+    @controller.setter
+    def controller(self, new_controller: ControllerEnum):
+        self._controller = new_controller
+        controllers = self.planner._shared_properties["controllers"]
+        controllers[self.robot_id] = new_controller
+        self.planner._shared_properties["controllers"] = controllers
+
+    @property
+    def obstacles(self) -> models.DynObstacleList:
+        return self._obstacles
+
+    @obstacles.setter
+    def obstacles(self, obstacles: models.DynObstacleList):
+        self._obstacles = obstacles
+        self.planner._shared_obstacles[self.robot_id] = [
+            obstacle.dict(exclude_defaults=True)
+            for obstacle in obstacles
+        ]
 
     def next_pose(self) -> pose.Pose | None:
         """

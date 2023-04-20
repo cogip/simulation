@@ -108,6 +108,7 @@ class GameWizard:
         if self.game_context.strategy == new_strategy:
             return
         self.game_context.strategy = new_strategy
+        self.planner._shared_properties["strategy"] = new_strategy
         self.planner.reset()
         self.planner.reset_controllers()
 
@@ -126,6 +127,7 @@ class GameWizard:
         if self.game_context.avoidance_strategy == new_strategy:
             return
         self.game_context.avoidance_strategy = new_strategy
+        self.planner._shared_properties["avoidance_strategy"] = new_strategy
         self.reset()
 
     def request_starter(self):

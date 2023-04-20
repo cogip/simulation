@@ -1,9 +1,9 @@
 from enum import IntEnum
+from multiprocessing.managers import DictProxy
 
 from cogip import models
 from .visibility_road_map import visibility_road_map
 from .. import pose
-from ..properties import Properties
 
 try:
     from .debug import DebugWindow
@@ -53,10 +53,10 @@ class AvoidanceStrategy(IntEnum):
 
 
 class Avoidance:
-    def __init__(self, robot_id: int, properties: Properties):
+    def __init__(self, robot_id: int, shared_properties: DictProxy):
         self.robot_id = robot_id
-        self.properties = properties
-        self.visibility_road_map = VisibilityRoadMapWrapper(robot_id, self.properties.plot)
+        self.shared_properties = shared_properties
+        self.visibility_road_map = VisibilityRoadMapWrapper(robot_id, shared_properties)
         self.last_robot_width: int = -1
         self.last_expand: int = -1
 
@@ -66,12 +66,13 @@ class Avoidance:
             goal: pose.Pose,
             obstacles: models.DynObstacleList,
             strategy: AvoidanceStrategy = AvoidanceStrategy.Disabled) -> list[pose.Pose]:
+        robot_width = self.shared_properties["robot_width"]
         match strategy:
             case AvoidanceStrategy.VisibilityRoadMapQuadPid | AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
-                expand = int(self.properties.robot_width * self.properties.obstacle_bb_margin)
-                if self.last_robot_width != self.properties.robot_width or self.last_expand != expand:
-                    self.visibility_road_map.set_properties(self.properties.robot_width, expand)
-                    self.last_robot_width = self.properties.robot_width
+                expand = int(robot_width * self.shared_properties["obstacle_bb_margin"])
+                if self.last_robot_width != robot_width or self.last_expand != expand:
+                    self.visibility_road_map.set_properties(robot_width, expand)
+                    self.last_robot_width = robot_width
                     self.last_expand = expand
                 return self.visibility_road_map.get_path(pose_current, goal, obstacles)
             case _:
@@ -79,11 +80,12 @@ class Avoidance:
 
 
 class VisibilityRoadMapWrapper:
-    def __init__(self, robot_id: int, do_plot: bool = False):
-        if DebugWindow and do_plot:
+    def __init__(self, robot_id: int, shared_properties: DictProxy):
+        if DebugWindow and shared_properties["plot"]:
             self.win = DebugWindow(robot_id)
         else:
             self.win = None
+        self.shared_properties = shared_properties
         self.robot_width: int = 0
         self.fixed_obstacles: list[visibility_road_map.ObstaclePolygon] = []
 
