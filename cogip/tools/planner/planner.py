@@ -1,5 +1,7 @@
 from functools import partial
 import math
+from multiprocessing import Manager, Process
+from multiprocessing.managers import DictProxy
 import threading
 import time
 from typing import Any
@@ -15,7 +17,8 @@ from .context import GameContext
 from .properties import Properties
 from .robot import Robot
 from .strategy import Strategy
-from .avoidance.avoidance import Avoidance, AvoidanceStrategy
+from .avoidance.avoidance import AvoidanceStrategy
+from .avoidance.process import avoidance_process
 from .wizard import GameWizard
 
 
@@ -68,8 +71,6 @@ class Planner:
         self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
         self._obstacles: dict[int, models.DynObstacleList] = {}
         self._start_pose_menu_entries: dict[int, models.MenuEntry] = {}
-        self._avoidance: dict[int, Avoidance] = {}
-        self._avoidance_path_updaters: dict[int, ThreadLoop] = {}
         self._obstacles_sender_loop = ThreadLoop(
             "Obstacles sender loop",
             obstacle_sender_interval,
@@ -77,6 +78,25 @@ class Planner:
             logger=True
         )
         self._game_wizard = GameWizard(self)
+        self._process_manager = Manager()
+        self._shared_exiting: DictProxy = self._process_manager.dict()
+        self._shared_poses_current: DictProxy = self._process_manager.dict()
+        self._shared_poses_order: DictProxy = self._process_manager.dict()
+        self._shared_obstacles: DictProxy = self._process_manager.dict()
+        self._shared_last_avoidance_pose_currents: DictProxy = self._process_manager.dict()
+        self._queue_sio = self._process_manager.Queue()
+        self._avoidance_processes: dict[int, Process] = {}
+        self._shared_properties: DictProxy = self._process_manager.dict({
+            "controllers": {},
+            "path_refresh_interval": path_refresh_interval,
+            "robot_width": robot_width,
+            "obstacle_radius": obstacle_radius,
+            "obstacle_bb_vertices": obstacle_bb_vertices,
+            "obstacle_bb_margin": obstacle_bb_margin,
+            "plot": plot
+        })
+
+        self._thread_sio = threading.Thread(target=self.thread_sio).start()
 
     def connect(self):
         """
@@ -126,6 +146,24 @@ class Planner:
         """
         self._obstacles_sender_loop.stop()
 
+    def thread_sio(self):
+        while True:
+            name, message = self._queue_sio.get()
+            robot_id, value = message
+
+            if not (robot := self._robots.get(robot_id)):
+                return
+
+            match name:
+                case "path":
+                    robot.avoidance_path = [pose.Pose.parse_obj(m) for m in value[1:]]
+                    if len(value):
+                        self._sio_ns.emit(name, (robot_id, value))
+                case "set_controller":
+                    robot.controller = ControllerEnum(value)
+                case _:
+                    self._sio_ns.emit(name, message)
+
     def add_robot(self, robot_id: int, virtual: bool) -> None:
         """
         Add a new robot.
@@ -135,15 +173,23 @@ class Planner:
         self._robots[robot_id] = (robot := Robot(robot_id, self, virtual))
         self._sio_ns.emit("starter_changed", (robot_id, robot.starter.is_pressed))
         robot.set_pose_start(self._game_context.get_start_pose(self._start_positions.get(robot_id, robot_id)))
+        self._shared_properties["controllers"][robot_id] = robot.controller
+        self._shared_exiting[robot_id] = False
+        self._shared_obstacles[robot_id] = []
+        self._avoidance_processes[robot_id] = Process(target=avoidance_process, args=(
+            robot_id,
+            self._game_context.strategy,
+            self._game_context.avoidance_strategy,
+            self._shared_properties,
+            self._shared_exiting,
+            self._shared_poses_current,
+            self._shared_poses_order,
+            self._shared_obstacles,
+            self._shared_last_avoidance_pose_currents,
+            self._queue_sio
+        ))
+        self._avoidance_processes[robot_id].start()
         self.update_start_pose_commands()
-        self._avoidance[robot_id] = Avoidance(robot_id, self._properties)
-        self._avoidance_path_updaters[robot_id] = ThreadLoop(
-            f"Avoidance path updater {robot_id}",
-            self._properties.path_refresh_interval,
-            partial(self.update_avoidance_path, robot_id),
-            logger=True
-        )
-        self._avoidance_path_updaters[robot_id].start()
         self._sio_ns.emit("set_controller", (robot_id, robot.controller.value))
 
     def del_robot(self, robot_id: int) -> None:
@@ -151,11 +197,18 @@ class Planner:
         Remove a robot.
         """
         self._robots[robot_id].starter.close()
-        del self._robots[robot_id]
+        if robot_id in self._shared_properties["controllers"]:
+            del self._shared_properties["controllers"][robot_id]
+        if robot_id in self._shared_obstacles:
+            del self._shared_obstacles[robot_id]
+        if robot_id in self._shared_exiting:
+            self._shared_exiting[robot_id] = True
+        if robot_id in self._avoidance_processes:
+            self._avoidance_processes[robot_id].join()
+            del self._avoidance_processes[robot_id]
+        if robot_id in self._robots:
+            del self._robots[robot_id]
         self.update_start_pose_commands()
-        del self._avoidance[robot_id]
-        self._avoidance_path_updaters[robot_id].stop()
-        del self._avoidance_path_updaters[robot_id]
 
     def starter_changed(self, robot_id: int, pushed: bool) -> None:
         if not (robot := self._robots.get(robot_id)):
@@ -241,9 +294,10 @@ class Planner:
         if not (robot := self._robots.get(robot_id)):
             return
 
-        robot.last_avoidance_pose_current = None
+        if robot_id in self._shared_last_avoidance_pose_currents:
+            del self._shared_last_avoidance_pose_currents[robot_id]
 
-        if len(robot.avoidance_path) > 1:
+        if len(robot.avoidance_path) > 2:
             # The pose reached is intermediate, do nothing.
             return
 
@@ -288,6 +342,42 @@ class Planner:
         action.robot = robot
         return action
 
+    def create_dyn_obstacle(
+            self,
+            center: models.Vertex,
+            radius: float | None = None,
+            bb_radius: float | None = None) -> models.DynRoundObstacle:
+        """
+        Create a dynamic obstacle.
+
+        Arguments:
+            center: center of the obstacle
+            radius: radius of the obstacle, use the value from global properties if not specified
+            bb_radius: radius of the bounding box
+        """
+        if radius is None:
+            radius = self._properties.obstacle_radius
+
+        if bb_radius is None:
+            bb_radius = radius + self._properties.robot_width / 2
+
+        bb = [
+            models.Vertex(
+                x=center.x + bb_radius * math.cos(
+                    (tmp := (i * 2 * math.pi) / self._properties.obstacle_bb_vertices)
+                ),
+                y=center.y + bb_radius * math.sin(tmp),
+            )
+            for i in reversed(range(self._properties.obstacle_bb_vertices))
+        ]
+
+        return models.DynRoundObstacle(
+            x=center.x,
+            y=center.y,
+            radius=radius,
+            bb=bb
+        )
+
     def set_obstacles(self, robot_id: int, obstacles: list[models.Vertex]) -> None:
         """
         Store obstacles detected by a robot sent by Detector.
@@ -296,128 +386,19 @@ class Planner:
         if not (robot := self._robots.get(robot_id)):
             return
 
-        robot.obstacles = []
-
         bb_radius = self._properties.obstacle_radius + self._properties.robot_width / 2
 
-        for obstacle in obstacles:
-            bb = [
-                models.Vertex(
-                    x=obstacle.x + bb_radius * math.cos(
-                        (tmp := (i * 2 * math.pi) / self._properties.obstacle_bb_vertices)
-                    ),
-                    y=obstacle.y + bb_radius * math.sin(tmp),
-                )
-                for i in reversed(range(self._properties.obstacle_bb_vertices))
-            ]
-            robot.obstacles.append(models.DynRoundObstacle(
-                x=obstacle.x,
-                y=obstacle.y,
-                radius=self._properties.obstacle_radius,
-                bb=bb
-            ))
+        robot.obstacles = [
+            self.create_dyn_obstacle(obstacle, bb_radius)
+            for obstacle in obstacles
+        ]
 
     @property
-    def all_obstacles(self) -> list[models.DynObstacleList]:
+    def all_obstacles(self) -> models.DynObstacleList:
         return sum([robot.obstacles for robot in self._robots.values()], start=[])
 
     def send_obstacles(self) -> None:
         self._sio_ns.emit("obstacles", [o.dict(exclude_defaults=True) for o in self.all_obstacles])
-
-    def update_avoidance_path(self, robot_id: int):
-        """
-        Compute avoidance path for a robot, given its current pose, pose order and obstacles.
-        """
-        if self._game_context.strategy in [Strategy.LinearSpeedTest, Strategy.AngularSpeedTest]:
-            return
-
-        if not (robot := self._robots.get(robot_id)):
-            return
-
-        robot.avoidance_path = []
-
-        if not (avoidance := self._avoidance.get(robot_id)):
-            return
-
-        if not robot.pose_order or not robot.pose_current:
-            return
-
-        if robot.pose_order.pose == robot.pose_current:
-            return
-
-        # Work with a local copy because pose reached events can set these attributes to None in the main thread.
-        pose_order = robot.pose_order.copy()
-        pose_current = robot.pose_current.copy()
-
-        # Check if robot has moved enough since the last avoidance path was computed
-        if robot.last_avoidance_pose_current and \
-           robot.last_avoidance_pose_current != pose_current and \
-           (dist := math.dist(
-                (pose_current.x, pose_current.y),
-                (robot.last_avoidance_pose_current.x, robot.last_avoidance_pose_current.y))) < 20:
-            logger.debug(f"Robot {robot_id}: Skip avoidance path update (current pose too close: {dist})")
-            return
-        robot.last_avoidance_pose_current = pose_current.copy()
-
-        path = avoidance.get_path(
-            pose_current,
-            pose_order,
-            robot.obstacles,
-            self._game_context.avoidance_strategy
-        )
-
-        if len(path) == 0:
-            logger.debug(f"Robot {robot_id}: No path found")
-            robot.last_avoidance_pose_current = None
-            robot.avoidance_path = []
-            return
-
-        if len(path) == 1:
-            # Only one pose in path means the pose order is reached and robot is waiting next order,
-            # so do nothing.
-            robot.avoidance_path = []
-            return
-
-        if len(path) == 2:
-            # Final pose
-            new_controller = ControllerEnum.QUADPID
-        else:
-            # Intermediate pose
-            match self._game_context.avoidance_strategy:
-                case AvoidanceStrategy.Disabled | AvoidanceStrategy.VisibilityRoadMapQuadPid:
-                    new_controller = ControllerEnum.QUADPID
-                case AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
-                    new_controller = ControllerEnum.LINEAR_POSE_DISABLED
-
-            if len(robot.avoidance_path):
-                dist = math.dist((path[1].x, path[1].y), (robot.avoidance_path[0].x, robot.avoidance_path[0].y))
-                if dist < 20:
-                    logger.debug(f"Robot {robot_id}: Skip avoidance path update (new pose too close: {dist})")
-                    return
-                logger.debug(f"Robot {robot_id}: Update avoidance path")
-
-            next_delta_x = path[2].x - path[1].x
-            next_delta_y = path[2].y - path[1].y
-
-            path[1].O = math.degrees(math.atan2(next_delta_y, next_delta_x))  # noqa
-            path[1].allow_reverse = True
-
-        robot.avoidance_path = path[1:]
-        new_pose_order = path[1].path_pose
-
-        if robot.last_emitted_pose_order == new_pose_order:
-            return
-
-        robot.last_emitted_pose_order = new_pose_order.copy()
-
-        if robot.controller != new_controller:
-            robot.controller = new_controller
-            self._sio_ns.emit("set_controller", (robot_id, robot.controller.value))
-
-        self._sio_ns.emit("pose_order", (robot_id, new_pose_order.dict(exclude_defaults=True)))
-
-        # Emit full path for dashboard
-        self._sio_ns.emit("path", (robot_id, [pose.pose.dict(exclude_defaults=True) for pose in path]))
 
     def command(self, cmd: str) -> None:
         """
@@ -453,7 +434,9 @@ class Planner:
         """
         Update a Planner property with the value sent by the dashboard.
         """
-        self._properties.__setattr__(name := config["name"], config["value"])
+        self._properties.__setattr__(name := config["name"], value := config["value"])
+        if name in self._shared_properties:
+            self._shared_properties[name] = value
         match name:
             case "obstacle_sender_interval":
                 self._obstacles_sender_loop.interval = self._properties.path_refresh_interval

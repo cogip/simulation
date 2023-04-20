@@ -76,6 +76,12 @@ def main_opt(
     if debug:
         logger.setLevel(logging.DEBUG)
 
+    # The reload option is not working since multiprocessing is used to compute avoidance.
+    # It will be debugged later.
+    if reload:
+        reload = False
+        logger.warning("-r/--reload option currently not active")
+
     args = (
         server_url,
         robot_width,
