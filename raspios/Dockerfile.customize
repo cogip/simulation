@@ -14,6 +14,9 @@ RUN apt-get install -y --no-install-recommends xserver-xorg-video-all \
         xserver-xorg-input-all xserver-xorg-core xinit x11-xserver-utils \
         chromium-browser unclutter
 
+# Install ntp
+RUN apt-get install -y --no-install-recommends ntp
+
 # Pre-install some Python requirements for COGIP tools
 RUN python3 -m pip install \
     bidict==0.22.0 \
