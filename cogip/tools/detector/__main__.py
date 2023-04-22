@@ -46,7 +46,7 @@ def main_opt(
     max_distance: int = typer.Option(
         2500, min=0, max=3000,
         help="Maximum distance to detect an obstacle (mm)",
-        envvar="DETECTOR_MAX_DISTANCE"
+        envvar=["COGIP_MAX_DISTANCE", "DETECTOR_MAX_DISTANCE"]
     ),
     beacon_radius: int = typer.Option(
         35, min=10, max=150,
