@@ -44,6 +44,11 @@ def main_opt(
         help="Number of obstacle bounding box vertices",
         envvar="PLANNER_OBSTACLE_BB_VERTICES"
     ),
+    max_distance: int = typer.Option(
+        2500, min=0, max=3000,
+        help="Maximum distance to take avoidance points into account (mm)",
+        envvar=["COGIP_MAX_DISTANCE", "PLANNER_MAX_DISTANCE"]
+    ),
     obstacle_sender_interval: float = typer.Option(
         0.2, min=0.1, max=2.0,
         help="Interval between each send of obstacles to dashboards (in seconds)",
@@ -88,6 +93,7 @@ def main_opt(
         obstacle_radius,
         obstacle_bb_margin,
         obstacle_bb_vertices,
+        max_distance,
         obstacle_sender_interval,
         path_refresh_interval,
         plot

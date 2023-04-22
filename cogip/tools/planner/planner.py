@@ -34,6 +34,7 @@ class Planner:
             obstacle_radius: int,
             obstacle_bb_margin: float,
             obstacle_bb_vertices: int,
+            max_distance: int,
             obstacle_sender_interval: float,
             path_refresh_interval: float,
             plot: bool):
@@ -46,6 +47,7 @@ class Planner:
             obstacle_radius: Radius of a dynamic obstacle (in mm)
             obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
             obstacle_bb_vertices: Number of obstacle bounding box vertices
+            max_distance: Maximum distance to take avoidance points into account (mm)
             obstacle_sender_interval: Interval between each send of obstacles to dashboards (in seconds)
             path_refresh_interval: Interval between each update of robot paths (in seconds)
             plot: Display avoidance graph in realtime
@@ -56,6 +58,7 @@ class Planner:
             obstacle_radius=obstacle_radius,
             obstacle_bb_margin=obstacle_bb_margin,
             obstacle_bb_vertices=obstacle_bb_vertices,
+            max_distance=max_distance,
             obstacle_sender_interval=obstacle_sender_interval,
             path_refresh_interval=path_refresh_interval,
             plot=plot
@@ -93,6 +96,7 @@ class Planner:
             "obstacle_radius": obstacle_radius,
             "obstacle_bb_vertices": obstacle_bb_vertices,
             "obstacle_bb_margin": obstacle_bb_margin,
+            "max_distance": max_distance,
             "plot": plot
         })
 

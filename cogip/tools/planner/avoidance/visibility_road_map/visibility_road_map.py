@@ -50,21 +50,30 @@ class VisibilityRoadMap:
             self,
             start_x: float, start_y: float,
             goal_x: float, goal_y: float,
-            obstacles: list["ObstaclePolygon"]):
+            obstacles: list["ObstaclePolygon"],
+            max_distance: int):
         nodes = deepcopy(self.fixed_nodes)
 
         nodes.extend(self.generate_visibility_nodes(start_x, start_y, goal_x, goal_y, obstacles))
 
-        road_map_info = self.generate_road_map_info(nodes, obstacles)
+        filtered_nodes = []
+        for node in nodes:
+            if node.x == goal_x and node.y == goal_y:
+                filtered_nodes.append(node)
+                continue
+            if math.dist((start_x, start_y), (node.x, node.y)) < max_distance:
+                filtered_nodes.append(node)
+
+        road_map_info = self.generate_road_map_info(filtered_nodes, obstacles)
 
         if self.win:
-            self.plot_road_map(nodes, road_map_info)
+            self.plot_road_map(filtered_nodes, road_map_info)
 
         rx, ry = DijkstraSearch(self.win).search(
             start_x, start_y,
             goal_x, goal_y,
-            [node.x for node in nodes],
-            [node.y for node in nodes],
+            [node.x for node in filtered_nodes],
+            [node.y for node in filtered_nodes],
             road_map_info
         )
 

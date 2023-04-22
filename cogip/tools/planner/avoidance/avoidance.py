@@ -147,7 +147,9 @@ class VisibilityRoadMapWrapper:
         # Compute path
         rx, ry = self.visibility_road_map.planning(
             start.x, start.y,
-            goal.x, goal.y, converted_obstacles)
+            goal.x, goal.y,
+            converted_obstacles,
+            self.shared_properties["max_distance"])
 
         if self.win:
             self.win.path = [(x, y) for x, y in zip(rx, ry)]
