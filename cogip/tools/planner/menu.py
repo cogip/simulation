@@ -8,6 +8,7 @@ menu = models.ShellMenu(
         models.MenuEntry(cmd="choose_camp", desc="Choose camp"),
         models.MenuEntry(cmd="choose_strategy", desc="Choose strategy"),
         models.MenuEntry(cmd="choose_avoidance", desc="Choose avoidance"),
+        models.MenuEntry(cmd="choose_table", desc="Choose table"),
         models.MenuEntry(cmd="play", desc="Play"),
         models.MenuEntry(cmd="stop", desc="Stop"),
         models.MenuEntry(cmd="next", desc="Next"),
