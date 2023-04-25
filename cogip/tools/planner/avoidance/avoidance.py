@@ -2,21 +2,14 @@ from enum import IntEnum
 from multiprocessing.managers import DictProxy
 
 from cogip import models
+from ..table import Table
 from .visibility_road_map import visibility_road_map
-from .. import pose
 
 try:
     from .debug import DebugWindow
 except ImportError:
     DebugWindow = bool
 
-
-borders = [
-    models.Vertex(x=0, y=1000),
-    models.Vertex(x=3000, y=1000),
-    models.Vertex(x=3000, y=-1000),
-    models.Vertex(x=0, y=-1000)
-]
 
 fixed_obstacles = [
     [
@@ -53,10 +46,10 @@ class AvoidanceStrategy(IntEnum):
 
 
 class Avoidance:
-    def __init__(self, robot_id: int, shared_properties: DictProxy):
+    def __init__(self, robot_id: int, table: Table, shared_properties: DictProxy):
         self.robot_id = robot_id
         self.shared_properties = shared_properties
-        self.visibility_road_map = VisibilityRoadMapWrapper(robot_id, shared_properties)
+        self.visibility_road_map = VisibilityRoadMapWrapper(robot_id, table, shared_properties)
         self.last_robot_width: int = -1
         self.last_expand: int = -1
 
@@ -80,11 +73,12 @@ class Avoidance:
 
 
 class VisibilityRoadMapWrapper:
-    def __init__(self, robot_id: int, shared_properties: DictProxy):
+    def __init__(self, robot_id: int, table: Table, shared_properties: DictProxy):
         if DebugWindow and shared_properties["plot"]:
             self.win = DebugWindow(robot_id)
         else:
             self.win = None
+        self.table = table
         self.shared_properties = shared_properties
         self.robot_width: int = 0
         self.fixed_obstacles: list[visibility_road_map.ObstaclePolygon] = []
@@ -107,10 +101,10 @@ class VisibilityRoadMapWrapper:
             self.win.fixed_obstacles = self.fixed_obstacles[:]
 
         self.visibility_road_map = visibility_road_map.VisibilityRoadMap(
-            x_min=borders[0].x + robot_width / 2,
-            x_max=borders[2].x - robot_width / 2,
-            y_min=borders[2].y + robot_width / 2,
-            y_max=borders[0].y - robot_width / 2,
+            x_min=self.table.x_min + robot_width / 2,
+            x_max=self.table.x_max - robot_width / 2,
+            y_min=self.table.y_min + robot_width / 2,
+            y_max=self.table.y_max - robot_width / 2,
             fixed_obstacles=self.fixed_obstacles,
             win=self.win
         )

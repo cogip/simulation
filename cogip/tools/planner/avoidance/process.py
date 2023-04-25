@@ -6,6 +6,7 @@ import time
 from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
 from .. import logger
+from ..table import Table
 from ..strategy import Strategy
 from .avoidance import Avoidance, AvoidanceStrategy
 
@@ -51,6 +52,7 @@ def avoidance_process(
         robot_id: int,
         strategy: Strategy,
         avoidance_strategy: AvoidanceStrategy,
+        table: Table,
         shared_properties: DictProxy,
         shared_exiting: DictProxy,
         shared_poses_current: DictProxy,
@@ -59,7 +61,7 @@ def avoidance_process(
         shared_last_avoidance_pose_currents: DictProxy,
         queue_sio: Queue):
 
-    avoidance = Avoidance(robot_id, shared_properties)
+    avoidance = Avoidance(robot_id, table, shared_properties)
     avoidance_path: list[models.PathPose] = []
     last_emitted_pose_order: models.PathPose | None = None
     start = time.time() - shared_properties["path_refresh_interval"] + 0.01

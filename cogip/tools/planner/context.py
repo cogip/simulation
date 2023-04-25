@@ -2,6 +2,7 @@ from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.singleton import Singleton
 from .camp import Camp
 from .pose import AdaptedPose, Pose
+from .table import Table, TableEnum, tables
 from .strategy import Strategy
 from .avoidance.avoidance import AvoidanceStrategy
 
@@ -13,6 +14,7 @@ class GameContext(metaclass=Singleton):
     def __init__(self):
         self.camp = Camp()
         self._strategy = Strategy.BackAndForth
+        self._table = TableEnum.Game
         self._avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
         self.playing: bool = False
         self.score: int = 0
@@ -23,6 +25,17 @@ class GameContext(metaclass=Singleton):
         Selected strategy.
         """
         return self._strategy
+
+    @property
+    def table(self) -> Table:
+        """
+        Selected table.
+        """
+        return tables[self._table]
+
+    @table.setter
+    def table(self, new_table: TableEnum):
+        self._table = new_table
 
     @strategy.setter
     def strategy(self, s: Strategy):
@@ -76,3 +89,15 @@ class GameContext(metaclass=Singleton):
                 return AdaptedPose(x=1125, y=775, O=-90)
             case _:
                 return None
+
+    def get_available_start_poses(self) -> list[int]:
+        """
+        Get start poses available depending on camp and table.
+        """
+        start_pose_indices = []
+        for i in range(1, 6):
+            pose = GameContext.get_start_pose(i)
+            if self.table.contains(pose):
+                start_pose_indices.append(i)
+
+        return start_pose_indices

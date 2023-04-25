@@ -3,6 +3,7 @@ from typing import Callable, NewType
 
 from cogip.models.models import SpeedEnum
 from cogip.tools import planner
+from .context import GameContext
 from .pose import AdaptedPose, Pose
 from .strategy import Strategy
 from . import robot
@@ -78,12 +79,23 @@ class ApprovalAction(Action):
     """
     def __init__(self):
         super().__init__("Approval action")
+        self.game_context = GameContext()
         self.reset()
 
     def reset(self, planner: "planner.planner.Planner | None" = None) -> None:
         self.poses = [
-            AdaptedPose(x=300, y=-700, O=0, max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL),
-            AdaptedPose(x=2700, y=-700, O=180, max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL)
+            AdaptedPose(
+                x=self.game_context.table.x_min + 300,
+                y=(self.game_context.table.y_max + self.game_context.table.y_min) / 2,
+                O=0,
+                max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL
+            ),
+            AdaptedPose(
+                x=self.game_context.table.x_max - 300,
+                y=(self.game_context.table.y_max + self.game_context.table.y_min) / 2,
+                O=180,
+                max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL
+            )
         ]
         self.poses[-1].after_pose_func = self.reset
 
@@ -100,11 +112,13 @@ class BackAndForthAction(Action):
     """
     def __init__(self, actions: Actions):
         super().__init__("BackAnForth action", actions)
+        self.game_context = GameContext()
+
         self.before_action_func = self.compute_poses
 
     def compute_poses(self, planner: "planner.planner.Planner") -> None:
-        x = 3000 - self.robot.pose_current.x
-        y = -self.robot.pose_current.y
+        x = self.game_context.table.x_min + self.game_context.table.x_max - self.robot.pose_current.x
+        y = self.game_context.table.y_min + self.game_context.table.y_max - self.robot.pose_current.y
         angle = self.robot.pose_current.O
         if angle < 0:
             angle = self.robot.pose_current.O + 180

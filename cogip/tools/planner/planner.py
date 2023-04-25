@@ -16,6 +16,7 @@ from .camp import Camp
 from .context import GameContext
 from .properties import Properties
 from .robot import Robot
+from .table import TableEnum
 from .strategy import Strategy
 from .avoidance.avoidance import AvoidanceStrategy
 from .avoidance.process import avoidance_process
@@ -176,7 +177,11 @@ class Planner:
             self.del_robot(robot_id)
         self._robots[robot_id] = (robot := Robot(robot_id, self, virtual))
         self._sio_ns.emit("starter_changed", (robot_id, robot.starter.is_pressed))
-        robot.set_pose_start(self._game_context.get_start_pose(self._start_positions.get(robot_id, robot_id)))
+        new_start_pose = self._start_positions.get(robot_id, robot_id)
+        available_start_poses = self._game_context.get_available_start_poses()
+        if new_start_pose not in available_start_poses:
+            new_start_pose = available_start_poses[(robot_id - 1) % len(available_start_poses)]
+        robot.set_pose_start(self._game_context.get_start_pose((new_start_pose)))
         self._shared_properties["controllers"][robot_id] = robot.controller
         self._shared_exiting[robot_id] = False
         self._shared_obstacles[robot_id] = []
@@ -184,6 +189,7 @@ class Planner:
             robot_id,
             self._game_context.strategy,
             self._game_context.avoidance_strategy,
+            self._game_context.table,
             self._shared_properties,
             self._shared_exiting,
             self._shared_poses_current,
@@ -539,9 +545,24 @@ class Planner:
             {
                 "name": f"Choose Start Position {robot_id}",
                 "type": "choice_integer",
-                "choices": list(range(1, 6)),
+                "choices": self._game_context.get_available_start_poses(),
                 "value": self._start_positions.get(robot_id, robot_id),
                 "robot_id": robot_id
+            }
+        )
+
+    def cmd_choose_table(self) -> None:
+        """
+        Choose table command from the menu.
+        Send table wizard message.
+        """
+        self._sio_ns.emit(
+            "wizard",
+            {
+                "name": "Choose Table",
+                "type": "choice_str",
+                "choices": [e.name for e in TableEnum],
+                "value": self._game_context._table.name
             }
         )
 
@@ -580,6 +601,14 @@ class Planner:
                     start_position = int(value)
                     self._start_positions[robot_id] = start_position
                     robot.set_pose_start(self._game_context.get_start_pose(start_position))
+            case "Choose Table":
+                new_table = TableEnum[value]
+                if self._game_context.table == new_table:
+                    return
+                self._game_context.table = new_table
+                self._shared_properties["table"] = new_table
+                self.reset()
+                logger.info(f'Wizard: New table: {self._game_context._table.name}')
             case game_wizard_response if game_wizard_response.startswith("Game Wizard"):
                 self._game_wizard.response(message)
             case wizard_test_response if wizard_test_response.startswith("Wizard Test"):
