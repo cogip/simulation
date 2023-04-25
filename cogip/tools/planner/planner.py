@@ -398,9 +398,11 @@ class Planner:
 
         bb_radius = self._properties.obstacle_radius + self._properties.robot_width / 2
 
+        table = self._game_context.table
         robot.obstacles = [
             self.create_dyn_obstacle(obstacle, bb_radius)
             for obstacle in obstacles
+            if table.contains(obstacle, self._properties.obstacle_radius)
         ]
 
     @property
