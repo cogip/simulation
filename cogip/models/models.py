@@ -8,6 +8,7 @@ an exception being raised if impossible.
 """
 
 from enum import auto, IntEnum
+import math
 from typing import List, Union
 
 from pydantic import BaseModel
@@ -197,6 +198,17 @@ class DynRoundObstacle(BaseModel):
     def contains(self, point: Vertex) -> bool:
         return (point.x - self.x) * (point.x - self.x) + (point.y - self.y) * (point.y - self.y) <= self.radius ** 2
 
+    def create_bounding_box(self, bb_radius, nb_vertices):
+        self.bb = [
+            Vertex(
+                x=self.x + bb_radius * math.cos(
+                    (tmp := (i * 2 * math.pi) / nb_vertices)
+                ),
+                y=self.y + bb_radius * math.sin(tmp),
+            )
+            for i in reversed(range(nb_vertices))
+        ]
+
     def __hash__(self):
         """
         Hash function to allow this class to be used as a key in a dict.
@@ -354,6 +366,10 @@ class CakeLayer(BaseModel):
     y: float
     pos: CakeLayerPos
     kind: CakeLayerKind
+
+    @property
+    def vertex(self) -> Vertex:
+        return Vertex(x=self.x, y=self.y)
 
 
 class CherryID(IntEnum):

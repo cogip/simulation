@@ -30,22 +30,14 @@ def create_dyn_obstacle(
     if bb_radius is None:
         bb_radius = radius + shared_properties["robot_width"] / 2
 
-    bb = [
-        models.Vertex(
-            x=center.x + bb_radius * math.cos(
-                (tmp := (i * 2 * math.pi) / shared_properties["obstacle_bb_vertices"])
-            ),
-            y=center.y + bb_radius * math.sin(tmp),
-        )
-        for i in reversed(range(shared_properties["obstacle_bb_vertices"]))
-    ]
-
-    return models.DynRoundObstacle(
+    obstacle = models.DynRoundObstacle(
         x=center.x,
         y=center.y,
-        radius=radius,
-        bb=bb
+        radius=radius
     )
+    obstacle.create_bounding_box(bb_radius, shared_properties["obstacle_bb_vertices"])
+
+    return obstacle
 
 
 def avoidance_process(
