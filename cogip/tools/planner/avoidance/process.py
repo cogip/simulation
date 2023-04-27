@@ -1,6 +1,6 @@
 import math
 from multiprocessing import Queue
-from multiprocessing.managers import DictProxy
+from multiprocessing.managers import DictProxy, ListProxy
 import time
 
 from cogip import models
@@ -50,6 +50,7 @@ def avoidance_process(
         shared_poses_current: DictProxy,
         shared_poses_order: DictProxy,
         shared_obstacles: DictProxy,
+        shared_cake_obstacles: ListProxy,
         shared_last_avoidance_pose_currents: DictProxy,
         queue_sio: Queue):
 
@@ -124,10 +125,17 @@ def avoidance_process(
                     continue
             filtered_dyn_obstacles.append(obstacle)
 
+        min_cake_dist: float = 1000.0  # minimum distance to use cakes to compute avoidance
+        cake_obstacles = [
+            models.DynRoundObstacle.parse_obj(obstacle)
+            for obstacle in shared_cake_obstacles[robot_id]
+            if math.dist((obstacle["x"], obstacle["y"]), (pose_current.x, pose_current.y)) < min_cake_dist
+        ]
+
         path = avoidance.get_path(
             pose_current,
             pose_order,
-            filtered_dyn_obstacles + other_robot_obstacles,
+            filtered_dyn_obstacles + other_robot_obstacles + cake_obstacles,
             avoidance_strategy
         )
 

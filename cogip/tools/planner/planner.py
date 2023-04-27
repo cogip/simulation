@@ -1,5 +1,4 @@
 from functools import partial
-import math
 from multiprocessing import Manager, Process
 from multiprocessing.managers import DictProxy
 import threading
@@ -88,6 +87,7 @@ class Planner:
         self._shared_poses_current: DictProxy = self._process_manager.dict()
         self._shared_poses_order: DictProxy = self._process_manager.dict()
         self._shared_obstacles: DictProxy = self._process_manager.dict()
+        self._shared_cake_obstacles: DictProxy = self._process_manager.dict()
         self._shared_last_avoidance_pose_currents: DictProxy = self._process_manager.dict()
         self._queue_sio = self._process_manager.Queue()
         self._avoidance_processes: dict[int, Process] = {}
@@ -101,6 +101,7 @@ class Planner:
             "max_distance": max_distance,
             "plot": plot
         })
+        self.update_cake_obstacles()
 
         self._thread_sio = threading.Thread(target=self.thread_sio).start()
 
@@ -195,6 +196,8 @@ class Planner:
         self._shared_properties["controllers"][robot_id] = robot.controller
         self._shared_exiting[robot_id] = False
         self._shared_obstacles[robot_id] = []
+        self._shared_cake_obstacles[robot_id] = []
+        self.update_cake_obstacles(robot_id)
         self._avoidance_processes[robot_id] = Process(target=avoidance_process, args=(
             robot_id,
             self._game_context.strategy,
@@ -205,6 +208,7 @@ class Planner:
             self._shared_poses_current,
             self._shared_poses_order,
             self._shared_obstacles,
+            self._shared_cake_obstacles,
             self._shared_last_avoidance_pose_currents,
             self._queue_sio
         ))
@@ -264,6 +268,7 @@ class Planner:
         Reset planner, context, robots and actions.
         """
         self._game_context.reset()
+        self.update_cake_obstacles()
         self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
 
         # Remove robots and add them again to reset all robots.
@@ -280,6 +285,19 @@ class Planner:
                 continue
             robot.controller = new_controller
             self._sio_ns.emit("set_controller", (robot_id, new_controller.value))
+
+    def update_cake_obstacles(self, robot_id: int = 0):
+        robot_ids = self._robots.keys() if robot_id == 0 else [robot_id]
+        for robot_id in robot_ids:
+            obstacles = []
+            for cake in self._game_context.cakes:
+                if not cake.on_table:
+                    continue
+                if cake.robot and cake.robot.robot_id == robot_id:
+                    continue
+                cake.update_obstacle_properties(self._properties)
+                obstacles.append(cake.obstacle.dict(exclude_defaults=True))
+            self._shared_cake_obstacles[robot_id] = obstacles
 
     def set_pose_start(self, robot_id: int, pose_start: pose.Pose):
         """
@@ -419,7 +437,9 @@ class Planner:
 
     @property
     def all_obstacles(self) -> models.DynObstacleList:
-        return sum([robot.obstacles for robot in self._robots.values()], start=[])
+        obstacles = sum([robot.obstacles for robot in self._robots.values()], start=[])
+        obstacles.extend([cake.obstacle for cake in self._game_context.cakes if cake.on_table])
+        return obstacles
 
     def send_obstacles(self) -> None:
         self._sio_ns.emit("obstacles", [o.dict(exclude_defaults=True) for o in self.all_obstacles])
@@ -467,6 +487,8 @@ class Planner:
             case "path_refresh_interval":
                 for thread in self._avoidance_path_updaters.values():
                     thread.interval = self._properties.path_refresh_interval
+            case "robot_width" | "obstacle_bb_vertices":
+                self.update_cake_obstacles()
 
     def cmd_play(self) -> None:
         """
