@@ -1,6 +1,9 @@
+from cogip.entities.artifacts import default_cake_layers
+from cogip.models.models import CakeLayer, CakeLayerID
 from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.singleton import Singleton
 from .camp import Camp
+from .cake import Cake, CakeSlot
 from .pose import AdaptedPose, Pose
 from .table import Table, TableEnum, tables
 from .strategy import Strategy
@@ -18,6 +21,10 @@ class GameContext(metaclass=Singleton):
         self._avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
         self.playing: bool = False
         self.score: int = 0
+        self.cake_layers: dict[CakeLayerID, CakeLayer] = {}
+        self.cakes: list[Cake] = []
+        self.cake_slots: list[CakeSlot] = []
+        self.create_cakes()
 
     @property
     def strategy(self) -> Strategy:
@@ -60,6 +67,7 @@ class GameContext(metaclass=Singleton):
         """
         self.playing = False
         self.score = 0
+        self.create_cakes()
 
     @property
     def default_controller(self) -> ControllerEnum:
@@ -101,3 +109,36 @@ class GameContext(metaclass=Singleton):
                 start_pose_indices.append(i)
 
         return start_pose_indices
+
+    def create_cakes(self):
+        table = self.table
+        self.cakes = []
+        self.cake_slots = []
+        for cake_layer_id, values in default_cake_layers.items():
+            x, y, pos, kind = values
+            if x < table.x_min or \
+               x > table.x_max or \
+               y < table.y_min or \
+               y > table.y_max:
+                continue
+
+            layer = CakeLayer(
+                id=cake_layer_id,
+                x=values[0],
+                y=values[1],
+                pos=values[2],
+                kind=values[3]
+            )
+            self.cake_layers[cake_layer_id] = layer
+
+            cake: Cake | None = None
+            for cake in self.cakes:
+                if (cake.x, cake.y) == (layer.x, layer.y):
+                    break
+                cake = None
+            if cake is None:
+                cake = Cake(x=layer.x, y=layer.y)
+                self.cakes.append(cake)
+                self.cake_slots.append(CakeSlot(layer.x, layer.y, layer.kind, cake))
+
+            cake.layers[layer.pos] = layer
