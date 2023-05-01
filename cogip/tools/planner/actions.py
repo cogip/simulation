@@ -6,7 +6,7 @@ from cogip.tools import planner
 from .context import GameContext
 from .pose import AdaptedPose, Pose
 from .strategy import Strategy
-from . import robot
+from . import cake, robot
 
 
 # Fake forward declaration
@@ -193,10 +193,53 @@ class SpeedTestActions(Actions):
         self.append(SpeedTestAction())
 
 
+# Get cakes actions, one for each slot (12)
+class GetCakesAtSlotAction(Action):
+    def __init__(self, slot: "cake.CakeSlot"):
+        super().__init__(f"Get cakes action at ({int(slot.x)}, {int(slot.y)})")
+        self.slot = slot
+        self.cake = slot.cake
+        self.game_context = GameContext()
+        self.init_action()
+
+    def init_action(self):
+        self.pose = Pose(
+            x=self.slot.x, y=self.slot.y, O=None, allow_reverse=False,
+            max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL
+        )
+        self.pose.before_pose_func = self.before_pose
+        self.pose.after_pose_func = self.after_pose
+        self.poses = [self.pose]
+
+    def before_pose(self, planner: "planner.planner.Planner"):
+        self.slot.cake.robot = self.robot
+        planner.update_cake_obstacles(self.robot.robot_id)
+
+    def after_pose(self, planner: "planner.planner.Planner"):
+        self.slot.cake.on_table = False
+        self.slot.cake = None
+
+    def recycle(self, planner: "planner.planner.Planner"):
+        self.slot.cake = self.cake
+        self.slot.cake.robot = None
+        planner.update_cake_obstacles(self.robot.robot_id)
+        self.init_action()
+
+
+class TrainingActions(Actions):
+    def __init__(self):
+        super().__init__()
+        self.game_context = GameContext()
+
+        for slot in self.game_context.cake_slots:
+            self.append(GetCakesAtSlotAction(slot))
+
+
 action_classes = {
     Strategy.Approval: ApprovalActions,
     Strategy.Game: GameActions,
     Strategy.BackAndForth: BackAndForthActions,
     Strategy.AngularSpeedTest: SpeedTestActions,
     Strategy.LinearSpeedTest: SpeedTestActions,
+    Strategy.Training: TrainingActions,
 }
