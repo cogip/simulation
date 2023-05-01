@@ -150,6 +150,8 @@ def avoidance_process(
         if len(path) == 2:
             # Final pose
             new_controller = ControllerEnum.QUADPID
+            if path[1].O is None:
+                path[1].O = path[0].O  # noqa
         else:
             # Intermediate pose
             match avoidance_strategy:
