@@ -61,6 +61,15 @@ class Action:
         """
         self.after_action_func(planner)
 
+    def recycle(self, planner: "planner.planner.Planner"):
+        """
+        Function called if the action is blocked and put back in the actions list
+
+        Parameters:
+            planner: the planner object to send it information or orders
+        """
+        pass
+
 
 class Actions(list[Action]):
     """
