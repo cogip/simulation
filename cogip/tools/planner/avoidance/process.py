@@ -5,7 +5,7 @@ import time
 
 from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
-from .. import logger, pose
+from .. import logger
 from ..strategy import Strategy
 from .avoidance import Avoidance, AvoidanceStrategy
 
@@ -60,7 +60,7 @@ def avoidance_process(
         queue_sio: Queue):
 
     avoidance = Avoidance(robot_id, shared_properties)
-    avoidance_path: list[pose.Pose] = []
+    avoidance_path: list[models.PathPose] = []
     last_emitted_pose_order: models.PathPose | None = None
     start = time.time() - shared_properties["path_refresh_interval"] + 0.01
 
@@ -86,8 +86,8 @@ def avoidance_process(
         if not pose_current or not pose_order:
             avoidance_path = []
             continue
-        pose_current = models.Pose.parse_obj(pose_current)
-        pose_order = pose.Pose.parse_obj(pose_order)
+        pose_current = models.PathPose.parse_obj(pose_current)
+        pose_order = models.PathPose.parse_obj(pose_order)
 
         if pose_order.pose == pose_current:
             avoidance_path = []
@@ -108,7 +108,7 @@ def avoidance_process(
 
         # Create an obstacle for other robots
         other_robot_obstacles = [
-            create_dyn_obstacle(pose.Pose.parse_obj(p), shared_properties, radius=shared_properties["robot_width"] / 2)
+            create_dyn_obstacle(models.PathPose.parse_obj(p), shared_properties, radius=shared_properties["robot_width"] / 2)
             for rid, p in shared_poses_current.items()
             if rid != robot_id
         ]
@@ -144,6 +144,9 @@ def avoidance_process(
             avoidance_path = []
             continue
 
+        for p in path:
+            p.allow_reverse = pose_order.allow_reverse
+
         if len(path) == 1:
             # Only one pose in path means the pose order is reached and robot is waiting next order,
             # so do nothing.
@@ -178,7 +181,7 @@ def avoidance_process(
             path[1].allow_reverse = True
 
         avoidance_path = path[:]
-        new_pose_order = path[1].path_pose
+        new_pose_order = path[1].copy()
 
         if last_emitted_pose_order != new_pose_order:
 

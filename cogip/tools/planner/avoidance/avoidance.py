@@ -62,10 +62,10 @@ class Avoidance:
 
     def get_path(
             self,
-            pose_current: models.Pose,
-            goal: pose.Pose,
+            pose_current: models.PathPose,
+            goal: models.PathPose,
             obstacles: models.DynObstacleList,
-            strategy: AvoidanceStrategy = AvoidanceStrategy.Disabled) -> list[pose.Pose]:
+            strategy: AvoidanceStrategy = AvoidanceStrategy.Disabled) -> list[models.PathPose]:
         robot_width = self.shared_properties["robot_width"]
         match strategy:
             case AvoidanceStrategy.VisibilityRoadMapQuadPid | AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
@@ -76,7 +76,7 @@ class Avoidance:
                     self.last_expand = expand
                 return self.visibility_road_map.get_path(pose_current, goal, obstacles)
             case _:
-                return [pose.Pose(**pose_current.dict()), goal.copy()]
+                return [models.PathPose(**pose_current.dict()), goal.copy()]
 
 
 class VisibilityRoadMapWrapper:
@@ -117,9 +117,9 @@ class VisibilityRoadMapWrapper:
 
     def get_path(
             self,
-            start: models.Pose,
-            goal: pose.Pose,
-            obstacles: models.DynObstacleList) -> list[pose.Pose]:
+            start: models.PathPose,
+            goal: models.PathPose,
+            obstacles: models.DynObstacleList) -> list[models.PathPose]:
         if self.win:
             self.win.reset()
             self.win.point_start = start
@@ -154,7 +154,7 @@ class VisibilityRoadMapWrapper:
             self.win.update()
 
         # Convert computed path in the planner format
-        path = [pose.Pose(x=x, y=y) for x, y in zip(rx, ry)]
+        path = [models.PathPose(x=x, y=y) for x, y in zip(rx, ry)]
 
         if len(path) == 1:
             # No path found, or start and goal are the same pose
@@ -164,6 +164,6 @@ class VisibilityRoadMapWrapper:
             # Replace first and last poses with original start and goal
             # to preserve the same properties (like orientation)
             path[-1] = goal.copy()
-            path[0] = pose.Pose(**start.dict())
+            path[0] = models.PathPose(**start.dict())
 
         return path
