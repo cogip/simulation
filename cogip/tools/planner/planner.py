@@ -73,6 +73,7 @@ class Planner:
         self._robots: dict[int, Robot] = {}
         self._start_positions: dict[int, int] = {}
         self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
+        self._blocked: dict[int, bool] = {}
         self._obstacles: dict[int, models.DynObstacleList] = {}
         self._start_pose_menu_entries: dict[int, models.MenuEntry] = {}
         self._obstacles_sender_loop = ThreadLoop(
@@ -161,9 +162,18 @@ class Planner:
 
             match name:
                 case "path":
-                    robot.avoidance_path = [pose.Pose.parse_obj(m) for m in value[1:]]
-                    if len(value):
-                        self._sio_ns.emit(name, (robot_id, value))
+                    if len(value) == 0:
+                        blocked = self._blocked.get(robot_id, 0)
+                        blocked += 1
+                        self._blocked[robot_id] = blocked
+                        robot.avoidance_path = []
+                        if blocked > 10:
+                            self.blocked(robot_id)
+                            self._blocked[robot_id] = 0
+                    else:
+                        self._blocked[robot_id] = 0
+                        robot.avoidance_path = [pose.Pose.parse_obj(m) for m in value[1:]]
+                    self._sio_ns.emit(name, (robot_id, value))
                 case "set_controller":
                     robot.controller = ControllerEnum(value)
                 case _:
@@ -351,6 +361,16 @@ class Planner:
         action = self._actions.pop(0)
         action.robot = robot
         return action
+
+    def blocked(self, robot_id: int):
+        """
+        Function called when a robot cannot find a path to go to the current pose of the current action
+        """
+        if current_action := (robot := self._robots[robot_id]).action:
+            if new_action := self.get_action(robot_id):
+                robot.set_action(new_action)
+                current_action.recycle(self)
+                self._actions.append(current_action)
 
     def create_dyn_obstacle(
             self,
