@@ -189,6 +189,7 @@ class Planner:
             robot_id,
             self._game_context.strategy,
             self._game_context.avoidance_strategy,
+            self._game_context.table,
             self._shared_properties,
             self._shared_exiting,
             self._shared_poses_current,
