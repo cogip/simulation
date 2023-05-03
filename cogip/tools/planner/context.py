@@ -95,7 +95,7 @@ class GameContext(metaclass=Singleton):
             case 5:
                 return AdaptedPose(x=1125, y=775, O=-90)
             case _:
-                return None
+                return AdaptedPose(x=225, y=-775, O=0)
 
     def get_available_start_poses(self) -> list[int]:
         """

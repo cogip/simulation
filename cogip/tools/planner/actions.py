@@ -1,4 +1,6 @@
+import asyncio
 from functools import partial
+from time import sleep
 from typing import Awaitable, Callable, NewType
 
 from cogip.models.models import SpeedEnum
@@ -199,14 +201,19 @@ class SpeedTestActions(Actions):
         self.append(SpeedTestAction())
 
 
+first_sleep = True
+
+
 # Get cakes actions, one for each slot (12)
 class GetCakesAtSlotAction(Action):
     def __init__(self, slot: "cake.CakeSlot"):
+        global first_sleep
         super().__init__(f"Get cakes action at ({int(slot.x)}, {int(slot.y)})")
         self.slot = slot
         self.cake = slot.cake
         self.game_context = GameContext()
         self.init_action()
+        first_sleep = True
 
     def init_action(self):
         self.pose = Pose(
@@ -220,6 +227,12 @@ class GetCakesAtSlotAction(Action):
     async def before_pose(self, planner: "planner.planner.Planner"):
         self.slot.cake.robot = self.robot
         planner.update_cake_obstacles(self.robot.robot_id)
+        global first_sleep
+        if first_sleep:
+            first_sleep = False
+            debug(f"Robot {self.robot.robot_id}; sleep first")
+            await asyncio.sleep(10)
+            debug(f"Robot {self.robot.robot_id}; wake up")
 
     async def after_pose(self, planner: "planner.planner.Planner"):
         self.slot.cake.on_table = False

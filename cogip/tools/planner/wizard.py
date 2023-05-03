@@ -88,7 +88,7 @@ class GameWizard:
         if robot := self.planner._robots.get(robot_id := message.get("robot_id")):
             start_position = int(value)
             self.planner._start_positions[robot_id] = start_position
-            await robot.set_pose_start(self.game_context.get_start_pose(start_position))
+            await robot.set_pose_start(self.game_context.get_start_pose(start_position).pose)
 
         if self.robot_index < len(self.planner._robots) - 1:
             self.step -= 1

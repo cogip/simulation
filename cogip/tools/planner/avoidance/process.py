@@ -186,7 +186,7 @@ def avoidance_process(
             path[1].allow_reverse = True
 
         avoidance_path = path[:]
-        new_pose_order = path[1].copy()
+        new_pose_order = path[1]
 
         if last_emitted_pose_order != new_pose_order:
 
