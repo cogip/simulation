@@ -7,6 +7,7 @@ from cogip.models import models
 from cogip.tools import planner
 from cogip.tools.copilot.controller import ControllerEnum
 from . import actions, context, logger, pose
+from .strategy import Strategy
 
 
 class Robot:
@@ -31,6 +32,7 @@ class Robot:
         self.planner._shared_properties["controllers"] = controllers
         self._obstacles: models.DynObstacleList = []
         self.starter: Button | None = None
+        self.blocked: int = 0
 
         if virtual:
             starter = Button(
@@ -52,17 +54,17 @@ class Robot:
         starter.when_released = partial(self.sio_emitter_queue.put, ("starter_changed", False))
         self.starter = starter
 
-    async def set_pose_start(self, pose: pose.Pose):
+    async def set_pose_start(self, pose: models.Pose):
         """
         Set the start pose.
         """
         self.action = None
-        self.pose_current = pose.pose
-        self.pose_order = pose
+        self.pose_current = pose.copy()
+        self.pose_order = None
         self.pose_reached = True
         self.avoidance_path = []
-        await self.planner.set_pose_start(self.robot_id, self.pose_order)
-        await self.pose_order.act_after_pose(self.planner)
+        await self.planner.set_pose_start(self.robot_id, self.pose_current)
+        # await self.pose_order.act_after_pose(self.planner)
 
     async def set_pose_reached(self, reached: bool = True):
         """
@@ -132,9 +134,15 @@ class Robot:
             self.action = None
             return None
 
-        self.pose_order = self.action.poses.pop(0)
-        await self.pose_order.act_before_pose(self.planner)
-        await self.planner.set_pose_order(self.robot_id, self.pose_order)
+        pose_order = self.action.poses.pop(0)
+        self.pose_order = None
+        await pose_order.act_before_pose(self.planner)
+        self.blocked = 0
+        self.pose_order = pose_order
+
+        if self.game_context.strategy in [Strategy.LinearSpeedTest, Strategy.AngularSpeedTest]:
+            await self.planner._sio_ns.emit("pose_order", (self.robot_id, self.pose_order.pose.dict()))
+
         return self.pose_order
 
     async def set_action(self, action: "actions.Action"):
