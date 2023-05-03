@@ -1,5 +1,5 @@
 # flake8: noqa
-from typing import Dict, Tuple
+from typing import Dict
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.Qt3DCore import Qt3DCore
@@ -8,8 +8,11 @@ from PySide6.Qt3DRender import Qt3DRender
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 
-from cogip.models import models
-from cogip.models.models import CakeLayerID, CakeLayerKind, CakeLayerPos, CherryID, CherryLocation
+from cogip.models.artifacts import (
+    default_cake_layers, default_cherries,
+    CakeLayerID, CakeLayerKind, CakeLayerPos, CakeLayer,
+    CherryID, CherryLocation
+)
 
 
 # Map converting color enum to Qt color
@@ -29,63 +32,6 @@ face_map: Dict[CakeLayerKind, str] = {
     CakeLayerKind.ICING:  "cake_layer_icing.png",
     CakeLayerKind.CREAM:  "cake_layer_cream.png",
     CakeLayerKind.SPONGE: "cake_layer_sponge.png"
-}
-
-# Default position and properties of all cake layers
-default_cake_layers: Dict[CakeLayerID, Tuple[float, float, CakeLayerKind, CakeLayerPos]] = {
-    # Cake Layer ID:                       (x,                  y,               kind,                position)
-
-    # Green Front quarter
-    CakeLayerID.GREEN_FRONT_ICING_BOTTOM:  (450+125,            1000-225,        CakeLayerKind.ICING, CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_FRONT_ICING_MIDDLE:  (450+125,            1000-225,        CakeLayerKind.ICING, CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_FRONT_ICING_TOP:     (450+125,            1000-225,        CakeLayerKind.ICING, CakeLayerPos.TOP),
-
-    CakeLayerID.GREEN_FRONT_CREAM_BOTTOM:  (450+125+200,        1000-225,        CakeLayerKind.CREAM, CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_FRONT_CREAM_MIDDLE:  (450+125+200,        1000-225,        CakeLayerKind.CREAM, CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_FRONT_CREAM_TOP:     (450+125+200,        1000-225,        CakeLayerKind.CREAM, CakeLayerPos.TOP),
-
-    CakeLayerID.GREEN_FRONT_SPONGE_BOTTOM: (1125,               1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_FRONT_SPONGE_MIDDLE: (1125,               1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_FRONT_SPONGE_TOP:    (1125,               1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.TOP),
-
-    # Green Back quarter
-    CakeLayerID.GREEN_BACK_SPONGE_BOTTOM:  (3000-1125,          1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_BACK_SPONGE_MIDDLE:  (3000-1125,          1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_BACK_SPONGE_TOP:     (3000-1125,          1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.TOP),
-
-    CakeLayerID.GREEN_BACK_CREAM_BOTTOM:   (3000-(450+125+200), 1000-225,        CakeLayerKind.CREAM,  CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_BACK_CREAM_MIDDLE:   (3000-(450+125+200), 1000-225,        CakeLayerKind.CREAM,  CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_BACK_CREAM_TOP:      (3000-(450+125+200), 1000-225,        CakeLayerKind.CREAM,  CakeLayerPos.TOP),
-
-    CakeLayerID.GREEN_BACK_ICING_BOTTOM:   (3000-(450+125),     1000-225,        CakeLayerKind.ICING,  CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_BACK_ICING_MIDDLE:   (3000-(450+125),     1000-225,        CakeLayerKind.ICING,  CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_BACK_ICING_TOP:      (3000-(450+125),     1000-225,        CakeLayerKind.ICING,  CakeLayerPos.TOP),
-
-    # Blue Front quarter
-    CakeLayerID.BLUE_FRONT_ICING_BOTTOM:   (450+125,            -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_FRONT_ICING_MIDDLE:   (450+125,            -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_FRONT_ICING_TOP:      (450+125,            -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.TOP),
-
-    CakeLayerID.BLUE_FRONT_CREAM_BOTTOM:   (450+125+200,        -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_FRONT_CREAM_MIDDLE:   (450+125+200,        -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_FRONT_CREAM_TOP:      (450+125+200,        -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.TOP),
-
-    CakeLayerID.BLUE_FRONT_SPONGE_BOTTOM:  (1125,               -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_FRONT_SPONGE_MIDDLE:  (1125,               -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_FRONT_SPONGE_TOP:     (1125,               -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.TOP),
-
-    # Blue Back quarter
-    CakeLayerID.BLUE_BACK_SPONGE_BOTTOM:   (3000-1125,          -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_BACK_SPONGE_MIDDLE:   (3000-1125,          -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_BACK_SPONGE_TOP:      (3000-1125,          -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.TOP),
-
-    CakeLayerID.BLUE_BACK_CREAM_BOTTOM:    (3000-(450+125+200), -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_BACK_CREAM_MIDDLE:    (3000-(450+125+200), -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_BACK_CREAM_TOP:       (3000-(450+125+200), -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.TOP),
-
-    CakeLayerID.BLUE_BACK_ICING_BOTTOM:    (3000-(450+125),     -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_BACK_ICING_MIDDLE:    (3000-(450+125),     -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_BACK_ICING_TOP:       (3000-(450+125),     -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.TOP)
 }
 
 
@@ -288,7 +234,7 @@ class CakeLayerEntity(Qt3DCore.QEntity):
         """
         self._moving = True
 
-    def get_model(self) -> models.CakeLayer:
+    def get_model(self) -> CakeLayer:
         """
         Returns the [CakeLayer][cogip.models.models.CakeLayer] model.
         Used to save the cake layers list.
@@ -296,7 +242,7 @@ class CakeLayerEntity(Qt3DCore.QEntity):
         Returns:
             The cake layer model
         """
-        return models.CakeLayer(
+        return CakeLayer(
             id=self._id,
             x=self._x,
             y=self._y,
@@ -304,7 +250,7 @@ class CakeLayerEntity(Qt3DCore.QEntity):
             pos=self._pos
         )
 
-    def update_from_model(self, model: models.CakeLayer) -> None:
+    def update_from_model(self, model: CakeLayer) -> None:
         """
         Update cake layer properties from a cake layer model
         """
@@ -441,55 +387,6 @@ cherry_location_map: Dict[CherryLocation, int] = {
     CherryLocation.MIDDLE: 40,
     CherryLocation.TOP: 60,
     CherryLocation.RACK: 20
-}
-
-
-# Default position and properties of all cherries
-default_cherries: Dict[CherryID, Tuple[float, float, CherryLocation]] = {
-    # Cherry ID:       (x,                y,        position)
-    CherryID.FRONT_1:  (15,               0,        CherryLocation.RACK),
-    CherryID.FRONT_2:  (15+30,            0,        CherryLocation.RACK),
-    CherryID.FRONT_3:  (15+30*2,          0,        CherryLocation.RACK),
-    CherryID.FRONT_4:  (15+30*3,          0,        CherryLocation.RACK),
-    CherryID.FRONT_5:  (15+30*4,          0,        CherryLocation.RACK),
-    CherryID.FRONT_6:  (15+30*5,          0,        CherryLocation.RACK),
-    CherryID.FRONT_7:  (15+30*6,          0,        CherryLocation.RACK),
-    CherryID.FRONT_8:  (15+30*7,          0,        CherryLocation.RACK),
-    CherryID.FRONT_9:  (15+30*8,          0,        CherryLocation.RACK),
-    CherryID.FRONT_10: (15+30*9,          0,        CherryLocation.RACK),
-
-    CherryID.BACK_1:   (3000-15,          0,        CherryLocation.RACK),
-    CherryID.BACK_2:   (3000-15-30,       0,        CherryLocation.RACK),
-    CherryID.BACK_3:   (3000-15-30*2,     0,        CherryLocation.RACK),
-    CherryID.BACK_4:   (3000-15-30*3,     0,        CherryLocation.RACK),
-    CherryID.BACK_5:   (3000-15-30*4,     0,        CherryLocation.RACK),
-    CherryID.BACK_6:   (3000-15-30*5,     0,        CherryLocation.RACK),
-    CherryID.BACK_7:   (3000-15-30*6,     0,        CherryLocation.RACK),
-    CherryID.BACK_8:   (3000-15-30*7,     0,        CherryLocation.RACK),
-    CherryID.BACK_9:   (3000-15-30*8,     0,        CherryLocation.RACK),
-    CherryID.BACK_10:  (3000-15-30*9,     0,        CherryLocation.RACK),
-
-    CherryID.GREEN_1:  (1500-150+15,      1000-15,  CherryLocation.RACK),
-    CherryID.GREEN_2:  (1500-150+15+30,   1000-15,  CherryLocation.RACK),
-    CherryID.GREEN_3:  (1500-150+15+30*2, 1000-15,  CherryLocation.RACK),
-    CherryID.GREEN_4:  (1500-150+15+30*3, 1000-15,  CherryLocation.RACK),
-    CherryID.GREEN_5:  (1500-150+15+30*4, 1000-15,  CherryLocation.RACK),
-    CherryID.GREEN_6:  (1500-150+15+30*5, 1000-15,  CherryLocation.RACK),
-    CherryID.GREEN_7:  (1500-150+15+30*6, 1000-15,  CherryLocation.RACK),
-    CherryID.GREEN_8:  (1500-150+15+30*7, 1000-15,  CherryLocation.RACK),
-    CherryID.GREEN_9:  (1500-150+15+30*8, 1000-15,  CherryLocation.RACK),
-    CherryID.GREEN_10: (1500-150+15+30*9, 1000-15,  CherryLocation.RACK),
-
-    CherryID.BLUE_1:   (1500-150+15,      -1000+15, CherryLocation.RACK),
-    CherryID.BLUE_2:   (1500-150+15+30,   -1000+15, CherryLocation.RACK),
-    CherryID.BLUE_3:   (1500-150+15+30*2, -1000+15, CherryLocation.RACK),
-    CherryID.BLUE_4:   (1500-150+15+30*3, -1000+15, CherryLocation.RACK),
-    CherryID.BLUE_5:   (1500-150+15+30*4, -1000+15, CherryLocation.RACK),
-    CherryID.BLUE_6:   (1500-150+15+30*5, -1000+15, CherryLocation.RACK),
-    CherryID.BLUE_7:   (1500-150+15+30*6, -1000+15, CherryLocation.RACK),
-    CherryID.BLUE_8:   (1500-150+15+30*7, -1000+15, CherryLocation.RACK),
-    CherryID.BLUE_9:   (1500-150+15+30*8, -1000+15, CherryLocation.RACK),
-    CherryID.BLUE_10:  (1500-150+15+30*9, -1000+15, CherryLocation.RACK),
 }
 
 
