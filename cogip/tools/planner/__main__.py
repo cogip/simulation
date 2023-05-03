@@ -96,7 +96,8 @@ def main_opt(
         max_distance,
         obstacle_sender_interval,
         path_refresh_interval,
-        plot
+        plot,
+        debug
     )
 
     if reload:

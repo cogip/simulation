@@ -37,7 +37,8 @@ class Planner:
             max_distance: int,
             obstacle_sender_interval: float,
             path_refresh_interval: float,
-            plot: bool):
+            plot: bool,
+            debug: bool):
         """
         Class constructor.
 
@@ -51,8 +52,10 @@ class Planner:
             obstacle_sender_interval: Interval between each send of obstacles to dashboards (in seconds)
             path_refresh_interval: Interval between each update of robot paths (in seconds)
             plot: Display avoidance graph in realtime
+            debug: enable debug messages
         """
         self._server_url = server_url
+        self._debug = debug
         self._properties = Properties(
             robot_width=robot_width,
             obstacle_radius=obstacle_radius,
@@ -79,7 +82,7 @@ class Planner:
             "Obstacles sender loop",
             obstacle_sender_interval,
             self.send_obstacles,
-            logger=True
+            logger=self._debug
         )
         self._game_wizard = GameWizard(self)
         self._process_manager = Manager()
