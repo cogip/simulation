@@ -1,4 +1,5 @@
-from cogip.models.models import CakeLayer, CakeLayerKind, CakeLayerPos, DynRoundObstacle
+from cogip.models.artifacts import CakeLayer, CakeLayerKind, CakeLayerPos
+from cogip.models.models import DynRoundObstacle
 from .properties import Properties
 from . import robot
 

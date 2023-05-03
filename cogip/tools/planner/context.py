@@ -1,5 +1,4 @@
-from cogip.entities.artifacts import default_cake_layers
-from cogip.models.models import CakeLayer, CakeLayerID
+from cogip.models.artifacts import default_cake_layers, CakeLayer, CakeLayerID
 from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.singleton import Singleton
 from .camp import Camp
