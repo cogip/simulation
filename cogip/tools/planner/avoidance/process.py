@@ -54,13 +54,14 @@ def avoidance_process(
         shared_last_avoidance_pose_currents: DictProxy,
         queue_sio: Queue):
 
+    logger.debug(f"Robot {robot_id}: Avoidance process started")
     avoidance = Avoidance(robot_id, table, shared_properties)
     avoidance_path: list[models.PathPose] = []
     last_emitted_pose_order: models.PathPose | None = None
     start = time.time() - shared_properties["path_refresh_interval"] + 0.01
 
     while not shared_exiting[robot_id]:
-        queue_sio.put(("path", (robot_id, [pose.pose.dict(exclude_defaults=True) for pose in avoidance_path])))
+        queue_sio.put(("path", [pose.pose.dict(exclude_defaults=True) for pose in avoidance_path]))
         path_refresh_interval = shared_properties["path_refresh_interval"]
 
         now = time.time()
@@ -193,6 +194,8 @@ def avoidance_process(
 
             if robot_id in shared_properties["controllers"] \
                and shared_properties["controllers"][robot_id] != new_controller:
-                queue_sio.put(("set_controller", (robot_id, new_controller.value)))
+                queue_sio.put(("set_controller", new_controller.value))
 
-            queue_sio.put(("pose_order", (robot_id, new_pose_order.dict(exclude_defaults=True))))
+            queue_sio.put(("pose_order", new_pose_order.dict(exclude_defaults=True)))
+
+    logger.debug(f"Robot {robot_id}: Avoidance process exited")
