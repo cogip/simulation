@@ -1,4 +1,4 @@
-from typing import Callable, ClassVar
+from typing import Awaitable, Callable, ClassVar
 
 from pydantic import validator
 import socketio
@@ -13,26 +13,28 @@ class Pose(PathPose):
     Pose class used in actions.
     A function can be executed before moving and an other once it is reached.
     """
-    before_pose_func: Callable[[socketio.ClientNamespace], None] = lambda planner: None
-    after_pose_func: Callable[[socketio.ClientNamespace], None] = lambda planner: None
+    before_pose_func: Callable[[socketio.ClientNamespace], Awaitable[None]] | None = None
+    after_pose_func: Callable[[socketio.ClientNamespace], Awaitable[None]] | None = None
 
-    def act_before_pose(self, planner: "planner.planner.Planner") -> None:
+    async def act_before_pose(self, planner: "planner.planner.Planner"):
         """
         Function executed before the robot starts moving.
 
         Parameters:
             planner: the planner object to send it information or orders
         """
-        self.before_pose_func(planner)
+        if self.before_pose_func:
+            await self.before_pose_func(planner)
 
-    def act_after_pose(self, planner: "planner.planner.Planner") -> None:
+    async def act_after_pose(self, planner: "planner.planner.Planner"):
         """
         Function executed once the pose is reached.
 
         Parameters:
             planner: the planner object to send it information or orders
         """
-        self.after_pose_func(planner)
+        if self.after_pose_func:
+            await self.after_pose_func(planner)
 
     @property
     def path_pose(self) -> PathPose:

@@ -1,7 +1,8 @@
+import asyncio
 from functools import partial
 from multiprocessing import Manager, Process
 from multiprocessing.managers import DictProxy
-import threading
+import queue
 import time
 from typing import Any
 
@@ -9,7 +10,7 @@ import socketio
 
 from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
-from cogip.utils import ThreadLoop
+from cogip.utils.asyncloop import AsyncLoop
 from . import actions, logger, menu, pose, sio_events
 from .camp import Camp
 from .context import GameContext
@@ -66,8 +67,9 @@ class Planner:
             path_refresh_interval=path_refresh_interval,
             plot=plot
         )
+        self._loop: asyncio.AbstractEventLoop | None = None
         self._retry_connection = True
-        self._sio = socketio.Client(logger=False)
+        self._sio = socketio.AsyncClient(logger=False)
         self._sio_ns = sio_events.SioEvents(self)
         self._sio.register_namespace(self._sio_ns)
         self._camp = Camp()
@@ -78,7 +80,7 @@ class Planner:
         self._blocked: dict[int, bool] = {}
         self._obstacles: dict[int, models.DynObstacleList] = {}
         self._start_pose_menu_entries: dict[int, models.MenuEntry] = {}
-        self._obstacles_sender_loop = ThreadLoop(
+        self._obstacles_sender_loop = AsyncLoop(
             "Obstacles sender loop",
             obstacle_sender_interval,
             self.send_obstacles,
@@ -92,7 +94,8 @@ class Planner:
         self._shared_obstacles: DictProxy = self._process_manager.dict()
         self._shared_cake_obstacles: DictProxy = self._process_manager.dict()
         self._shared_last_avoidance_pose_currents: DictProxy = self._process_manager.dict()
-        self._queue_sio = self._process_manager.Queue()
+        self._sio_emitter_queues: dict[int, queue.Queue] = {}
+        self._sio_emitter_tasks: dict[int, asyncio.Task] = {}
         self._avoidance_processes: dict[int, Process] = {}
         self._shared_properties: DictProxy = self._process_manager.dict({
             "controllers": {},
@@ -106,23 +109,30 @@ class Planner:
         })
         self.update_cake_obstacles()
 
-        self._thread_sio = threading.Thread(target=self.thread_sio).start()
-
-    def connect(self):
+    async def connect(self):
         """
         Connect to SocketIO server.
         """
-        self.retry_connection = True
-        threading.Thread(target=self.try_connect).start()
+        self._loop = asyncio.get_running_loop()
 
-    def try_connect(self):
+        self.retry_connection = True
+        await self.try_connect()
+        try:
+            await self._sio.wait()
+        except asyncio.CancelledError:
+            robot_ids = list(self._robots.keys())
+            for robot_id in robot_ids:
+                await self.del_robot(robot_id)
+            self._process_manager.shutdown()
+
+    async def try_connect(self):
         """
         Poll to wait for the first connection.
         Disconnections/reconnections are handle directly by the client.
         """
         while (self.retry_connection):
             try:
-                self._sio.connect(
+                await self._sio.connect(
                     self._server_url,
                     socketio_path="sio/socket.io",
                     namespaces=["/planner"]
@@ -144,62 +154,82 @@ class Planner:
     def try_reconnection(self, new_value: bool) -> None:
         self._retry_connection = new_value
 
-    def start(self) -> None:
+    async def start(self):
         """
         Start sending obstacles list.
         """
         self._obstacles_sender_loop.start()
 
-    def stop(self) -> None:
+    async def stop(self):
         """
-        Stop sending obstacles list.
+        Stop running tasks.
         """
-        self._obstacles_sender_loop.stop()
+        await self._obstacles_sender_loop.stop()
 
-    def thread_sio(self):
-        while True:
-            name, message = self._queue_sio.get()
-            robot_id, value = message
+    async def task_sio_emitter(self, robot_id: int):
+        logger.debug(f"Robot {robot_id}: Task SIO Emitter started")
+        try:
+            while True:
+                name, value = await asyncio.to_thread(self._sio_emitter_queues[robot_id].get)
 
-            if not (robot := self._robots.get(robot_id)):
-                return
+                if not (robot := self._robots.get(robot_id)):
+                    return
 
-            match name:
-                case "path":
-                    if len(value) == 0:
-                        blocked = self._blocked.get(robot_id, 0)
-                        blocked += 1
-                        self._blocked[robot_id] = blocked
-                        robot.avoidance_path = []
-                        if blocked > 10:
-                            self.blocked(robot_id)
+                match name:
+                    case "path":
+                        if len(value) == 0:
+                            blocked = self._blocked.get(robot_id, 0)
+                            blocked += 1
+                            self._blocked[robot_id] = blocked
+                            robot.avoidance_path = []
+                            if blocked > 10:
+                                await self.blocked(robot_id)
+                                self._blocked[robot_id] = 0
+                        else:
                             self._blocked[robot_id] = 0
-                    else:
-                        self._blocked[robot_id] = 0
-                        robot.avoidance_path = [pose.Pose.parse_obj(m) for m in value[1:]]
-                    self._sio_ns.emit(name, (robot_id, value))
-                case "set_controller":
-                    robot.controller = ControllerEnum(value)
-                case _:
-                    self._sio_ns.emit(name, message)
+                            robot.avoidance_path = [pose.Pose.parse_obj(m) for m in value[1:]]
+                        await self._sio_ns.emit(name, (robot_id, value))
+                    case "pose_order":
+                        if self._blocked.get(robot_id, 0) == 0:
+                            await self._sio_ns.emit(name, (robot_id, value))
+                            continue
 
-    def add_robot(self, robot_id: int, virtual: bool) -> None:
+                        # stop_pose = models.PathPose(**robot.pose_current.dict(), allow_reverse=True)
+                        # await self._sio_ns.emit("pose_order", (robot_id, stop_pose.pose.dict()))
+
+                    case "set_controller":
+                        robot.controller = ControllerEnum(value)
+                    case "starter_changed":
+                        await self.starter_changed(robot.robot_id, value)
+                    case _:
+                        await self._sio_ns.emit(name, (robot_id, value))
+        except asyncio.CancelledError:
+            logger.debug(f"Robot {robot_id}: Task SIO Emitter cancelled")
+            raise
+
+    async def add_robot(self, robot_id: int, virtual: bool):
         """
         Add a new robot.
         """
         if robot_id in self._robots:
-            self.del_robot(robot_id)
+            await self.del_robot(robot_id)
+        logger.debug(f"Robot {robot_id}: add")
+
         self._robots[robot_id] = (robot := Robot(robot_id, self, virtual))
-        self._sio_ns.emit("starter_changed", (robot_id, robot.starter.is_pressed))
+        await self._sio_ns.emit("starter_changed", (robot_id, robot.starter.is_pressed))
         new_start_pose = self._start_positions.get(robot_id, robot_id)
         available_start_poses = self._game_context.get_available_start_poses()
         if new_start_pose not in available_start_poses:
             new_start_pose = available_start_poses[(robot_id - 1) % len(available_start_poses)]
-        robot.set_pose_start(self._game_context.get_start_pose((new_start_pose)))
+        await robot.set_pose_start(self._game_context.get_start_pose((new_start_pose)))
         self._shared_properties["controllers"][robot_id] = robot.controller
         self._shared_exiting[robot_id] = False
         self._shared_obstacles[robot_id] = []
         self._shared_cake_obstacles[robot_id] = []
+        self._sio_emitter_queues[robot_id] = self._process_manager.Queue()
+        self._sio_emitter_tasks[robot_id] = asyncio.create_task(
+            self.task_sio_emitter(robot_id), name=f"Robot {robot_id}: Task SIO Emitter"
+        )
         self.update_cake_obstacles(robot_id)
         self._avoidance_processes[robot_id] = Process(target=avoidance_process, args=(
             robot_id,
@@ -213,39 +243,50 @@ class Planner:
             self._shared_obstacles,
             self._shared_cake_obstacles,
             self._shared_last_avoidance_pose_currents,
-            self._queue_sio
+            self._sio_emitter_queues[robot_id]
         ))
         self._avoidance_processes[robot_id].start()
-        self.update_start_pose_commands()
-        self._sio_ns.emit("set_controller", (robot_id, robot.controller.value))
+        await self.update_start_pose_commands()
+        await self._sio_ns.emit("set_controller", (robot_id, robot.controller.value))
 
-    def del_robot(self, robot_id: int) -> None:
+    async def del_robot(self, robot_id: int):
         """
         Remove a robot.
         """
+        logger.debug(f"Robot {robot_id}: delete")
         self._robots[robot_id].starter.close()
         if robot_id in self._shared_properties["controllers"]:
             del self._shared_properties["controllers"][robot_id]
         if robot_id in self._shared_obstacles:
             del self._shared_obstacles[robot_id]
-        if robot_id in self._shared_exiting:
-            self._shared_exiting[robot_id] = True
         if robot_id in self._avoidance_processes:
+            self._shared_exiting[robot_id] = True
             self._avoidance_processes[robot_id].join()
             del self._avoidance_processes[robot_id]
+        if task := self._sio_emitter_tasks.get(robot_id):
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                logger.debug(f"Robot {robot_id}: Task SIO Emitter stopped")
+            del self._sio_emitter_tasks[robot_id]
+        if robot_id in self._sio_emitter_queues:
+            del self._sio_emitter_queues[robot_id]
         if robot_id in self._robots:
             del self._robots[robot_id]
-        self.update_start_pose_commands()
+        if self._sio.connected:
+            # Only update start pose commands if del_robot is not called during disconnection
+            await self.update_start_pose_commands()
 
-    def starter_changed(self, robot_id: int, pushed: bool) -> None:
+    async def starter_changed(self, robot_id: int, pushed: bool):
         if not (robot := self._robots.get(robot_id)):
             return
         if not robot.virtual:
-            self._sio_ns.emit("starter_changed", (robot_id, pushed))
+            await self._sio_ns.emit("starter_changed", (robot_id, pushed))
         if pushed:
-            self._sio_ns.emit("game_reset", robot_id)
+            await self._sio_ns.emit("game_reset", robot_id)
 
-    def update_start_pose_commands(self):
+    async def update_start_pose_commands(self):
         """
         Update menu commands to to choose start pose for each robot.
         """
@@ -264,9 +305,9 @@ class Planner:
             menu.menu.entries.insert(0, menu_entry)
             self._start_pose_menu_entries[robot_id] = menu_entry
             setattr(self, "cmd_" + func_name, partial(self.cmd_choose_start_position, robot_id))
-            self._sio_ns.emit("register_menu", {"name": "planner", "menu": menu.menu.dict()})
+            await self._sio_ns.emit("register_menu", {"name": "planner", "menu": menu.menu.dict()})
 
-    def reset(self) -> None:
+    async def reset(self):
         """
         Reset planner, context, robots and actions.
         """
@@ -277,17 +318,17 @@ class Planner:
         # Remove robots and add them again to reset all robots.
         robots = {robot_id: robot.virtual for robot_id, robot in self._robots.items()}
         for robot_id, _ in robots.items():
-            self.del_robot(robot_id)
+            await self.del_robot(robot_id)
         for robot_id, virtual in robots.items():
-            self.add_robot(robot_id, virtual)
+            await self.add_robot(robot_id, virtual)
 
-    def reset_controllers(self):
+    async def reset_controllers(self):
         new_controller = self._game_context.default_controller
         for robot_id, robot in self._robots.items():
             if robot.controller == new_controller:
                 continue
             robot.controller = new_controller
-            self._sio_ns.emit("set_controller", (robot_id, new_controller.value))
+            await self._sio_ns.emit("set_controller", (robot_id, new_controller.value))
 
     def update_cake_obstacles(self, robot_id: int = 0):
         robot_ids = self._robots.keys() if robot_id == 0 else [robot_id]
@@ -302,13 +343,13 @@ class Planner:
                 obstacles.append(cake.obstacle.dict(exclude_defaults=True))
             self._shared_cake_obstacles[robot_id] = obstacles
 
-    def set_pose_start(self, robot_id: int, pose_start: pose.Pose):
+    async def set_pose_start(self, robot_id: int, pose_start: pose.Pose):
         """
         Set the start position of the robot for the next game.
         """
-        self._sio_ns.emit("pose_start", (robot_id, pose_start.pose.dict()))
+        await self._sio_ns.emit("pose_start", (robot_id, pose_start.pose.dict()))
 
-    def set_pose_order(self, robot_id: int, pose_order: pose.Pose):
+    async def set_pose_order(self, robot_id: int, pose_order: pose.Pose):
         """
         Set the current position order of the robot.
         """
@@ -316,9 +357,10 @@ class Planner:
             return
 
         robot.pose_order = pose_order
+        self._blocked[robot.robot_id] = 0
 
         if self._game_context.strategy in [Strategy.LinearSpeedTest, Strategy.AngularSpeedTest]:
-            self._sio_ns.emit("pose_order", (robot_id, pose_order.pose.dict()))
+            await self._sio_ns.emit("pose_order", (robot_id, pose_order.pose.dict()))
 
     def set_pose_current(self, robot_id: int, pose: models.Pose) -> None:
         """
@@ -328,7 +370,7 @@ class Planner:
             return
         robot.pose_current = models.Pose.parse_obj(pose)
 
-    def set_pose_reached(self, robot_id: int) -> None:
+    async def set_pose_reached(self, robot_id: int):
         """
         Set pose reached for a robot.
         """
@@ -343,14 +385,14 @@ class Planner:
             return
 
         # Set pose reached
-        robot.pose_reached = True
+        await robot.set_pose_reached(True)
 
         if not self._game_context.playing:
             return
 
-        self.next_pose(robot_id)
+        await self.next_pose(robot_id)
 
-    def next_pose(self, robot_id: int):
+    async def next_pose(self, robot_id: int):
         """
         Select the next pose for a robot.
         """
@@ -358,15 +400,15 @@ class Planner:
             return
 
         # Get and set new pose
-        new_pose_order = robot.next_pose()
+        new_pose_order = await robot.next_pose()
 
         # If no pose left in current action, get and set new action
         if not new_pose_order and (new_action := self.get_action(robot_id)):
-            robot.set_action(new_action)
+            await robot.set_action(new_action)
 
-    def game_end(self, robot_id: int):
+    async def game_end(self, robot_id: int):
         self.cmd_stop()
-        self._sio_ns.emit("score", self._game_context.score)
+        await self._sio_ns.emit("score", self._game_context.score)
 
     def get_action(self, robot_id: int) -> actions.Action | None:
         """
@@ -383,14 +425,14 @@ class Planner:
         action.robot = robot
         return action
 
-    def blocked(self, robot_id: int):
+    async def blocked(self, robot_id: int):
         """
         Function called when a robot cannot find a path to go to the current pose of the current action
         """
         if current_action := (robot := self._robots[robot_id]).action:
             if new_action := self.get_action(robot_id):
-                robot.set_action(new_action)
-                current_action.recycle(self)
+                await robot.set_action(new_action)
+                await current_action.recycle(self)
                 self._actions.append(current_action)
 
     def create_dyn_obstacle(
@@ -444,10 +486,10 @@ class Planner:
         obstacles.extend([cake.obstacle for cake in self._game_context.cakes if cake.on_table])
         return obstacles
 
-    def send_obstacles(self) -> None:
-        self._sio_ns.emit("obstacles", [o.dict(exclude_defaults=True) for o in self.all_obstacles])
+    async def send_obstacles(self):
+        await self._sio_ns.emit("obstacles", [o.dict(exclude_defaults=True) for o in self.all_obstacles])
 
-    def command(self, cmd: str) -> None:
+    async def command(self, cmd: str):
         """
         Execute a command from the menu.
         """
@@ -464,7 +506,7 @@ class Planner:
             for prop, value in self._properties.dict().items():
                 schema["properties"][prop]["value"] = value
             # Send config
-            self._sio_ns.emit("config", schema)
+            await self._sio_ns.emit("config", schema)
             return
 
         if cmd == "game_wizard":
@@ -475,7 +517,7 @@ class Planner:
             logger.warning(f"Unknown command: {cmd}")
             return
 
-        cmd_func()
+        await cmd_func()
 
     def update_config(self, config: dict[str, Any]) -> None:
         """
@@ -493,7 +535,7 @@ class Planner:
             case "robot_width" | "obstacle_bb_vertices":
                 self.update_cake_obstacles()
 
-    def cmd_play(self) -> None:
+    async def cmd_play(self):
         """
         Play command from the menu.
         """
@@ -501,15 +543,16 @@ class Planner:
             return
 
         self._game_context.playing = True
-        list(map(self.set_pose_reached, self._robots.keys()))
+        for robot_id in self._robots.keys():
+            await self.set_pose_reached(robot_id)
 
-    def cmd_stop(self) -> None:
+    async def cmd_stop(self):
         """
         Stop command from the menu.
         """
         self._game_context.playing = False
 
-    def cmd_next(self) -> None:
+    async def cmd_next(self):
         """
         Next command from the menu.
         Ignored if current pose is not reached for all robots.
@@ -521,21 +564,22 @@ class Planner:
         if not all([robot.pose_reached for robot in self._robots.values()]):
             return
 
-        list(map(self.next_pose, self._robots.keys()))
+        for robot_id in self._robots.keys():
+            await self.next_pose(robot_id)
 
-    def cmd_reset(self) -> None:
+    async def cmd_reset(self):
         """
         Reset command from the menu.
         """
-        self.reset()
-        self._sio_ns.emit("cmd_reset")
+        await self.reset()
+        await self._sio_ns.emit("cmd_reset")
 
-    def cmd_choose_camp(self) -> None:
+    async def cmd_choose_camp(self):
         """
         Choose camp command from the menu.
         Send camp wizard message.
         """
-        self._sio_ns.emit(
+        await self._sio_ns.emit(
             "wizard",
             {
                 "name": "Choose Camp",
@@ -544,12 +588,12 @@ class Planner:
             }
         )
 
-    def cmd_choose_strategy(self) -> None:
+    async def cmd_choose_strategy(self):
         """
         Choose strategy command from the menu.
         Send strategy wizard message.
         """
-        self._sio_ns.emit(
+        await self._sio_ns.emit(
             "wizard",
             {
                 "name": "Choose Strategy",
@@ -559,12 +603,12 @@ class Planner:
             }
         )
 
-    def cmd_choose_avoidance(self) -> None:
+    async def cmd_choose_avoidance(self):
         """
         Choose avoidance strategy command from the menu.
         Send avoidance strategy wizard message.
         """
-        self._sio_ns.emit(
+        await self._sio_ns.emit(
             "wizard",
             {
                 "name": "Choose Avoidance",
@@ -574,12 +618,12 @@ class Planner:
             }
         )
 
-    def cmd_choose_start_position(self, robot_id) -> None:
+    async def cmd_choose_start_position(self, robot_id):
         """
         Choose start position command from the menu.
         Send start position wizard message.
         """
-        self._sio_ns.emit(
+        await self._sio_ns.emit(
             "wizard",
             {
                 "name": f"Choose Start Position {robot_id}",
@@ -590,12 +634,12 @@ class Planner:
             }
         )
 
-    def cmd_choose_table(self) -> None:
+    async def cmd_choose_table(self):
         """
         Choose table command from the menu.
         Send table wizard message.
         """
-        self._sio_ns.emit(
+        await self._sio_ns.emit(
             "wizard",
             {
                 "name": "Choose Table",
@@ -605,7 +649,7 @@ class Planner:
             }
         )
 
-    def wizard_response(self, message: dict[str, Any]) -> None:
+    async def wizard_response(self, message: dict[str, Any]):
         """
         Handle wizard response sent from the dashboard.
         """
@@ -618,35 +662,35 @@ class Planner:
                 if self._camp.color == new_camp:
                     return
                 self._camp.color = new_camp
-                self.reset()
+                await self.reset()
                 logger.info(f"Wizard: New camp: {self._camp.color.name}")
             case "Choose Strategy":
                 new_strategy = Strategy[value]
                 if self._game_context.strategy == new_strategy:
                     return
                 self._game_context.strategy = new_strategy
-                self.reset()
-                self.reset_controllers()
+                await self.reset()
+                await self.reset_controllers()
                 logger.info(f'Wizard: New strategy: {self._game_context.strategy.name}')
             case "Choose Avoidance":
                 new_strategy = AvoidanceStrategy[value]
                 if self._game_context.avoidance_strategy == new_strategy:
                     return
                 self._game_context.avoidance_strategy = new_strategy
-                self.reset()
+                await self.reset()
                 logger.info(f'Wizard: New avoidance strategy: {self._game_context.avoidance_strategy.name}')
             case chose_start_pose if chose_start_pose.startswith("Choose Start Position"):
                 if robot := self._robots.get(robot_id := message.get("robot_id")):
                     start_position = int(value)
                     self._start_positions[robot_id] = start_position
-                    robot.set_pose_start(self._game_context.get_start_pose(start_position))
+                    await robot.set_pose_start(self._game_context.get_start_pose(start_position))
             case "Choose Table":
                 new_table = TableEnum[value]
                 if self._game_context.table == new_table:
                     return
                 self._game_context.table = new_table
                 self._shared_properties["table"] = new_table
-                self.reset()
+                await self.reset()
                 logger.info(f'Wizard: New table: {self._game_context._table.name}')
             case game_wizard_response if game_wizard_response.startswith("Game Wizard"):
                 self._game_wizard.response(message)
@@ -655,7 +699,7 @@ class Planner:
             case _:
                 logger.warning(f"Wizard: Unknown type: {name}")
 
-    def cmd_wizard_test(self, cmd: str):
+    async def cmd_wizard_test(self, cmd: str):
         match cmd:
             case "wizard_boolean":
                 message = {
@@ -741,10 +785,10 @@ class Planner:
                     "type": "camera"
                 }
             case "wizard_score":
-                self._sio_ns.emit("score", 100)
+                await self._sio_ns.emit("score", 100)
                 return
             case _:
                 logger.warning(f"Wizard test unsupported: {cmd}")
                 return
 
-        self._sio_ns.emit("wizard", message)
+        await self._sio_ns.emit("wizard", message)

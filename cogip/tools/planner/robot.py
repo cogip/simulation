@@ -6,7 +6,7 @@ from gpiozero.pins.pigpio import PiGPIOFactory
 from cogip.models import models
 from cogip.tools import planner
 from cogip.tools.copilot.controller import ControllerEnum
-from . import actions, context, pose
+from . import actions, context, logger, pose
 
 
 class Robot:
@@ -19,7 +19,7 @@ class Robot:
         self.virtual = virtual
         self.game_context = context.GameContext()
         self.action: actions.Action | None = None
-        self._pose_reached: bool = True
+        self.pose_reached: bool = True
         self._pose_current: models.Pose | None = None
         self._pose_order: pose.Pose | None = None
         self.avoidance_path: list[pose.Pose] = []
@@ -48,39 +48,34 @@ class Robot:
                 pin_factory=PiGPIOFactory(host=f"robot{robot_id}")
             )
 
-        starter.when_pressed = partial(planner.starter_changed, robot_id, True)
-        starter.when_released = partial(planner.starter_changed, robot_id, False)
+        starter.when_pressed = partial(self.sio_emitter_queue.put, ("starter_changed", True))
+        starter.when_released = partial(self.sio_emitter_queue.put, ("starter_changed", False))
         self.starter = starter
 
-    def set_pose_start(self, pose: pose.Pose):
+    async def set_pose_start(self, pose: pose.Pose):
         """
         Set the start pose.
         """
         self.action = None
         self.pose_current = pose.pose
         self.pose_order = pose
-        self._pose_reached = True
+        self.pose_reached = True
         self.avoidance_path = []
-        self.planner.set_pose_start(self.robot_id, self.pose_order)
-        self.pose_order.act_after_pose(self.planner)
+        await self.planner.set_pose_start(self.robot_id, self.pose_order)
+        await self.pose_order.act_after_pose(self.planner)
 
-    @property
-    def pose_reached(self) -> bool:
-        return self._pose_reached
-
-    @pose_reached.setter
-    def pose_reached(self, reached: bool = True):
+    async def set_pose_reached(self, reached: bool = True):
         """
         Set pose reached.
         If reached, a new pose and new action is selected.
         """
         if reached and not self.pose_reached and self.pose_order:
-            self.pose_order.act_after_pose(self.planner)
-        self._pose_reached = reached
+            await self.pose_order.act_after_pose(self.planner)
+        self.pose_reached = reached
         self.pose_order = None
         self.avoidance_path = []
         if self.action and len(self.action.poses) == 0:
-            self.action.act_after_action(self.planner)
+            await self.action.act_after_action(self.planner)
             self.action = None
 
     @property
@@ -127,25 +122,26 @@ class Robot:
             for obstacle in obstacles
         ]
 
-    def next_pose(self) -> pose.Pose | None:
+    async def next_pose(self) -> pose.Pose | None:
         """
         Select next pose.
         Returns None if no more pose is available in the current action.
         """
-        self._pose_reached = False
+        self.pose_reached = False
         if not self.action or len(self.action.poses) == 0:
             self.action = None
             return None
 
         self.pose_order = self.action.poses.pop(0)
-        self.pose_order.act_before_pose(self.planner)
-        self.planner.set_pose_order(self.robot_id, self.pose_order)
+        await self.pose_order.act_before_pose(self.planner)
+        await self.planner.set_pose_order(self.robot_id, self.pose_order)
         return self.pose_order
 
-    def set_action(self, action: "actions.Action"):
+    async def set_action(self, action: "actions.Action"):
         """
         Set current action.
         """
+        logger.debug(f"Robot {self.robot_id}: set action '{action.name}'")
         self.action = action
-        self.action.act_before_action(self.planner)
-        self.next_pose()
+        await self.action.act_before_action(self.planner)
+        await self.next_pose()

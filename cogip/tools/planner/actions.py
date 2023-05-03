@@ -1,5 +1,5 @@
 from functools import partial
-from typing import Callable, NewType
+from typing import Awaitable, Callable, NewType
 
 from cogip.models.models import SpeedEnum
 from cogip.tools import planner
@@ -31,8 +31,8 @@ class Action:
         self.potential_score = potential_score
         self.robot: "robot.Robot" | None = None
         self.poses: list[Pose] = []
-        self.before_action_func: Callable[["planner.planner.Planner"], None] = lambda planner: None
-        self.after_action_func: Callable[["planner.planner.Planner"], None] = lambda planner: None
+        self.before_action_func: Callable[["planner.planner.Planner"], Awaitable[None]] | None = None
+        self.after_action_func: Callable[["planner.planner.Planner"], Awaitable[None]] | None = None
 
     @property
     def weight(self) -> float:
@@ -43,25 +43,27 @@ class Action:
         """
         return self.direct_score + 0.5 * self.potential_score
 
-    def act_before_action(self, planner: "planner.planner.Planner") -> None:
+    async def act_before_action(self, planner: "planner.planner.Planner"):
         """
         Function executed before the action starts.
 
         Parameters:
             planner: the planner object to send it information or orders
         """
-        self.before_action_func(planner)
+        if self.before_action_func:
+            await self.before_action_func(planner)
 
-    def act_after_action(self, planner: "planner.planner.Planner") -> None:
+    async def act_after_action(self, planner: "planner.planner.Planner"):
         """
         Function executed after the action ends.
 
         Parameters:
             planner: the planner object to send it information or orders
         """
-        self.after_action_func(planner)
+        if self.after_action_func:
+            await self.after_action_func(planner)
 
-    def recycle(self, planner: "planner.planner.Planner"):
+    async def recycle(self, planner: "planner.planner.Planner"):
         """
         Function called if the action is blocked and put back in the actions list
 
@@ -89,10 +91,7 @@ class ApprovalAction(Action):
     def __init__(self):
         super().__init__("Approval action")
         self.game_context = GameContext()
-        self.reset()
-
-    def reset(self, planner: "planner.planner.Planner | None" = None) -> None:
-        self.poses = [
+        self.default_poses = [
             AdaptedPose(
                 x=self.game_context.table.x_min + 300,
                 y=(self.game_context.table.y_max + self.game_context.table.y_min) / 2,
@@ -103,10 +102,17 @@ class ApprovalAction(Action):
                 x=self.game_context.table.x_max - 300,
                 y=(self.game_context.table.y_max + self.game_context.table.y_min) / 2,
                 O=180,
-                max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL
+                max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL,
+                after_pose_func=self.areset
             )
         ]
-        self.poses[-1].after_pose_func = self.reset
+        self.reset()
+
+    async def areset(self):
+        self.reset()
+
+    def reset(self):
+        self.poses = [pose.copy() for pose in self.default_poses]
 
     @property
     def weight(self) -> float:
@@ -125,7 +131,7 @@ class BackAndForthAction(Action):
 
         self.before_action_func = self.compute_poses
 
-    def compute_poses(self, planner: "planner.planner.Planner") -> None:
+    async def compute_poses(self, planner: "planner.planner.Planner") -> None:
         x = self.game_context.table.x_min + self.game_context.table.x_max - self.robot.pose_current.x
         y = self.game_context.table.y_min + self.game_context.table.y_max - self.robot.pose_current.y
         angle = self.robot.pose_current.O
@@ -143,7 +149,7 @@ class BackAndForthAction(Action):
         self.poses.append(pose1)
         self.poses.append(pose2)
 
-    def append_pose(self, pose: Pose, planner: "planner.planner.Planner") -> None:
+    async def append_pose(self, pose: Pose, planner: "planner.planner.Planner") -> None:
         self.poses.append(pose)
 
     @property
@@ -211,15 +217,15 @@ class GetCakesAtSlotAction(Action):
         self.pose.after_pose_func = self.after_pose
         self.poses = [self.pose]
 
-    def before_pose(self, planner: "planner.planner.Planner"):
+    async def before_pose(self, planner: "planner.planner.Planner"):
         self.slot.cake.robot = self.robot
         planner.update_cake_obstacles(self.robot.robot_id)
 
-    def after_pose(self, planner: "planner.planner.Planner"):
+    async def after_pose(self, planner: "planner.planner.Planner"):
         self.slot.cake.on_table = False
         self.slot.cake = None
 
-    def recycle(self, planner: "planner.planner.Planner"):
+    async def recycle(self, planner: "planner.planner.Planner"):
         self.slot.cake = self.cake
         self.slot.cake.robot = None
         planner.update_cake_obstacles(self.robot.robot_id)

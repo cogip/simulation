@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import asyncio
 import logging
 from pathlib import Path
 
@@ -15,7 +16,7 @@ def changes_callback(changes):
 
 def run(*args, **kwargs) -> None:
     planner = Planner(*args, **kwargs)
-    planner.connect()
+    asyncio.run(planner.connect())
 
 
 def main_opt(
