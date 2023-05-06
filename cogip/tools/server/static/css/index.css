@@ -86,7 +86,7 @@ input:-webkit-autofill:active{
 }
 
 #divButtons {
-  max-height: 82vh;
+  max-height: 72vh;
   overflow-y: auto;
 }
 
