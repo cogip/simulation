@@ -1,5 +1,3 @@
-// addEventListener to adapt board to window size
-
 let pose_current = undefined;
 let pose_order = undefined;
 let obstacles = [];
