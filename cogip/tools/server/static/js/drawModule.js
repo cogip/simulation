@@ -85,13 +85,11 @@ export function displayMsg(robot_id, msg) {
     !isNaN(pose_current_robot.x) &&
     !isNaN(pose_current_robot.y)
   ) {
-    stateHTML.textContent = `Robot ${robot_id} Cycle: ${
+    stateHTML.textContent = `R.${robot_id} Cy.:${
       msg.cycle
-    } / X: ${pose_current_robot.x.toFixed(
+    } / X:${pose_current_robot.x.toFixed(2)} / Y:${pose_current_robot.y.toFixed(
       2
-    )} / Y: ${pose_current_robot.y.toFixed(
-      2
-    )} / Angle: ${pose_current_robot.O.toFixed(2)}`;
+    )} / Ang:${pose_current_robot.O.toFixed(2)}`;
   }
 }
 

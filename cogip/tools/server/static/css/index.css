@@ -29,8 +29,8 @@ h1 {
 
 #menu {
   text-align: center;
-  min-height: 90vh;
-  max-height: 90vh;
+  min-height: 87vh;
+  max-height: 87vh;
   padding-top: 10px;
   padding-right: 5px;
   padding-left: 15px;
@@ -96,6 +96,11 @@ input:-webkit-autofill:active{
 
 #connection pre {
   text-align: right;
+}
+
+#connection img {
+  width: 20px;
+  margin-right: 5px;
 }
 
 pre {

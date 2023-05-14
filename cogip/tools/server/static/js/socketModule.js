@@ -1,13 +1,17 @@
 export function onConnection(socket) {
   console.log("Connected to Server.");
   socket.emit("connected");
+
   document.getElementById("connection").innerHTML =
-    "<pre>Connected to " + window.location.origin + "</pre>";
+    "<pre><img src='static/img/check_green_circle.svg'>" +
+    window.location.origin +
+    "</pre>";
 }
 
 export function onDisconnect() {
   console.log("Disconnected from Server.");
-  document.getElementById("connection").innerHTML = "<pre>Disconnected.</pre>";
+  document.getElementById("connection").innerHTML =
+    "<pre><img src='static/img/cross_red_circle.svg'></pre>";
 }
 
 export function onMenu(menu, type, socket) {
