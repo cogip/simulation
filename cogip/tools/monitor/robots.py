@@ -1,4 +1,3 @@
-from functools import partial
 from typing import Dict, List
 
 from PySide6 import QtCore
@@ -28,7 +27,7 @@ class RobotManager(QtCore.QObject):
         super().__init__()
         self._game_view = game_view
         self._robots: Dict[int, RobotEntity] = dict()
-        self._available_robots: List[RobotEntity] = list()
+        self._available_robots: dict[int, RobotEntity] = dict()
         self._rect_obstacles_pool: List[DynRectObstacleEntity] = []
         self._round_obstacles_pool: List[DynCircleObstacleEntity] = []
         self._lidar_emulation: Dict[int, bool] = {}
@@ -49,14 +48,14 @@ class RobotManager(QtCore.QObject):
         if robot_id in self._robots:
             return
 
-        if len(self._available_robots) == 0:
-            robot = RobotEntity(self._game_view.scene_entity)
+        if self._available_robots.get(robot_id) is None:
+            robot = RobotEntity(robot_id, self._game_view.scene_entity)
             self._game_view.add_asset(robot)
-            robot.lidar_emit_data_signal.connect(partial(self.emit_lidar_data, robot_id))
+            robot.lidar_emit_data_signal.connect(self.emit_lidar_data)
             robot.setEnabled(False)
-            self._available_robots.append(robot)
+            self._available_robots[robot_id] = robot
 
-        robot = self._available_robots.pop(0)
+        robot = self._available_robots.pop(robot_id)
         robot.setEnabled(True)
         self._robots[robot_id] = robot
         if self._lidar_emulation.get(robot_id, False):
@@ -70,8 +69,9 @@ class RobotManager(QtCore.QObject):
             robot_id: ID of the robot to remove
         """
         robot = self._robots.pop(robot_id)
+        robot.stop_lidar_emulation()
         robot.setEnabled(False)
-        self._available_robots.append(robot)
+        self._available_robots[robot_id] = robot
 
     def new_robot_pose_current(self, robot_id: int, new_pose: Pose) -> None:
         """

@@ -29,16 +29,17 @@ class RobotEntity(AssetEntity):
     asset_path: Path = Path("assets/robot2023.dae")
     sensors_update_interval: int = 5
     lidar_emit_interval: int = 20
-    lidar_emit_data_signal: qtSignal = qtSignal(list)
+    lidar_emit_data_signal: qtSignal = qtSignal(int, list)
     order_robot: "RobotOrderEntity" = None
 
-    def __init__(self, parent: Qt3DCore.QEntity | None = None):
+    def __init__(self, robot_id: int, parent: Qt3DCore.QEntity | None = None):
         """
         Class constructor.
 
         Inherits [AssetEntity][cogip.entities.asset.AssetEntity].
         """
         super().__init__(self.asset_path, parent=parent)
+        self.robot_id = robot_id
         self.lidar_sensors = []
         self.rect_obstacles_pool = []
         self.round_obstacles_pool = []
@@ -142,4 +143,4 @@ class RobotEntity(AssetEntity):
         """
         Qt Slot called to emit Lidar data.
         """
-        self.lidar_emit_data_signal.emit(self.lidar_data())
+        self.lidar_emit_data_signal.emit(self.robot_id, self.lidar_data())
