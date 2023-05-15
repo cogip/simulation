@@ -33,7 +33,11 @@ export function resizeCanvas() {
 
   let htmlCanvas = document.getElementById("board");
 
-  htmlCanvas.height = window.innerHeight - footerHeight;
+  htmlCanvas.height = Math.min(
+    window.innerHeight - footerHeight,
+    document.getElementById("menu").offsetHeight
+  );
+
   htmlCanvas.width = window.innerWidth - menuWidth - 10;
 
   let background = new Image();
