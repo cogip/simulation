@@ -121,9 +121,7 @@ pre {
 #buttonCameraModal {
   z-index: 2;
   position: relative;
-  right: -49px;
   margin-top: 10px;
-  top: 410px;
 }
 
 #buttonRefresh {
