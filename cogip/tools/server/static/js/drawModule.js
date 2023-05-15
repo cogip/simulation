@@ -67,6 +67,27 @@ export function resizeCanvas() {
 
   ratioX = imgWidth / 3000;
   ratioY = -imgHeight / 2000;
+
+  setButtonPosition(htmlCanvas);
+}
+
+function setButtonPosition(htmlCanvas) {
+  // set top of buttonCameraModal
+  const buttonCameraModal = document.getElementById("buttonCameraModal");
+  buttonCameraModal.style.top = buttonCameraModal.style.top =
+    htmlCanvas.height - 44 + "px"; // 44 is height of camera image
+
+  // set right of buttons Camera and Refresh
+  const rightPx = Math.max(
+    window.innerWidth -
+      document.getElementById("menu").offsetWidth -
+      10 -
+      htmlCanvas.width,
+    0
+  );
+
+  document.getElementById("buttonRefresh").style.right = rightPx + "px";
+  buttonCameraModal.style.right = rightPx - 49 + "px"; // 49 is width of refresh image
 }
 
 function getMousePos(canvas, evt) {
