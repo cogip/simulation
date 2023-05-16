@@ -102,8 +102,10 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         Callback on pose reached message.
         """
-        queue = self._planner._sio_receiver_queues[robot_id]
-        await queue.put(self._planner.set_pose_reached(robot_id))
+        if not (robot := self._planner._robots.get(robot_id)):
+            return
+
+        await robot.sio_receiver_queue.put(self._planner.set_pose_reached(robot))
 
     async def on_command(self, cmd: str):
         """
