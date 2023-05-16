@@ -43,6 +43,7 @@ class Server:
         self.sio.register_namespace(namespaces.DetectorNamespace(self))
         self.sio.register_namespace(namespaces.PlannerNamespace(self))
         self.sio.register_namespace(namespaces.RobotcamNamespace())
+        self.sio.register_namespace(namespaces.BeaconcamNamespace())
 
         # Overload default Uvicorn exit handler
         UvicornServer.handle_exit = self.handle_exit

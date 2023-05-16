@@ -91,6 +91,9 @@ setup(
             "static/js/external/*",
             "templates/*"
         ],
+        "cogip.tools.beaconcam": [
+            "data/*"
+        ],
         "cogip.tools.robotcam": [
             "data/*"
         ]
@@ -103,6 +106,7 @@ setup(
             'cogip-copilot=cogip.tools.copilot.__main__:main',
             'cogip-detector=cogip.tools.detector.__main__:main',
             'cogip-planner=cogip.tools.planner.__main__:main',
+            'cogip-beaconcam=cogip.tools.beaconcam.main:main',
             'cogip-robotcam=cogip.tools.robotcam.main:main',
             'cogip-server=cogip.tools.server.__main__:main',
             'cogip-basket=cogip.tools.basket.__main__:main',
