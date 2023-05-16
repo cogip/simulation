@@ -1,4 +1,6 @@
+from datetime import datetime
 from multiprocessing.shared_memory import SharedMemory
+from pathlib import Path
 from threading import Thread
 
 from fastapi import FastAPI
@@ -34,6 +36,17 @@ class CameraServer():
 
         UvicornServer.handle_exit = self.handle_exit
 
+        self.records_dir = Path.home() / "records"
+        self.records_dir.mkdir(exist_ok=True)
+        # Keep only 100 last records
+        for old_record in sorted(self.records_dir.glob('*.jpg'))[:-100]:
+            old_record.unlink()
+
+        self.crop_zones = {
+            1: (295, 480, 265, 470),
+            2: (295, 480, 265, 470)
+        }
+
     @staticmethod
     def handle_exit(*args, **kwargs):
         """Overload function for Uvicorn handle_exit"""
@@ -67,7 +80,10 @@ class CameraServer():
         Yield frames produced by [camera_handler][cogip.tools.robotcam.camera.CameraHandler.camera_handler].
         """
         while not self._exiting:
+            yield b'--frame\r\n'
+            yield b'Content-Type: image/bmp\r\n\r\n'
             yield bytes(self._last_frame.buf)
+            yield b'\r\n'
 
     def register_endpoints(self) -> None:
 
