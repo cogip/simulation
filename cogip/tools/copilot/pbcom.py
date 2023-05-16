@@ -51,11 +51,14 @@ class PBCom:
         """
         self._loop = asyncio.get_running_loop()
 
-        await asyncio.gather(
-            self.serial_decoder(),
-            self.serial_receiver(),
-            self.serial_sender()
-        )
+        try:
+            await asyncio.gather(
+                self.serial_decoder(),
+                self.serial_receiver(),
+                self.serial_sender()
+            )
+        except asyncio.CancelledError:
+            pass
 
     async def serial_decoder(self):
         """
@@ -64,18 +67,21 @@ class PBCom:
         uuid: int
         encoded_message: bytes
 
-        while True:
-            uuid, encoded_message = await self._serial_messages_received.get()
-            request_handler = self._message_handlers.get(uuid)
-            if not request_handler:
-                print(f"No handler found for message uuid '{uuid}'")
-            else:
-                if not encoded_message:
-                    await request_handler()
+        try:
+            while True:
+                uuid, encoded_message = await self._serial_messages_received.get()
+                request_handler = self._message_handlers.get(uuid)
+                if not request_handler:
+                    print(f"No handler found for message uuid '{uuid}'")
                 else:
-                    await request_handler(encoded_message)
+                    if not encoded_message:
+                        await request_handler()
+                    else:
+                        await request_handler(encoded_message)
 
-            self._serial_messages_received.task_done()
+                self._serial_messages_received.task_done()
+        except asyncio.CancelledError:
+            raise
 
     async def send_serial_message(self, *args) -> None:
         await self._serial_messages_to_send.put(args)
@@ -88,27 +94,30 @@ class PBCom:
         After decoding, first byte is the message type, following bytes are
         the Protobuf encoded message (if any).
         """
-        while True:
-            # Read next message
-            message = await self._serial_port.readline_async()
-            message = message.rstrip(b"\n")
+        try:
+            while True:
+                # Read next message
+                message = await self._serial_port.readline_async()
+                message = message.rstrip(b"\n")
 
-            # Get message uuid on first bytes
-            uuid = int.from_bytes(message[:4], "little")
+                # Get message uuid on first bytes
+                uuid = int.from_bytes(message[:4], "little")
 
-            if len(message) == 4:
-                await self._serial_messages_received.put((uuid, None))
-                continue
+                if len(message) == 4:
+                    await self._serial_messages_received.put((uuid, None))
+                    continue
 
-            # Base64 decoding
-            try:
-                pb_message = base64.decodebytes(message[4:])
-            except binascii.Error:
-                print("Failed to decode base64 message.")
-                continue
+                # Base64 decoding
+                try:
+                    pb_message = base64.decodebytes(message[4:])
+                except binascii.Error:
+                    print("Failed to decode base64 message.")
+                    continue
 
-            # Send Protobuf message for decoding
-            await self._serial_messages_received.put((uuid, pb_message))
+                # Send Protobuf message for decoding
+                await self._serial_messages_received.put((uuid, pb_message))
+        except asyncio.CancelledError:
+            raise
 
     async def serial_sender(self):
         """
@@ -116,12 +125,15 @@ class PBCom:
 
         See `serial_receiver` for message encoding.
         """
-        while True:
-            uuid, pb_message = await self._serial_messages_to_send.get()
-            await self._serial_port.write_async(uuid.to_bytes(4, "little"))
-            if pb_message:
-                response_serialized = await self._loop.run_in_executor(None, pb_message.SerializeToString)
-                response_base64 = await self._loop.run_in_executor(None, base64.encodebytes, response_serialized)
-                await self._serial_port.write_async(response_base64)
-            await self._serial_port.write_async(b"\0")
-            self._serial_messages_to_send.task_done()
+        try:
+            while True:
+                uuid, pb_message = await self._serial_messages_to_send.get()
+                await self._serial_port.write_async(uuid.to_bytes(4, "little"))
+                if pb_message:
+                    response_serialized = await self._loop.run_in_executor(None, pb_message.SerializeToString)
+                    response_base64 = await self._loop.run_in_executor(None, base64.encodebytes, response_serialized)
+                    await self._serial_port.write_async(response_base64)
+                await self._serial_port.write_async(b"\0")
+                self._serial_messages_to_send.task_done()
+        except asyncio.CancelledError:
+            raise
