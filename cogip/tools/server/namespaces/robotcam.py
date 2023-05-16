@@ -16,7 +16,9 @@ class RobotcamNamespace(socketio.AsyncNamespace):
     async def on_connect(self, sid, environ, auth={}):
         if isinstance(auth, dict) and (robot_id := auth.get("id")):
             if sid not in robotcam_sids and robot_id in robotcam_sids.inverse:
-                raise ConnectionRefusedError(f"A robotcam with id '{robot_id}' is already connected")
+                logger.error(f"A robotcam with id '{robot_id}' seems already connected, cleaning up")
+                old_sid = robotcam_sids.inverse[robot_id]
+                self.on_disconnect(old_sid)
             robotcam_sids[sid] = robot_id
         else:
             raise ConnectionRefusedError("Missing 'id' in 'auth' parameter")
@@ -25,5 +27,8 @@ class RobotcamNamespace(socketio.AsyncNamespace):
         logger.info(f"Robotcam {robot_id} connected.")
 
     def on_disconnect(self, sid):
-        robot_id = robotcam_sids.pop(sid)
-        logger.info(f"Robotcam {robot_id} disconnected.")
+        if sid in robotcam_sids:
+            robot_id = robotcam_sids.pop(sid)
+            logger.info(f"Robotcam {robot_id} disconnected.")
+        else:
+            logger.warning(f"Robotcam: attempt to disconnect with unknown sid {sid}.")

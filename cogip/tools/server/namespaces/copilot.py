@@ -20,7 +20,9 @@ class CopilotNamespace(socketio.AsyncNamespace):
     async def on_connect(self, sid, environ, auth={}):
         if isinstance(auth, dict) and (robot_id := auth.get("id")):
             if sid not in self._context.copilot_sids and robot_id in self._context.copilot_sids.inverse:
-                raise ConnectionRefusedError(f"A copilot with id '{robot_id}' is already connected")
+                logger.error(f"A copilot with id '{robot_id}' seems already connected, cleaning up")
+                old_sid = self._context.copilot_sids.inverse[robot_id]
+                await self.on_disconnect(old_sid)
         else:
             raise ConnectionRefusedError("Missing 'id' in 'auth' parameter")
 
@@ -34,15 +36,18 @@ class CopilotNamespace(socketio.AsyncNamespace):
         await self.emit("add_robot", (robot_id, virtual), namespace="/dashboard")
 
     async def on_disconnect(self, sid):
-        robot_id = self._context.copilot_sids.pop(sid)
-        self._context.connected_robots.remove(robot_id)
-        if robot_id in self._context.virtual_robots:
-            self._context.virtual_robots.remove(robot_id)
-        if robot_id in self._context.shell_menu:
-            del self._context.shell_menu[robot_id]
-        await self.emit("del_robot", robot_id, namespace="/planner")
-        await self.emit("del_robot", robot_id, namespace="/dashboard")
-        logger.info(f"Copilot {robot_id} disconnected.")
+        if sid in self._context.copilot_sids:
+            robot_id = self._context.copilot_sids.pop(sid)
+            self._context.connected_robots.remove(robot_id)
+            if robot_id in self._context.virtual_robots:
+                self._context.virtual_robots.remove(robot_id)
+            if robot_id in self._context.shell_menu:
+                del self._context.shell_menu[robot_id]
+            await self.emit("del_robot", robot_id, namespace="/planner")
+            await self.emit("del_robot", robot_id, namespace="/dashboard")
+            logger.info(f"Copilot {robot_id} disconnected.")
+        else:
+            logger.warning(f"Copilot: attempt to disconnect with unknown sid {sid}.")
 
     async def on_reset(self, sid) -> None:
         """
