@@ -77,7 +77,8 @@ class CopilotNamespace(socketio.AsyncNamespace):
         """
         Callback on menu event.
         """
-        robot_id = self._context.copilot_sids[sid]
+        if not (robot_id := self._context.copilot_sids.get(sid)):
+            return
         self._context.shell_menu[robot_id] = models.ShellMenu.parse_obj(menu)
         await self.emit("shell_menu", (robot_id, menu), namespace="/dashboard")
 
@@ -85,7 +86,8 @@ class CopilotNamespace(socketio.AsyncNamespace):
         """
         Callback on pose event.
         """
-        robot_id = self._context.copilot_sids[sid]
+        if not (robot_id := self._context.copilot_sids.get(sid)):
+            return
         detector_sid = self._context.detector_sids.inverse.get(robot_id)
         if detector_sid:  # Detector may not be already connected
             await self.emit("pose_current", pose, to=detector_sid, namespace="/detector")
@@ -97,7 +99,8 @@ class CopilotNamespace(socketio.AsyncNamespace):
         """
         Callback on state event.
         """
-        robot_id = self._context.copilot_sids[sid]
+        if not (robot_id := self._context.copilot_sids.get(sid)):
+            return
         await self.emit("state", (robot_id, state), namespace="/dashboard")
         await self._recorder.async_record({"state": (robot_id, state)})
 
