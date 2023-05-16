@@ -131,3 +131,11 @@ class PlannerNamespace(socketio.AsyncNamespace):
         Callback on score message.
         """
         await self.emit("score", score, namespace="/dashboard")
+
+    async def on_start_video_record(self, sid):
+        await self.emit("start_video_record", namespace="/robotcam")
+        await self.emit("start_video_record", namespace="/beaconcam")
+
+    async def on_stop_video_record(self, sid):
+        await self.emit("stop_video_record", namespace="/robotcam")
+        await self.emit("stop_video_record", namespace="/beaconcam")
