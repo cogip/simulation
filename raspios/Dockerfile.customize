@@ -128,7 +128,7 @@ FROM common as beacon
 # Enable COGIP services
 RUN systemctl enable server
 RUN systemctl enable planner
-#RUN systemctl enable beaconcam
+RUN systemctl enable beaconcam
 
 RUN apt-get install -y --no-install-recommends dnsmasq iptables
 COPY overlay-rootfs-beacon/ /
