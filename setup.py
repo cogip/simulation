@@ -17,7 +17,7 @@ required_packages = [
     # Common packages
     "bidict==0.22.0",
     "more_itertools==9.0.0",
-    "py-spy==0.3.11",
+    "py-spy==0.3.14",
     "pydantic==1.10.4",
     "pyserial==3.5",
     "python-dotenv==0.19.2",
