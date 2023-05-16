@@ -8,7 +8,7 @@ from .models import Vertex
 
 class CakeLayerID(IntEnum):
     """
-    Enum to identify each sample
+    Enum to identify each cake layer
     """
     GREEN_FRONT_ICING_BOTTOM = auto()
     GREEN_FRONT_ICING_MIDDLE = auto()
@@ -49,6 +49,27 @@ class CakeLayerID(IntEnum):
     BLUE_BACK_ICING_BOTTOM = auto()
     BLUE_BACK_ICING_MIDDLE = auto()
     BLUE_BACK_ICING_TOP = auto()
+
+
+class CakeSlotID(IntEnum):
+    """
+    Enum to identify each cake pickup slot
+    """
+    GREEN_FRONT_SPONGE = auto()
+    GREEN_FRONT_CREAM = auto()
+    GREEN_FRONT_ICING = auto()
+
+    GREEN_BACK_SPONGE = auto()
+    GREEN_BACK_CREAM = auto()
+    GREEN_BACK_ICING = auto()
+
+    BLUE_FRONT_SPONGE = auto()
+    BLUE_FRONT_CREAM = auto()
+    BLUE_FRONT_ICING = auto()
+
+    BLUE_BACK_SPONGE = auto()
+    BLUE_BACK_CREAM = auto()
+    BLUE_BACK_ICING = auto()
 
 
 class CakeLayerKind(IntEnum):
@@ -198,57 +219,81 @@ class CherryLocation(IntEnum):
 default_cake_layers: dict[CakeLayerID, tuple[float, float, CakeLayerKind, CakeLayerPos]] = {
     # Cake Layer ID:                       (x,                  y,               kind,                position)
 
-    # Green Front quarter
-    CakeLayerID.GREEN_FRONT_ICING_BOTTOM:  (450+125,            1000-225,        CakeLayerKind.ICING, CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_FRONT_ICING_MIDDLE:  (450+125,            1000-225,        CakeLayerKind.ICING, CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_FRONT_ICING_TOP:     (450+125,            1000-225,        CakeLayerKind.ICING, CakeLayerPos.TOP),
-
-    CakeLayerID.GREEN_FRONT_CREAM_BOTTOM:  (450+125+200,        1000-225,        CakeLayerKind.CREAM, CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_FRONT_CREAM_MIDDLE:  (450+125+200,        1000-225,        CakeLayerKind.CREAM, CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_FRONT_CREAM_TOP:     (450+125+200,        1000-225,        CakeLayerKind.CREAM, CakeLayerPos.TOP),
-
-    CakeLayerID.GREEN_FRONT_SPONGE_BOTTOM: (1125,               1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_FRONT_SPONGE_MIDDLE: (1125,               1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_FRONT_SPONGE_TOP:    (1125,               1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.TOP),
-
     # Green Back quarter
-    CakeLayerID.GREEN_BACK_SPONGE_BOTTOM:  (3000-1125,          1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_BACK_SPONGE_MIDDLE:  (3000-1125,          1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_BACK_SPONGE_TOP:     (3000-1125,          1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.TOP),
+    CakeLayerID.GREEN_BACK_ICING_BOTTOM:  (450+125,            1000-225,        CakeLayerKind.ICING, CakeLayerPos.BOTTOM),
+    CakeLayerID.GREEN_BACK_ICING_MIDDLE:  (450+125,            1000-225,        CakeLayerKind.ICING, CakeLayerPos.MIDDLE),
+    CakeLayerID.GREEN_BACK_ICING_TOP:     (450+125,            1000-225,        CakeLayerKind.ICING, CakeLayerPos.TOP),
 
-    CakeLayerID.GREEN_BACK_CREAM_BOTTOM:   (3000-(450+125+200), 1000-225,        CakeLayerKind.CREAM,  CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_BACK_CREAM_MIDDLE:   (3000-(450+125+200), 1000-225,        CakeLayerKind.CREAM,  CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_BACK_CREAM_TOP:      (3000-(450+125+200), 1000-225,        CakeLayerKind.CREAM,  CakeLayerPos.TOP),
+    CakeLayerID.GREEN_BACK_CREAM_BOTTOM:  (450+125+200,        1000-225,        CakeLayerKind.CREAM, CakeLayerPos.BOTTOM),
+    CakeLayerID.GREEN_BACK_CREAM_MIDDLE:  (450+125+200,        1000-225,        CakeLayerKind.CREAM, CakeLayerPos.MIDDLE),
+    CakeLayerID.GREEN_BACK_CREAM_TOP:     (450+125+200,        1000-225,        CakeLayerKind.CREAM, CakeLayerPos.TOP),
 
-    CakeLayerID.GREEN_BACK_ICING_BOTTOM:   (3000-(450+125),     1000-225,        CakeLayerKind.ICING,  CakeLayerPos.BOTTOM),
-    CakeLayerID.GREEN_BACK_ICING_MIDDLE:   (3000-(450+125),     1000-225,        CakeLayerKind.ICING,  CakeLayerPos.MIDDLE),
-    CakeLayerID.GREEN_BACK_ICING_TOP:      (3000-(450+125),     1000-225,        CakeLayerKind.ICING,  CakeLayerPos.TOP),
+    CakeLayerID.GREEN_BACK_SPONGE_BOTTOM: (1125,               1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
+    CakeLayerID.GREEN_BACK_SPONGE_MIDDLE: (1125,               1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
+    CakeLayerID.GREEN_BACK_SPONGE_TOP:    (1125,               1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.TOP),
 
-    # Blue Front quarter
-    CakeLayerID.BLUE_FRONT_ICING_BOTTOM:   (450+125,            -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_FRONT_ICING_MIDDLE:   (450+125,            -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_FRONT_ICING_TOP:      (450+125,            -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.TOP),
+    # Green Front quarter
+    CakeLayerID.GREEN_FRONT_SPONGE_BOTTOM:  (3000-1125,          1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
+    CakeLayerID.GREEN_FRONT_SPONGE_MIDDLE:  (3000-1125,          1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
+    CakeLayerID.GREEN_FRONT_SPONGE_TOP:     (3000-1125,          1000-350-375,    CakeLayerKind.SPONGE, CakeLayerPos.TOP),
 
-    CakeLayerID.BLUE_FRONT_CREAM_BOTTOM:   (450+125+200,        -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_FRONT_CREAM_MIDDLE:   (450+125+200,        -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_FRONT_CREAM_TOP:      (450+125+200,        -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.TOP),
+    CakeLayerID.GREEN_FRONT_CREAM_BOTTOM:   (3000-(450+125+200), 1000-225,        CakeLayerKind.CREAM,  CakeLayerPos.BOTTOM),
+    CakeLayerID.GREEN_FRONT_CREAM_MIDDLE:   (3000-(450+125+200), 1000-225,        CakeLayerKind.CREAM,  CakeLayerPos.MIDDLE),
+    CakeLayerID.GREEN_FRONT_CREAM_TOP:      (3000-(450+125+200), 1000-225,        CakeLayerKind.CREAM,  CakeLayerPos.TOP),
 
-    CakeLayerID.BLUE_FRONT_SPONGE_BOTTOM:  (1125,               -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_FRONT_SPONGE_MIDDLE:  (1125,               -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_FRONT_SPONGE_TOP:     (1125,               -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.TOP),
+    CakeLayerID.GREEN_FRONT_ICING_BOTTOM:   (3000-(450+125),     1000-225,        CakeLayerKind.ICING,  CakeLayerPos.BOTTOM),
+    CakeLayerID.GREEN_FRONT_ICING_MIDDLE:   (3000-(450+125),     1000-225,        CakeLayerKind.ICING,  CakeLayerPos.MIDDLE),
+    CakeLayerID.GREEN_FRONT_ICING_TOP:      (3000-(450+125),     1000-225,        CakeLayerKind.ICING,  CakeLayerPos.TOP),
 
     # Blue Back quarter
-    CakeLayerID.BLUE_BACK_SPONGE_BOTTOM:   (3000-1125,          -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_BACK_SPONGE_MIDDLE:   (3000-1125,          -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_BACK_SPONGE_TOP:      (3000-1125,          -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.TOP),
+    CakeLayerID.BLUE_BACK_ICING_BOTTOM:   (450+125,            -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.BOTTOM),
+    CakeLayerID.BLUE_BACK_ICING_MIDDLE:   (450+125,            -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.MIDDLE),
+    CakeLayerID.BLUE_BACK_ICING_TOP:      (450+125,            -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.TOP),
 
-    CakeLayerID.BLUE_BACK_CREAM_BOTTOM:    (3000-(450+125+200), -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_BACK_CREAM_MIDDLE:    (3000-(450+125+200), -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_BACK_CREAM_TOP:       (3000-(450+125+200), -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.TOP),
+    CakeLayerID.BLUE_BACK_CREAM_BOTTOM:   (450+125+200,        -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.BOTTOM),
+    CakeLayerID.BLUE_BACK_CREAM_MIDDLE:   (450+125+200,        -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.MIDDLE),
+    CakeLayerID.BLUE_BACK_CREAM_TOP:      (450+125+200,        -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.TOP),
 
-    CakeLayerID.BLUE_BACK_ICING_BOTTOM:    (3000-(450+125),     -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.BOTTOM),
-    CakeLayerID.BLUE_BACK_ICING_MIDDLE:    (3000-(450+125),     -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.MIDDLE),
-    CakeLayerID.BLUE_BACK_ICING_TOP:       (3000-(450+125),     -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.TOP)
+    CakeLayerID.BLUE_BACK_SPONGE_BOTTOM:  (1125,               -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
+    CakeLayerID.BLUE_BACK_SPONGE_MIDDLE:  (1125,               -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
+    CakeLayerID.BLUE_BACK_SPONGE_TOP:     (1125,               -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.TOP),
+
+    # Blue Front quarter
+    CakeLayerID.BLUE_FRONT_SPONGE_BOTTOM:   (3000-1125,          -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.BOTTOM),
+    CakeLayerID.BLUE_FRONT_SPONGE_MIDDLE:   (3000-1125,          -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.MIDDLE),
+    CakeLayerID.BLUE_FRONT_SPONGE_TOP:      (3000-1125,          -(1000-350-375), CakeLayerKind.SPONGE, CakeLayerPos.TOP),
+
+    CakeLayerID.BLUE_FRONT_CREAM_BOTTOM:    (3000-(450+125+200), -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.BOTTOM),
+    CakeLayerID.BLUE_FRONT_CREAM_MIDDLE:    (3000-(450+125+200), -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.MIDDLE),
+    CakeLayerID.BLUE_FRONT_CREAM_TOP:       (3000-(450+125+200), -(1000-225),     CakeLayerKind.CREAM,  CakeLayerPos.TOP),
+
+    CakeLayerID.BLUE_FRONT_ICING_BOTTOM:    (3000-(450+125),     -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.BOTTOM),
+    CakeLayerID.BLUE_FRONT_ICING_MIDDLE:    (3000-(450+125),     -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.MIDDLE),
+    CakeLayerID.BLUE_FRONT_ICING_TOP:       (3000-(450+125),     -(1000-225),     CakeLayerKind.ICING,  CakeLayerPos.TOP)
+}
+
+default_cake_slots: dict[CakeSlotID, tuple[float, float, CakeLayerKind]] = {
+    # Cake Slot ID:                       (x,                  y,               kind)
+
+    # Green Back quarter
+    CakeSlotID.GREEN_BACK_ICING:  (450+125,            1000-225,        CakeLayerKind.ICING),
+    CakeSlotID.GREEN_BACK_CREAM:  (450+125+200,        1000-225,        CakeLayerKind.CREAM),
+    CakeSlotID.GREEN_BACK_SPONGE: (1125,               1000-350-375,    CakeLayerKind.SPONGE),
+
+    # Green Front quarter
+    CakeSlotID.GREEN_FRONT_SPONGE:  (3000-1125,          1000-350-375,    CakeLayerKind.SPONGE),
+    CakeSlotID.GREEN_FRONT_CREAM:   (3000-(450+125+200), 1000-225,        CakeLayerKind.CREAM),
+    CakeSlotID.GREEN_FRONT_ICING:   (3000-(450+125),     1000-225,        CakeLayerKind.ICING),
+
+    # Blue Back quarter
+    CakeSlotID.BLUE_BACK_ICING:   (450+125,            -(1000-225),     CakeLayerKind.ICING),
+    CakeSlotID.BLUE_BACK_CREAM:   (450+125+200,        -(1000-225),     CakeLayerKind.CREAM),
+    CakeSlotID.BLUE_BACK_SPONGE:  (1125,               -(1000-350-375), CakeLayerKind.SPONGE),
+
+    # Blue Front quarter
+    CakeSlotID.BLUE_FRONT_SPONGE:   (3000-1125,          -(1000-350-375), CakeLayerKind.SPONGE),
+    CakeSlotID.BLUE_FRONT_CREAM:    (3000-(450+125+200), -(1000-225),     CakeLayerKind.CREAM),
+    CakeSlotID.BLUE_FRONT_ICING:    (3000-(450+125),     -(1000-225),     CakeLayerKind.ICING),
 }
 
 # Default position and properties of all cherries
