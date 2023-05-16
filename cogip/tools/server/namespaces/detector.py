@@ -20,8 +20,9 @@ class DetectorNamespace(socketio.AsyncNamespace):
     async def on_connect(self, sid, environ, auth={}):
         if isinstance(auth, dict) and (robot_id := auth.get("id")):
             if sid not in self._context.detector_sids and robot_id in self._context.detector_sids.inverse:
-                raise ConnectionRefusedError(f"A detector with id '{robot_id}' is already connected")
-            self._context.detector_sids[sid] = robot_id
+                logger.error(f"A detector with id '{robot_id}' seems already connected, cleaning up")
+                old_sid = self._context.detector_sids.inverse[robot_id]
+                await self.on_disconnect(old_sid)
         else:
             raise ConnectionRefusedError("Missing 'id' in 'auth' parameter")
 
@@ -34,14 +35,18 @@ class DetectorNamespace(socketio.AsyncNamespace):
 
     async def on_connected(self, sid, robot_id: int):
         logger.info(f"Detector {robot_id} connected.")
+        self._context.detector_sids[sid] = robot_id
         if self._context.detector_modes[robot_id] == "emulation":
             await self.emit("start_lidar_emulation", robot_id, namespace="/monitor")
 
     async def on_disconnect(self, sid):
-        robot_id = self._context.detector_sids.pop(sid)
-        if self._context.detector_modes[robot_id] == "emulation":
-            await self.emit("stop_lidar_emulation", robot_id, namespace="/monitor")
-        logger.info(f"Detector {robot_id} disconnected.")
+        if sid in self._context.detector_sids:
+            robot_id = self._context.detector_sids.pop(sid)
+            if self._context.detector_modes[robot_id] == "emulation":
+                await self.emit("stop_lidar_emulation", robot_id, namespace="/monitor")
+            logger.info(f"Detector {robot_id} disconnected.")
+        else:
+            logger.warning(f"Detector: attempt to disconnect with unknown sid {sid}.")
 
     async def on_register_menu(self, sid, data: Dict[str, Any]):
         """
