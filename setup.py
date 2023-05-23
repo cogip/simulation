@@ -35,7 +35,7 @@ required_packages = [
     "polling2==0.5.0",
     "protobuf==3.19.5",
     "python-socketio==5.7.1",
-    "requests==2.27.1",
+    "requests==2.31.0",
     "uvicorn[standard]==0.17.6",
     "watchfiles==0.17.0",
     "websocket-client==1.4.1",
