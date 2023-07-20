@@ -27,7 +27,7 @@ required_packages = [
     "PySide6==6.4.0.1;" + marker_platform_x86_64,
 
     # Packages specific to Copilot and Robotcam
-    "aiohttp==3.8.1",
+    "aiohttp==3.8.5",
     "aioserial==1.3.0",
     "fastapi==0.91.0",
     "Jinja2==3.0.3",
