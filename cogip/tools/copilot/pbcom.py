@@ -128,6 +128,7 @@ class PBCom:
         try:
             while True:
                 uuid, pb_message = await self._serial_messages_to_send.get()
+                logger.info(f"Send PB message: {uuid} {pb_message}")
                 await self._serial_port.write_async(uuid.to_bytes(4, "little"))
                 if pb_message:
                     response_serialized = await self._loop.run_in_executor(None, pb_message.SerializeToString)

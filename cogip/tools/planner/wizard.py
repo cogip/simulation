@@ -1,3 +1,4 @@
+import asyncio
 from typing import Any, TYPE_CHECKING
 
 from cogip.utils.asyncloop import AsyncLoop
@@ -5,6 +6,7 @@ from .avoidance.avoidance import AvoidanceStrategy
 from .camp import Camp
 from .context import GameContext
 from .strategy import Strategy
+from . import actuators
 
 if TYPE_CHECKING:
     from cogip.tools.planner.planner import Planner
@@ -132,16 +134,9 @@ class GameWizard:
         self.reset()
 
     async def request_starter(self):
-        if self.robot_index >= len(self.planner._robots):
-            self.waiting_start_loop.start()
-            self.robot_index = 0
-            await self.next()
-            return
-
-        robot_id, robot = list(self.planner._robots.items())[self.robot_index]
+        robot_id, robot = sorted(list(self.planner._robots.items()))[-1]
         if robot.starter.is_pressed:
-            self.robot_index += 1
-            self.step -= 1
+            self.waiting_start_loop.start()
             await self.next()
             return
 
@@ -160,18 +155,24 @@ class GameWizard:
             self.step -= 1
             return
 
-        if self.robot_index < len(self.planner._robots) - 1:
-            self.step -= 1
-            self.robot_index += 1
-            return
-
         self.waiting_start_loop.start()
 
     async def request_wait(self):
+        for robot_id in self.planner._robots.keys():
+            await actuators.led_on(robot_id, self.planner)
+            await actuators.central_arm_up(robot_id, self.planner)
+            await actuators.cherry_arm_up(robot_id, self.planner)
+            await actuators.left_arm_up(robot_id, self.planner)
+            await actuators.right_arm_up(robot_id, self.planner)
+        await asyncio.sleep(1)
+        for robot_id in self.planner._robots.keys():
+            await actuators.led_off(robot_id, self.planner)
+
+        robot_id, _ = sorted(list(self.planner._robots.items()))[-1]
         message = {
             "name": "Game Wizard: Waiting Start",
             "type": "message",
-            "value": f"Remove starter{'s' if len(self.planner._robots) else ''} to start the game"
+            "value": f"Remove starter {robot_id} to start the game"
         }
         await self.planner._sio_ns.emit("wizard", message)
 
@@ -183,10 +184,12 @@ class GameWizard:
         self.step -= 1
 
     async def check_start(self):
-        if not all([not robot.starter.is_pressed for robot in self.planner._robots.values()]):
+        _, robot = sorted(list(self.planner._robots.items()))[-1]
+        if robot.starter.is_pressed:
             return
 
         self.waiting_start_loop.exit = True
+        await self.waiting_start_loop.stop()
         self.started = True
         await self.planner._sio_ns.emit("close_wizard")
         await self.planner.reset()

@@ -26,6 +26,7 @@ class SioEvents(socketio.AsyncClientNamespace):
     def __init__(self, planner: "Planner"):
         super().__init__("/planner")
         self._planner = planner
+        self._game_context = context.GameContext()
 
     async def on_connect(self):
         """

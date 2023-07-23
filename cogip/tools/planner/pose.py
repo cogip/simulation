@@ -1,10 +1,9 @@
-from typing import Awaitable, Callable, ClassVar
+from typing import Awaitable, Callable, ClassVar, final
 
 from pydantic import validator
 import socketio
 
 from cogip.models.models import PathPose
-from cogip.tools import planner
 from .camp import Camp
 
 
@@ -16,25 +15,21 @@ class Pose(PathPose):
     before_pose_func: Callable[[socketio.ClientNamespace], Awaitable[None]] | None = None
     after_pose_func: Callable[[socketio.ClientNamespace], Awaitable[None]] | None = None
 
-    async def act_before_pose(self, planner: "planner.planner.Planner"):
+    @final
+    async def act_before_pose(self):
         """
         Function executed before the robot starts moving.
-
-        Parameters:
-            planner: the planner object to send it information or orders
         """
         if self.before_pose_func:
-            await self.before_pose_func(planner)
+            await self.before_pose_func()
 
-    async def act_after_pose(self, planner: "planner.planner.Planner"):
+    @final
+    async def act_after_pose(self):
         """
         Function executed once the pose is reached.
-
-        Parameters:
-            planner: the planner object to send it information or orders
         """
         if self.after_pose_func:
-            await self.after_pose_func(planner)
+            await self.after_pose_func()
 
     @property
     def path_pose(self) -> PathPose:
