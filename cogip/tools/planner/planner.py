@@ -12,7 +12,7 @@ from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
 from .actions import actions, action_classes
 from cogip.utils.asyncloop import AsyncLoop
-from . import logger, menu, pose, sio_events
+from . import actuators, cameras, logger, menu, pose, sio_events
 from .camp import Camp
 from .context import GameContext
 from .properties import Properties
@@ -74,7 +74,6 @@ class Planner:
             esc_speed=esc_speed,
             plot=plot
         )
-        self._loop: asyncio.AbstractEventLoop | None = None
         self._retry_connection = True
         self._sio = socketio.AsyncClient(logger=False)
         self._sio_ns = sio_events.SioEvents(self)
@@ -104,7 +103,6 @@ class Planner:
         self._sio_emitter_tasks: dict[int, asyncio.Task] = {}
         self._avoidance_processes: dict[int, Process] = {}
         self._shared_properties: DictProxy = self._process_manager.dict({
-            "controllers": {},
             "path_refresh_interval": path_refresh_interval,
             "robot_width": robot_width,
             "obstacle_radius": obstacle_radius,
@@ -114,15 +112,13 @@ class Planner:
             "plot": plot
         })
         self._sio_receiver_tasks: dict[int, asyncio.Task] = {}
-        self._sio_receiver_queues: dict[int, asyncio.Queue] = {}
+        self._countdown_task: asyncio.Task | None = None
         self.update_cake_obstacles()
 
     async def connect(self):
         """
         Connect to SocketIO server.
         """
-        self._loop = asyncio.get_running_loop()
-
         self.retry_connection = True
         await self.try_connect()
         try:
@@ -166,62 +162,118 @@ class Planner:
         """
         Start sending obstacles list.
         """
+        logger.info("Planner: start")
+        await self.countdown_start()
         self._obstacles_sender_loop.start()
 
     async def stop(self):
         """
         Stop running tasks.
         """
+        logger.info("Planner: stop")
+        await self.countdown_stop()
         await self._obstacles_sender_loop.stop()
 
-    async def task_sio_emitter(self, robot_id: int):
-        logger.debug(f"Robot {robot_id}: Task SIO Emitter started")
+    async def task_sio_emitter(self, robot: "Robot"):
+        logger.info(f"Robot {robot.robot_id}: Task SIO Emitter started")
         try:
             while True:
-                name, value = await asyncio.to_thread(self._sio_emitter_queues[robot_id].get)
-
-                if not (robot := self._robots.get(robot_id)):
-                    return
-
+                name, value = await asyncio.to_thread(self._sio_emitter_queues[robot.robot_id].get)
                 match name:
-                    case "path":
-                        if len(value) == 0 and robot.pose_order:
-                            robot.blocked += 1
-                            robot.avoidance_path = []
-                            if robot.blocked > 50:
-                                await self.blocked(robot_id)
-                                robot.blocked = 0
-                        else:
+                    case "avoidance_path":
+                        robot.avoidance_path = [pose.Pose.parse_obj(m) for m in value]
+                    case "blocked":
+                        if self._sio.connected:
+                            await self._sio_ns.emit("brake", robot.robot_id)
+                        robot.blocked += 1
+                        if robot.blocked > 10:
                             robot.blocked = 0
-                            robot.avoidance_path = [pose.Pose.parse_obj(m) for m in value[1:]]
-                        await self._sio_ns.emit(name, (robot_id, value))
+                            await self.blocked(robot)
+                    case "path":
+                        if self._sio.connected:
+                            await self._sio_ns.emit(name, (robot.robot_id, value))
                     case "pose_order":
-                        if robot.blocked == 0:
-                            await self._sio_ns.emit(name, (robot_id, value))
-                            continue
-
-                        # stop_pose = models.PathPose(**robot.pose_current.dict(), allow_reverse=True)
-                        # await self._sio_ns.emit("pose_order", (robot_id, stop_pose.pose.dict()))
+                        robot.blocked = 0
+                        if self._sio.connected:
+                            await self._sio_ns.emit(name, (robot.robot_id, value))
 
                     case "set_controller":
-                        robot.controller = ControllerEnum(value)
+                        await robot.set_controller(ControllerEnum(value))
                     case "starter_changed":
                         await self.starter_changed(robot.robot_id, value)
                     case _:
-                        await self._sio_ns.emit(name, (robot_id, value))
+                        if self._sio.connected:
+                            await self._sio_ns.emit(name, (robot.robot_id, value))
+                self._sio_emitter_queues[robot.robot_id].task_done()
         except asyncio.CancelledError:
-            logger.debug(f"Robot {robot_id}: Task SIO Emitter cancelled")
+            logger.info(f"Robot {robot.robot_id}: Task SIO Emitter cancelled")
             raise
+        except Exception as exc:
+            logger.warning(f"Robot {robot.robot_id}: Task SIO Emitter: Unexpected exception {exc}")
 
     async def task_sio_receiver(self, robot_id: id, queue: asyncio.Queue):
-        logger.debug(f"Robot {robot_id}: Task SIO Receiver started")
+        logger.info(f"Robot {robot_id}: Task SIO Receiver started")
         try:
             while True:
                 func = await queue.get()
                 await func
+                queue.task_done()
         except asyncio.CancelledError:
-            logger.debug(f"Robot {robot_id}: Task SIO Receiver cancelled")
+            logger.info(f"Robot {robot_id}: Task SIO Receiver cancelled")
             raise
+
+    async def countdown_loop(self):
+        logger.info("Planner: Task Countdown started")
+        try:
+            last_now = time.time()
+            last_countdown = self._game_context.countdown
+            while True:
+                await asyncio.sleep(0.5)
+                now = time.time()
+                self._game_context.countdown -= (now - last_now)
+                logger.debug(f"Planner: countdown = {self._game_context.countdown}")
+                if self._game_context.playing and self._game_context.countdown < 15 and last_countdown > 15:
+                    logger.debug("Planner: countdown==15: force blocked")
+                    for robot in self._robots.values():
+                        await robot.sio_receiver_queue.put(self.blocked(robot))
+                if self._game_context.playing and self._game_context.countdown < 0 and last_countdown > 0:
+                    logger.debug("Planner: countdown==0: final action")
+                    await self.final_action()
+                if self._game_context.countdown < -5 and last_countdown > -5:
+                    await self._sio_ns.emit("stop_video_record")
+                last_now = now
+                last_countdown = self._game_context.countdown
+        except asyncio.CancelledError:
+            logger.info("Planner: Task Countdown cancelled")
+            raise
+
+    async def countdown_start(self):
+        if self._countdown_task is None:
+            self._countdown_task = asyncio.create_task(self.countdown_loop())
+
+    async def countdown_stop(self):
+        if self._countdown_task is None:
+            return
+
+        self._countdown_task.cancel()
+        try:
+            await self._countdown_task
+        except asyncio.CancelledError:
+            logger.info("Planner: Task Countdown stopped")
+        self._countdown_task = None
+
+    async def final_action(self):
+        if not self._game_context.playing:
+            return
+        self._game_context.playing = False
+        for robot_id in self._robots.keys():
+            await actuators.led_on(robot_id, self)
+        await self._sio_ns.emit("game_end")
+        if self._game_context.nb_cherries > 0:
+            self._game_context.score += 5 + self._game_context.nb_cherries
+        if all([robot.parked for robot in self._robots.values()]):
+            self._game_context.score += 15
+        await self._sio_ns.emit("score", self._game_context.score)
 
     async def add_robot(self, robot_id: int, virtual: bool):
         """
@@ -229,12 +281,13 @@ class Planner:
         """
         if robot_id in self._robots:
             await self.del_robot(robot_id)
-        logger.debug(f"Robot {robot_id}: add")
+        logger.debug(f"Planner: add robot {robot_id}")
 
+        if robot_id not in self._sio_emitter_queues:
+            self._sio_emitter_queues[robot_id] = self._process_manager.Queue()
         self._robots[robot_id] = (robot := Robot(robot_id, self, virtual))
-        self._sio_receiver_queues[robot_id] = asyncio.Queue()
         self._sio_receiver_tasks[robot_id] = asyncio.create_task(
-            self.task_sio_receiver(robot_id, self._sio_receiver_queues[robot_id])
+            self.task_sio_receiver(robot_id, robot.sio_receiver_queue)
         )
         await self._sio_ns.emit("starter_changed", (robot_id, robot.starter.is_pressed))
         new_start_pose = self._start_positions.get(robot_id, robot_id)
@@ -242,17 +295,18 @@ class Planner:
         if new_start_pose not in available_start_poses:
             new_start_pose = available_start_poses[(robot_id - 1) % len(available_start_poses)]
         await robot.set_pose_start(self._game_context.get_start_pose(new_start_pose).pose)
-        self._shared_properties["controllers"][robot_id] = robot.controller
+        await robot.set_controller(self._game_context.default_controller)
+        await self._sio_ns.emit("game_reset", robot_id)
+
         self._shared_exiting[robot_id] = False
         self._shared_obstacles[robot_id] = []
         self._shared_cake_obstacles[robot_id] = []
-        self._sio_emitter_queues[robot_id] = self._process_manager.Queue()
         self._sio_emitter_tasks[robot_id] = asyncio.create_task(
-            self.task_sio_emitter(robot_id), name=f"Robot {robot_id}: Task SIO Emitter"
+            self.task_sio_emitter(robot), name=f"Robot {robot_id}: Task SIO Emitter"
         )
         self.update_cake_obstacles(robot_id)
         self._avoidance_processes[robot_id] = Process(target=avoidance_process, args=(
-            robot_id,
+            robot.namespace,
             self._game_context.strategy,
             self._game_context.avoidance_strategy,
             self._game_context.table,
@@ -267,16 +321,12 @@ class Planner:
         ))
         self._avoidance_processes[robot_id].start()
         await self.update_start_pose_commands()
-        await self._sio_ns.emit("set_controller", (robot_id, robot.controller.value))
 
     async def del_robot(self, robot_id: int):
         """
         Remove a robot.
         """
-        logger.debug(f"Robot {robot_id}: delete")
-        self._robots[robot_id].starter.close()
-        if robot_id in self._shared_properties["controllers"]:
-            del self._shared_properties["controllers"][robot_id]
+        logger.debug(f"Planner: del robot {robot_id}")
         if robot_id in self._shared_obstacles:
             del self._shared_obstacles[robot_id]
         if robot_id in self._avoidance_processes:
@@ -288,21 +338,24 @@ class Planner:
             try:
                 await task
             except asyncio.CancelledError:
-                logger.debug(f"Robot {robot_id}: Task SIO Emitter stopped")
+                logger.info(f"Planner {robot_id}: Task SIO Emitter stopped")
             del self._sio_emitter_tasks[robot_id]
-        if robot_id in self._sio_emitter_queues:
-            del self._sio_emitter_queues[robot_id]
+        if sio_emitter_queue := self._sio_emitter_queues.get(robot_id):
+            while not sio_emitter_queue.empty():
+                name, value = sio_emitter_queue.get()
         if robot_id in self._robots:
+            try:
+                self._robots[robot_id].starter.close()
+            except:  # noqa
+                logger.warning(f"Planner {robot_id}: Failed to close starter")
             del self._robots[robot_id]
         if task := self._sio_receiver_tasks.get(robot_id):
             task.cancel()
             try:
                 await task
             except asyncio.CancelledError:
-                logger.debug(f"Robot {robot_id}: Task SIO Receiver stopped")
+                logger.info(f"Planner {robot_id}: Task SIO Receiver stopped")
             del self._sio_receiver_tasks[robot_id]
-        if robot_id in self._sio_receiver_queues:
-            del self._sio_receiver_queues[robot_id]
         if self._sio.connected:
             # Only update start pose commands if del_robot is not called during disconnection
             await self.update_start_pose_commands()
@@ -341,6 +394,7 @@ class Planner:
         Reset planner, context, robots and actions.
         """
         self._game_context.reset()
+        await self._sio_ns.emit("stop_video_record")
         self.update_cake_obstacles()
         self._actions = action_classes.get(self._game_context.strategy, actions.Actions)(self)
 
@@ -350,14 +404,6 @@ class Planner:
             await self.del_robot(robot_id)
         for robot_id, virtual in robots.items():
             await self.add_robot(robot_id, virtual)
-
-    async def reset_controllers(self):
-        new_controller = self._game_context.default_controller
-        for robot_id, robot in self._robots.items():
-            if robot.controller == new_controller:
-                continue
-            robot.controller = new_controller
-            await self._sio_ns.emit("set_controller", (robot_id, new_controller.value))
 
     def update_cake_obstacles(self, robot_id: int = 0):
         robot_ids = self._robots.keys() if robot_id == 0 else [robot_id]
@@ -386,17 +432,15 @@ class Planner:
             return
         robot.pose_current = models.Pose.parse_obj(pose)
 
-    async def set_pose_reached(self, robot_id: int):
+    async def set_pose_reached(self, robot: "Robot"):
         """
         Set pose reached for a robot.
         """
-        if not (robot := self._robots.get(robot_id)):
-            return
+        logger.debug(f"Planner: set_pose_reached({robot.robot_id})")
+        if robot.robot_id in self._shared_last_avoidance_pose_currents:
+            del self._shared_last_avoidance_pose_currents[robot.robot_id]
 
-        if robot_id in self._shared_last_avoidance_pose_currents:
-            del self._shared_last_avoidance_pose_currents[robot_id]
-
-        if len(robot.avoidance_path) > 2:
+        if len(robot.avoidance_path) > 1:
             # The pose reached is intermediate, do nothing.
             return
 
@@ -406,50 +450,52 @@ class Planner:
         if not self._game_context.playing:
             return
 
-        await self.next_pose(robot_id)
+        await self.next_pose(robot)
 
-    async def next_pose(self, robot_id: int):
+    async def next_pose(self, robot: "Robot"):
         """
         Select the next pose for a robot.
         """
-        if not (robot := self._robots.get(robot_id)):
-            return
-
+        logger.debug(f"Planner: next_pose({robot.robot_id})")
         # Get and set new pose
         new_pose_order = await robot.next_pose()
 
         # If no pose left in current action, get and set new action
-        if not new_pose_order and (new_action := self.get_action(robot_id)):
-            await robot.set_action(new_action)
+        if not new_pose_order and (new_action := self.get_action(robot)):
+            if not await robot.set_action(new_action):
+                await robot.sio_receiver_queue.put(self.set_pose_reached(robot))
 
-    async def game_end(self, robot_id: int):
-        self.cmd_stop()
-        await self._sio_ns.emit("score", self._game_context.score)
-
-    def get_action(self, robot_id: int) -> actions.Action | None:
+    def get_action(self, robot: "Robot") -> actions.Action | None:
         """
         Get a new action for a robot.
         Simply choose next action in the list for now.
         """
-        if not (robot := self._robots.get(robot_id)):
-            return
+        sorted_actions = sorted(
+            [action for action in self._actions if not action.recycled and action.weight(robot) > 0],
+            key=lambda action: action.weight(robot)
+        )
 
-        if len(self._actions) == 0:
+        if len(sorted_actions) == 0:
             return None
 
-        action = self._actions.pop(0)
+        action = sorted_actions[-1]
+        self._actions.remove(action)
         action.robot = robot
         return action
 
-    async def blocked(self, robot_id: int):
+    async def blocked(self, robot: "Robot"):
         """
         Function called when a robot cannot find a path to go to the current pose of the current action
         """
-        if current_action := (robot := self._robots[robot_id]).action:
-            if new_action := self.get_action(robot_id):
-                await robot.set_action(new_action)
-                await current_action.recycle(self)
-                self._actions.append(current_action)
+        if current_action := robot.action:
+            logger.debug(f"Robot {robot.robot_id}: blocked")
+            new_pose: pose.Pose | None = None
+            if new_action := self.get_action(robot):
+                new_pose = await robot.set_action(new_action)
+            await current_action.recycle()
+            self._actions.append(current_action)
+            if not new_pose:
+                await robot.sio_receiver_queue.put(self.set_pose_reached(robot))
 
     def create_dyn_obstacle(
             self,
@@ -510,7 +556,9 @@ class Planner:
         Execute a command from the menu.
         """
         if cmd.startswith("wizard_"):
-            self.cmd_wizard_test(cmd)
+            await self.cmd_wizard_test(cmd)
+            return
+
         if cmd.startswith("act_"):
             await self.cmd_act(cmd)
             return
@@ -532,7 +580,7 @@ class Planner:
             return
 
         if cmd == "game_wizard":
-            self._game_wizard.start()
+            await self._game_wizard.start()
             return
 
         if not (cmd_func := getattr(self, f"cmd_{cmd}", None)):
@@ -564,16 +612,18 @@ class Planner:
         if self._game_context.playing:
             return
 
+        self._game_context.countdown = self._game_context.game_duration
         self._game_context.playing = True
-        for robot_id in self._robots.keys():
-            queue = self._sio_receiver_queues[robot_id]
-            await queue.put(self.set_pose_reached(robot_id))
+        await self._sio_ns.emit("start_video_record")
+        for robot in self._robots.values():
+            await robot.sio_receiver_queue.put(self.set_pose_reached(robot))
 
     async def cmd_stop(self):
         """
         Stop command from the menu.
         """
         self._game_context.playing = False
+        await self._sio_ns.emit("stop_video_record")
 
     async def cmd_next(self):
         """
@@ -587,9 +637,8 @@ class Planner:
         if not all([robot.pose_reached for robot in self._robots.values()]):
             return
 
-        for robot_id in self._robots.keys():
-            queue = self._sio_receiver_queues[robot_id]
-            await queue.put(self.next_pose(robot_id))
+        for robot in self._robots.values():
+            await robot.sio_receiver_queue.put(self.next_pose(robot))
 
     async def cmd_reset(self):
         """
@@ -694,7 +743,6 @@ class Planner:
                     return
                 self._game_context.strategy = new_strategy
                 await self.reset()
-                await self.reset_controllers()
                 logger.info(f'Wizard: New strategy: {self._game_context.strategy.name}')
             case "Choose Avoidance":
                 new_strategy = AvoidanceStrategy[value]
@@ -717,7 +765,7 @@ class Planner:
                 await self.reset()
                 logger.info(f'Wizard: New table: {self._game_context._table.name}')
             case game_wizard_response if game_wizard_response.startswith("Game Wizard"):
-                self._game_wizard.response(message)
+                await self._game_wizard.response(message)
             case wizard_test_response if wizard_test_response.startswith("Wizard Test"):
                 logger.info(f"Wizard test response: {name} = {value}")
             case _:

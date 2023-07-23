@@ -1,4 +1,4 @@
-from cogip.models.artifacts import CakeLayer, CakeLayerKind, CakeLayerPos
+from cogip.models.artifacts import CakeLayer, CakeLayerKind, CakeLayerPos, CakeSlotID
 from cogip.models.models import DynRoundObstacle
 from .properties import Properties
 from . import robot
@@ -41,8 +41,16 @@ class Cake:
 
 
 class CakeSlot:
-    def __init__(self, x: float, y: float, kind: CakeLayerKind, cake: Cake | None = None):
+    def __init__(self, slot_id: CakeSlotID, x: float, y: float, kind: CakeLayerKind, cake: Cake | None = None):
+        self.slot_id = slot_id
         self.x = x
         self.y = y
         self.kind: CakeLayerKind = kind
         self.cake: Cake | None = cake
+
+
+class DropSlot():
+    def __init__(self, x: float, y: float, ):
+        self.x = x
+        self.y = y
+        self.cake: Cake | None = None
