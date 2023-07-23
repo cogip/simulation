@@ -1,20 +1,23 @@
+from typing import TYPE_CHECKING
 from functools import partial
 from gpiozero import Button
 from gpiozero.pins.mock import MockFactory
 from gpiozero.pins.pigpio import PiGPIOFactory
 
 from cogip.models import models
-from cogip.tools import planner
 from cogip.tools.copilot.controller import ControllerEnum
 from . import actions, context, logger, pose
 from .strategy import Strategy
+
+if TYPE_CHECKING:
+    from cogip.tools.planner.planner import Planner
 
 
 class Robot:
     """
     Class representing a robot context.
     """
-    def __init__(self, robot_id: int, planner: "planner.planner.Planner", virtual: bool):
+    def __init__(self, robot_id: int, planner: "Planner", virtual: bool):
         self.robot_id = robot_id
         self.planner = planner
         self.virtual = virtual

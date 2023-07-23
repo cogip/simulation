@@ -10,8 +10,9 @@ import socketio
 
 from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
+from .actions import actions, action_classes
 from cogip.utils.asyncloop import AsyncLoop
-from . import actions, logger, menu, pose, sio_events
+from . import logger, menu, pose, sio_events
 from .camp import Camp
 from .context import GameContext
 from .properties import Properties
@@ -82,7 +83,7 @@ class Planner:
         self._game_context = GameContext()
         self._robots: dict[int, Robot] = {}
         self._start_positions: dict[int, int] = {}
-        self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
+        self._actions = action_classes.get(self._game_context.strategy, actions.Actions)(self)
         self._obstacles: dict[int, models.DynObstacleList] = {}
         self._start_pose_menu_entries: dict[int, models.MenuEntry] = {}
         self._obstacles_sender_loop = AsyncLoop(
@@ -341,7 +342,7 @@ class Planner:
         """
         self._game_context.reset()
         self.update_cake_obstacles()
-        self._actions = actions.action_classes.get(self._game_context.strategy, actions.Actions)()
+        self._actions = action_classes.get(self._game_context.strategy, actions.Actions)(self)
 
         # Remove robots and add them again to reset all robots.
         robots = {robot_id: robot.virtual for robot_id, robot in self._robots.items()}
