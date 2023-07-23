@@ -7,7 +7,7 @@ from pydantic import parse_obj_as
 import socketio
 
 from cogip import models
-from cogip.models.actuators import ServoCommand, PumpCommand, ActuatorCommand
+from cogip.models.actuators import ServoCommand, PumpCommand, PositionalActuatorCommand, ActuatorCommand
 from . import copilot, logger
 from .menu import menu
 from .messages import PB_ActuatorCommand, PB_Command, PB_PathPose, PB_Controller
@@ -121,6 +121,8 @@ class SioEvents(socketio.AsyncClientNamespace):
             command.pb_copy(pb_command.servo)
         elif isinstance(command, PumpCommand):
             command.pb_copy(pb_command.pump)
+        elif isinstance(command, PositionalActuatorCommand):
+            command.pb_copy(pb_command.positional_actuator)
         await self._copilot.pbcom.send_serial_message(copilot.actuators_command_uuid, pb_command)
 
     async def on_config_updated(self, config: Dict[str, Any]) -> None:
