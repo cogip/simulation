@@ -46,7 +46,7 @@ def main_opt(
         envvar="PLANNER_OBSTACLE_BB_VERTICES"
     ),
     max_distance: int = typer.Option(
-        2500, min=0, max=3000,
+        2500, min=0, max=4000,
         help="Maximum distance to take avoidance points into account (mm)",
         envvar=["COGIP_MAX_DISTANCE", "PLANNER_MAX_DISTANCE"]
     ),

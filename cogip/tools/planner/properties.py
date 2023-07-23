@@ -23,7 +23,7 @@ class Properties(BaseModel):
         description="Number of obstacle bounding box vertices"
     )
     max_distance: int = Field(
-        ..., ge=0, le=3000,
+        ..., ge=0, le=4000,
         title="Max Distance",
         description="Maximum distance to take avoidance points into account (mm)"
     )

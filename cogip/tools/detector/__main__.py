@@ -44,7 +44,7 @@ def main_opt(
         envvar="DETECTOR_MIN_DISTANCE"
     ),
     max_distance: int = typer.Option(
-        2500, min=0, max=3000,
+        2500, min=0, max=4000,
         help="Maximum distance to detect an obstacle (mm)",
         envvar=["COGIP_MAX_DISTANCE", "DETECTOR_MAX_DISTANCE"]
     ),
