@@ -72,8 +72,7 @@ class Copilot:
             state_uuid: self.handle_message_state,
             pose_reached_uuid: self.handle_pose_reached,
             actuators_state_uuid: self.handle_actuators_state,
-            pid_uuid: self.handle_pid,
-            game_end_uuid: self.handle_game_end
+            pid_uuid: self.handle_pid
         }
 
         self._pbcom = PBCom(serial_port, serial_baud, pb_message_handlers)
@@ -263,12 +262,3 @@ class Copilot:
         """
         if self._sio.connected:
             await self._sio_events.emit("pose_reached")
-
-    async def handle_game_end(self) -> None:
-        """
-        Handle game end message.
-
-        Forward info to the planner.
-        """
-        if self._sio.connected:
-            await self._sio_events.emit("game_end")
