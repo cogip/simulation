@@ -53,7 +53,7 @@ class Basket:
 
     def send_count(self):
         try:
-            response = httpx.put(f"{self.server_url}/basket", data={'count': self.count})
+            response = httpx.put(f"{self.server_url}/cherries?count={self.count}")
             response.raise_for_status()
         except httpx.HTTPError as exc:
             logger.error(f"HTTP Exception for {exc.request.url} - {exc}")
