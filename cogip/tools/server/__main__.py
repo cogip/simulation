@@ -11,7 +11,7 @@ from . import logger
 
 
 def changes_callback(changes):
-    logger.info("Changes detected:", changes)
+    logger.info(f"Changes detected: {changes}")
 
 
 def main_opt(
