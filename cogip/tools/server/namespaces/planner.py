@@ -120,6 +120,18 @@ class PlannerNamespace(socketio.AsyncNamespace):
         """
         await self.emit("game_start", namespace="/copilot")
 
+    async def on_game_end(self, sid):
+        """
+        Callback on game_end message.
+        """
+        await self.emit("game_end", namespace="/copilot")
+
+    async def on_robot_end(self, sid, robot_id):
+        """
+        Callback on robot_end message.
+        """
+        await self.emit("game_end", to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
+
     async def on_game_reset(self, sid, robot_id):
         """
         Callback on game_reset message.
@@ -139,3 +151,9 @@ class PlannerNamespace(socketio.AsyncNamespace):
     async def on_stop_video_record(self, sid):
         await self.emit("stop_video_record", namespace="/robotcam")
         await self.emit("stop_video_record", namespace="/beaconcam")
+
+    async def on_brake(self, sid, robot_id):
+        """
+        Callback on brake message.
+        """
+        await self.emit("brake", to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
