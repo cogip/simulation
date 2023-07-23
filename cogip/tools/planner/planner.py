@@ -510,6 +510,12 @@ class Planner:
         """
         if cmd.startswith("wizard_"):
             self.cmd_wizard_test(cmd)
+        if cmd.startswith("act_"):
+            await self.cmd_act(cmd)
+            return
+
+        if cmd.startswith("cam_"):
+            await self.cmd_cam(cmd)
             return
 
         if cmd == "config":
@@ -809,3 +815,19 @@ class Planner:
                 return
 
         await self._sio_ns.emit("wizard", message)
+
+    async def cmd_act(self, cmd: str):
+        _, _, command = cmd.partition("_")
+        command, _, robot_id = command.rpartition("_")
+        func = getattr(actuators, command)
+        await func(int(robot_id), self)
+
+    async def cmd_cam(self, cmd: str):
+        _, _, command = cmd.partition("_")
+        match command:
+            case "beacon_snapshots":
+                await cameras.snapshot()
+            case "cherry_on_cake_1":
+                await cameras.is_cherry_on_cake(1)
+            case "cherry_on_cake_2":
+                await cameras.is_cherry_on_cake(2)
