@@ -2,7 +2,7 @@ from enum import IntEnum
 
 from pydantic import BaseModel, Field
 
-from ..tools.copilot.messages import PB_PumpCommand, PB_ServoCommand
+from ..tools.copilot.messages import PB_PumpCommand, PB_ServoCommand, PB_PositionalActuatorCommand
 
 
 # Actuators common definitions
@@ -10,13 +10,11 @@ from ..tools.copilot.messages import PB_PumpCommand, PB_ServoCommand
 class ActuatorsKindEnum(IntEnum):
     SERVO = 0
     PUMP = 1
+    POSITIONAL = 2
 
 
 class ActuatorsGroupEnum(IntEnum):
     NO_GROUP = 0
-    LEFT_ARM = 1
-    RIGHT_ARM = 2
-    CENTRAL_ARM = 3
 
 
 class ActuatorBase(BaseModel):
@@ -39,16 +37,9 @@ class ActuatorBase(BaseModel):
 # Servo related definitions
 
 class ServoEnum(IntEnum):
-    ARM_CENTRAL_BASE = 1
-    ARM_CENTRAL_MID = 2
-    ARM_CENTRAL_HEAD = 3
-    ARM_CENTRAL_LIFT = 5
-    ARM_RIGHT_BASE = 9
-    ARM_RIGHT_HEAD = 10
-    ARM_LEFT_BASE = 11
-    ARM_LEFT_HEAD = 12
-    STORAGE = 4
-    WHEEL = 13
+    LXSERVO_BALL_SWITCH = 1
+    LXSERVO_RIGHT_ARM = 2
+    LXSERVO_LEFT_ARM = 4
 
 
 class ServoCommand(BaseModel):
@@ -80,9 +71,8 @@ class Servo(ActuatorBase, ServoCommand):
 # Pump related definitions
 
 class PumpEnum(IntEnum):
-    ARM_LEFT_PUMP = 0
-    ARM_CENTRAL_PUMP = 1
-    ARM_RIGHT_PUMP = 2
+    PUMP_RIGHT_ARM = 0
+    PUMP_LEFT_ARM = 1
 
 
 class PumpCommand(BaseModel):
@@ -116,10 +106,46 @@ class Pump(ActuatorBase, PumpCommand):
     )
 
 
+# Positional Actuators related definitions
+
+class PositionalActuatorEnum(IntEnum):
+    MOTOR_CENTRAL_LIFT = 0
+    MOTOR_CONVEYOR_LAUNCHER = 1
+    ONOFF_LED_PANELS = 2
+    ANALOGSERVO_CHERRY_ARM = 3
+    ANALOGSERVO_CHERRY_ESC = 4
+    ANALOGSERVO_CHERRY_RELEASE = 5
+    LXMOTOR_RIGHT_ARM_LIFT = 6
+    LXMOTOR_LEFT_ARM_LIFT = 7
+
+
+class PositionalActuatorCommand(BaseModel):
+    kind: ActuatorsKindEnum = Field(ActuatorsKindEnum.POSITIONAL, const=True)
+    id: PositionalActuatorEnum = Field(
+        ...,
+        title="Id",
+        description="Positional Actuator identifier"
+    )
+    command: int = Field(
+        0, ge=-100, le=999,
+        title="Position Command",
+        description="Current positional actuator position command"
+    )
+
+    def pb_copy(self, message: PB_PositionalActuatorCommand) -> None:
+        message.id = self.id
+        message.command = self.command
+
+
+class PositionalActuator(ActuatorBase, PositionalActuatorCommand):
+    pass
+
+
 class ActuatorsState(BaseModel):
     servos: list[Servo] = []
     pumps: list[Pump] = []
+    positional_actuators: list[PositionalActuator] = []
     robot_id: int
 
 
-ActuatorCommand = ServoCommand | PumpCommand
+ActuatorCommand = ServoCommand | PumpCommand | PositionalActuatorCommand
