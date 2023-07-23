@@ -32,6 +32,7 @@ controller_uuid: int = 2750239003
 game_start_uuid: int = 3138845474
 game_end_uuid: int = 1532296089
 game_reset_uuid: int = 1549868731
+brake_uuid: int = 3239255374
 
 
 class Copilot:

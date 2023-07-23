@@ -151,9 +151,23 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         await self._copilot.pbcom.send_serial_message(copilot.game_start_uuid, None)
 
+    async def on_game_end(self):
+        """
+        Callback on game_end message.
+        Forward to firmware.
+        """
+        await self._copilot.pbcom.send_serial_message(copilot.game_end_uuid, None)
+
     async def on_game_reset(self):
         """
         Callback on game_reset message.
         Forward to firmware.
         """
         await self._copilot.pbcom.send_serial_message(copilot.game_reset_uuid, None)
+
+    async def on_brake(self):
+        """
+        Callback on brake message.
+        Forward to firmware.
+        """
+        await self._copilot.pbcom.send_serial_message(copilot.brake_uuid, None)
