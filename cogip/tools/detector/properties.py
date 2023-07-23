@@ -8,7 +8,7 @@ class Properties(BaseModel):
         description="Minimum distance to detect an obstacle (mm)"
     )
     max_distance: int = Field(
-        ..., ge=0, le=3000,
+        ..., ge=0, le=4000,
         title="Max Distance",
         description="Maximum distance to detect an obstacle (mm)"
     )
