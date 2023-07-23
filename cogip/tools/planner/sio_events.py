@@ -1,12 +1,11 @@
 import asyncio
-from typing import Any, Dict
+from typing import Any, Dict, TYPE_CHECKING
 from pydantic import parse_obj_as
 
 import polling2
 import socketio
 
 from cogip import models
-from . import planner, logger
 from . import context, logger
 from .menu import (
     menu, wizard_test_menu,
@@ -15,6 +14,8 @@ from .menu import (
     cameras_menu
 )
 
+if TYPE_CHECKING:
+    from .planner import Planner
 
 
 class SioEvents(socketio.AsyncClientNamespace):
@@ -22,7 +23,7 @@ class SioEvents(socketio.AsyncClientNamespace):
     Handle all SocketIO events received by Planner.
     """
 
-    def __init__(self, planner: "planner.Planner"):
+    def __init__(self, planner: "Planner"):
         super().__init__("/planner")
         self._planner = planner
 
