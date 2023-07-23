@@ -38,6 +38,8 @@ class Planner:
             max_distance: int,
             obstacle_sender_interval: float,
             path_refresh_interval: float,
+            launcher_speed: int,
+            esc_speed: int,
             plot: bool,
             debug: bool):
         """
@@ -52,6 +54,8 @@ class Planner:
             max_distance: Maximum distance to take avoidance points into account (mm)
             obstacle_sender_interval: Interval between each send of obstacles to dashboards (in seconds)
             path_refresh_interval: Interval between each update of robot paths (in seconds)
+            launcher_speed: Launcher speed, in percentage of the max speed
+            esc_speed: ESC speed (0-5)
             plot: Display avoidance graph in realtime
             debug: enable debug messages
         """
@@ -65,6 +69,8 @@ class Planner:
             max_distance=max_distance,
             obstacle_sender_interval=obstacle_sender_interval,
             path_refresh_interval=path_refresh_interval,
+            launcher_speed=launcher_speed,
+            esc_speed=esc_speed,
             plot=plot
         )
         self._loop: asyncio.AbstractEventLoop | None = None

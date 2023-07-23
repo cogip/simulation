@@ -37,6 +37,16 @@ class Properties(BaseModel):
         title="Path Refresh Interval",
         description="Interval between each update of robot paths (seconds)"
     )
+    launcher_speed: int = Field(
+        ..., ge=0, le=100,
+        title="Launcher Speed",
+        description="Launcher Speed"
+    )
+    esc_speed: int = Field(
+        ..., ge=0, le=5,
+        title="ESC Speed",
+        description="ESC Speed"
+    )
     plot: bool = Field(
         ...,
         title="Debug Plot",
