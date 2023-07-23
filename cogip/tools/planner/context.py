@@ -85,17 +85,15 @@ class GameContext(metaclass=Singleton):
         """
         match n:
             case 1:
-                return AdaptedPose(x=225, y=-775, O=0)
+                return AdaptedPose(x=450 - 225 / 2, y=-1000 + 450 - 225 / 2, O=180)
             case 2:
-                return AdaptedPose(x=1875, y=-775, O=90)
+                return AdaptedPose(x=3000 - 450 - 125 - 200 - 125 - 225 / 2, y=-1000 + 450 - 225 / 2, O=90)
             case 3:
-                return AdaptedPose(x=2775, y=-275, O=180)
+                return AdaptedPose(x=3000 - 450 + 225 / 2, y=-1000 + 450 + 50 + 225 / 2, O=180)
             case 4:
-                return AdaptedPose(x=2775, y=775, O=180)
+                return AdaptedPose(x=3000 - 450 + 225 / 2, y=1000 - 450 + 225 / 2, O=180)
             case 5:
-                return AdaptedPose(x=1125, y=775, O=-90)
-            case _:
-                return AdaptedPose(x=225, y=-775, O=0)
+                return AdaptedPose(x=450 + 125 + 200 + 125 - 225 / 2, y=1000 - 450 + 225 / 2, O=-90)
 
     def get_available_start_poses(self) -> list[int]:
         """
