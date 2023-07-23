@@ -7,7 +7,14 @@ import socketio
 
 from cogip import models
 from . import planner, logger
-from .menu import menu, wizard_test_menu
+from . import context, logger
+from .menu import (
+    menu, wizard_test_menu,
+    actuators_menu_1, actuators_menu_2,
+    cherries_menu_1, cherries_menu_2,
+    cameras_menu
+)
+
 
 
 class SioEvents(socketio.AsyncClientNamespace):
@@ -34,6 +41,11 @@ class SioEvents(socketio.AsyncClientNamespace):
         await self._planner.start()
         await self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
         await self.emit("register_menu", {"name": "wizard", "menu": wizard_test_menu.dict()})
+        await self.emit("register_menu", {"name": "actuators1", "menu": actuators_menu_1.dict()})
+        await self.emit("register_menu", {"name": "actuators2", "menu": actuators_menu_2.dict()})
+        await self.emit("register_menu", {"name": "cherries1", "menu": cherries_menu_1.dict()})
+        await self.emit("register_menu", {"name": "cherries2", "menu": cherries_menu_2.dict()})
+        await self.emit("register_menu", {"name": "cameras", "menu": cameras_menu.dict()})
 
     async def on_disconnect(self):
         """

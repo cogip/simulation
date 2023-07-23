@@ -144,6 +144,13 @@ class PlannerNamespace(socketio.AsyncNamespace):
         """
         await self.emit("score", score, namespace="/dashboard")
 
+    async def on_actuator_command(self, sid, data):
+        """
+        Callback on actuator_command message.
+        """
+        sid = self._context.copilot_sids.inverse[data["robot_id"]]
+        await self.emit("actuator_command", data=data["command"], to=sid, namespace="/copilot")
+
     async def on_start_video_record(self, sid):
         await self.emit("start_video_record", namespace="/robotcam")
         await self.emit("start_video_record", namespace="/beaconcam")
