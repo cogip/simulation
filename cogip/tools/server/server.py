@@ -65,7 +65,7 @@ class Server:
         self.templates = Jinja2Templates(directory=current_dir / "templates")
 
         # Register routes
-        self.app.include_router(routes.RootRouter(self.templates), prefix="")
+        self.app.include_router(routes.RootRouter(self.templates, self.sio), prefix="")
 
         @self.sio.event
         def connect(sid, environ, auth):

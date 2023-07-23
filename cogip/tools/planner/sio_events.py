@@ -139,3 +139,9 @@ class SioEvents(socketio.AsyncClientNamespace):
         Callback on game end message.
         """
         await self._planner.game_end(robot_id)
+
+    async def on_cherries(self, count: int):
+        """
+        Callback on cherries message.
+        """
+        self._game_context.nb_cherries = count
