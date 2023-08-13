@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools >= 68.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cogip-tools"
+authors = [{name = "COGIP Team", email = "cogip35@gmail.com"}]
+version = "1.0.0"
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+dynamic = ["dependencies", "optional-dependencies"]
+
+[project.urls]
+Documentation = "https://cogip.github.io/simulation"
+Repository = "https://github.com/cogip/simulation.git"
+
+[project.scripts]
+cogip-monitor = "cogip.tools.monitor.main:main"
+cogip-replay = "cogip.tools.replay.main:main"
+cogip-copilot = "cogip.tools.copilot.__main__:main"
+cogip-detector = "cogip.tools.detector.__main__:main"
+cogip-planner = "cogip.tools.planner.__main__:main"
+cogip-beaconcam = "cogip.tools.beaconcam.main:main"
+cogip-robotcam = "cogip.tools.robotcam.main:main"
+cogip-server = "cogip.tools.server.__main__:main"
+cogip-basket = "cogip.tools.basket.__main__:main"
+cogip-lidarusb = "cogip.tools.lidarusb.main:main"
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+
+[tool.setuptools.dynamic.optional-dependencies]
+dev = {file = ["requirements-dev.txt"]}
+
+[tool.setuptools.packages.find]
+include = ["cogip*"]
+
+[tool.setuptools.package-data]
+"cogip.tools.copilot" = [
+    "static/css/*",
+    "static/css/purged/*",
+    "static/img/*",
+    "static/js/*",
+    "static/js/external/*",
+    "templates/*"
+]
+"cogip.tools.server" = [
+    "static/css/*",
+    "static/css/purged/*",
+    "static/img/*",
+    "static/js/*",
+    "static/js/external/*",
+    "templates/*"
+]
+"cogip.tools.beaconcam" = [
+    "data/*"
+]
+"cogip.tools.robotcam.data" = [
+    "*"
+]
