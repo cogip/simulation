@@ -14,6 +14,7 @@ class Context(metaclass=Singleton):
 
     Attributes:
         copilot_sids:       map Copilot sid (str) to robot id (int)
+        avoidance_sids:     map Avoidance sid (str) to robot id (int)
         detector_sids:      map Detector sid (str) to robot id (int)
         detector_modes:     map robot id to Detector mode
         robotcam_sids:      map Robotcam sid (str) to robot id (int)
@@ -24,6 +25,7 @@ class Context(metaclass=Singleton):
         virtual_robots:     list of virtual robots connected
     """
     copilot_sids = bidict()
+    avoidance_sids = bidict()
     detector_sids = bidict()
     detector_modes: Dict[int, Literal["detection", "emulation"]] = field(default_factory=dict)
     robotcam_sids = bidict()

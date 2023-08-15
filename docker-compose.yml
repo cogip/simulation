@@ -81,6 +81,8 @@ x-robot: &robot
     << : *env-common
     COPILOT_RELOAD: ${COPILOT_RELOAD:-0}
     COPILOT_DEBUG: ${COPILOT_DEBUG:-0}
+    AVOIDANCE_RELOAD: ${AVOIDANCE_RELOAD:-0}
+    AVOIDANCE_DEBUG: ${AVOIDANCE_DEBUG:-0}
     DETECTOR_RELOAD: ${DETECTOR_RELOAD:-0}
     DETECTOR_DEBUG: ${DETECTOR_DEBUG:-0}
     DETECTOR_UART_PORT: ${DETECTOR_UART_PORT:-}
@@ -97,6 +99,7 @@ x-robot: &robot
     - |
       wait-for-it -t 0 $${COGIP_SERVER_HOST}:$${COGIP_SERVER_PORT}
       cogip-copilot --serial-port /var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      cogip-avoidance &
       cogip-detector &
       sleep infinity
   depends_on:
