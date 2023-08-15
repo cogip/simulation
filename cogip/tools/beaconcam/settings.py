@@ -6,9 +6,9 @@ from .codecs import VideoCodec
 
 
 class Settings(BaseSettings):
-    server_url: AnyHttpUrl = Field(
-        "http://localhost:8080",
-        description="Server URL"
+    socketio_server_url: AnyHttpUrl = Field(
+        "http://localhost:8090",
+        description="Socket.IO Server URL"
     )
     camera_device: Path = Field(
         default="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN0001-video-index0",

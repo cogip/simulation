@@ -53,6 +53,8 @@ class CopilotNamespace(socketio.AsyncNamespace):
         """
         Callback on reset event.
         """
+        if sid not in self._context.copilot_sids:
+            return
         robot_id = self._context.copilot_sids[sid]
         await self.emit("reset", robot_id, namespace="/planner")
         await self._recorder.async_do_rollover()
@@ -70,7 +72,8 @@ class CopilotNamespace(socketio.AsyncNamespace):
         """
         Callback on pose reached message.
         """
-        robot_id = self._context.copilot_sids[sid]
+        if not (robot_id := self._context.copilot_sids.get(sid)):
+            return
         await self.emit("pose_reached", robot_id, namespace="/planner")
 
     async def on_menu(self, sid, menu):

@@ -127,6 +127,7 @@ FROM common as beacon
 
 # Enable COGIP services
 RUN systemctl enable server
+RUN systemctl enable dashboard
 RUN systemctl enable planner
 RUN systemctl enable beaconcam
 

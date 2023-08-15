@@ -75,8 +75,7 @@ class CameraHandler():
             return True
 
         self.sio.connect(
-            self.settings.server_url,
-            socketio_path="sio/socket.io",
+            self.settings.socketio_server_url,
             namespaces=["/beaconcam"]
         )
         return True

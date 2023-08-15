@@ -1,35 +1,23 @@
-from pathlib import Path
-from typing import Any, Dict
+import os
+from typing import Any
 
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 from pydantic import ValidationError
 import socketio
 from socketio.exceptions import ConnectionRefusedError
-from uvicorn.main import Server as UvicornServer
 
 from cogip import models
-from . import context, logger, namespaces, routes
-
-
-def create_app() -> FastAPI:
-    server = Server()
-    return server.app
+from . import context, logger, namespaces
 
 
 class Server:
     _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
-    _original_uvicorn_exit_handler = UvicornServer.handle_exit  # Backup of original exit handler to overload it
 
     def __init__(self):
         """
         Class constructor.
 
-        Create FastAPI application and SocketIO server.
+        Create SocketIO server.
         """
-        # Create FastAPI application
-        self.app = FastAPI(title="COGIP Web Monitor", debug=False)
         self.sio = socketio.AsyncServer(
             always_connect=False,
             async_mode="asgi",
@@ -37,6 +25,7 @@ class Server:
             logger=False,
             engineio_logger=False
         )
+        self.app = socketio.ASGIApp(self.sio)
         self.sio.register_namespace(namespaces.DashboardNamespace())
         self.sio.register_namespace(namespaces.MonitorNamespace())
         self.sio.register_namespace(namespaces.CopilotNamespace(self))
@@ -45,27 +34,11 @@ class Server:
         self.sio.register_namespace(namespaces.RobotcamNamespace())
         self.sio.register_namespace(namespaces.BeaconcamNamespace())
 
-        # Overload default Uvicorn exit handler
-        UvicornServer.handle_exit = self.handle_exit
-
-        self._context = context.Context()
-        self._root_menu = models.ShellMenu(name="Root Menu", entries=[])
-        self._context.tool_menus["root"] = self._root_menu
-        self._context.current_tool_menu = "root"
-
-        # Create SocketIO server and mount it in /sio
-        self.sio_app = socketio.ASGIApp(self.sio)
-        self.app.mount("/sio", self.sio_app)
-
-        # Mount static files
-        current_dir = Path(__file__).parent
-        self.app.mount("/static", StaticFiles(directory=current_dir / "static"), name="static")
-
-        # Create HTML templates
-        self.templates = Jinja2Templates(directory=current_dir / "templates")
-
-        # Register routes
-        self.app.include_router(routes.RootRouter(self.templates, self.sio), prefix="")
+        self.robot_id = os.environ.get("ROBOT_ID", 0)
+        self.context = context.Context()
+        self.root_menu = models.ShellMenu(name="Root Menu", entries=[])
+        self.context.tool_menus["root"] = self.root_menu
+        self.context.current_tool_menu = "root"
 
         @self.sio.event
         def connect(sid, environ, auth):
@@ -76,13 +49,7 @@ class Server:
         def catch_all(event, sid, data):
             logger.warning(f"A client tried to send data to namespace / (sid={sid}, event={event})")
 
-    @staticmethod
-    def handle_exit(*args, **kwargs):
-        """Overload function for Uvicorn handle_exit"""
-        Server._exiting = True
-        Server._original_uvicorn_exit_handler(*args, **kwargs)
-
-    async def register_menu(self, namespace: str, data: Dict[str, Any]) -> None:
+    async def register_menu(self, namespace: str, data: dict[str, Any]) -> None:
         name = data.get("name")
         if not name:
             logger.warning(f"register_menu: missing 'name' in data: {data}")
@@ -99,16 +66,13 @@ class Server:
 
         ns_name = f"{namespace}/{name}"
         entry = models.MenuEntry(cmd=ns_name, desc=f"{menu.name} Menu")
-        if ns_name not in self._context.tool_menus:
-            self._root_menu.entries.append(entry)
+        if ns_name not in self.context.tool_menus:
+            self.root_menu.entries.append(entry)
         exit_entry = models.MenuEntry(cmd="exit", desc="Exit Menu")
         menu.entries.append(exit_entry)
-        self._context.tool_menus[ns_name] = menu
+        self.context.tool_menus[ns_name] = menu
         await self.sio.emit(
             "tool_menu",
-            self._context.tool_menus[self._context.current_tool_menu].dict(),
+            self.context.tool_menus[self.context.current_tool_menu].dict(),
             namespace="/dashboard"
         )
-
-    async def unregister_menu(self, name: str) -> None:
-        pass

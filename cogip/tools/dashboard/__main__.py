@@ -1,86 +1,72 @@
 #!/usr/bin/env python3
-import asyncio
 import logging
 from pathlib import Path
 
 import typer
+import uvicorn
 from watchfiles import PythonFilter, run_process
 
 from . import logger
-from .copilot import Copilot
 
 
 def changes_callback(changes):
     logger.info(f"Changes detected: {changes}")
 
 
-def run(*args, **kwargs) -> None:
-    copilot = Copilot(*args, **kwargs)
-    asyncio.run(copilot.run())
-
-
 def main_opt(
-    server_url: str = typer.Option(
-        "http://localhost:8090",
-        help="Socket.IO Server URL",
-        envvar="COGIP_SOCKETIO_SERVER_URL"
-    ),
     id: int = typer.Option(
-        1,
+        0,
         "-i", "--id",
-        min=1,
+        min=0,
+        max=9,
         help="Robot ID.",
-        envvar=["ROBOT_ID", "COPILOT_ID"]
-    ),
-    serial_port: Path = typer.Option(
-        "/dev/ttyUSB0",
-        "-p", "--serial-port",
-        help="Serial port connected to STM32 device",
-        envvar="COPILOT_SERIAL_PORT"
-    ),
-    serial_baud: int = typer.Option(
-        230400,
-        "-b", "--serial-baudrate",
-        help="Baud rate",
-        envvar="COPILOT_BAUD_RATE"
+        envvar=["ROBOT_ID", "DASHBOARD_ID"]
     ),
     reload: bool = typer.Option(
         False,
         "-r", "--reload",
         help="Reload app on source file changes",
-        envvar=["COGIP_RELOAD", "COPILOT_RELOAD"]
+        envvar=["COGIP_RELOAD", "DASHBOARD_RELOAD"]
     ),
     debug: bool = typer.Option(
         False,
         "-d", "--debug",
         help="Turn on debug messages",
-        envvar=["COGIP_DEBUG", "COPILOT_DEBUG"]
+        envvar=["COGIP_DEBUG", "DASHBOARD_DEBUG"]
     )
 ):
     if debug:
         logger.setLevel(logging.DEBUG)
 
-    args = (server_url, id, serial_port, serial_baud)
+    uvicorn_args = ("cogip.tools.dashboard.app:app",)
+    uvicorn_kwargs = {
+        "host": "0.0.0.0",
+        "port": 8080 + id,
+        "workers": 1,
+        "log_level": "warning"
+    }
+
     if reload:
         watch_dir = Path(__file__).parent.parent.parent
         run_process(
             watch_dir,
-            target=run,
-            args=args,
+            target=uvicorn.run,
+            args=uvicorn_args,
+            kwargs=uvicorn_kwargs,
             callback=changes_callback,
             watch_filter=PythonFilter(),
             debug=False
         )
     else:
-        run(*args)
+        uvicorn.run(*uvicorn_args, **uvicorn_kwargs)
 
 
 def main():
     """
-    Launch COGIP Copilot.
+    Launch COGIP Dashboard.
 
     During installation of the simulation tools, `setuptools` is configured
-    to create the `cogip-copilot` script using this function as entrypoint.
+    to create the `cogip-dashboard` script using this function as entrypoint.
     """
     typer.run(main_opt)
 
