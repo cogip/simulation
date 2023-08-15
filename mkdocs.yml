@@ -12,7 +12,7 @@ theme:
 
 nav:
   - Overview: index.md
-  - Installation: install.md
+  - Setup: install.md
   - Tools:
     - usage/server.md
     - usage/planner.md

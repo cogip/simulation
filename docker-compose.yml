@@ -1,0 +1,261 @@
+x-build-console: &build-console
+  build:
+    context: .
+    target: cogip-console
+
+x-build-gui: &build-gui
+  build:
+    context: .
+    target: cogip-gui
+
+x-build-firmware: &build-firmware
+  build:
+    context: .
+    target: cogip-firmware
+
+x-env-common: &env-common
+  COGIP_SERVER_HOST: beacon
+  COGIP_SERVER_PORT: 8080
+  COGIP_SERVER_URL: http://beacon:8080
+
+x-vol-cogip: &vol-cogip
+  "./cogip:/src/cogip"
+
+x-vol-run: &vol-run
+  "run:/var/run/cogip"
+
+x-vol-pts: &vol-pts
+  "/dev/pts:/dev/pts"
+
+x-vol-vscode: &vol-vscode
+  "vscode:/root/.vscode-server"
+
+x-volumes-common: &volumes-common
+  volumes:
+    - *vol-cogip
+    - *vol-run
+    - *vol-pts
+    - *vol-vscode
+
+x-extra-hosts-common: &extra-hosts-common
+  extra_hosts:
+    host.docker.internal: host-gateway
+
+x-socat: &socat
+  <<: *build-console
+  volumes:
+    - *vol-run
+    - *vol-pts
+  command:
+    - /bin/sh
+    - -x
+    - -c
+    - |
+      socat -d -d pty,raw,echo=0,link=/var/run/cogip/ptySTM32-$${ROBOT_ID} pty,raw,echo=0,link=/var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      sleep infinity
+
+x-firmware: &firmware
+  <<: *build-firmware
+  environment: &env-firmware
+    FIRMWARE_APP: ${FIRMWARE_APP:-cup2023}
+    FIRMWARE_BOARD: ${FIRMWARE_BOARD:-cogip-native}
+  stdin_open: true
+  tty: true
+  working_dir: /simulation/submodules/mcu-firmware
+  volumes:
+    - *vol-run
+    - *vol-pts
+    - *vol-vscode
+    - ".:/simulation"
+  command:
+    - /bin/sh
+    - -x
+    - -c
+    - |
+      git config --global user.email "cogip35@gmail.com"
+      git config --global user.name "COGIP Team"
+      git config --global --add safe.directory /simulation/submodules/RIOT
+      make distclean-riot-patches
+      make riot-patches
+      make -C applications/$${FIRMWARE_APP} BOARD=$${FIRMWARE_BOARD} PORT="-c /tmp -c /var/run/cogip/ptySTM32-$${ROBOT_ID}" term
+  depends_on: &depends-firmware
+      make-firmware:
+        condition: service_completed_successfully
+
+x-robot: &robot
+  <<: [*build-console, *volumes-common, *extra-hosts-common]
+  hostname: robot1
+  environment: &env-robot
+    << : *env-common
+    COPILOT_RELOAD:
+    COPILOT_DEBUG:
+    DETECTOR_RELOAD:
+    DETECTOR_DEBUG:
+    DETECTOR_UART_PORT:
+    DETECTOR_UART_SPEED:
+    DETECTOR_MIN_DISTANCE:
+    DETECTOR_MAX_DISTANCE:
+    DETECTOR_BEACON_RADIUS:
+    DETECTOR_REFRESH_INTERVAL:
+    DETECTOR_EMULATION: 1
+  command:
+    - /bin/sh
+    - -x
+    - -c
+    - |
+      wait-for-it -t 0 $${COGIP_SERVER_HOST}:$${COGIP_SERVER_PORT}
+      cogip-copilot --serial-port /var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      cogip-detector &
+      sleep infinity
+  depends_on:
+    - beacon
+
+services:
+  beacon:
+    <<: [*build-console, *extra-hosts-common]
+    hostname: beacon
+    ports:
+      - "8080:8080"
+    environment:
+      << : *env-common
+      ROBOT_ID: 0
+      SERVER_DEBUG:
+      SERVER_RELOAD:
+      PLANNER_DEBUG:
+      PLANNER_RELOAD:
+      PLANNER_ROBOT_WIDTH:
+      PLANNER_OBSTACLE_RADIUS:
+      PLANNER_OBSTACLE_BB_MARGIN:
+      PLANNER_OBSTACLE_BB_VERTICES:
+      PLANNER_OBSTACLE_SENDER_INTERVAL:
+      PLANNER_PATH_REFRESH_INTERVAL:
+    volumes:
+      - *vol-cogip
+      - *vol-vscode
+      - "./records:/var/tmp/cogip"
+    command:
+      - /bin/sh
+      - -x
+      - -c
+      - |
+        cogip-server &
+        cogip-planner &
+        sleep infinity
+
+  monitor:
+    << : [*build-gui, *extra-hosts-common]
+    hostname: monitor
+    environment:
+      << : *env-common
+      DISPLAY:
+      QTWEBENGINE_DISABLE_SANDBOX: 1
+      XDG_RUNTIME_DIR:
+    command:
+      - /bin/sh
+      - -x
+      - -c
+      - |
+        wait-for-it -t 0 $${COGIP_SERVER_HOST}:$${COGIP_SERVER_PORT}
+        cogip-monitor &
+        sleep infinity
+    working_dir: /src
+    depends_on:
+      - beacon
+    volumes:
+      - *vol-cogip
+      - *vol-vscode
+      - "./assets:/src/assets"
+      - "/tmp/.X11-unix/:/tmp/.X11-unix/"
+      - "/dev/dri/:/dev/dri/"
+      - "$XDG_RUNTIME_DIR:$XDG_RUNTIME_DIR"
+    profiles:
+      - monitor
+
+  socat1:
+    << : *socat
+    hostname: socat1
+    environment:
+      ROBOT_ID: 1
+    profiles:
+      - robot1
+
+  socat2:
+    << : *socat
+    hostname: socat2
+    environment:
+      ROBOT_ID: 2
+    profiles:
+      - robot2
+
+  make-firmware:
+    <<: *build-firmware
+    environment:
+      << : *env-firmware
+    working_dir: /simulation/submodules/mcu-firmware
+    volumes:
+      - ".:/simulation"
+    command:
+      - /bin/sh
+      - -x
+      - -c
+      - |
+        git config --global user.email "cogip35@gmail.com"
+        git config --global user.name "COGIP Team"
+        git config --global --add safe.directory /simulation/submodules/RIOT
+        make distclean-riot-patches
+        make riot-patches
+        make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
+
+  firmware1:
+    << : *firmware
+    hostname: firmware1
+    environment:
+      << : *env-firmware
+      ROBOT_ID: 1
+    depends_on:
+      << : *depends-firmware
+      socat1:
+        condition: service_started
+    profiles:
+      - robot1
+
+  firmware2:
+    << : *firmware
+    hostname: firmware2
+    environment:
+      << : *env-firmware
+      ROBOT_ID: 2
+    depends_on:
+      << : *depends-firmware
+      socat2:
+        condition: service_started
+    profiles:
+      - robot2
+
+  robot1:
+    << : *robot
+    hostname: robot1
+    environment:
+      << : *env-robot
+      ROBOT_ID: 1
+    depends_on:
+      - socat1
+      - beacon
+    profiles:
+      - robot1
+
+  robot2:
+    << : *robot
+    hostname: robot2
+    environment:
+      << : *env-robot
+      ROBOT_ID: 2
+    depends_on:
+      - socat2
+      - beacon
+    profiles:
+      - robot2
+
+volumes:
+  vscode:
+  run:
