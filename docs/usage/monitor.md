@@ -42,14 +42,14 @@ The monitor provides a graphical interface, featuring:
 To connect the `Monitor` to the `Server` running on the same development PC, run:
 
 ```bash
-cogip-monitor http://localhost:8080
+cogip-monitor http://localhost:8090
 ```
 
 To connect the `Monitor` to the `Server` running on the Raspberry Pi
 in the central beacon, run:
 
 ```bash
-cogip-monitor http://cogip-beacon
+cogip-monitor http://cogip-beacon:8090
 ```
 
 !!! note "Adapt URL and port depending on `Server` configuration"
@@ -63,7 +63,7 @@ Usage: cogip-monitor [URL]
   Launch COGIP Monitor.
 
 Arguments:
-  [URL]        URL to Copilot socket.io/web server
-               env var: COGIP_SERVER_URL
-               default: http://localhost:8080
+  [URL]        Socket.IO Server URL
+               env var: COGIP_SOCKETIO_SERVER_URL
+               default: http://localhost:8090
 ```

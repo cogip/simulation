@@ -137,7 +137,6 @@ class Detector:
             try:
                 self._sio.connect(
                     self._server_url,
-                    socketio_path="sio/socket.io",
                     namespaces=["/detector"],
                     auth={
                         "id": self._robot_id,

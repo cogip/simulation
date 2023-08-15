@@ -11,9 +11,9 @@ class Settings(BaseSettings):
         ge=1,
         help="Robot ID"
     )
-    server_url: AnyHttpUrl = Field(
-        "http://localhost:8080",
-        description="Server URL"
+    socketio_server_url: AnyHttpUrl = Field(
+        "http://localhost:8090",
+        description="Socket.IO Server URL"
     )
     camera_device: Path = Field(
         default="/dev/v4l/by-id/usb-HBV_HD_CAMERA_HBV_HD_CAMERA-video-index0",

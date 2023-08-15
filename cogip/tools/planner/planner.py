@@ -47,7 +47,7 @@ class Planner:
         Class constructor.
 
         Arguments:
-            server_url: Server URL
+            server_url: Socket.IO Server URL
             robot_width: Width of the robot (in )
             obstacle_radius: Radius of a dynamic obstacle (in mm)
             obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
@@ -138,7 +138,6 @@ class Planner:
             try:
                 await self._sio.connect(
                     self._server_url,
-                    socketio_path="sio/socket.io",
                     namespaces=["/planner"]
                 )
             except socketio.exceptions.ConnectionError:

@@ -30,7 +30,7 @@ class Avoidance:
         Class constructor.
 
         Arguments:
-            server_url: Server URL
+            server_url: Socket.IO Server URL
             id: robot id
             robot_width: Width of the robot (in )
             obstacle_radius: Radius of a dynamic obstacle (in mm)
@@ -80,7 +80,6 @@ class Avoidance:
             try:
                 await self._sio.connect(
                     self._server_url,
-                    socketio_path="sio/socket.io",
                     namespaces=["/avoidance"],
                     auth={"id": self._id}
                 )

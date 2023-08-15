@@ -20,9 +20,9 @@ from .socketiocontroller import SocketioController
 
 def main_opt(
         url: str = typer.Argument(
-            "http://localhost:8080",
-            envvar="COGIP_SERVER_URL",
-            help="Server URL")) -> None:
+            "http://localhost:8090",
+            envvar="COGIP_SOCKETIO_SERVER_URL",
+            help="Socket.IO Server URL")) -> None:
     """
     Launch COGIP Monitor.
     """

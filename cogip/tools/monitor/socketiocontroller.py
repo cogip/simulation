@@ -104,7 +104,7 @@ class SocketioController(QtCore.QObject):
     def try_connect(self):
         while self._retry_connection:
             try:
-                self.sio.connect(self.url, socketio_path="sio/socket.io", namespaces=["/monitor", "/dashboard"])
+                self.sio.connect(self.url, namespaces=["/monitor", "/dashboard"])
             except socketio.exceptions.ConnectionError as ex:
                 print(ex)
                 time.sleep(2)

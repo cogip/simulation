@@ -25,9 +25,9 @@ $ cogip-planner --help
 Usage: cogip-planner [OPTIONS]
 
 Options:
-  --server-url TEXT               Server URL
-                                  env var: COGIP_SERVER_URL
-                                  default: http://localhost:8080
+  --server-url TEXT               Socket.IO Server URL
+                                  env var: COGIP_SOCKETIO_SERVER_URL
+                                  default: http://localhost:8090
 
   --obstacle-radius INTEGER       Radius of a dynamic obstacle
                                   env var: PLANNER_OBSTACLE_RADIUS

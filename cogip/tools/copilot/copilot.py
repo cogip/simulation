@@ -100,7 +100,6 @@ class Copilot:
             try:
                 await self._sio.connect(
                     self._server_url,
-                    socketio_path="sio/socket.io",
                     namespaces=["/copilot"],
                     auth={"id": self._id}
                 )
