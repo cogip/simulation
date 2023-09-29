@@ -54,7 +54,7 @@ class Dashboard(QtWidgets.QDialog):
 
         self.browser = QtWebEngineWidgets.QWebEngineView()
         self.browser.load(QtCore.QUrl(url))
-        self.layout.addWidget(self.browser)
+        #self.layout.addWidget(self.browser)
 
         self.screen_radios[7].setChecked(True)
 
