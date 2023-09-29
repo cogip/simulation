@@ -114,9 +114,9 @@ class SpeedEnum(IntEnum):
         NORMAL:
         MAX:
     """
-    LOW = 0
-    NORMAL = 1
-    MAX = 2
+    LOW = 33
+    NORMAL = 66
+    MAX = 100
 
 
 class PathPose(Pose):
