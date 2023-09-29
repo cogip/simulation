@@ -59,6 +59,7 @@ RUN apt-get update && \
     gcc-arm-none-eabi \
     gcc-multilib \
     gdb-multiarch \
+    git \
     libstdc++-arm-none-eabi-newlib \
     make \
     ncat netcat-openbsd \

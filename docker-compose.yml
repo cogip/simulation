@@ -53,7 +53,7 @@ x-socat: &socat
 x-firmware: &firmware
   <<: *build-firmware
   environment: &env-firmware
-    FIRMWARE_APP: ${FIRMWARE_APP:-app_test}
+    FIRMWARE_APP: ${FIRMWARE_APP:-cup2023}
     FIRMWARE_BOARD: ${FIRMWARE_BOARD:-cogip-native}
   stdin_open: true
   tty: true
@@ -69,6 +69,8 @@ x-firmware: &firmware
     - -x
     - -c
     - |
+      git config --global --add safe.directory /RIOT
+      make riot-patches
       make -C applications/$${FIRMWARE_APP} BOARD=$${FIRMWARE_BOARD} PORT="-c /tmp -c /var/run/cogip/ptySTM32-$${ROBOT_ID}" term
   depends_on: &depends-firmware
       make-firmware:
@@ -198,6 +200,8 @@ services:
       - -x
       - -c
       - |
+        git config --global --add safe.directory /RIOT
+        make riot-patches
         make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
 
   firmware1:
