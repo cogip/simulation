@@ -9,7 +9,6 @@ from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 
 from cogip.widgets.chartsview import ChartsView
-from cogip.widgets.dashboard import Dashboard
 from cogip.widgets.gameview import GameView
 from cogip.widgets.help import HelpCameraControlDialog
 from cogip.widgets.actuators import ActuatorsDialog
@@ -211,9 +210,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.game_view = GameView()
         self.central_layout.insertWidget(1, self.game_view, 10)
 
-        # Dashboard widget
-        self.dashboard = Dashboard(url, self)
-
         # Help controls widget
         self.help_camera_control = HelpCameraControlDialog(self)
 
@@ -223,19 +219,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # Actuators control windows
         self.actuators_dialogs: dict[int, ActuatorsDialog] = {}
 
-        # Add view action
-        self.view_dashboard_action = QtGui.QAction('Dashboard', self)
-        self.view_dashboard_action.setStatusTip('Display/Hide dashboard')
-        self.view_dashboard_action.setCheckable(True)
-        self.view_dashboard_action.toggled.connect(self.dashboard_toggled)
-        self.dashboard.closed.connect(partial(self.view_dashboard_action.setChecked, False))
-        self.view_menu.addAction(self.view_dashboard_action)
-
         # Add help action
         self.help_camera_control_action = QtGui.QAction('Camera control', self)
         self.help_camera_control_action.setStatusTip('Display camera control help')
         self.help_camera_control_action.triggered.connect(self.display_help_camera_control)
-        self.dashboard.closed.connect(partial(self.help_camera_control_action.setChecked, False))
         help_menu.addAction(self.help_camera_control_action)
 
         self.readSettings()
@@ -262,23 +249,6 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             view.close()
 
-    @qtSlot(bool)
-    def dashboard_toggled(self, checked: bool):
-        """
-        Qt Slot
-
-        Show/hide the dashboard.
-
-        Arguments:
-            checked: Show action was checked or unchecked
-        """
-        if checked:
-            self.dashboard.show()
-            self.dashboard.raise_()
-            self.dashboard.activateWindow()
-        else:
-            self.dashboard.close()
-
     def update_view_menu(self):
         """
         Rebuild all the view menu to update the calibration charts sub-menu.
@@ -293,8 +263,6 @@ class MainWindow(QtWidgets.QMainWindow):
                 if view.isVisible():
                     action.setChecked(True)
                 view.closed.connect(partial(action.setChecked, False))
-
-        self.view_menu.addAction(self.view_dashboard_action)
 
     def add_robot(self, robot_id: int, virtual: bool) -> None:
         """
@@ -737,7 +705,6 @@ class MainWindow(QtWidgets.QMainWindow):
         settings.setValue("windowState", self.saveState())
         for robot_id, view in self.charts_view.items():
             settings.setValue(f"charts_checked/{robot_id}", view.isVisible())
-        settings.setValue("dashboard_checked", self.view_dashboard_action.isChecked())
         settings.setValue("camera_params", json.dumps(self.game_view.get_camera_params()))
         super().closeEvent(event)
 
@@ -745,9 +712,6 @@ class MainWindow(QtWidgets.QMainWindow):
         settings = QtCore.QSettings("COGIP", "monitor")
         self.restoreGeometry(settings.value("geometry"))
         self.restoreState(settings.value("windowState"))
-        if settings.value("dashboard_checked") == "true":
-            self.dashboard_toggled(True)
-            self.view_dashboard_action.setChecked(True)
         try:
             camera_params = json.loads(settings.value("camera_params"))
             self.game_view.set_camera_params(camera_params)
