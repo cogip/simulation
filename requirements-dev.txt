@@ -6,6 +6,6 @@ mkdocs-gen-files==0.3.3
 mkdocs-literate-nav==0.4.1
 mkdocs-material==8.2.13
 mkdocstrings==0.17.0
-pymdown-extensions==9.4
+pymdown-extensions==10.0
 PySide6==6.4.0.1
 toposort==1.7
