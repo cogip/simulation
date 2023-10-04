@@ -95,10 +95,10 @@ class EventFilter(QtCore.QObject):
             self.game_view.translate(0, 0, event.angleDelta().y() / 5)
 
         elif isinstance(event, QtGui.QMouseEvent):
-            new_pos = event.globalPos()
+            new_pos = event.globalPosition().toPoint()
             if not self._last_mouse_pos:
                 self._last_mouse_pos = new_pos
-            new_pos = event.globalPos()
+            new_pos = event.globalPosition().toPoint()
             delta = new_pos - self._last_mouse_pos
             self._last_mouse_pos = new_pos
 
@@ -440,10 +440,9 @@ class GameView(QtWidgets.QWidget):
             return
         path.set_points([])
 
-    def new_robot_state(self, robot_id: int, new_state: models.RobotState) -> None:
+    def new_robot_path(self, robot_id: int, new_path: list[models.Vertex]) -> None:
         """
-        Function called when robot state is updated.
-        Update computed path.
+        Function called when robot path is updated.
 
         Arguments:
             robot_id: ID of the robot
@@ -452,9 +451,9 @@ class GameView(QtWidgets.QWidget):
         path = self.path.get(robot_id)
         if not path:
             return
-        for vertex in new_state.path:
+        for vertex in new_path:
             vertex.z = 20
-        path.set_points(new_state.path)
+        path.set_points(new_path)
 
     def pressed(self, pick: Qt3DRender.QPickEvent):
         """

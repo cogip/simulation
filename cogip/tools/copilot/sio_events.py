@@ -1,4 +1,5 @@
 import asyncio
+import platform
 from typing import Any, Dict
 
 import polling2
@@ -6,7 +7,7 @@ from pydantic import parse_obj_as
 import socketio
 
 from cogip import models
-from cogip.models.actuators import ServoCommand, PumpCommand, ActuatorCommand
+from cogip.models.actuators import ServoCommand, PumpCommand, PositionalActuatorCommand, ActuatorCommand
 from . import copilot, logger
 from .menu import menu
 from .messages import PB_ActuatorCommand, PB_Command, PB_PathPose, PB_Controller
@@ -33,7 +34,7 @@ class SioEvents(socketio.AsyncClientNamespace):
             poll_forever=True
         )
         logger.info("Connected to cogip-server")
-        await self.emit("connected", self._copilot.id)
+        await self.emit("connected", (self._copilot.id, (platform.machine() != "aarch64")))
 
         if self._copilot.shell_menu:
             await self.emit("menu", self._copilot.shell_menu.dict(exclude_defaults=True, exclude_unset=True))
@@ -120,6 +121,8 @@ class SioEvents(socketio.AsyncClientNamespace):
             command.pb_copy(pb_command.servo)
         elif isinstance(command, PumpCommand):
             command.pb_copy(pb_command.pump)
+        elif isinstance(command, PositionalActuatorCommand):
+            command.pb_copy(pb_command.positional_actuator)
         await self._copilot.pbcom.send_serial_message(copilot.actuators_command_uuid, pb_command)
 
     async def on_config_updated(self, config: Dict[str, Any]) -> None:
@@ -140,3 +143,31 @@ class SioEvents(socketio.AsyncClientNamespace):
         pb_controller = PB_Controller()
         pb_controller.id = controller
         await self._copilot.pbcom.send_serial_message(copilot.controller_uuid, pb_controller)
+
+    async def on_game_start(self):
+        """
+        Callback on game_start message.
+        Forward to firmware.
+        """
+        await self._copilot.pbcom.send_serial_message(copilot.game_start_uuid, None)
+
+    async def on_game_end(self):
+        """
+        Callback on game_end message.
+        Forward to firmware.
+        """
+        await self._copilot.pbcom.send_serial_message(copilot.game_end_uuid, None)
+
+    async def on_game_reset(self):
+        """
+        Callback on game_reset message.
+        Forward to firmware.
+        """
+        await self._copilot.pbcom.send_serial_message(copilot.game_reset_uuid, None)
+
+    async def on_brake(self):
+        """
+        Callback on brake message.
+        Forward to firmware.
+        """
+        await self._copilot.pbcom.send_serial_message(copilot.brake_uuid, None)

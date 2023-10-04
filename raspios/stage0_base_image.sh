@@ -3,7 +3,7 @@ sudo -v
 
 SCRIPT=$(readlink -f $0)
 SCRIPT_DIR=`dirname $SCRIPT`
-CONFIG_FILE=${SCRIPT_DIR}/configconfig.env
+CONFIG_FILE=${SCRIPT_DIR}/config.env
 
 # Load config.env file
 if [ -f ${CONFIG_FILE} ] ; then
@@ -12,7 +12,7 @@ fi
 
 # Check variables
 if [ -z "$RASPIOS_URL" ] ; then
-    RASPIOS_URL="https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2022-04-07/2022-04-04-raspios-bullseye-arm64-lite.img.xz"
+    RASPIOS_URL="https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2023-02-22/2023-02-21-raspios-bullseye-arm64-lite.img.xz"
 fi
 
 

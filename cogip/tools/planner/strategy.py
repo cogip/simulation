@@ -10,3 +10,5 @@ class Strategy(IntEnum):
     BackAndForth = 2
     AngularSpeedTest = 3
     LinearSpeedTest = 4
+    Training = 5
+    JustMove = 6

@@ -1,1 +1,1 @@
-export PATH=/opt/pyenv/versions/3.10.7/bin:$PATH
+export PATH=/opt/pyenv/versions/3.11.2/bin:$PATH

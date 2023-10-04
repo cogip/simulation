@@ -7,7 +7,8 @@ All values are automatically verified and converted to the expected data type,
 an exception being raised if impossible.
 """
 
-from enum import auto, IntEnum
+from enum import IntEnum
+import math
 from typing import List, Union
 
 from pydantic import BaseModel
@@ -82,10 +83,10 @@ class Pose(Vertex):
 
     Attributes:
         x: X position
-        y: Y postion
+        y: Y position
         O: Rotation
     """
-    O: float = 0.0
+    O: float | None = 0.0
 
 
 class Speed(BaseModel):
@@ -113,9 +114,9 @@ class SpeedEnum(IntEnum):
         NORMAL:
         MAX:
     """
-    LOW = 0
-    NORMAL = 1
-    MAX = 2
+    LOW = 33
+    NORMAL = 66
+    MAX = 100
 
 
 class PathPose(Pose):
@@ -194,6 +195,20 @@ class DynRoundObstacle(BaseModel):
     radius: float
     bb: List[Vertex] = []
 
+    def contains(self, point: Vertex) -> bool:
+        return (point.x - self.x) * (point.x - self.x) + (point.y - self.y) * (point.y - self.y) <= self.radius ** 2
+
+    def create_bounding_box(self, bb_radius, nb_vertices):
+        self.bb = [
+            Vertex(
+                x=self.x + bb_radius * math.cos(
+                    (tmp := (i * 2 * math.pi) / nb_vertices)
+                ),
+                y=self.y + bb_radius * math.sin(tmp),
+            )
+            for i in reversed(range(nb_vertices))
+        ]
+
     def __hash__(self):
         """
         Hash function to allow this class to be used as a key in a dict.
@@ -223,7 +238,6 @@ class RobotState(BaseModel):
     cycle: int = 0
     speed_current: Speed = Speed()
     speed_order: Speed = Speed()
-    path: List[Vertex] = []
 
 
 class Obstacle(BaseModel):
@@ -261,187 +275,3 @@ class LogMessage(BaseModel):
 
 
 SerialMessage = Union[RobotState, ShellMenu, LogMessage]
-
-
-class CakeLayerID(IntEnum):
-    """
-    Enum to identify each sample
-    """
-    GREEN_FRONT_ICING_BOTTOM = auto()
-    GREEN_FRONT_ICING_MIDDLE = auto()
-    GREEN_FRONT_ICING_TOP = auto()
-    GREEN_FRONT_CREAM_BOTTOM = auto()
-    GREEN_FRONT_CREAM_MIDDLE = auto()
-    GREEN_FRONT_CREAM_TOP = auto()
-    GREEN_FRONT_SPONGE_BOTTOM = auto()
-    GREEN_FRONT_SPONGE_MIDDLE = auto()
-    GREEN_FRONT_SPONGE_TOP = auto()
-
-    GREEN_BACK_SPONGE_BOTTOM = auto()
-    GREEN_BACK_SPONGE_MIDDLE = auto()
-    GREEN_BACK_SPONGE_TOP = auto()
-    GREEN_BACK_CREAM_BOTTOM = auto()
-    GREEN_BACK_CREAM_MIDDLE = auto()
-    GREEN_BACK_CREAM_TOP = auto()
-    GREEN_BACK_ICING_BOTTOM = auto()
-    GREEN_BACK_ICING_MIDDLE = auto()
-    GREEN_BACK_ICING_TOP = auto()
-
-    BLUE_FRONT_ICING_BOTTOM = auto()
-    BLUE_FRONT_ICING_MIDDLE = auto()
-    BLUE_FRONT_ICING_TOP = auto()
-    BLUE_FRONT_CREAM_BOTTOM = auto()
-    BLUE_FRONT_CREAM_MIDDLE = auto()
-    BLUE_FRONT_CREAM_TOP = auto()
-    BLUE_FRONT_SPONGE_BOTTOM = auto()
-    BLUE_FRONT_SPONGE_MIDDLE = auto()
-    BLUE_FRONT_SPONGE_TOP = auto()
-
-    BLUE_BACK_SPONGE_BOTTOM = auto()
-    BLUE_BACK_SPONGE_MIDDLE = auto()
-    BLUE_BACK_SPONGE_TOP = auto()
-    BLUE_BACK_CREAM_BOTTOM = auto()
-    BLUE_BACK_CREAM_MIDDLE = auto()
-    BLUE_BACK_CREAM_TOP = auto()
-    BLUE_BACK_ICING_BOTTOM = auto()
-    BLUE_BACK_ICING_MIDDLE = auto()
-    BLUE_BACK_ICING_TOP = auto()
-
-
-class CakeLayerKind(IntEnum):
-    """
-    Enum for cake layers
-
-    Attributes:
-        ICING:
-        CREAM:
-        SPONGE:
-    """
-    ICING = auto()
-    CREAM = auto()
-    SPONGE = auto()
-
-
-class CakeLayerPos(IntEnum):
-    """
-    Enum for cake layer positions
-
-    Attributes:
-        TOP:
-        MIDDLE:
-        BOTTOM:
-    """
-    TOP = auto()
-    MIDDLE = auto()
-    BOTTOM = auto()
-
-
-class CakeLayer(BaseModel):
-    """
-    Contains the properties of a cake layer on the table.
-
-    Attributes:
-        id: cake layer id
-        x: X coordinate
-        y: Y coordinate
-        pos: layer position
-        kind: layer kind
-    """
-    id: CakeLayerID
-    x: float
-    y: float
-    pos: CakeLayerPos
-    kind: CakeLayerKind
-
-
-class CherryID(IntEnum):
-    """
-    Enum to identify each cherry
-    """
-    FRONT_1 = auto()
-    FRONT_2 = auto()
-    FRONT_3 = auto()
-    FRONT_4 = auto()
-    FRONT_5 = auto()
-    FRONT_6 = auto()
-    FRONT_7 = auto()
-    FRONT_8 = auto()
-    FRONT_9 = auto()
-    FRONT_10 = auto()
-
-    BACK_1 = auto()
-    BACK_2 = auto()
-    BACK_3 = auto()
-    BACK_4 = auto()
-    BACK_5 = auto()
-    BACK_6 = auto()
-    BACK_7 = auto()
-    BACK_8 = auto()
-    BACK_9 = auto()
-    BACK_10 = auto()
-
-    GREEN_1 = auto()
-    GREEN_2 = auto()
-    GREEN_3 = auto()
-    GREEN_4 = auto()
-    GREEN_5 = auto()
-    GREEN_6 = auto()
-    GREEN_7 = auto()
-    GREEN_8 = auto()
-    GREEN_9 = auto()
-    GREEN_10 = auto()
-
-    BLUE_1 = auto()
-    BLUE_2 = auto()
-    BLUE_3 = auto()
-    BLUE_4 = auto()
-    BLUE_5 = auto()
-    BLUE_6 = auto()
-    BLUE_7 = auto()
-    BLUE_8 = auto()
-    BLUE_9 = auto()
-    BLUE_10 = auto()
-
-    ROBOT_1 = auto()
-    ROBOT_2 = auto()
-    ROBOT_3 = auto()
-    ROBOT_4 = auto()
-    ROBOT_5 = auto()
-    ROBOT_6 = auto()
-    ROBOT_7 = auto()
-    ROBOT_8 = auto()
-    ROBOT_9 = auto()
-    ROBOT_10 = auto()
-
-    OPPONENT_1 = auto()
-    OPPONENT_2 = auto()
-    OPPONENT_3 = auto()
-    OPPONENT_4 = auto()
-    OPPONENT_5 = auto()
-    OPPONENT_6 = auto()
-    OPPONENT_7 = auto()
-    OPPONENT_8 = auto()
-    OPPONENT_9 = auto()
-    OPPONENT_10 = auto()
-
-
-class CherryLocation(IntEnum):
-    """
-    Enum for cherry locations
-
-    Attributes:
-        TOP:
-        MIDDLE:
-        BOTTOM:
-        RACK:
-        ROBOT:
-        OPPONENT:
-        BASKET:
-    """
-    TOP = auto()
-    MIDDLE = auto()
-    BOTTOM = auto()
-    RACK = auto()
-    ROBOT = auto()
-    OPPONENT = auto()
-    BASKET = auto()

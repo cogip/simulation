@@ -70,11 +70,14 @@
     </div>
 
     <footer class="footer mt-auto bg-dark">
-      <div class="container pt-2">
+      <div class="container-lg pt-2">
         <span class="text-muted" style="float: left" id="connection">
-          <pre>Disconnected.</pre>
+          <pre><img src="{{ url_for('static', path='img/cross_red_circle.svg') }}" /></pre>
         </span>
-        <span class="text-muted" style="float: right" id="msg"> </span>
+        <span class="text-muted" style="float: right" id="state">
+          <pre id="state_robot_1"></pre>
+          <pre id="state_robot_2"></pre>
+        </span>
       </div>
     </footer>
 
@@ -197,23 +200,20 @@
             virtualKeyboard._actualize();
           })
           .on("pose_current", function (robot_id, msg) {
-            if (robot_id == 1) {
-              drawModule.updatePoseCurrent(msg);
-            }
+            drawModule.updatePoseCurrent(robot_id, msg);
           })
           .on("pose_order", function (robot_id, msg) {
-            if (robot_id == 1) {
-              drawModule.updatePoseOrder(msg);
-            }
+            drawModule.updatePoseOrder(robot_id, msg);
           })
           .on("obstacles", function (msg) {
             drawModule.updateObstacles(msg);
           })
           .on("state", function (robot_id, msg) {
-            if (robot_id == 1) {
-              drawModule.displayMsg(msg); // uses message to display information in bottom page
-              drawModule.drawBoardElement(msg); // move robot
-            }
+            drawModule.displayMsg(robot_id, msg); // uses message to display information in bottom page
+            drawModule.drawBoardElement(msg); // move robot
+          })
+          .on("path", function (robot_id, msg) {
+            drawModule.recordPath(robot_id, msg);
           })
           .on("wizard", function (msg) {
             wizardModule.openWizardModal(msg, this);

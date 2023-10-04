@@ -36,9 +36,6 @@ class Detector:
             lidar_port: str | None,
             min_distance: int,
             max_distance: int,
-            obstacle_radius: int,
-            obstacle_bb_margin: int,
-            obstacle_bb_vertices: int,
             beacon_radius: int,
             refresh_interval: float,
             emulation: bool):
@@ -51,9 +48,6 @@ class Detector:
             lidar_port: Serial port connected to the Lidar
             min_distance: Minimum distance to detect an obstacle
             max_distance: Maximum distance to detect an obstacle
-            obstacle_radius: Radius of a dynamic obstacle
-            obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
-            obstacle_bb_vertices: Number of obstacle bounding box vertices
             beacon_radius: Radius of the opponent beacon support (a cylinder of 70mm diameter to a cube of 100mm width)
             refresh_interval: Interval between each update of the obstacle list (in seconds)
             emulation: force emulation mode
@@ -64,9 +58,6 @@ class Detector:
         self._properties = Properties(
             min_distance=min_distance,
             max_distance=max_distance,
-            obstacle_radius=obstacle_radius,
-            obstacle_bb_margin=obstacle_bb_margin,
-            obstacle_bb_vertices=obstacle_bb_vertices,
             beacon_radius=beacon_radius,
             refresh_interval=refresh_interval
         )
@@ -96,7 +87,7 @@ class Detector:
                 self._lidar_port = value
         if self._lidar_port:
             self._laser = ydlidar.CYdLidar()
-            self._laser.setlidaropt(ydlidar.LidarPropSerialPort, self._lidar_port)
+            self._laser.setlidaropt(ydlidar.LidarPropSerialPort, str(self._lidar_port))
             self._laser.setlidaropt(ydlidar.LidarPropSerialBaudrate, 230400)
             self._laser.setlidaropt(ydlidar.LidarPropLidarType, ydlidar.TYPE_TRIANGLE)
             self._laser.setlidaropt(ydlidar.LidarPropDeviceType, ydlidar.YDLIDAR_TYPE_SERIAL)
@@ -240,7 +231,7 @@ class Detector:
                     continue
 
                 # Only keep one angle at the middle of the consecutive angles with obstacles
-                # Set its distance to the minimun distance of the range
+                # Set its distance to the minimum distance of the range
                 last = last - 1
                 middle = first + int((last - first) / 2 + 0.5)
                 filtered_distances[middle % 360] = dist_min
@@ -250,11 +241,11 @@ class Detector:
 
         return filtered_distances
 
-    def generate_obstacles(self, robot_pose: models.Pose, distances: List[int]):
+    def generate_obstacles(self, robot_pose: models.Pose, distances: List[int]) -> list[models.Vertex]:
         """
         Update obstacles list from lidar data.
         """
-        obstacles = []
+        obstacles: list[models.Vertex] = []
 
         for angle, distance in enumerate(distances):
             if distance < self.properties.min_distance or \
@@ -268,22 +259,7 @@ class Detector:
             x = robot_pose.x + distance * math.cos(obstacle_angle)
             y = robot_pose.y + distance * math.sin(obstacle_angle)
 
-            # Compute bounding box
-            bb_radius = self.properties.obstacle_radius * (1 + self.properties.obstacle_bb_margin)
-            bb = [
-                models.Vertex(
-                    x=x + bb_radius * math.cos((tmp := (i * 2 * math.pi) / self.properties.obstacle_bb_vertices)),
-                    y=y + bb_radius * math.sin(tmp),
-                )
-                for i in range(self.properties.obstacle_bb_vertices)
-            ]
-
-            obstacles.append(models.DynRoundObstacle(
-                x=x,
-                y=y,
-                radius=self.properties.obstacle_radius,
-                bb=bb
-            ))
+            obstacles.append(models.Vertex(x=x, y=y))
 
         return obstacles
 
@@ -299,7 +275,7 @@ class Detector:
         obstacles = self.generate_obstacles(robot_pose, filtered_distances)
         logger.debug(f"Generated obstacles: {obstacles}")
         if self._sio.connected:
-            self._sio.emit("obstacles", [o.dict() for o in obstacles], namespace="/detector")
+            self._sio.emit("obstacles", [o.dict(exclude_defaults=True) for o in obstacles], namespace="/detector")
 
     def start_lidar(self):
         """

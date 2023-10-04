@@ -9,7 +9,6 @@ from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 
 from cogip.widgets.chartsview import ChartsView
-from cogip.widgets.dashboard import Dashboard
 from cogip.widgets.gameview import GameView
 from cogip.widgets.help import HelpCameraControlDialog
 from cogip.widgets.actuators import ActuatorsDialog
@@ -43,6 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_save_cake_layers: Qt signal to save cake layers
         signal_new_actuator_command: Qt signal to send actuator command to server
         signal_actuators_closed: Qt signal to stop actuators state request
+        signal_starter_changed: Qt signal emitted the starter state has changed
     """
     signal_config_updated: qtSignal = qtSignal(dict)
     signal_wizard_response: qtSignal = qtSignal(dict)
@@ -54,6 +54,7 @@ class MainWindow(QtWidgets.QMainWindow):
     signal_save_cake_layers: qtSignal = qtSignal(Path)
     signal_new_actuator_command: qtSignal = qtSignal(int, object)
     signal_actuators_closed: qtSignal = qtSignal(int)
+    signal_starter_changed: qtSignal = qtSignal(int, bool)
 
     def __init__(self, url: str, *args, **kwargs):
         """
@@ -64,9 +65,11 @@ class MainWindow(QtWidgets.QMainWindow):
         """
         super(MainWindow, self).__init__(*args, **kwargs)
         self.robot_status_row: Dict[int, int] = {}
+        self.robot_starters: dict[int, QtWidgets.QCheckBox] = {}
         self.charts_view: Dict[int, ChartsView] = {}
         self.available_chart_views: List[ChartsView] = []
         self.menu_widgets: Dict[str, Dict[str, QtWidgets.QWidget]] = {}
+        self.wizard: WizardDialog | None = None
 
         self.setWindowTitle('COGIP Monitor')
 
@@ -112,6 +115,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
         pos_angle_label = QtWidgets.QLabel("Angle")
         self.status_layout.addWidget(pos_angle_label, 0, 4)
+
+        starter_label = QtWidgets.QLabel("Starter")
+        self.status_layout.addWidget(starter_label, 0, 5)
 
         # Actions
         # Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons
@@ -204,9 +210,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.game_view = GameView()
         self.central_layout.insertWidget(1, self.game_view, 10)
 
-        # Dashboard widget
-        self.dashboard = Dashboard(url, self)
-
         # Help controls widget
         self.help_camera_control = HelpCameraControlDialog(self)
 
@@ -216,19 +219,10 @@ class MainWindow(QtWidgets.QMainWindow):
         # Actuators control windows
         self.actuators_dialogs: dict[int, ActuatorsDialog] = {}
 
-        # Add view action
-        self.view_dashboard_action = QtGui.QAction('Dashboard', self)
-        self.view_dashboard_action.setStatusTip('Display/Hide dashboard')
-        self.view_dashboard_action.setCheckable(True)
-        self.view_dashboard_action.toggled.connect(self.dashboard_toggled)
-        self.dashboard.closed.connect(partial(self.view_dashboard_action.setChecked, False))
-        self.view_menu.addAction(self.view_dashboard_action)
-
         # Add help action
         self.help_camera_control_action = QtGui.QAction('Camera control', self)
         self.help_camera_control_action.setStatusTip('Display camera control help')
         self.help_camera_control_action.triggered.connect(self.display_help_camera_control)
-        self.dashboard.closed.connect(partial(self.help_camera_control_action.setChecked, False))
         help_menu.addAction(self.help_camera_control_action)
 
         self.readSettings()
@@ -255,23 +249,6 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             view.close()
 
-    @qtSlot(bool)
-    def dashboard_toggled(self, checked: bool):
-        """
-        Qt Slot
-
-        Show/hide the dashboard.
-
-        Arguments:
-            checked: Show action was checked or unchecked
-        """
-        if checked:
-            self.dashboard.show()
-            self.dashboard.raise_()
-            self.dashboard.activateWindow()
-        else:
-            self.dashboard.close()
-
     def update_view_menu(self):
         """
         Rebuild all the view menu to update the calibration charts sub-menu.
@@ -287,14 +264,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     action.setChecked(True)
                 view.closed.connect(partial(action.setChecked, False))
 
-        self.view_menu.addAction(self.view_dashboard_action)
-
-    def add_robot(self, robot_id: int) -> None:
+    def add_robot(self, robot_id: int, virtual: bool) -> None:
         """
         Add a new robot status bar.
 
         Parameters:
             robot_id: ID of the new robot
+            virtual: whether the robot is virtual or not
         """
         self.game_view.add_robot(robot_id)
 
@@ -328,6 +304,11 @@ class MainWindow(QtWidgets.QMainWindow):
         pos_angle_text.setFrameStyle(QtWidgets.QFrame.Panel | QtWidgets.QFrame.Sunken)
         self.status_layout.addWidget(pos_angle_text, row, 4)
 
+        self.robot_starters[robot_id] = (starter_checkbox := QtWidgets.QCheckBox())
+        self.status_layout.addWidget(starter_checkbox, row, 5)
+        starter_checkbox.setEnabled(virtual)
+        starter_checkbox.toggled.connect(partial(self.starter_toggled, robot_id))
+
         # Chart view
         view = self.charts_view.get(robot_id)
         if view is None:
@@ -358,7 +339,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if not row:
             return
 
-        for i in range(6):
+        for i in range(7):
             if not (item := self.status_layout.itemAtPosition(row, i)):
                 continue
             widget = item.widget()
@@ -543,7 +524,9 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select file to load obstacles",
             dir="",
-            filter="JSON Files (*.json)"
+            filter="JSON Files (*.json)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
         )
         if filename:
             self.signal_load_obstacles.emit(Path(filename))
@@ -559,7 +542,9 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select file to save obstacles",
             dir="",
-            filter="JSON Files (*.json)"
+            filter="JSON Files (*.json)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
         )
         if filename:
             self.signal_save_obstacles.emit(Path(filename))
@@ -575,7 +560,9 @@ class MainWindow(QtWidgets.QMainWindow):
             parent=self,
             caption="Select file to load cake layers",
             dir="",
-            filter="JSON Files (*.json)"
+            filter="JSON Files (*.json)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
         )
         if filename:
             self.signal_load_cake_layers.emit(Path(filename))
@@ -592,6 +579,8 @@ class MainWindow(QtWidgets.QMainWindow):
             caption="Select file to save cake layers",
             dir="",
             filter="JSON Files (*.json)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
         )
         if filename:
             self.signal_save_cake_layers.emit(Path(filename))
@@ -646,6 +635,7 @@ class MainWindow(QtWidgets.QMainWindow):
     @qtSlot()
     def close_wizard(self):
         if self.wizard:
+            self.wizard.response.disconnect(self.wizard_response)
             self.wizard.close()
             self.wizard = None
 
@@ -688,12 +678,26 @@ class MainWindow(QtWidgets.QMainWindow):
     def actuators_closed(self, robot_id: int):
         """
         Function called when the actuators dialog is closed.
-        Forward infomation to server, to stop emitting actuators state from the robot.
+        Forward information to server, to stop emitting actuators state from the robot.
 
         Arguments:
             robot_id: related robot id
         """
         self.signal_actuators_closed.emit(robot_id)
+
+    def planner_reset(self):
+        """
+        Reset all charts on Planner reset.
+        """
+        for chart_view in self.charts_view.values():
+            chart_view.reset()
+
+    def starter_toggled(self, robot_id: int, checked: bool):
+        self.signal_starter_changed.emit(robot_id, checked)
+
+    def starter_changed(self, robot_id: int, checked: bool):
+        if starter_checkbox := self.robot_starters.get(robot_id):
+            starter_checkbox.setChecked(checked)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         settings = QtCore.QSettings("COGIP", "monitor")
@@ -701,7 +705,6 @@ class MainWindow(QtWidgets.QMainWindow):
         settings.setValue("windowState", self.saveState())
         for robot_id, view in self.charts_view.items():
             settings.setValue(f"charts_checked/{robot_id}", view.isVisible())
-        settings.setValue("dashboard_checked", self.view_dashboard_action.isChecked())
         settings.setValue("camera_params", json.dumps(self.game_view.get_camera_params()))
         super().closeEvent(event)
 
@@ -709,9 +712,6 @@ class MainWindow(QtWidgets.QMainWindow):
         settings = QtCore.QSettings("COGIP", "monitor")
         self.restoreGeometry(settings.value("geometry"))
         self.restoreState(settings.value("windowState"))
-        if settings.value("dashboard_checked") == "true":
-            self.dashboard_toggled(True)
-            self.view_dashboard_action.setChecked(True)
         try:
             camera_params = json.loads(settings.value("camera_params"))
             self.game_view.set_camera_params(camera_params)

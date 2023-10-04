@@ -1,4 +1,5 @@
-import functools
+from datetime import datetime
+# import functools
 import json
 import math
 from multiprocessing.shared_memory import SharedMemory
@@ -6,6 +7,7 @@ from pathlib import Path
 import signal
 from threading import Thread
 from time import sleep
+import time
 
 import cv2
 import numpy as np
@@ -38,6 +40,7 @@ class CameraHandler():
     _marker_dictionary = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)  # Aruco tags dictionary
     _detector_params = cv2.aruco.DetectorParameters_create()  # Default parameters for aruco tag detection
     _last_frame: SharedMemory = None                    # Last generated frame to stream on web server
+    _frame_rate: float = 10                             # Number of images processed by seconds
     _exiting: bool = False                              # Exit requested if True
 
     def __init__(self):
@@ -49,9 +52,11 @@ class CameraHandler():
         self.settings = Settings()
         signal.signal(signal.SIGTERM, self.exit_handler)
 
+        self.record_filename: Path | None = None
+        self.record_writer: cv2.VideoWriter | None = None
+
         self.sio = socketio.Client(logger=False, engineio_logger=False)
         self.register_sio_events()
-
         Thread(target=lambda: polling2.poll(
             self.sio_connect,
             step=1,
@@ -205,8 +210,12 @@ class CameraHandler():
         """
         Read and process frames from camera.
         """
+        interval = 1.0 / self._frame_rate
+
         try:
             while not self._exiting:
+                start = time.time()
+
                 if not self._camera_capture:
                     self.open_camera()
 
@@ -225,6 +234,14 @@ class CameraHandler():
                     sleep(1)
                     continue
 
+                now = time.time()
+                duration = now - start
+                if duration > interval:
+                    logger.warning(f"Function too long: {duration} > {interval}")
+                else:
+                    wait = interval - duration
+                    time.sleep(wait)
+
         except (KeyboardInterrupt, ExitSignal):
             pass
 
@@ -240,152 +257,183 @@ class CameraHandler():
         Read one frame from camera, process it, send samples to cogip-server
         and generate image to stream.
         """
+        image_color: np.ndarray
         ret, image_color = self._camera_capture.read()
         if not ret:
             raise Exception("Camera handler: Cannot read frame.")
 
-        image_stream = image_color
+        image_stream: np.ndarray = image_color
 
-        image_gray = cv2.cvtColor(image_color, cv2.COLOR_BGR2GRAY)
+        # image_gray: np.ndarray = cv2.cvtColor(image_color, cv2.COLOR_BGR2GRAY)
 
-        if not self.settings.calibration:
-            image_stream = image_gray
+        # if not self.settings.calibration:
+        #     image_stream = image_gray
 
-        # Detect markers
-        corners, ids, rejected = cv2.aruco.detectMarkers(
-            image_gray,
-            self._marker_dictionary,
-            parameters=self._detector_params,
-            cameraMatrix=self._camera_matrix_coefficients,
-            distCoeff=self._camera_distortion_coefficients
-        )
+        # # Detect markers
+        # corners, ids, rejected = cv2.aruco.detectMarkers(
+        #     image_gray,
+        #     self._marker_dictionary,
+        #     parameters=self._detector_params,
+        #     cameraMatrix=self._camera_matrix_coefficients,
+        #     distCoeff=self._camera_distortion_coefficients
+        # )
 
-        # Draw a square around the markers
-        cv2.aruco.drawDetectedMarkers(
-            image_stream,
-            corners=corners,
-            ids=ids
-        )
+        # # Draw a square around the markers
+        # cv2.aruco.drawDetectedMarkers(
+        #     image_stream,
+        #     corners=corners,
+        #     ids=ids
+        # )
 
-        # Record coords by marker id to sort them by id
-        coords_by_id = {}
+        # # Record coords by marker id to sort them by id
+        # coords_by_id = {}
 
-        if (np.any(ids)):
-            # Estimate position of markers
-            rvecs, tvecs, marker_points = cv2.aruco.estimatePoseSingleMarkers(
-                corners,
-                markerLength=50,
-                cameraMatrix=self._camera_matrix_coefficients,
-                distCoeffs=self._camera_distortion_coefficients
-            )
+        # if (np.any(ids)):
+        #     # Estimate position of markers
+        #     rvecs, tvecs, marker_points = cv2.aruco.estimatePoseSingleMarkers(
+        #         corners,
+        #         markerLength=30,
+        #         cameraMatrix=self._camera_matrix_coefficients,
+        #         distCoeffs=self._camera_distortion_coefficients
+        #     )
 
-            for (id, rvec, tvec) in zip(ids, rvecs, tvecs):
-                # Convert marker position from local camera coordinates to world coordinates
-                id = id[0]
-                rvec = rvec[0]
-                tvec = tvec[0]
+        #     for (id, rvec, tvec) in zip(ids, rvecs, tvecs):
+        #         # Convert marker position from local camera coordinates to world coordinates
+        #         id = id[0]
+        #         rvec = rvec[0]
+        #         tvec = tvec[0]
 
-                rvec_flipped = rvec * -1
-                rotation_matrix, jacobian = cv2.Rodrigues(rvec_flipped)
+        #         rvec_flipped = rvec * -1
+        #         rotation_matrix, jacobian = cv2.Rodrigues(rvec_flipped)
 
-                sy = math.sqrt(rotation_matrix[0, 0] * rotation_matrix[0, 0] + rotation_matrix[1, 0] * rotation_matrix[1, 0])
+        #         sy = math.sqrt(rotation_matrix[0, 0] * rotation_matrix[0, 0] + rotation_matrix[1, 0] * rotation_matrix[1, 0])
 
-                if sy >= 1e-6:
-                    rot_x = math.atan2(rotation_matrix[2, 1], rotation_matrix[2, 2])
-                    rot_y = math.atan2(-rotation_matrix[2, 0], sy)
-                    rot_z = math.atan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
-                else:
-                    rot_x = math.atan2(-rotation_matrix[1, 2], rotation_matrix[1, 1])
-                    rot_y = math.atan2(-rotation_matrix[2, 0], sy)
-                    rot_z = 0
+        #         if sy >= 1e-6:
+        #             rot_x = math.atan2(rotation_matrix[2, 1], rotation_matrix[2, 2])
+        #             rot_y = math.atan2(-rotation_matrix[2, 0], sy)
+        #             rot_z = math.atan2(rotation_matrix[1, 0], rotation_matrix[0, 0])
+        #         else:
+        #             rot_x = math.atan2(-rotation_matrix[1, 2], rotation_matrix[1, 1])
+        #             rot_y = math.atan2(-rotation_matrix[2, 0], sy)
+        #             rot_z = 0
 
-                # Draw axis
-                cv2.aruco.drawAxis(
-                    image_stream,
-                    cameraMatrix=self._camera_matrix_coefficients,
-                    distCoeffs=self._camera_distortion_coefficients,
-                    rvec=rvec,
-                    tvec=tvec,
-                    length=25
-                )
+        #         # Draw axis
+        #         cv2.aruco.drawAxis(
+        #             image_stream,
+        #             cameraMatrix=self._camera_matrix_coefficients,
+        #             distCoeffs=self._camera_distortion_coefficients,
+        #             rvec=rvec,
+        #             tvec=tvec,
+        #             length=25
+        #         )
 
-                coords_by_id[id.item()] = (
-                    *[v.item() for v in tvec],
-                    math.degrees(rot_x), math.degrees(rot_y), math.degrees(rot_z)
-                )
+        #         coords_by_id[id.item()] = (
+        #             *[v.item() for v in tvec],
+        #             math.degrees(rot_x), math.degrees(rot_y), math.degrees(rot_z)
+        #         )
 
-        if self.sio.connected:
-            self.sio.emit("samples", coords_by_id, namespace="/robotcam")
+        # if self.sio.connected:
+        #     self.sio.emit("samples", coords_by_id, namespace="/robotcam")
 
-        if not self.settings.calibration:
-            # Print sample coords on image
-            for i, (id, coords) in enumerate(sorted(coords_by_id.items())):
-                tvec_str = (
-                    f"[{id:2d}] "
-                    f"X: {coords[0]: 4.0f} "
-                    f"Y: {coords[1]: 4.0f} "
-                    f"Z: {coords[2]: 4.0f} "
-                    f"0x: {coords[3]: 3.1f} "
-                    f"0y: {coords[4]: 3.1f} "
-                    f"0z: {coords[5]: 3.1f}"
-                )
-                cv2.putText(
-                    img=image_stream,
-                    text=tvec_str,
-                    org=(20, 465 - 20 * i),
-                    fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                    fontScale=0.5,
-                    color=(0, 0, 255),
-                    thickness=2,
-                    bottomLeftOrigin=False
-                )
-        elif sorted(list(coords_by_id.keys())) == list(range(6)):
-            put_text = functools.partial(
-                cv2.putText,
-                img=image_stream,
-                fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                fontScale=0.5,
-                color=(0, 0, 255),
-                thickness=1,
-                bottomLeftOrigin=False
-            )
+        # if not self.settings.calibration:
+        #     # Print sample coords on image
+        #     for i, (id, coords) in enumerate(sorted(coords_by_id.items())):
+        #         tvec_str = (
+        #             f"[{id:2d}] "
+        #             f"X: {coords[0]: 4.0f} "
+        #             f"Y: {coords[1]: 4.0f} "
+        #             f"Z: {coords[2]: 4.0f} "
+        #             f"0x: {coords[3]: 3.1f} "
+        #             f"0y: {coords[4]: 3.1f} "
+        #             f"0z: {coords[5]: 3.1f}"
+        #         )
+        #         cv2.putText(
+        #             img=image_stream,
+        #             text=tvec_str,
+        #             org=(20, 465 - 20 * i),
+        #             fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        #             fontScale=0.5,
+        #             color=(0, 0, 255),
+        #             thickness=2,
+        #             bottomLeftOrigin=False
+        #         )
+        # elif sorted(list(coords_by_id.keys())) == list(range(6)):
+        #     put_text = functools.partial(
+        #         cv2.putText,
+        #         img=image_stream,
+        #         fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+        #         fontScale=0.5,
+        #         color=(0, 0, 255),
+        #         thickness=1,
+        #         bottomLeftOrigin=False
+        #     )
 
-            x0, y0, z0, _, _, rot0 = coords_by_id[0]
-            x1, y1, z1, _, _, rot1 = coords_by_id[1]
-            x2, y2, z2, _, _, rot2 = coords_by_id[2]
-            x3, y3, z3, _, _, rot3 = coords_by_id[3]
-            x4, y4, z4, _, _, rot4 = coords_by_id[4]
-            x5, y5, z5, _, _, rot5 = coords_by_id[5]
+        #     x0, y0, z0, _, _, rot0 = coords_by_id[0]
+        #     x1, y1, z1, _, _, rot1 = coords_by_id[1]
+        #     x2, y2, z2, _, _, rot2 = coords_by_id[2]
+        #     x3, y3, z3, _, _, rot3 = coords_by_id[3]
+        #     x4, y4, z4, _, _, rot4 = coords_by_id[4]
+        #     x5, y5, z5, _, _, rot5 = coords_by_id[5]
 
-            put_text(text="rot = ", org=(20, 20))
-            put_text(text=f"{rot0:+3.1f}", org=(70, 20))
-            put_text(text=f"{rot1:+3.1f}", org=(120, 20))
-            put_text(text=f"{rot2:+3.1f}", org=(170, 20))
-            put_text(text=f"{rot3:+3.1f}", org=(220, 20))
-            put_text(text=f"{rot4:+3.1f}", org=(270, 20))
-            put_text(text=f"{rot5:+3.1f}", org=(320, 20))
+        #     put_text(text="rot = ", org=(20, 20))
+        #     put_text(text=f"{rot0:+3.1f}", org=(70, 20))
+        #     put_text(text=f"{rot1:+3.1f}", org=(120, 20))
+        #     put_text(text=f"{rot2:+3.1f}", org=(170, 20))
+        #     put_text(text=f"{rot3:+3.1f}", org=(220, 20))
+        #     put_text(text=f"{rot4:+3.1f}", org=(270, 20))
+        #     put_text(text=f"{rot5:+3.1f}", org=(320, 20))
 
-            put_text(text=f"dist(x0, x3) = {abs(x0 - x3):+3.0f}", org=(20, 50))
-            put_text(text=f"dist(x1, x4) = {abs(x1 - x4):+3.0f}", org=(20, 70))
-            put_text(text=f"dist(x2, x5) = {abs(x2 - x5):+3.0f}", org=(20, 90))
+        #     put_text(text=f"dist(x0, x3) = {abs(x0 - x3):+3.0f}", org=(20, 50))
+        #     put_text(text=f"dist(x1, x4) = {abs(x1 - x4):+3.0f}", org=(20, 70))
+        #     put_text(text=f"dist(x2, x5) = {abs(x2 - x5):+3.0f}", org=(20, 90))
 
-            put_text(text=f"dist(y0, y1) = {abs(y0 - y1):+3.0f}", org=(270, 60))
-            put_text(text=f"dist(y1, y2) = {abs(y1 - y2):+3.0f}", org=(270, 80))
+        #     put_text(text=f"dist(y0, y1) = {abs(y0 - y1):+3.0f}", org=(270, 60))
+        #     put_text(text=f"dist(y1, y2) = {abs(y1 - y2):+3.0f}", org=(270, 80))
 
-            put_text(text=f"dist(y3, y4) = {abs(y3 - y4):+3.0f}", org=(270, 110))
-            put_text(text=f"dist(y4, y5) = {abs(y4 - y5):+3.0f}", org=(270, 130))
+        #     put_text(text=f"dist(y3, y4) = {abs(y3 - y4):+3.0f}", org=(270, 110))
+        #     put_text(text=f"dist(y4, y5) = {abs(y4 - y5):+3.0f}", org=(270, 130))
 
         # Encode the frame in BMP format (larger but faster than JPEG)
+        encoded_image: np.ndarray
         ret, encoded_image = cv2.imencode(".bmp", image_stream)
 
         if not ret:
             raise Exception("Can't encode frame.")
 
-        frame = (b'--frame\r\n' b'Content-Type: image/bmp\r\n\r\n' + encoded_image.tobytes() + b'\r\n')
+        # frame = (b'--frame\r\n' b'Content-Type: image/bmp\r\n\r\n' + encoded_image.tobytes() + b'\r\n')
+        frame = encoded_image.tobytes()
         self.open_last_frame(len(frame))
 
         if self._last_frame:
             self._last_frame.buf[0:len(frame)] = frame
+
+        if self.record_writer:
+            self.record_writer.write(image_stream)
+
+    def start_video_record(self):
+        if self.record_writer:
+            self.stop_video_record()
+        records_dir = Path.home() / "records"
+        records_dir.mkdir(exist_ok=True)
+        # Keep only 20 last records
+        for old_record in sorted(records_dir.glob('*.mp4'))[:-20]:
+            old_record.unlink()
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        self.record_filename = records_dir / f"robot{self.settings.id}_{timestamp}.mp4"
+
+        logger.info(f"Start recording video in {self.record_filename}")
+        self.record_writer = cv2.VideoWriter(
+            str(self.record_filename),
+            cv2.VideoWriter_fourcc(*'mp4v'),
+            self._frame_rate,
+            (self.settings.camera_width, self.settings.camera_height))
+
+    def stop_video_record(self):
+        if self.record_writer:
+            logger.info("Stop recording video")
+            self.record_writer.release()
+            self.record_filename = None
+            self.record_writer = None
 
     def register_sio_events(self) -> None:
         @self.sio.event(namespace="/robotcam")
@@ -410,3 +458,11 @@ class CameraHandler():
             Callback on server disconnection.
             """
             logger.info("Camera handler: disconnected from server")
+
+        @self.sio.on("start_video_record", namespace="/robotcam")
+        def start_video_record():
+            self.start_video_record()
+
+        @self.sio.on("stop_video_record", namespace="/robotcam")
+        def stop_video_record():
+            self.stop_video_record()

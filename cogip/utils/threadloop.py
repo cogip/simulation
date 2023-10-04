@@ -83,5 +83,8 @@ class ThreadLoop:
         self._logger.debug("Stopping...")
         if self._thread.is_alive():
             self._cancel = True
-            self._thread.join()
+            try:
+                self._thread.join()
+            except KeyboardInterrupt:
+                pass
             self._logger.debug("Stopped.")

@@ -44,9 +44,10 @@ class DynBaseObstacleEntity(Qt3DCore.QEntity):
 
         self.points = points
         bb_points = []
-        for point in points:
-            bb_points.append(models.Vertex(x=point.x, y=point.y, z=5))
-        bb_points.append(models.Vertex(x=points[0].x, y=points[0].y, z=5))
+        if points:
+            for point in points:
+                bb_points.append(models.Vertex(x=point.x, y=point.y, z=5))
+            bb_points.append(models.Vertex(x=points[0].x, y=points[0].y, z=5))
         self.bb.set_points(bb_points)
 
     def setEnabled(self, isEnabled: bool) -> None:

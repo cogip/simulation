@@ -22,7 +22,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
         for robot_id, menu in self._context.shell_menu.items():
             await self.emit("shell_menu", (robot_id, menu.dict()), to=sid)
         for robot_id in self._context.connected_robots:
-            await self.emit("add_robot", robot_id, to=sid)
+            await self.emit("add_robot", (robot_id, robot_id in self._context.virtual_robots), to=sid)
 
     def on_disconnect(self, sid):
         logger.info("Dashboard disconnected.")

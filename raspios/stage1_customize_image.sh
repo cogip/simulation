@@ -10,3 +10,4 @@ SCRIPT_DIR=`dirname $SCRIPT`
 
 DOCKER_BUILDKIT=1 docker build . -f Dockerfile.customize --target beacon -t cogip/raspios:beacon
 DOCKER_BUILDKIT=1 docker build . -f Dockerfile.customize --target robot -t cogip/raspios:robot
+DOCKER_BUILDKIT=1 docker build . -f Dockerfile.customize --target basket -t cogip/raspios:basket

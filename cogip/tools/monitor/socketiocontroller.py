@@ -9,6 +9,7 @@ from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 import socketio
 
+from cogip import logger
 from cogip.models import models
 from cogip.models.actuators import ActuatorCommand, ActuatorsState
 
@@ -31,6 +32,8 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted on robot pose order update
         signal_new_robot_state:
             Qt signal emitted on robot state update
+        signal_new_robot_path:
+            Qt signal emitted on robot path update
         signal_new_dyn_obstacles:
             Qt signal emitted on dynamic obstacles update
         signal_connected:
@@ -49,16 +52,21 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted to stop Lidar emulation
         signal_config_request:
             Qt signal emitted to load a new shell/tool menu
+        signal_planner_reset:
+            Qt signal emitted on Planner reset command
+        signal_starter_changed:
+            Qt signal emitted the starter state has changed
     """
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(str, models.ShellMenu)
     signal_new_robot_pose_current: qtSignal = qtSignal(int, models.Pose)
     signal_new_robot_pose_order: qtSignal = qtSignal(int, models.Pose)
     signal_new_robot_state: qtSignal = qtSignal(int, models.RobotState)
+    signal_new_robot_path: qtSignal = qtSignal(int, list)
     signal_new_dyn_obstacles: qtSignal = qtSignal(list)
     signal_connected: qtSignal = qtSignal(bool)
     signal_exit: qtSignal = qtSignal()
-    signal_add_robot: qtSignal = qtSignal(int)
+    signal_add_robot: qtSignal = qtSignal(int, bool)
     signal_del_robot: qtSignal = qtSignal(int)
     signal_wizard_request: qtSignal = qtSignal(dict)
     signal_close_wizard: qtSignal = qtSignal()
@@ -66,6 +74,8 @@ class SocketioController(QtCore.QObject):
     signal_stop_lidar_emulation: qtSignal = qtSignal(int)
     signal_config_request: qtSignal = qtSignal(dict)
     signal_actuators_state: qtSignal = qtSignal(ActuatorsState)
+    signal_planner_reset: qtSignal = qtSignal()
+    signal_starter_changed: qtSignal = qtSignal(int, bool)
 
     def __init__(self, url: str):
         """
@@ -159,6 +169,10 @@ class SocketioController(QtCore.QObject):
         """
         self.sio.emit("actuators_stop", data=robot_id, namespace="/dashboard")
 
+    @qtSlot(int, bool)
+    def starter_changed(self, robot_id, pushed: bool):
+        self.sio.emit("starter_changed", (robot_id, pushed), namespace="/monitor")
+
     def on_menu(self, menu_name: str, data):
         menu = models.ShellMenu.parse_obj(data)
         if self.menus.get(menu_name) != menu:
@@ -176,18 +190,16 @@ class SocketioController(QtCore.QObject):
             Callback on server connection.
             """
             polling2.poll(lambda: self.sio.connected is True, step=0.2, poll_forever=True)
+            logger.info("Dashboard connected to cogip-server")
             self.sio.emit("connected", namespace="/dashboard")
 
-        @self.sio.on("monitor", namespace="/monitor")
+        @self.sio.on("connect", namespace="/monitor")
         def monitor_connect():
             """
             Callback on server connection.
             """
-            polling2.poll(
-                lambda: self.sio.connected is True,
-                step=1,
-                poll_forever=True
-            )
+            polling2.poll(lambda: self.sio.connected is True, step=0.2, poll_forever=True)
+            logger.info("Monitor connected to cogip-server")
             self.sio.emit("connected", namespace="/monitor")
             self.signal_new_console_text.emit("Connected to server")
             self.signal_connected.emit(True)
@@ -201,21 +213,29 @@ class SocketioController(QtCore.QObject):
                and isinstance(data, dict) \
                and (message := data.get("message")) \
                and message == "A monitor is already connected":
-                print(f"Error: {message}.")
+                logger.error(f"Error: {message}.")
                 self._retry_connection = False
                 self.signal_exit.emit()
                 return
-            print("Connection error:", data)
+            logger.error("Monitor connection error:", data)
             self.signal_new_console_text.emit("Connection to server failed.")
             self.signal_connected.emit(False)
 
+        @self.sio.event(namespace="/dashboard")
+        def dashboard_disconnect():
+            """
+            Callback on server disconnection.
+            """
+            logger.info("Dashboard disconnected from cogip-server")
+
         @self.sio.event(namespace="/monitor")
-        def disconnect():
+        def monitor_disconnect():
             """
             Callback on server disconnection.
             """
             self.signal_new_console_text.emit("Disconnected from server.")
             self.signal_connected.emit(False)
+            logger.info("Monitor disconnected from cogip-server")
 
         @self.sio.on("shell_menu", namespace="/dashboard")
         def on_shell_menu(robot_id: int, menu: Dict[str, Any]) -> None:
@@ -270,6 +290,14 @@ class SocketioController(QtCore.QObject):
             state = models.RobotState.parse_obj(data)
             self.signal_new_robot_state.emit(robot_id, state)
 
+        @self.sio.on("path", namespace="/dashboard")
+        def on_path(robot_id: int, data: list[dict[str, float]]) -> None:
+            """
+            Callback on robot path message.
+            """
+            path = parse_obj_as(list[models.Vertex], data)
+            self.signal_new_robot_path.emit(robot_id, path)
+
         @self.sio.on("obstacles", namespace="/dashboard")
         def on_obstacles(data):
             """
@@ -279,11 +307,11 @@ class SocketioController(QtCore.QObject):
             self.signal_new_dyn_obstacles.emit(obstacles)
 
         @self.sio.on("add_robot", namespace="/dashboard")
-        def on_add_robot(robot_id: int) -> None:
+        def on_add_robot(robot_id: int, virtual: bool) -> None:
             """
             Add a new robot.
             """
-            self.signal_add_robot.emit(robot_id)
+            self.signal_add_robot.emit(robot_id, virtual)
 
         @self.sio.on("del_robot", namespace="/dashboard")
         def on_del_robot(robot_id: int) -> None:
@@ -319,6 +347,20 @@ class SocketioController(QtCore.QObject):
             Stop Lidar emulation.
             """
             self.signal_stop_lidar_emulation.emit(robot_id)
+
+        @self.sio.on("cmd_reset", namespace="/monitor")
+        def on_cmd_reset() -> None:
+            """
+            Reset command from Planner.
+            """
+            self.signal_planner_reset.emit()
+
+        @self.sio.on("starter_changed", namespace="/monitor")
+        def on_starter_changed(robot_id: int, pushed: bool) -> None:
+            """
+            Change the state of a starter.
+            """
+            self.signal_starter_changed.emit(robot_id, pushed)
 
     def emit_lidar_data(self, robot_id: int, data: List[int]) -> None:
         """

@@ -1,0 +1,24 @@
+aiohttp==3.8.5
+aioserial==1.3.0
+bidict==0.22.0
+fastapi==0.91.0
+gpiozero==1.6.2
+httpx==0.23.3
+Jinja2==3.0.3
+luma.oled==3.12.0
+more_itertools==9.0.0
+opencv-contrib-python==4.5.5.64
+pigpio==1.78
+polling2==0.5.0
+protobuf==3.20.3
+pydantic==1.10.4
+pyserial==3.5
+py-spy==0.3.14
+python-dotenv==0.19.2
+python-socketio==5.7.1
+requests==2.31.0
+typer[all]==0.7.0
+uvicorn[standard]==0.17.6
+watchfiles==0.17.0
+websocket-client==1.4.1
+ydlidar @ git+https://git@github.com/YDLIDAR/YDLidar-SDK.git@V1.1.3#egg=ydlidar

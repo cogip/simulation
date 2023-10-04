@@ -30,10 +30,10 @@ class ChartView(QtWidgets.QWidget):
 
     need_reset: bool = False
     slider_events_disabled: bool = False
-    default_range_max_x: int = 100
-    default_range_max_y: int = 20
-    range_max_x: int = default_range_max_x
-    range_max_y: int = default_range_max_y
+    default_range_max_x: float = 100
+    default_range_max_y: float = 0.5
+    range_max_x: float = default_range_max_x
+    range_max_y: float = default_range_max_y
     zoom_max: int = 10
 
     def __init__(self, parent=None, name: Optional[str] = None):
@@ -79,29 +79,35 @@ class ChartView(QtWidgets.QWidget):
         sliders_layout.addWidget(self.save_button, 0, 1, 2, 1)
 
         self.chart = QtCharts.QChart()
+        self.axis_x = QtCharts.QValueAxis(self)
+        self.axis_y = QtCharts.QValueAxis(self)
+        self.chart.addAxis(self.axis_x, QtCore.Qt.AlignBottom)
+        self.chart.addAxis(self.axis_y, QtCore.Qt.AlignLeft)
 
         self.serie_current = QtCharts.QLineSeries(name=f"{self.name} Current")
         self.chart.addSeries(self.serie_current)
+        self.serie_current.attachAxis(self.axis_x)
+        self.serie_current.attachAxis(self.axis_y)
         pen = self.serie_current.pen()
         pen.setWidth(5)
         self.serie_current.setPen(pen)
 
         self.serie_order = QtCharts.QLineSeries(name=f"{self.name} Order")
         self.chart.addSeries(self.serie_order)
+        self.serie_order.attachAxis(self.axis_x)
+        self.serie_order.attachAxis(self.axis_y)
+
         pen = self.serie_order.pen()
         pen.setWidth(5)
         self.serie_order.setPen(pen)
 
-        self.chart.createDefaultAxes()
+        # self.chart.createDefaultAxes()
 
-        self.chart.axisX(self.serie_current).setMin(1)
-        self.chart.axisX(self.serie_order).setMin(1)
-        self.chart.axisX(self.serie_current).setTickInterval(1)
+        self.axis_x.setMin(1)
+        self.axis_x.setTickInterval(1)
 
-        self.chart.axisY(self.serie_current).setMin(1)
-        self.chart.axisY(self.serie_order).setMin(1)
-        self.chart.axisY(self.serie_current).setMax(self.default_range_max_y)
-        self.chart.axisY(self.serie_order).setMax(self.default_range_max_y)
+        self.axis_y.setMin(1)
+        self.axis_y.setMax(self.default_range_max_y)
 
         self.chart_view.setChart(self.chart)
 
@@ -138,16 +144,14 @@ class ChartView(QtWidgets.QWidget):
         self.scrollbar.setMaximum(scroll_max)
         self.scrollbar.setValue(scroll)
 
-        self.chart.axisX(self.serie_current).setMax(self.range_max_x)
-        self.chart.axisX(self.serie_order).setMax(self.range_max_x)
+        self.axis_x.setMax(self.range_max_x)
 
         span = int(self.range_max_x / self.zoom.sliderPosition())
         span = span + span % 2
 
         x_min = scroll - span / 2
         x_max = scroll + span / 2
-        self.chart.axisX(self.serie_current).setRange(x_min, x_max)
-        self.chart.axisX(self.serie_order).setRange(x_min, x_max)
+        self.axis_x.setRange(x_min, x_max)
 
         self.slider_events_disabled = False
 
@@ -188,8 +192,7 @@ class ChartView(QtWidgets.QWidget):
             self.serie_order.append(cycle, order)
             self.range_max_y = max(self.range_max_y, order)
 
-        self.chart.axisY(self.serie_current).setMax(self.range_max_y)
-        self.chart.axisY(self.serie_order).setMax(self.range_max_y)
+        self.axis_y.setMax(self.range_max_y)
 
         self.recalculate_range_x()
 
@@ -204,7 +207,9 @@ class ChartView(QtWidgets.QWidget):
             parent=self,
             caption=f"Select file to save {self.name} values",
             dir="",
-            filter="CSV Files (*.csv)"
+            filter="CSV Files (*.csv)",
+            # Workaround a know Qt bug
+            options=QtWidgets.QFileDialog.DontUseNativeDialog
         )
         if filename:
             with Path(filename).open("w", newline="") as csv_file:

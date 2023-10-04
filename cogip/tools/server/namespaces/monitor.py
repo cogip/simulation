@@ -40,3 +40,9 @@ class MonitorNamespace(socketio.AsyncNamespace):
         detector_sid = self._context.detector_sids.inverse.get(robot_id)
         if detector_sid:
             await self.emit("lidar_data", lidar_data, to=detector_sid, namespace="/detector")
+
+    async def on_starter_changed(self, sid, robot_id: int, pushed: bool):
+        """
+        Callback on starter_changed message.
+        """
+        await self.emit("starter_changed", (robot_id, pushed), namespace="/planner")

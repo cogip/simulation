@@ -4,9 +4,9 @@
 
 Linux only.
 
-Tested on Ubuntu 22.04 (with Xorg instead of Wayland for proper display of the Monitor).
+Tested on Ubuntu 23.04 (with Xorg instead of Wayland for proper display of the Monitor).
 
-Any Linux distribution with Python 3.10+ properly installed should be compatible.
+Any Linux distribution with Python 3.11+ properly installed should be compatible.
 
 ## Git LFS
 
@@ -66,7 +66,7 @@ make -C submodules/mcu-firmware/applications/app_test BOARD=cogip-nucleo-f446re
 
 All tools can be install on the development PC.
 
-!!! note "Python 3.10 or more is required."
+!!! note "Python 3.11 or more is required."
 
 To setup a new environment, create a virtual env and install the package in dev mode:
 
@@ -75,8 +75,10 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -U pip
 pip install wheel
-pip install -e .
+pip install -e .[dev]
 ```
+
+!!! note "The `dev` optional dependencies include packages used to run Monitor and emulate COGIP tools on the development platform."
 
 `mcu-firmware` and all Python tools can be run on the development PC.
 In this case, we have to create virtual serial ports to simulation the serial link between STM32 and Raspberry Pi:

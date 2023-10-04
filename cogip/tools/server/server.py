@@ -43,6 +43,7 @@ class Server:
         self.sio.register_namespace(namespaces.DetectorNamespace(self))
         self.sio.register_namespace(namespaces.PlannerNamespace(self))
         self.sio.register_namespace(namespaces.RobotcamNamespace())
+        self.sio.register_namespace(namespaces.BeaconcamNamespace())
 
         # Overload default Uvicorn exit handler
         UvicornServer.handle_exit = self.handle_exit
@@ -64,7 +65,7 @@ class Server:
         self.templates = Jinja2Templates(directory=current_dir / "templates")
 
         # Register routes
-        self.app.include_router(routes.RootRouter(self.templates), prefix="")
+        self.app.include_router(routes.RootRouter(self.templates, self.sio), prefix="")
 
         @self.sio.event
         def connect(sid, environ, auth):

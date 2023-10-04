@@ -20,14 +20,20 @@ ROBOT_ID=$(get_robot_id $@)
 check_vars SDCARD_DEV SDCARD_DEV_BOOT SDCARD_DEV_ROOTFS SDCARD_DEV_BOOT SDCARD_DEV_ROOTFS
 
 # Variables depending on robot id
-if ((${ROBOT_ID} == 0))
-then
-    DOCKER_TAG=beacon
-    HOSTNAME=beacon
-else
-    DOCKER_TAG=robot
-    HOSTNAME=robot${ROBOT_ID}
-fi
+case ${ROBOT_ID} in
+    0) # Beacon
+        DOCKER_TAG=beacon
+        HOSTNAME=beacon
+        ;;
+    10) # Basket
+        DOCKER_TAG=basket
+        HOSTNAME=basket
+        ;;
+    *) # Robots
+        DOCKER_TAG=robot
+        HOSTNAME=robot${ROBOT_ID}
+        ;;
+esac
 
 WORKING_DIR=${SCRIPT_DIR}/work
 RASPIOS_COGIP_IMG="${WORKING_DIR}/raspios-bullseye-arm64-${HOSTNAME}.img"

@@ -1,42 +1,62 @@
-from typing import Any, Dict
+import asyncio
+from typing import Any, Dict, TYPE_CHECKING
 from pydantic import parse_obj_as
 
 import polling2
 import socketio
 
 from cogip import models
-from . import planner, logger
-from .menu import menu, wizard_test_menu
+from . import context, logger
+from .menu import (
+    menu, wizard_test_menu,
+    actuators_menu_1, actuators_menu_2,
+    cherries_menu_1, cherries_menu_2,
+    cameras_menu
+)
+
+if TYPE_CHECKING:
+    from .planner import Planner
 
 
-class SioEvents(socketio.ClientNamespace):
+class SioEvents(socketio.AsyncClientNamespace):
     """
     Handle all SocketIO events received by Planner.
     """
 
-    def __init__(self, planner: "planner.Planner"):
+    def __init__(self, planner: "Planner"):
         super().__init__("/planner")
         self._planner = planner
+        self._game_context = context.GameContext()
 
-    def on_connect(self):
+    async def on_connect(self):
         """
         On connection to cogip-server.
         """
-        polling2.poll(lambda: self.client.connected is True, step=0.2, poll_forever=True)
+        await asyncio.to_thread(
+            polling2.poll,
+            lambda: self.client.connected is True,
+            step=0.2,
+            poll_forever=True
+        )
         logger.info("Connected to cogip-server")
-        self.emit("connected")
-        self._planner.start()
-        self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
-        self.emit("register_menu", {"name": "wizard", "menu": wizard_test_menu.dict()})
+        await self.emit("connected")
+        await self._planner.start()
+        await self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
+        await self.emit("register_menu", {"name": "wizard", "menu": wizard_test_menu.dict()})
+        await self.emit("register_menu", {"name": "actuators1", "menu": actuators_menu_1.dict()})
+        await self.emit("register_menu", {"name": "actuators2", "menu": actuators_menu_2.dict()})
+        await self.emit("register_menu", {"name": "cherries1", "menu": cherries_menu_1.dict()})
+        await self.emit("register_menu", {"name": "cherries2", "menu": cherries_menu_2.dict()})
+        await self.emit("register_menu", {"name": "cameras", "menu": cameras_menu.dict()})
 
-    def on_disconnect(self) -> None:
+    async def on_disconnect(self):
         """
         On disconnection from cogip-server.
         """
-        self._planner.stop()
+        await self._planner.stop()
         logger.info("Disconnected from cogip-server")
 
-    def on_connect_error(self, data: Dict[str, Any]) -> None:
+    async def on_connect_error(self, data: Dict[str, Any]):
         """
         On connection error, check if a Planner is already connected and exit,
         or retry connection.
@@ -51,53 +71,91 @@ class SioEvents(socketio.ClientNamespace):
         else:
             logger.error(f"Connection to cogip-server failed: {data = }")
 
-    def on_add_robot(self, robot_id: int) -> None:
+    async def on_add_robot(self, robot_id: int, virtual: bool):
         """
         Add a new robot.
         """
-        self._planner.add_robot(robot_id)
+        await self._planner.add_robot(robot_id, virtual)
 
-    def on_del_robot(self, robot_id: int) -> None:
+    async def on_del_robot(self, robot_id: int):
         """
         Remove a robot.
         """
-        self._planner.del_robot(robot_id)
+        await self._planner.del_robot(robot_id)
 
-    def on_reset(self, robot_id: int) -> None:
+    def on_starter_changed(self, robot_id: int, pushed: bool):
+        """
+        Signal received from the Monitor when the starter state changes in emulation mode.
+        """
+        if not (robot := self._planner._robots.get(robot_id)):
+            return
+        if not robot.virtual:
+            return
+        if not (starter := robot.starter):
+            return
+        if not (starter := self._planner._robots[robot_id].starter):
+            return
+        if pushed:
+            starter.pin.drive_low()
+        else:
+            starter.pin.drive_high()
+
+    async def on_reset(self, robot_id: int):
         """
         Callback on reset message from copilot.
         """
-        self._planner.add_robot(robot_id)
+        await self._planner.add_robot(robot_id, self._planner._robots[robot_id].virtual)
 
-    def on_pose_current(self, robot_id: int, pose: Dict[str, Any]) -> None:
+    async def on_pose_current(self, robot_id: int, pose: Dict[str, Any]):
         """
         Callback on pose current message.
         """
         self._planner.set_pose_current(robot_id, models.Pose.parse_obj(pose))
 
-    def on_pose_reached(self, robot_id: int) -> None:
+    async def on_pose_reached(self, robot_id: int):
         """
         Callback on pose reached message.
         """
-        self._planner.set_pose_reached(robot_id)
+        if not (robot := self._planner._robots.get(robot_id)):
+            return
 
-    def on_command(self, cmd: str) -> None:
+        await robot.sio_receiver_queue.put(self._planner.set_pose_reached(robot))
+
+    async def on_command(self, cmd: str):
         """
         Callback on command message from dashboard.
         """
-        self._planner.command(cmd)
+        await self._planner.command(cmd)
 
-    def on_obstacles(self, robot_id: int, obstacles: Dict[str, Any]):
+    async def on_config_updated(self, config: dict[str, Any]):
+        """
+        Callback on config update from dashboard.
+        """
+        self._planner.update_config(config)
+
+    async def on_obstacles(self, robot_id: int, obstacles: Dict[str, Any]):
         """
         Callback on obstacles message.
         """
         self._planner.set_obstacles(
             robot_id,
-            parse_obj_as(models.DynObstacleList, obstacles)
+            parse_obj_as(list[models.Vertex], obstacles)
         )
 
-    def on_wizard(self, message: dict[str, Any]):
+    async def on_wizard(self, message: dict[str, Any]):
         """
         Callback on wizard message.
         """
-        self._planner.wizard_response(message)
+        await self._planner.wizard_response(message)
+
+    async def on_game_end(self, robot_id: int):
+        """
+        Callback on game end message.
+        """
+        await self._planner.game_end(robot_id)
+
+    async def on_cherries(self, count: int):
+        """
+        Callback on cherries message.
+        """
+        self._game_context.nb_cherries = count

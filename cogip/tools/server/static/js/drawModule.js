@@ -1,15 +1,20 @@
-// addEventListener to adapt board to window size
-
-let pose_current = undefined;
-let pose_order = undefined;
+let pose_current = { 1: undefined, 2: undefined };
+let pose_order = { 1: undefined, 2: undefined };
+let path = { 1: [], 2: [] };
 let obstacles = [];
 
-export function updatePoseCurrent(new_pose) {
-  pose_current = new_pose;
+export function updatePoseCurrent(robot_id, new_pose) {
+  pose_current[robot_id] = new_pose;
 }
 
-export function updatePoseOrder(new_pose) {
-  pose_order = new_pose;
+export function updatePoseOrder(robot_id, new_pose) {
+  pose_order[robot_id] = new_pose;
+}
+
+export function recordPath(robot_id, msg) {
+  // Just record path.
+  // It is updated on board each time drawBoardElement() is called (on state reception).
+  path[robot_id] = msg;
 }
 
 export function updateObstacles(new_obstacles) {
@@ -28,7 +33,11 @@ export function resizeCanvas() {
 
   let htmlCanvas = document.getElementById("board");
 
-  htmlCanvas.height = window.innerHeight - footerHeight;
+  htmlCanvas.height = Math.min(
+    window.innerHeight - footerHeight,
+    document.getElementById("menu").offsetHeight
+  );
+
   htmlCanvas.width = window.innerWidth - menuWidth - 10;
 
   let background = new Image();
@@ -58,6 +67,27 @@ export function resizeCanvas() {
 
   ratioX = imgWidth / 3000;
   ratioY = -imgHeight / 2000;
+
+  setButtonPosition(htmlCanvas);
+}
+
+function setButtonPosition(htmlCanvas) {
+  // set top of buttonCameraModal
+  const buttonCameraModal = document.getElementById("buttonCameraModal");
+  buttonCameraModal.style.top = buttonCameraModal.style.top =
+    htmlCanvas.height - 44 + "px"; // 44 is height of camera image
+
+  // set right of buttons Camera and Refresh
+  const rightPx = Math.max(
+    window.innerWidth -
+      document.getElementById("menu").offsetWidth -
+      10 -
+      htmlCanvas.width,
+    0
+  );
+
+  document.getElementById("buttonRefresh").style.right = rightPx + "px";
+  buttonCameraModal.style.right = rightPx - 49 + "px"; // 49 is width of refresh image
 }
 
 function getMousePos(canvas, evt) {
@@ -70,26 +100,21 @@ function getMousePos(canvas, evt) {
   };
 }
 
-export function displayMsg(msg) {
-  let msgHTML = document.getElementById("msg");
+export function displayMsg(robot_id, msg) {
+  let stateHTML = document.getElementById(`state_robot_${robot_id}`);
 
-  while (msgHTML.firstChild) {
-    msgHTML.removeChild(msgHTML.firstChild);
-  }
+  let pose_current_robot = pose_current[robot_id];
 
   if (
-    pose_current !== undefined &&
-    !isNaN(pose_current.x) &&
-    !isNaN(pose_current.y)
+    pose_current_robot !== undefined &&
+    !isNaN(pose_current_robot.x) &&
+    !isNaN(pose_current_robot.y)
   ) {
-    const formatMsg = document.createElement("pre");
-    formatMsg.textContent = `Cycle: ${msg.cycle} / X: ${pose_current.x.toFixed(
+    stateHTML.textContent = `R.${robot_id} Cy.:${
+      msg.cycle
+    } / X:${pose_current_robot.x.toFixed(2)} / Y:${pose_current_robot.y.toFixed(
       2
-    )} / Y: ${pose_current.y.toFixed(2)} / Angle: ${pose_current.O.toFixed(
-      2
-    )}`;
-
-    msgHTML.appendChild(formatMsg);
+    )} / Ang:${pose_current_robot.O.toFixed(2)}`;
   }
 }
 
@@ -109,30 +134,38 @@ export function drawBoardElement(msg) {
 
   // draw robot
   // init robot position
-  if (
-    pose_current !== undefined &&
-    !isNaN(pose_current.x) &&
-    !isNaN(pose_current.y)
-  ) {
-    const robotX = pose_current.x;
-    const robotY = pose_current.y;
-    const robotO = pose_current.O;
-    drawRobot(robotX, robotY, robotO, context);
-  }
+  for (let robot in pose_current) {
+    let pose_current_robot = pose_current[robot];
+    if (
+      pose_current_robot !== undefined &&
+      !isNaN(pose_current_robot.x) &&
+      !isNaN(pose_current_robot.y)
+    ) {
+      const robotX = pose_current_robot.x;
+      const robotY = pose_current_robot.y;
+      const robotO = pose_current_robot.O;
+      drawRobot(robotX, robotY, robotO, context);
+    }
 
-  // draw order
-  if (pose_order !== undefined) {
-    context.save();
-    context.filter = "opacity(60%)";
-    drawRobot(pose_order.x, pose_order.y, pose_order.O, context);
-    context.restore();
-  }
+    // draw order
+    let pose_order_robot = pose_order[robot];
+    if (pose_order_robot !== undefined) {
+      context.save();
+      context.filter = "opacity(60%)";
+      drawRobot(
+        pose_order_robot.x,
+        pose_order_robot.y,
+        pose_order_robot.O,
+        context
+      );
+      context.restore();
+    }
 
-  // draw path
-  if (msg.path !== undefined && msg.path.length) {
-    for (let i = 0; i < msg.path.length - 1; i++) {
-      const startPoint = msg.path[i];
-      const endPoint = msg.path[i + 1];
+    // draw path
+    let path_robot = path[robot];
+    for (let i = 0; i < path_robot.length - 1; i++) {
+      const startPoint = path_robot[i];
+      const endPoint = path_robot[i + 1];
 
       drawPath(startPoint, endPoint, context);
     }

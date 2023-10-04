@@ -8,24 +8,9 @@ class Properties(BaseModel):
         description="Minimum distance to detect an obstacle (mm)"
     )
     max_distance: int = Field(
-        ..., ge=0, le=3000,
+        ..., ge=0, le=4000,
         title="Max Distance",
         description="Maximum distance to detect an obstacle (mm)"
-    )
-    obstacle_radius: int = Field(
-        ..., ge=100, le=1000,
-        title="Obstacle Radius",
-        description="Radius of a dynamic obstacle (mm)"
-    )
-    obstacle_bb_margin: float = Field(
-        ..., ge=0, le=1, multiple_of=0.01,
-        title="Bounding Box Margin",
-        description="Obstacle bounding box margin in percent of the radius (%)"
-    )
-    obstacle_bb_vertices: int = Field(
-        ..., ge=3, le=20,
-        title="Bounding Box Vertices",
-        description="Number of obstacle bounding box vertices"
     )
     beacon_radius: int = Field(
         ..., ge=10, le=150,

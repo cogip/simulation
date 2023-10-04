@@ -1,0 +1,17 @@
+[Unit]
+Description=COGIP Beaconcam
+
+Wants=network.target
+After=syslog.target network-online.target detector.service
+
+[Service]
+Type=simple
+Restart=on-failure
+User=root
+WorkingDirectory=/tmp
+ExecStart=/usr/local/bin/python3 -m cogip.tools.beaconcam
+RestartSec=5
+EnvironmentFile=/etc/environment
+
+[Install]
+WantedBy=multi-user.target

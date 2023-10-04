@@ -29,6 +29,10 @@ actuators_command_uuid: int = 2552455996
 pid_request_uuid: int = 3438831927
 pid_uuid: int = 4159164681
 controller_uuid: int = 2750239003
+game_start_uuid: int = 3138845474
+game_end_uuid: int = 1532296089
+game_reset_uuid: int = 1549868731
+brake_uuid: int = 3239255374
 
 
 class Copilot:
@@ -257,4 +261,5 @@ class Copilot:
 
         Forward info to the planner.
         """
-        await self._sio_events.emit("pose_reached")
+        if self._sio.connected:
+            await self._sio_events.emit("pose_reached")
