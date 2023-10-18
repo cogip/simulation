@@ -319,7 +319,7 @@ class WizardDialog(QtWidgets.QDialog):
         Class constructor.
 
         Arguments:
-            config: JSON Schema of properties with current values and namespace
+            message: JSON Schema of properties with current values and namespace
             parent: The parent widget
         """
         super().__init__(parent)

@@ -236,7 +236,7 @@ class CakeLayerEntity(Qt3DCore.QEntity):
 
     def get_model(self) -> CakeLayer:
         """
-        Returns the [CakeLayer][cogip.models.models.CakeLayer] model.
+        Returns the [CakeLayer][cogip.models.artifacts.CakeLayer] model.
         Used to save the cake layers list.
 
         Returns:

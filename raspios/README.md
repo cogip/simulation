@@ -8,7 +8,7 @@ It works by creating a Docker image based on Raspberry Pi OS Lite, use Dockerfil
 to install/configure/remove softwares and services, extract and build the customized image,
 and flash it on a SDCard.
 
-## Nework Configuration
+## Network Configuration
 
 Default network configuration is represented on the following schema:
 

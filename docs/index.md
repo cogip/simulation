@@ -12,7 +12,7 @@ The main components of the robot are:
   - a STM32 that runs [`mcu-firmware`](https://github.com/cogip/mcu-firmware),
   - a Raspberry Pi 4 that controls a camera, a touchscreen and a Lidar.
 
-The robot is assiocated with a central beacon having an upper view of the game area,
+The robot is associated with a central beacon having an upper view of the game area,
 composed of a Raspberry Pi 4, a camera and a touchscreen.
 
 ![Robot Architecture Overview](img/cogip-overview-stm32.svg)
