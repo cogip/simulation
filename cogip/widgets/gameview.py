@@ -446,7 +446,7 @@ class GameView(QtWidgets.QWidget):
 
         Arguments:
             robot_id: ID of the robot
-            new_state: new robot state
+            new_path: new robot path
         """
         path = self.path.get(robot_id)
         if not path:
