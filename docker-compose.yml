@@ -72,11 +72,6 @@ x-firmware: &firmware
     - -x
     - -c
     - |
-      git config --global user.email "cogip35@gmail.com"
-      git config --global user.name "COGIP Team"
-      git config --global --add safe.directory /simulation/submodules/RIOT
-      make distclean-riot-patches
-      make riot-patches
       make -C applications/$${FIRMWARE_APP} BOARD=$${FIRMWARE_BOARD} PORT="-c /tmp -c /var/run/cogip/ptySTM32-$${ROBOT_ID}" term
   depends_on: &depends-firmware
       make-firmware:
