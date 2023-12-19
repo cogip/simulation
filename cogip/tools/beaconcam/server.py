@@ -11,7 +11,6 @@ import polling2
 from uvicorn.main import Server as UvicornServer
 
 from cogip import logger
-from cogip.models.artifacts import CakeSlotID, CakeLayerKind
 from cogip.tools.planner.camp import Camp
 from .settings import Settings
 
@@ -45,31 +44,6 @@ class CameraServer():
         # Keep only 100 last records
         for old_record in sorted(self.records_dir.glob('*.jpg'))[:-100]:
             old_record.unlink()
-
-        self.camp_column_shifts: dict[Camp.Colors, int] = {
-            Camp.Colors.blue: 0,  # -
-            Camp.Colors.green: 0,  # +
-
-        }
-        self.crop_zones: dict[CakeSlotID, tuple[CakeLayerKind, int, int, int, int]] = {
-            CakeSlotID.GREEN_FRONT_SPONGE: (CakeLayerKind.SPONGE, 295, 480, 265, 470),
-            CakeSlotID.GREEN_FRONT_CREAM: (CakeLayerKind.CREAM, 295, 480, 265, 470),
-            CakeSlotID.GREEN_FRONT_ICING: (CakeLayerKind.ICING, 93, 121, 371, 401),
-            CakeSlotID.GREEN_BACK_SPONGE: (CakeLayerKind.SPONGE, 295, 480, 265, 470),
-            CakeSlotID.GREEN_BACK_CREAM: (CakeLayerKind.CREAM, 295, 480, 265, 470),
-            CakeSlotID.GREEN_BACK_ICING: (CakeLayerKind.ICING, 295, 480, 265, 470),
-            CakeSlotID.BLUE_FRONT_SPONGE: (CakeLayerKind.SPONGE, 295, 480, 265, 470),
-            CakeSlotID.BLUE_FRONT_CREAM: (CakeLayerKind.CREAM, 295, 480, 265, 470),
-            CakeSlotID.BLUE_FRONT_ICING: (CakeLayerKind.ICING, 295, 480, 265, 470),
-            CakeSlotID.BLUE_BACK_SPONGE: (CakeLayerKind.SPONGE, 295, 480, 265, 470),
-            CakeSlotID.BLUE_BACK_CREAM: (CakeLayerKind.CREAM, 295, 480, 265, 470),
-            CakeSlotID.BLUE_BACK_ICING: (CakeLayerKind.ICING, 295, 480, 265, 470),
-        }
-        self.colors: dict[CakeLayerKind, tuple[np.ndarray, np.ndarray]] = {
-            CakeLayerKind.SPONGE: (np.array([0, 34, 18]), np.array([20, 237, 73])),
-            CakeLayerKind.CREAM: (np.array([18, 97, 119]), np.array([60, 195, 255])),
-            CakeLayerKind.ICING: (np.array([130, 63, 124]), np.array([176, 255, 255]))
-        }
 
     @staticmethod
     def handle_exit(*args, **kwargs):
@@ -138,40 +112,6 @@ class CameraServer():
             stream = self.camera_streamer() if CameraServer._last_frame else ""
             return StreamingResponse(stream, media_type="multipart/x-mixed-replace;boundary=frame")
 
-        @self.app.get("/check", status_code=200)
-        async def check(camp: Camp.Colors, slot: CakeSlotID) -> bool:
-            col_shift = self.camp_column_shifts[camp]
-            kind, start_row, end_row, start_col, end_col = self.crop_zones[slot]
-            start_col += col_shift
-            end_col += col_shift
-            color_low, color_high = self.colors[kind]
-
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            basename = f"beacon-{timestamp}-{camp.name}-{slot.name}-{kind.name}"
-
-            jpg_as_np = np.frombuffer(self._last_frame.buf, dtype=np.uint8)
-            frame = cv2.imdecode(jpg_as_np, flags=1)
-            record_filename_full = self.records_dir / f"{basename}_full.jpg"
-            cv2.imwrite(str(record_filename_full), frame)
-
-            frame_crop = frame[start_row:end_row, start_col:end_col]
-            record_filename_crop = self.records_dir / f"{basename}_crop.jpg"
-            cv2.imwrite(str(record_filename_crop), frame_crop)
-
-            frame_hsv = cv2.cvtColor(frame_crop, cv2.COLOR_BGR2HSV)
-
-            mask = cv2.inRange(frame_hsv, color_low, color_high)
-
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-
-            color_ratio = cv2.countNonZero(mask) / (frame_crop.size / 3)
-            record_filename_mask = self.records_dir / f"{basename}_mask_{int(color_ratio * 100)}.jpg"
-            cv2.imwrite(str(record_filename_mask), mask)
-
-            return (color_ratio > 0.5)
-
         @self.app.get("/snapshot", status_code=200)
         async def snapshot(camp: Camp.Colors):
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -181,28 +121,3 @@ class CameraServer():
             frame = cv2.imdecode(jpg_as_np, flags=1)
             record_filename_full = self.records_dir / f"{basename}_full.jpg"
             cv2.imwrite(str(record_filename_full), frame)
-
-            col_shift = self.camp_column_shifts[camp]
-
-            for slot, crop_zone in self.crop_zones.items():
-                kind, start_row, end_row, start_col, end_col = crop_zone
-                start_col += col_shift
-                end_col += col_shift
-                color_low, color_high = self.colors[kind]
-                slot_basename = f"{basename}-{slot.name}-{kind.name}"
-
-                frame_crop = frame[start_row:end_row, start_col:end_col]
-                record_filename_crop = self.records_dir / f"{slot_basename}_crop.jpg"
-                cv2.imwrite(str(record_filename_crop), frame_crop)
-
-                frame_hsv = cv2.cvtColor(frame_crop, cv2.COLOR_BGR2HSV)
-
-                mask = cv2.inRange(frame_hsv, color_low, color_high)
-
-                kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-                mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-                mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-
-                color_ratio = cv2.countNonZero(mask) / (frame_crop.size / 3)
-                record_filename_mask = self.records_dir / f"{slot_basename}_mask_{int(color_ratio * 100)}.jpg"
-                cv2.imwrite(str(record_filename_mask), mask)

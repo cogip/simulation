@@ -1,8 +1,6 @@
-from cogip.models.artifacts import default_cake_layers, CakeLayer, CakeLayerID, CakeSlotID
 from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.singleton import Singleton
 from .camp import Camp
-from .cake import Cake, CakeSlot, DropSlot
 from .pose import AdaptedPose, Pose
 from .table import Table, TableEnum, tables
 from .strategy import Strategy
@@ -23,13 +21,7 @@ class GameContext(metaclass=Singleton):
         self._avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
         self.playing: bool = False
         self.score: int = self.minimum_score
-        self.cake_layers: dict[CakeLayerID, CakeLayer] = {}
-        self.cakes: list[Cake] = []
-        self.cake_slots: dict[CakeSlotID, CakeSlot] = {}
-        self.drop_slots: list[DropSlot] = []
-        self.create_cakes()
         self.countdown: int = self.game_duration
-        self.nb_cherries: int = 0
 
     @property
     def strategy(self) -> Strategy:
@@ -72,9 +64,7 @@ class GameContext(metaclass=Singleton):
         """
         self.playing = False
         self.score = self.minimum_score
-        self.create_cakes()
         self.countdown = self.game_duration
-        self.nb_cherries = 0
 
     @property
     def default_controller(self) -> ControllerEnum:
@@ -114,68 +104,3 @@ class GameContext(metaclass=Singleton):
                 start_pose_indices.append(i)
 
         return start_pose_indices
-
-    def create_cakes(self, layers: list[CakeLayerID] = []):
-        table = self.table
-        self.cakes = []
-        self.cake_layers = {}
-        self.cake_slots = {}
-
-        if not layers:
-            layers = list(default_cake_layers.keys())
-
-        cakes_to_create = list(default_cake_layers.keys())
-        for cake_layer_id in cakes_to_create:
-            x, y, kind, pos = default_cake_layers[cake_layer_id]
-            if x < table.x_min or \
-               x > table.x_max or \
-               y < table.y_min or \
-               y > table.y_max:
-                continue
-
-            layer = CakeLayer(
-                id=cake_layer_id,
-                x=x,
-                y=y,
-                pos=pos,
-                kind=kind
-            )
-            self.cake_layers[cake_layer_id] = layer
-
-            cake: Cake | None = None
-            for cake in self.cakes:
-                if (cake.x, cake.y) == (layer.x, layer.y):
-                    break
-                cake = None
-            if cake is None:
-                cake = Cake(x=layer.x, y=layer.y)
-                self.cakes.append(cake)
-                match cake_layer_id:
-                    case CakeLayerID.GREEN_FRONT_ICING_BOTTOM:
-                        slot_id = CakeSlotID.GREEN_FRONT_ICING
-                    case CakeLayerID.GREEN_FRONT_CREAM_BOTTOM:
-                        slot_id = CakeSlotID.GREEN_FRONT_CREAM
-                    case CakeLayerID.GREEN_FRONT_SPONGE_BOTTOM:
-                        slot_id = CakeSlotID.GREEN_FRONT_SPONGE
-                    case CakeLayerID.GREEN_BACK_SPONGE_BOTTOM:
-                        slot_id = CakeSlotID.GREEN_BACK_SPONGE
-                    case CakeLayerID.GREEN_BACK_CREAM_BOTTOM:
-                        slot_id = CakeSlotID.GREEN_BACK_CREAM
-                    case CakeLayerID.GREEN_BACK_ICING_BOTTOM:
-                        slot_id = CakeSlotID.GREEN_BACK_ICING
-                    case CakeLayerID.BLUE_FRONT_ICING_BOTTOM:
-                        slot_id = CakeSlotID.BLUE_FRONT_ICING
-                    case CakeLayerID.BLUE_FRONT_CREAM_BOTTOM:
-                        slot_id = CakeSlotID.BLUE_FRONT_CREAM
-                    case CakeLayerID.BLUE_FRONT_SPONGE_BOTTOM:
-                        slot_id = CakeSlotID.BLUE_FRONT_SPONGE
-                    case CakeLayerID.BLUE_BACK_SPONGE_BOTTOM:
-                        slot_id = CakeSlotID.BLUE_BACK_SPONGE
-                    case CakeLayerID.BLUE_BACK_CREAM_BOTTOM:
-                        slot_id = CakeSlotID.BLUE_BACK_CREAM
-                    case CakeLayerID.BLUE_BACK_ICING_BOTTOM:
-                        slot_id = CakeSlotID.BLUE_BACK_ICING
-                slot = CakeSlot(slot_id, layer.x, layer.y, layer.kind, cake)
-                self.cake_slots[slot_id] = slot
-
-            cake.layers[layer.pos] = layer

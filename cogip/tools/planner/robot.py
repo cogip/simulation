@@ -10,7 +10,7 @@ from gpiozero.pins.pigpio import PiGPIOFactory
 from cogip.models import models
 from cogip.tools.copilot.controller import ControllerEnum
 from .actions import actions
-from . import cake, context, logger, pose
+from . import context, logger, pose
 from .strategy import Strategy
 
 if TYPE_CHECKING:
@@ -39,7 +39,6 @@ class Robot:
         self._obstacles: models.DynObstacleList = []
         self.starter: Button | None = None
         self.blocked: int = 0
-        self.cake: "cake.Cake" | None = None
         self.nb_cherries = 5
         self.parked = False
         self.sio_receiver_queue = asyncio.Queue()

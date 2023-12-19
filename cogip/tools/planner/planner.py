@@ -97,7 +97,6 @@ class Planner:
         self._shared_poses_current: DictProxy = self._process_manager.dict()
         self._shared_poses_order: DictProxy = self._process_manager.dict()
         self._shared_obstacles: DictProxy = self._process_manager.dict()
-        self._shared_cake_obstacles: DictProxy = self._process_manager.dict()
         self._shared_last_avoidance_pose_currents: DictProxy = self._process_manager.dict()
         self._sio_emitter_queues: dict[int, queue.Queue] = {}
         self._sio_emitter_tasks: dict[int, asyncio.Task] = {}
@@ -113,7 +112,6 @@ class Planner:
         })
         self._sio_receiver_tasks: dict[int, asyncio.Task] = {}
         self._countdown_task: asyncio.Task | None = None
-        self.update_cake_obstacles()
 
     async def connect(self):
         """
@@ -268,8 +266,6 @@ class Planner:
         for robot_id in self._robots.keys():
             await actuators.led_on(robot_id, self)
         await self._sio_ns.emit("game_end")
-        if self._game_context.nb_cherries > 0:
-            self._game_context.score += 5 + self._game_context.nb_cherries
         if all([robot.parked for robot in self._robots.values()]):
             self._game_context.score += 15
         await self._sio_ns.emit("score", self._game_context.score)
@@ -299,11 +295,9 @@ class Planner:
 
         self._shared_exiting[robot_id] = False
         self._shared_obstacles[robot_id] = []
-        self._shared_cake_obstacles[robot_id] = []
         self._sio_emitter_tasks[robot_id] = asyncio.create_task(
             self.task_sio_emitter(robot), name=f"Robot {robot_id}: Task SIO Emitter"
         )
-        self.update_cake_obstacles(robot_id)
         self._avoidance_processes[robot_id] = Process(target=avoidance_process, args=(
             robot.namespace,
             self._game_context.strategy,
@@ -314,7 +308,6 @@ class Planner:
             self._shared_poses_current,
             self._shared_poses_order,
             self._shared_obstacles,
-            self._shared_cake_obstacles,
             self._shared_last_avoidance_pose_currents,
             self._sio_emitter_queues[robot_id]
         ))
@@ -394,7 +387,6 @@ class Planner:
         """
         self._game_context.reset()
         await self._sio_ns.emit("stop_video_record")
-        self.update_cake_obstacles()
         self._actions = action_classes.get(self._game_context.strategy, actions.Actions)(self)
 
         # Remove robots and add them again to reset all robots.
@@ -403,19 +395,6 @@ class Planner:
             await self.del_robot(robot_id)
         for robot_id, virtual in robots.items():
             await self.add_robot(robot_id, virtual)
-
-    def update_cake_obstacles(self, robot_id: int = 0):
-        robot_ids = self._robots.keys() if robot_id == 0 else [robot_id]
-        for robot_id in robot_ids:
-            obstacles = []
-            for cake in self._game_context.cakes:
-                if not cake.on_table:
-                    continue
-                if cake.robot and cake.robot.robot_id == robot_id:
-                    continue
-                cake.update_obstacle_properties(self._properties)
-                obstacles.append(cake.obstacle.dict(exclude_defaults=True))
-            self._shared_cake_obstacles[robot_id] = obstacles
 
     async def set_pose_start(self, robot_id: int, pose_start: models.Pose):
         """
@@ -544,7 +523,6 @@ class Planner:
     @property
     def all_obstacles(self) -> models.DynObstacleList:
         obstacles = sum([robot.obstacles for robot in self._robots.values()], start=[])
-        obstacles.extend([cake.obstacle for cake in self._game_context.cakes if cake.on_table])
         return obstacles
 
     async def send_obstacles(self):
@@ -602,7 +580,7 @@ class Planner:
                 for thread in self._avoidance_path_updaters.values():
                     thread.interval = self._properties.path_refresh_interval
             case "robot_width" | "obstacle_bb_vertices":
-                self.update_cake_obstacles()
+                pass
 
     async def cmd_play(self):
         """
@@ -875,7 +853,3 @@ class Planner:
         match command:
             case "beacon_snapshots":
                 await cameras.snapshot()
-            case "cherry_on_cake_1":
-                await cameras.is_cherry_on_cake(1)
-            case "cherry_on_cake_2":
-                await cameras.is_cherry_on_cake(2)

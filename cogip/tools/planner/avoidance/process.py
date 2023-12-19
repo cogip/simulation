@@ -1,6 +1,6 @@
 import math
 from multiprocessing import Queue
-from multiprocessing.managers import DictProxy, ListProxy, Namespace
+from multiprocessing.managers import DictProxy, Namespace
 import time
 
 from cogip import models
@@ -50,7 +50,6 @@ def avoidance_process(
         shared_poses_current: DictProxy,
         shared_poses_order: DictProxy,
         shared_obstacles: DictProxy,
-        shared_cake_obstacles: ListProxy,
         shared_last_avoidance_pose_currents: DictProxy,
         queue_sio: Queue):
     robot_id = robot.robot_id
@@ -59,7 +58,6 @@ def avoidance_process(
     avoidance_path: list[models.PathPose] = []
     last_emitted_pose_order: models.PathPose | None = None
     start = time.time() - shared_properties["path_refresh_interval"] + 0.01
-    min_cake_dist: float = 1000.0  # minimum distance to use cakes to compute avoidance
     min_dist: float = 100.0  # minimum distance to other robots to exclude obstacles
 
     while not shared_exiting[robot_id]:
@@ -124,15 +122,8 @@ def avoidance_process(
                     continue
             filtered_dyn_obstacles.append(obstacle)
 
-        # Create cake obstacles
-        cake_obstacles = [
-            models.DynRoundObstacle.parse_obj(obstacle)
-            for obstacle in shared_cake_obstacles[robot_id]
-            if math.dist((obstacle["x"], obstacle["y"]), (pose_current.x, pose_current.y)) < min_cake_dist
-        ]
-
         # Gather all obstacles
-        all_obstacles = filtered_dyn_obstacles + other_robot_obstacles + cake_obstacles
+        all_obstacles = filtered_dyn_obstacles + other_robot_obstacles
 
         if any([obstacle.contains(pose_current.pose) for obstacle in all_obstacles]):
             logger.debug(f"Avoidance {robot_id}: pose current in obstacle")

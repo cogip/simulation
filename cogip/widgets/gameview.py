@@ -19,7 +19,6 @@ from cogip.entities.line import LineEntity
 from cogip.entities.obstacle import ObstacleEntity
 from cogip.entities.path import PathEntity
 from cogip.entities.robot_manual import RobotManualEntity
-from cogip.entities.artifacts import CakeLayerEntity, CakeLayerID, CherryEntity, CherryID, create_cake_layers, create_cherries
 from cogip.models import models
 
 
@@ -131,8 +130,6 @@ class GameView(QtWidgets.QWidget):
     Attributes:
         ground_image: image to display on the table floor
         obstacle_entities: List of obstacles
-        cake_layer_entities: List of cake layers
-        cherry_entities: List of cherry entities
         plane_intersection: last active intersection of plane picker in world coordinates
         mouse_enabled: True to authorize translation and rotation of the scene using the mouse,
             False when an other object (obstacle, manual robot, ...) is picked.
@@ -140,8 +137,6 @@ class GameView(QtWidgets.QWidget):
     """
     ground_image: Path = Path("assets/table2023.png")
     obstacle_entities: List[ObstacleEntity] = []
-    cake_layer_entities: Dict[CakeLayerID, CakeLayerEntity] = {}
-    cherry_entities: Dict[CherryID, CherryEntity] = {}
     plane_intersection: QtGui.QVector3D = None
     mouse_enabled: bool = True
     new_move_delta: qtSignal = qtSignal(QtGui.QVector3D)
@@ -299,7 +294,7 @@ class GameView(QtWidgets.QWidget):
 
     def load_obstacles(self, filename: Path):
         """
-        Load obstables from a JSON file.
+        Load obstacles from a JSON file.
 
         Arguments:
             filename: path of the JSON file
@@ -313,7 +308,7 @@ class GameView(QtWidgets.QWidget):
 
     def save_obstacles(self, filename: Path):
         """
-        Save obstables to a JSON file.
+        Save obstacles to a JSON file.
 
         Arguments:
             filename: path of the JSON file
@@ -324,36 +319,9 @@ class GameView(QtWidgets.QWidget):
         with filename.open('w') as fd:
             fd.write(json.dumps(obstacle_models, default=pydantic_encoder, indent=2))
 
-    def load_cake_layers(self, filename: Path):
-        """
-        Load cake layers from a JSON file.
-
-        Arguments:
-            filename: path of the JSON file
-        """
-        try:
-            cake_layer_models = parse_file_as(List[models.CakeLayer], filename)
-            for cake_layer_model in cake_layer_models:
-                self.cake_layer_entities[cake_layer_model.id].update_from_model(cake_layer_model)
-        except ValidationError as exc:
-            print(exc)
-
-    def save_cake_layers(self, filename: Path):
-        """
-        Save cake layers to a JSON file.
-
-        Arguments:
-            filename: path of the JSON file
-        """
-        cake_layer_models = []
-        for cake_layer_entity in self.cake_layer_entities.values():
-            cake_layer_models.append(cake_layer_entity.get_model())
-        with filename.open('w') as fd:
-            fd.write(json.dumps(cake_layer_models, default=pydantic_encoder, indent=2))
-
     def asset_ready(self):
         """
-        Create cake layers when all assets are ready (loading assets is done in background).
+        Create artifacts when all assets are ready (loading assets is done in background).
         """
         child_assets_not_ready = [
             child
@@ -361,13 +329,6 @@ class GameView(QtWidgets.QWidget):
             if not child.asset_ready
         ]
         if len(child_assets_not_ready) == 0:
-            self.cake_layer_entities = create_cake_layers(self.scene_entity, self.container)
-            for cake_layer in self.cake_layer_entities.values():
-                cake_layer.enable_controller.connect(self.enable_mouse)
-                self.new_move_delta.connect(cake_layer.new_move_delta)
-
-            self.cherry_entities = create_cherries(self.scene_entity, self.container)
-
             self.robot_manual = RobotManualEntity(self.scene_entity, self.container)
             self.robot_manual.enable_controller.connect(self.enable_mouse)
             self.new_move_delta.connect(self.robot_manual.new_move_delta)
@@ -457,17 +418,17 @@ class GameView(QtWidgets.QWidget):
 
     def pressed(self, pick: Qt3DRender.QPickEvent):
         """
-        Function called on a ```pressed``` mouse event on the cake layer.
+        Function called on a ```pressed``` mouse event on the artifact.
 
-        Emit a signal to disable the camera controller before moving the cake layer.
+        Emit a signal to disable the camera controller before moving the artifact.
         """
         self.last_mouse_pos = pick.worldIntersection()
 
     def moved(self, pick: Qt3DRender.QPickEvent):
         """
-        Function called on a ```moved``` mouse event on the cake layer.
+        Function called on a ```moved``` mouse event on the artifact.
 
-        Just record that the cake layer is moving, the translation is computed
+        Just record that the artifact is moving, the translation is computed
         in the [GameView][cogip.widgets.gameview.GameView] object.
         """
 
@@ -483,7 +444,7 @@ class GameView(QtWidgets.QWidget):
 
     def create_object_picker(self):
         """
-        Add a plane mesh with object picker to help moving objets with mouse drag and drop.
+        Add a plane mesh with object picker to help moving objects with mouse drag and drop.
         """
         self.plane_entity = Qt3DCore.QEntity(self.scene_entity)
 

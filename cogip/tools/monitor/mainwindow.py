@@ -38,8 +38,6 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_add_obstacle: Qt signal to add an obstacle
         signal_load_obstacles: Qt signal to load obstacles
         signal_save_obstacles: Qt signal to save obstacles
-        signal_load_cake_layers: Qt signal to load cake layers
-        signal_save_cake_layers: Qt signal to save cake layers
         signal_new_actuator_command: Qt signal to send actuator command to server
         signal_actuators_closed: Qt signal to stop actuators state request
         signal_starter_changed: Qt signal emitted the starter state has changed
@@ -50,8 +48,6 @@ class MainWindow(QtWidgets.QMainWindow):
     signal_add_obstacle: qtSignal = qtSignal()
     signal_load_obstacles: qtSignal = qtSignal(Path)
     signal_save_obstacles: qtSignal = qtSignal(Path)
-    signal_load_cake_layers: qtSignal = qtSignal(Path)
-    signal_save_cake_layers: qtSignal = qtSignal(Path)
     signal_new_actuator_command: qtSignal = qtSignal(int, object)
     signal_actuators_closed: qtSignal = qtSignal(int)
     signal_starter_changed: qtSignal = qtSignal(int, bool)
@@ -82,7 +78,6 @@ class MainWindow(QtWidgets.QMainWindow):
         menubar = self.menuBar()
         file_menu = menubar.addMenu('&File')
         obstacles_menu = menubar.addMenu('&Obstacles')
-        cake_layers_menu = menubar.addMenu('&Cake Layers')
         self.view_menu = menubar.addMenu('&View')
         help_menu = menubar.addMenu('&Help')
 
@@ -169,26 +164,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.save_obstacles_action.triggered.connect(self.save_obstacles)
         obstacles_menu.addAction(self.save_obstacles_action)
         obstacles_toolbar.addAction(self.save_obstacles_action)
-
-        # Open cake layers action
-        self.load_cake_layers_action = QtGui.QAction(
-            QtGui.QIcon.fromTheme("document-open"),
-            'Load cake layers',
-            self
-        )
-        self.load_cake_layers_action.setStatusTip('Load cake layers')
-        self.load_cake_layers_action.triggered.connect(self.load_cake_layers)
-        cake_layers_menu.addAction(self.load_cake_layers_action)
-
-        # Save cake layers action
-        self.save_cake_layers_action = QtGui.QAction(
-            QtGui.QIcon.fromTheme("document-save"),
-            'Save cake layers',
-            self
-        )
-        self.save_cake_layers_action.setStatusTip('Save cake layers')
-        self.save_cake_layers_action.triggered.connect(self.save_cake_layers)
-        cake_layers_menu.addAction(self.save_cake_layers_action)
 
         # Console
         dock = QtWidgets.QDockWidget("Console")
@@ -548,42 +523,6 @@ class MainWindow(QtWidgets.QMainWindow):
         )
         if filename:
             self.signal_save_obstacles.emit(Path(filename))
-
-    @qtSlot()
-    def load_cake_layers(self):
-        """
-        Qt Slot
-
-        Open a file dialog to select a file and load cake layers from it.
-        """
-        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
-            parent=self,
-            caption="Select file to load cake layers",
-            dir="",
-            filter="JSON Files (*.json)",
-            # Workaround a know Qt bug
-            options=QtWidgets.QFileDialog.DontUseNativeDialog
-        )
-        if filename:
-            self.signal_load_cake_layers.emit(Path(filename))
-
-    @qtSlot()
-    def save_cake_layers(self):
-        """
-        Qt Slot
-
-        Open a file dialog to select a file and save cake layers in it.
-        """
-        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
-            parent=self,
-            caption="Select file to save cake layers",
-            dir="",
-            filter="JSON Files (*.json)",
-            # Workaround a know Qt bug
-            options=QtWidgets.QFileDialog.DontUseNativeDialog
-        )
-        if filename:
-            self.signal_save_cake_layers.emit(Path(filename))
 
     def display_help_camera_control(self):
         """

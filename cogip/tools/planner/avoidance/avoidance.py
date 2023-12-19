@@ -12,30 +12,6 @@ except ImportError:
 
 
 fixed_obstacles = [
-    [
-        models.Vertex(x=0, y=15),
-        models.Vertex(x=300, y=15),
-        models.Vertex(x=300, y=-15),
-        models.Vertex(x=0, y=-15),
-    ],
-    [
-        models.Vertex(x=3000 - 300, y=15),
-        models.Vertex(x=3000, y=15),
-        models.Vertex(x=3000, y=-15),
-        models.Vertex(x=3000 - 300, y=-15),
-    ],
-    [
-        models.Vertex(x=1500 - 150, y=-1000 + 30),
-        models.Vertex(x=1500 + 150, y=-1000 + 30),
-        models.Vertex(x=1500 + 150, y=-1000),
-        models.Vertex(x=1500 - 150, y=-1000),
-    ],
-    [
-        models.Vertex(x=1500 - 150, y=1000),
-        models.Vertex(x=1500 + 150, y=1000),
-        models.Vertex(x=1500 + 150, y=1000 - 30),
-        models.Vertex(x=1500 - 150, y=1000 - 30),
-    ]
 ]
 
 

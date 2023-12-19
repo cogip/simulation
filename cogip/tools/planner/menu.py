@@ -40,9 +40,7 @@ wizard_test_menu = models.ShellMenu(
 cameras_menu = models.ShellMenu(
     name="Cameras",
     entries=[
-        models.MenuEntry(cmd="cam_beacon_snapshots", desc="Beacon Snapshot"),
-        models.MenuEntry(cmd="cam_cherry_on_cake_1", desc="Cherry On Cake 1"),
-        models.MenuEntry(cmd="cam_cherry_on_cake_2", desc="Cherry On Cake 2")
+        models.MenuEntry(cmd="cam_beacon_snapshots", desc="Beacon Snapshot")
     ]
 )
 
