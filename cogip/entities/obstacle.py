@@ -31,7 +31,7 @@ class ObstacleEntity(Qt3DCore.QEntity):
             self,
             parent_widget: QtWidgets.QWidget,
             x: int = 0,
-            y: int = 1000,
+            y: int = 0,
             rotation: int = 0,
             length: int = 225,
             width: int = 225,

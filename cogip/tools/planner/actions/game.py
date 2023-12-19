@@ -59,14 +59,15 @@ class GameActions(Actions):
         super().__init__(planner)
 
         self.append(WaitAction(planner, self))
+        self.append(WaitAction(planner, self))
 
         ParkingAction.nb_robots = 0
         if Camp().color == Camp.Colors.blue:
-            self.append(ParkingAction(planner, self, models.Pose(x=1500 + 150, y=-1000 + 450, O=None)))
-            self.append(ParkingAction(planner, self, models.Pose(x=1500 + 150 + 450, y=-1000 + 450, O=None)))
+            self.append(ParkingAction(planner, self, models.Pose(x=700, y=450, O=180)))
+            self.append(ParkingAction(planner, self, models.Pose(x=700, y=-450, O=180)))
         else:
-            self.append(ParkingAction(planner, self, models.Pose(x=1500 - 150, y=-1000 + 450, O=None)))
-            self.append(ParkingAction(planner, self, models.Pose(x=1500 - 150 - 450, y=-1000 + 450, O=None)))
+            self.append(ParkingAction(planner, self, models.Pose(x=700, y=-450, O=180)))
+            self.append(ParkingAction(planner, self, models.Pose(x=-700, y=-450, O=180)))
 
         self.planner._start_positions[1] = 1
-        self.planner._start_positions[2] = 4
+        self.planner._start_positions[2] = 2

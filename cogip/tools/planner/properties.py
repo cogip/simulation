@@ -1,7 +1,11 @@
-from pydantic import BaseModel, Field
+from pydantic import Field
+from pydantic.dataclasses import dataclass
+
+from cogip.utils.singleton import Singleton
 
 
-class Properties(BaseModel):
+@dataclass
+class Properties(metaclass=Singleton):
     robot_width: int = Field(
         ..., ge=100, le=1000,
         title="Robot_width",

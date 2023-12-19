@@ -40,13 +40,11 @@ class TrainingActions(Actions):
     def __init__(self, planner: "Planner"):
         super().__init__(planner)
 
+        self.planner._start_positions[1] = 2
         self.append(WaitAction(planner, self))
+        self.append(FinalAction(planner, self, models.Pose(x=-500, y=-500, O=180)))
 
-        self.append(FinalAction(planner, self, models.Pose(x=1875, y=-770, O=-180)))
-
-        if self.game_context._table == table.TableEnum.Training:
-            self.planner._start_positions[1] = 2
-            self.planner._start_positions[2] = 3
-        else:
-            self.planner._start_positions[1] = 1
-            self.planner._start_positions[2] = 4
+        if self.game_context._table != table.TableEnum.Training:
+            self.planner._start_positions[2] = 1
+            self.append(WaitAction(planner, self))
+            self.append(FinalAction(planner, self, models.Pose(x=-500, y=500, O=180)))

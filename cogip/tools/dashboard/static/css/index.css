@@ -2,7 +2,7 @@
   --grey-color: #acaeb1;
   --red-cogip: #d01b1e;
   --color-camp-1: #005CE6; /* blue */
-  --color-camp-2: #00AA12; /* green */
+  --color-camp-2: #FFBF00; /* yellow */
 }
 
 body {
@@ -111,7 +111,7 @@ pre {
 }
 
 #board {
-  background: url(../img/ground2023.png);
+  background: url(../img/ground2024.png);
   background-size: contain;
   margin-top: 1vh;
   margin-right: 1vw;
@@ -222,7 +222,7 @@ input[type='checkbox']:checked {
   margin-right: 15px;
 }
 
-.btn-green {
+.btn-yellow {
   color: #000;
   background-color: var(--color-camp-2) !important;
   border-color: var(--color-camp-2) !important;
@@ -231,7 +231,7 @@ input[type='checkbox']:checked {
 }
 
 .btn-blue.active,
-.btn-green.active {
+.btn-yellow.active {
   outline: none;
   box-shadow: inset 0px 0px 15px #000;
 }

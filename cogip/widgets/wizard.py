@@ -263,42 +263,42 @@ class CampWizard(QtCore.QObject):
         self.buttons.addButton(self.button_blue)
         button_layout.addWidget(self.button_blue)
 
-        self.button_green = QtWidgets.QRadioButton()
-        self.button_green.setObjectName("greenCamp")
-        self.button_blue.setCheckable(True)
-        self.button_green.setStyleSheet(
+        self.button_yellow = QtWidgets.QRadioButton()
+        self.button_yellow.setObjectName("yellowCamp")
+        self.button_yellow.setCheckable(True)
+        self.button_yellow.setStyleSheet(
             """
-            QRadioButton#greenCamp {
-                border-color: #00AA12;
-                background-color: #00AA12;
+            QRadioButton#yellowCamp {
+                border-color: #FFBF00;
+                background-color: #FFBF00;
                 border-width: 2px;
                 border-radius: 10px;
                 border-style: inset;
                 min-width: 6em;
                 padding: 6px;
             }
-            QRadioButton#greenCamp:checked {
+            QRadioButton#yellowCamp:checked {
                 border-color: beige;
                 border-style: outset;
             }
-            QRadioButton#greenCamp::indicator {
+            QRadioButton#yellowCamp::indicator {
                 border-width: 0;
             }
             """)
-        self.buttons.addButton(self.button_green)
-        button_layout.addWidget(self.button_green)
+        self.buttons.addButton(self.button_yellow)
+        button_layout.addWidget(self.button_yellow)
 
         if wizard["value"] == "blue":
             self.button_blue.setChecked(True)
         else:
-            self.button_green.setChecked(True)
+            self.button_yellow.setChecked(True)
         send_button = QtWidgets.QPushButton("Send")
         layout.addWidget(send_button)
         send_button.clicked.connect(self.send)
 
     @qtSlot()
     def send(self, clicked: bool):
-        color = "blue" if self.button_blue.isChecked() else "green"
+        color = "blue" if self.button_blue.isChecked() else "yellow"
         self.response.emit(color)
 
 

@@ -79,7 +79,7 @@ class GameWizard:
         message = {
             "name": f"Game Wizard: Choose Start Position {robot_id}",
             "type": "choice_integer",
-            "choices": list(range(1, 6)),
+            "choices": list(range(1, 4)),
             "value": self.planner._start_positions.get(robot_id, robot_id),
             "robot_id": robot_id
         }

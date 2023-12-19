@@ -10,6 +10,7 @@ import socketio
 
 from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
+from cogip.utils.singleton import Singleton
 from .actions import actions, action_classes
 from cogip.utils.asyncloop import AsyncLoop
 from . import actuators, cameras, logger, menu, pose, sio_events
@@ -62,6 +63,11 @@ class Planner:
         """
         self._server_url = server_url
         self._debug = debug
+
+        # We have to make sure the Planner is the first object call ing the constructor
+        # of the Properties singleton
+        if Properties in Singleton._instance:
+            raise RuntimeError("Properties class must not be initialized before this point.")
         self._properties = Properties(
             robot_width=robot_width,
             obstacle_radius=obstacle_radius,
@@ -287,6 +293,10 @@ class Planner:
         await self._sio_ns.emit("starter_changed", (robot_id, robot.starter.is_pressed))
         new_start_pose = self._start_positions.get(robot_id, robot_id)
         available_start_poses = self._game_context.get_available_start_poses()
+        if len(available_start_poses) == 0:
+            logger.error(f"Planner: not start position for robot {robot_id}, removing robot.")
+            await self.del_robot(robot_id)
+            return
         if new_start_pose not in available_start_poses:
             new_start_pose = available_start_poses[(robot_id - 1) % len(available_start_poses)]
         await robot.set_pose_start(self._game_context.get_start_pose(new_start_pose).pose)
@@ -826,7 +836,7 @@ class Planner:
                 message = {
                     "name": "Wizard Test Camp",
                     "type": "camp",
-                    "value": "green"
+                    "value": "yellow"
                 }
             case "wizard_camera":
                 message = {

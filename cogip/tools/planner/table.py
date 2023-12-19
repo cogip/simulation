@@ -26,8 +26,12 @@ class Table(BaseModel):
             and point.y <= self.y_max - margin
 
 
-table_training = Table(x_min=1500, x_max=3000, y_min=-1000, y_max=0)
-table_game = Table(x_min=0, x_max=3000, y_min=-1000, y_max=1000)
+# Full table
+table_game = Table(x_min=-1000, x_max=1000, y_min=-1500, y_max=1500)
+
+# Lower-right corner of the full table
+table_training = Table(x_min=-1000, x_max=0, y_min=-1500, y_max=0)
+
 
 tables: dict[TableEnum, Table] = {
     TableEnum.Training: table_training,

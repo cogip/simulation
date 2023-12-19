@@ -41,7 +41,7 @@ export function resizeCanvas() {
   htmlCanvas.width = window.innerWidth - menuWidth - 10;
 
   let background = new Image();
-  background.src = "static/img/ground2023.png"; // default background size 2000x3000 --> ratio 2/3
+  background.src = "static/img/ground2024.png"; // default background size 2000x3000 --> ratio 2/3
 
   let imgWidth = htmlCanvas.width;
   let imgHeight = (imgWidth * 2) / 3;
@@ -179,13 +179,22 @@ export function drawBoardElement(msg) {
   }
 }
 
+function adaptCoords(x, y, angle) {
+  const newX = 1500 - y;
+  const newY = x;
+  const newAngle = -angle - 90;
+  return { newX, newY, newAngle };
+}
+
 function drawRobot(x, y, O, context) {
   let robotWidth = robot.width * ratioX;
   let robotHeight = robot.height * ratioY;
 
+  const { newX, newY, newAngle } = adaptCoords(x, y, O)
+
   context.save();
-  context.translate(x * ratioX, y * ratioY);
-  context.rotate(-(O * Math.PI) / 180);
+  context.translate(newX * ratioX, newY * ratioY);
+  context.rotate((newAngle * Math.PI) / 180);
   context.drawImage(
     robot,
     -robotWidth / 2,
@@ -197,20 +206,24 @@ function drawRobot(x, y, O, context) {
 }
 
 function drawPath(startPoint, endPoint, context) {
+  const { newStartX, newStartY, newStartAngle } = adaptCoords(startPoint.x, startPoint.y, 0)
+  const { newEndX, newEndY, newEndAngle } = adaptCoords(endPoint.x, endPoint.y, 0)
+
   context.save();
   context.strokeStyle = "blue";
   context.lineWidth = 2;
   context.beginPath();
-  context.moveTo(startPoint.x * ratioX, startPoint.y * ratioY);
-  context.lineTo(endPoint.x * ratioX, endPoint.y * ratioY);
+  context.moveTo(newStartX * ratioX, newStartY * ratioY);
+  context.lineTo(newEndX * ratioX, newEndY * ratioY);
   context.closePath();
   context.stroke();
   context.restore();
 }
 
 function drawObstacles(obstacle, context) {
-  let obstacleX = obstacle.x * ratioX;
-  let obstacleY = obstacle.y * ratioY;
+  const { newX, newY, newAngle } = adaptCoords(obstacle.x, obstacle.y, obstacle.angle)
+  let obstacleX = newX * ratioX;
+  let obstacleY = newY * ratioY;
 
   context.save();
   context.fillStyle = "red";
@@ -224,12 +237,11 @@ function drawObstacles(obstacle, context) {
     context.fill();
     context.closePath();
   } else {
-    let angle = obstacle.angle;
     let length_x = obstacle.length_x * ratioX;
     let length_y = obstacle.length_y * ratioY;
 
     context.translate(obstacleX, obstacleY);
-    context.rotate(-(angle * Math.PI) / 180);
+    context.rotate(-(90 + newAngle * Math.PI) / 180);
     context.fillRect(-length_x / 2, -length_y / 2, length_x, length_y);
   }
 

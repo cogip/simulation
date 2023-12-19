@@ -2,6 +2,7 @@ from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.singleton import Singleton
 from .camp import Camp
 from .pose import AdaptedPose, Pose
+from .properties import Properties
 from .table import Table, TableEnum, tables
 from .strategy import Strategy
 from .avoidance.avoidance import AvoidanceStrategy
@@ -15,6 +16,7 @@ class GameContext(metaclass=Singleton):
     minimum_score: int = 1 + 5
 
     def __init__(self):
+        self.properties = Properties()
         self.camp = Camp()
         self._strategy = Strategy.BackAndForth
         self._table = TableEnum.Game
@@ -76,30 +78,38 @@ class GameContext(metaclass=Singleton):
             case _:
                 return ControllerEnum.QUADPID
 
-    @classmethod
-    def get_start_pose(cls, n: int) -> Pose | None:
+    def get_start_pose(self, n: int) -> Pose | None:
         """
         Define the possible start positions.
+        Default positions for blue camp.
         """
         match n:
-            case 1:
-                return AdaptedPose(x=450 - 225 / 2, y=-1000 + 450 - 225 / 2, O=180)
-            case 2:
-                return AdaptedPose(x=3000 - 450 - 125 - 200 - 125 - 225 / 2, y=-1000 + 450 - 225 / 2, O=90)
-            case 3:
-                return AdaptedPose(x=3000 - 450 + 225 / 2, y=-1000 + 450 + 50 + 225 / 2, O=180)
-            case 4:
-                return AdaptedPose(x=3000 - 450 + 225 / 2, y=1000 - 450 + 225 / 2, O=180)
-            case 5:
-                return AdaptedPose(x=450 + 125 + 200 + 125 - 225 / 2, y=1000 - 450 + 225 / 2, O=-90)
+            case 1:  # Top left
+                return AdaptedPose(
+                    x=1000 - 450 + self.properties.robot_width / 2,
+                    y=1500 - 450 + self.properties.robot_width / 2,
+                    O=-90
+                )
+            case 2:  # Bottom left
+                return AdaptedPose(
+                    x=-(1000 - 450 + self.properties.robot_width / 2),
+                    y=1500 - 450 + self.properties.robot_width / 2,
+                    O=-90
+                )
+            case 3:  # Middle right
+                return AdaptedPose(
+                    x=self.properties.robot_width / 2,
+                    y=-(1500 - 450 + self.properties.robot_width / 2),
+                    O=90
+                )
 
     def get_available_start_poses(self) -> list[int]:
         """
         Get start poses available depending on camp and table.
         """
         start_pose_indices = []
-        for i in range(1, 6):
-            pose = GameContext.get_start_pose(i)
+        for i in range(1, 4):
+            pose = self.get_start_pose(i)
             if self.table.contains(pose):
                 start_pose_indices.append(i)
 

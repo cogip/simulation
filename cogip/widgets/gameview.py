@@ -135,7 +135,7 @@ class GameView(QtWidgets.QWidget):
             False when an other object (obstacle, manual robot, ...) is picked.
         new_move_delta: signal emitted to movable entities when a mouse drag is detected
     """
-    ground_image: Path = Path("assets/table2023.png")
+    ground_image: Path = Path("assets/table2024.png")
     obstacle_entities: List[ObstacleEntity] = []
     plane_intersection: QtGui.QVector3D = None
     mouse_enabled: bool = True
@@ -186,7 +186,8 @@ class GameView(QtWidgets.QWidget):
 
         self.scene_transform = Qt3DCore.QTransform()
         self.scene_entity.addComponent(self.scene_transform)
-        self.scene_transform.setTranslation(QtGui.QVector3D(-1500, 0, 0))
+        self.scene_transform.setTranslation(QtGui.QVector3D(0, 0, 0))
+        self.scene_transform.setRotationZ(180)
 
         # Draw axis
         self.x_axis = LineEntity(QtCore.Qt.red, self.scene_entity)
@@ -217,8 +218,8 @@ class GameView(QtWidgets.QWidget):
         self.camera_entity.setViewCenter(QtGui.QVector3D(0, 0, 0))
 
         # Create lights
-        self.light_entity = create_ligth_entity(self.root_entity, 5000, -5000, 5000)
-        self.light_entity2 = create_ligth_entity(self.root_entity, -5000, -5000, 5000)
+        self.light_entity = create_light_entity(self.root_entity, 5000, 5000, 5000)
+        self.light_entity2 = create_light_entity(self.root_entity, 5000, -5000, 5000)
 
         # Create object picker
         self.create_object_picker()
@@ -248,14 +249,14 @@ class GameView(QtWidgets.QWidget):
     def top_view(self) -> None:
         self.root_transform.setRotationX(0),
         self.root_transform.setRotationY(0),
-        self.root_transform.setRotationZ(0)
-        self.root_transform.setTranslation(QtGui.QVector3D(0, 0, -4000))
+        self.root_transform.setRotationZ(-90)
+        self.root_transform.setTranslation(QtGui.QVector3D(0, 0, -3500))
 
     def default_view(self) -> None:
         self.root_transform.setRotationX(-45)
         self.root_transform.setRotationY(0)
-        self.root_transform.setRotationZ(-30)
-        self.root_transform.setTranslation(QtGui.QVector3D(0, 0, -5000))
+        self.root_transform.setRotationZ(-45)
+        self.root_transform.setTranslation(QtGui.QVector3D(100, 400, -3500))
 
     def add_asset(self, asset: AssetEntity) -> None:
         """
@@ -270,7 +271,7 @@ class GameView(QtWidgets.QWidget):
 
     def add_obstacle(
             self,
-            x: int = 1500,
+            x: int = 0,
             y: int = 0,
             rotation: int = 0,
             **kwargs) -> ObstacleEntity:
@@ -360,8 +361,8 @@ class GameView(QtWidgets.QWidget):
         delta.setZ(0)
         rot_z = self.root_transform.rotationZ()
         delta = QtGui.QVector3D(
-            delta.x() * math.cos(math.radians(rot_z)) + delta.y() * math.sin(math.radians(rot_z)),
-            delta.y() * math.cos(math.radians(rot_z)) - delta.x() * math.sin(math.radians(rot_z)),
+            - delta.x() * math.cos(math.radians(rot_z)) - delta.y() * math.sin(math.radians(rot_z)),
+            - delta.y() * math.cos(math.radians(rot_z)) + delta.x() * math.sin(math.radians(rot_z)),
             0
         )
         self.new_move_delta.emit(delta)
@@ -472,8 +473,8 @@ class GameView(QtWidgets.QWidget):
         self.ground_entity = Qt3DCore.QEntity(self.scene_entity)
 
         ground_mesh = Qt3DExtras.QPlaneMesh(self.ground_entity)
-        ground_mesh.setHeight(2000)
-        ground_mesh.setWidth(3000)
+        ground_mesh.setHeight(3000)
+        ground_mesh.setWidth(2000)
         self.ground_entity.addComponent(ground_mesh)
 
         ground_material = Qt3DExtras.QTextureMaterial(self.ground_entity)
@@ -488,7 +489,7 @@ class GameView(QtWidgets.QWidget):
 
         ground_transform = Qt3DCore.QTransform(self.ground_entity)
         ground_transform.setRotationX(90)
-        ground_transform.setTranslation(QtGui.QVector3D(1500, 0, 0))
+        ground_transform.setTranslation(QtGui.QVector3D(0, 0, 0))
         self.ground_entity.addComponent(ground_transform)
 
     def get_camera_params(self) -> Dict[str, Any]:
@@ -514,15 +515,19 @@ class GameView(QtWidgets.QWidget):
         self.root_transform.setRotationZ(camera_params["rotation"][2])
 
 
-def create_ligth_entity(parent: Qt3DCore.QEntity, x: float, y: float, z: float) -> Qt3DCore.QEntity:
+def create_light_entity(
+        parent: Qt3DCore.QEntity,
+        x: float, y: float, z: float,
+        intensity: float = 1) -> Qt3DCore.QEntity:
     """
-    Create a ligth entity at the position specified in arguments.
+    Create a light entity at the position specified in arguments.
 
     Arguments:
         parent: parent entity
         x: X position
         y: Y position
         z: Z position
+        intensity: light intensity
 
     Return:
         The light entity
@@ -531,7 +536,7 @@ def create_ligth_entity(parent: Qt3DCore.QEntity, x: float, y: float, z: float) 
 
     light = Qt3DRender.QPointLight(light_entity)
     light.setColor(QtGui.QColor(QtCore.Qt.white))
-    light.setIntensity(1)
+    light.setIntensity(intensity)
     light_entity.addComponent(light)
 
     light_transform = Qt3DCore.QTransform(light_entity)
