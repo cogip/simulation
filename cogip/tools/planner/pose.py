@@ -1,6 +1,6 @@
 from typing import Awaitable, Callable, ClassVar, final
 
-from pydantic import validator
+from pydantic import field_validator
 import socketio
 
 from cogip.models.models import PathPose
@@ -36,7 +36,7 @@ class Pose(PathPose):
         """
         Convert the pose into its parent class.
         """
-        return PathPose(**self.dict())
+        return PathPose(**self.model_dump())
 
 
 class AdaptedPose(Pose):
@@ -48,17 +48,16 @@ class AdaptedPose(Pose):
     """
     _camp: ClassVar[Camp] = Camp()
 
-    class Config:
-        underscore_attrs_are_private = True
-
-    @validator('y')
+    @field_validator('y')
+    @classmethod
     def adapt_y(cls, v, **kwargs):
         """
         Validator to adapt Y depending on the camp at initialization.
         """
         return Camp().adapt_y(v)
 
-    @validator('O')
+    @field_validator('O')
+    @classmethod
     def adapt_O(cls, v, **kwargs):
         """
         Validator to adapt the angle depending on the camp at initialization.

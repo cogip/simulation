@@ -3,6 +3,7 @@ from enum import IntEnum
 from pydantic import BaseModel, Field
 
 from ..tools.copilot.messages import PB_PumpCommand, PB_ServoCommand, PB_PositionalActuatorCommand
+from typing import Literal
 
 
 # Actuators common definitions
@@ -43,7 +44,7 @@ class ServoEnum(IntEnum):
 
 
 class ServoCommand(BaseModel):
-    kind: ActuatorsKindEnum = Field(ActuatorsKindEnum.SERVO, const=True)
+    kind: Literal[ActuatorsKindEnum.SERVO] = ActuatorsKindEnum.SERVO
     id: ServoEnum = Field(
         ...,
         title="Id",
@@ -76,7 +77,7 @@ class PumpEnum(IntEnum):
 
 
 class PumpCommand(BaseModel):
-    kind: ActuatorsKindEnum = Field(ActuatorsKindEnum.PUMP, const=True)
+    kind: Literal[ActuatorsKindEnum.PUMP] = ActuatorsKindEnum.PUMP
     id: PumpEnum = Field(
         ...,
         title="Id",
@@ -120,7 +121,7 @@ class PositionalActuatorEnum(IntEnum):
 
 
 class PositionalActuatorCommand(BaseModel):
-    kind: ActuatorsKindEnum = Field(ActuatorsKindEnum.POSITIONAL, const=True)
+    kind: Literal[ActuatorsKindEnum.POSITIONAL] = ActuatorsKindEnum.POSITIONAL
     id: PositionalActuatorEnum = Field(
         ...,
         title="Id",

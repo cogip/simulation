@@ -24,7 +24,7 @@ class SioEvents(socketio.ClientNamespace):
         polling2.poll(lambda: self.client.connected is True, step=0.2, poll_forever=True)
         logger.info("Connected to cogip-server")
         self.emit("connected", self._detector.robot_id)
-        self.emit("register_menu", {"name": "detector", "menu": menu.dict()})
+        self.emit("register_menu", {"name": "detector", "menu": menu.model_dump()})
         self._detector.start()
 
     def on_disconnect(self) -> None:
@@ -54,11 +54,11 @@ class SioEvents(socketio.ClientNamespace):
         """
         if cmd == "config":
             # Get JSON Schema
-            schema = self._detector.properties.schema()
+            schema = self._detector.properties.model_json_schema()
             # Add namespace in JSON Schema
             schema["namespace"] = "/detector"
             # Add current values in JSON Schema
-            for prop, value in self._detector.properties.dict().items():
+            for prop, value in self._detector.properties.model_dump().items():
                 schema["properties"][prop]["value"] = value
             # Send config
             self.emit("config", schema)
@@ -74,7 +74,7 @@ class SioEvents(socketio.ClientNamespace):
         """
         Callback on robot pose message.
         """
-        self._detector.robot_pose = models.Pose.parse_obj(data)
+        self._detector.robot_pose = models.Pose.model_validate(data)
 
     def on_lidar_data(self, data: List[int]) -> None:
         """

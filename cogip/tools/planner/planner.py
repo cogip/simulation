@@ -6,6 +6,7 @@ import queue
 import time
 from typing import Any
 
+from pydantic import RootModel, TypeAdapter
 import socketio
 
 from cogip import models
@@ -184,7 +185,7 @@ class Planner:
                 name, value = await asyncio.to_thread(self._sio_emitter_queues[robot.robot_id].get)
                 match name:
                     case "avoidance_path":
-                        robot.avoidance_path = [pose.Pose.parse_obj(m) for m in value]
+                        robot.avoidance_path = [pose.Pose.model_validate(m) for m in value]
                     case "blocked":
                         if self._sio.connected:
                             await self._sio_ns.emit("brake", robot.robot_id)
@@ -389,7 +390,7 @@ class Planner:
             menu.menu.entries.insert(0, menu_entry)
             self._start_pose_menu_entries[robot_id] = menu_entry
             setattr(self, "cmd_" + func_name, partial(self.cmd_choose_start_position, robot_id))
-            await self._sio_ns.emit("register_menu", {"name": "planner", "menu": menu.menu.dict()})
+            await self._sio_ns.emit("register_menu", {"name": "planner", "menu": menu.menu.model_dump()})
 
     async def reset(self):
         """
@@ -410,7 +411,7 @@ class Planner:
         """
         Set the start position of the robot for the next game.
         """
-        await self._sio_ns.emit("pose_start", (robot_id, pose_start.dict()))
+        await self._sio_ns.emit("pose_start", (robot_id, pose_start.model_dump()))
 
     def set_pose_current(self, robot_id: int, pose: models.Pose) -> None:
         """
@@ -418,7 +419,7 @@ class Planner:
         """
         if not (robot := self._robots.get(robot_id)):
             return
-        robot.pose_current = models.Pose.parse_obj(pose)
+        robot.pose_current = models.Pose.model_validate(pose)
 
     async def set_pose_reached(self, robot: "Robot"):
         """
@@ -536,7 +537,7 @@ class Planner:
         return obstacles
 
     async def send_obstacles(self):
-        await self._sio_ns.emit("obstacles", [o.dict(exclude_defaults=True) for o in self.all_obstacles])
+        await self._sio_ns.emit("obstacles", [o.model_dump(exclude_defaults=True) for o in self.all_obstacles])
 
     async def command(self, cmd: str):
         """
@@ -556,11 +557,11 @@ class Planner:
 
         if cmd == "config":
             # Get JSON Schema
-            schema = self._properties.schema()
+            schema = TypeAdapter(Properties).json_schema()
             # Add namespace in JSON Schema
             schema["namespace"] = "/planner"
             # Add current values in JSON Schema
-            for prop, value in self._properties.dict().items():
+            for prop, value in RootModel[Properties](self._properties).model_dump().items():
                 schema["properties"][prop]["value"] = value
             # Send config
             await self._sio_ns.emit("config", schema)

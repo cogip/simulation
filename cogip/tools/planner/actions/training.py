@@ -17,7 +17,7 @@ class FinalAction(Action):
             planner: "Planner", actions: Actions,
             pose: models.Pose):
         super().__init__(f"Final action at ({int(pose.x)}, {int(pose.y)})", planner, actions)
-        self.pose = Pose(**pose.dict(), after_pose_func=self.after_final)
+        self.pose = Pose(**pose.model_dump(), after_pose_func=self.after_final)
         self.poses = [self.pose]
 
     def weight(self, robot: "Robot") -> float:

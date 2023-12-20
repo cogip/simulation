@@ -61,7 +61,7 @@ def avoidance_process(
     min_dist: float = 100.0  # minimum distance to other robots to exclude obstacles
 
     while not shared_exiting[robot_id]:
-        queue_sio.put(("avoidance_path", [pose.pose.dict(exclude_defaults=True) for pose in avoidance_path]))
+        queue_sio.put(("avoidance_path", [pose.pose.model_dump(exclude_defaults=True) for pose in avoidance_path]))
         path_refresh_interval = shared_properties["path_refresh_interval"]
 
         now = time.time()
@@ -80,8 +80,8 @@ def avoidance_process(
         if not pose_current or not pose_order:
             logger.debug(f"Avoidance {robot_id}: Skip path update (no pose current or no pose order)")
             continue
-        pose_current = models.PathPose.parse_obj(pose_current)
-        pose_order = models.PathPose.parse_obj(pose_order)
+        pose_current = models.PathPose.model_validate(pose_current)
+        pose_order = models.PathPose.model_validate(pose_order)
 
         if strategy in [Strategy.LinearSpeedTest, Strategy.AngularSpeedTest]:
             logger.debug(f"Avoidance {robot_id}: Skip path update (speed test)")
@@ -103,14 +103,18 @@ def avoidance_process(
 
         # Create an obstacle for other robots
         other_robot_obstacles = [
-            create_dyn_obstacle(models.PathPose.parse_obj(p), shared_properties, radius=shared_properties["robot_width"] / 1.5)
+            create_dyn_obstacle(
+                models.PathPose.model_validate(p),
+                shared_properties,
+                radius=shared_properties["robot_width"] / 1.5
+            )
             for rid, p in shared_poses_current.items()
             if rid != robot_id
         ]
 
         # Create dynamic obstacles
         dyn_obstacles = [
-            models.DynRoundObstacle.parse_obj(obstacle)
+            models.DynRoundObstacle.model_validate(obstacle)
             for obstacle in shared_obstacles.get(robot_id, [])
         ]
 
@@ -192,13 +196,13 @@ def avoidance_process(
             logger.debug(f"Avoidance {robot_id}: ignore path update (last_emitted_pose_order == new_pose_order)")
             continue
 
-        last_emitted_pose_order = new_pose_order.copy()
+        last_emitted_pose_order = new_pose_order.model_copy()
 
         if robot.controller != new_controller:
             queue_sio.put(("set_controller", new_controller.value))
 
         logger.debug(f"Avoidance {robot_id}: Update path")
-        queue_sio.put(("pose_order", new_pose_order.dict(exclude_defaults=True)))
-        queue_sio.put(("path", [pose.pose.dict(exclude_defaults=True) for pose in avoidance_path]))
+        queue_sio.put(("pose_order", new_pose_order.model_dump(exclude_defaults=True)))
+        queue_sio.put(("path", [pose.pose.model_dump(exclude_defaults=True) for pose in avoidance_path]))
 
     logger.info(f"Avoidance {robot_id}: process exited")

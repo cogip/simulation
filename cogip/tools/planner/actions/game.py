@@ -25,7 +25,7 @@ class ParkingAction(Action):
         self.after_action_func = self.after_action
 
         self.pose = Pose(
-            **pose.dict()
+            **pose.model_dump()
         )
         self.poses = [self.pose]
 

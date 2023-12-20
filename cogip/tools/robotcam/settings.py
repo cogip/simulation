@@ -1,19 +1,24 @@
 from pathlib import Path
 
-from pydantic import AnyHttpUrl, BaseSettings, Field, FilePath
+from pydantic import AnyHttpUrl, Field, FilePath
 
 from .codecs import VideoCodec
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(env_prefix='robotcam_')
+
     id: int = Field(
         default=1,
         ge=1,
-        help="Robot ID"
+        help="Robot ID",
+        alias="robot_id"
     )
     socketio_server_url: AnyHttpUrl = Field(
         "http://localhost:8090",
-        description="Socket.IO Server URL"
+        description="Socket.IO Server URL",
+        alias="cogip_socketio_server_url"
     )
     camera_device: Path = Field(
         default="/dev/v4l/by-id/usb-HBV_HD_CAMERA_HBV_HD_CAMERA-video-index0",
@@ -43,14 +48,3 @@ class Settings(BaseSettings):
         default=False,
         description="Using sample calibration board, display distance between tags"
     )
-
-    class Config:
-        env_prefix = 'robotcam_'
-        fields = {
-            'id': {
-                'env': ["robot_id", "robotcam_id"]
-            },
-            'server_url': {
-                'env': 'cogip_server_url'
-            }
-        }

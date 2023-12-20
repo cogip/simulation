@@ -81,7 +81,7 @@ class CameraHandler():
             return True
 
         self.sio.connect(
-            self.settings.socketio_server_url,
+            str(self.settings.socketio_server_url),
             namespaces=["/robotcam"],
             auth={
                 "id": self.settings.id

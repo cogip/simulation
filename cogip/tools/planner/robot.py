@@ -68,7 +68,7 @@ class Robot:
         Set the start pose.
         """
         self.action = None
-        self.pose_current = pose.copy()
+        self.pose_current = pose.model_copy()
         self.pose_order = None
         self.pose_reached = True
         self.avoidance_path = []
@@ -98,7 +98,7 @@ class Robot:
     @pose_current.setter
     def pose_current(self, new_pose: models.Pose):
         self._pose_current = new_pose
-        self.planner._shared_poses_current[self.robot_id] = new_pose.dict(exclude_unset=True)
+        self.planner._shared_poses_current[self.robot_id] = new_pose.model_dump(exclude_unset=True)
 
     @property
     def pose_order(self) -> pose.Pose | None:
@@ -110,7 +110,7 @@ class Robot:
         if new_pose is None and self.robot_id in self.planner._shared_poses_order:
             del self.planner._shared_poses_order[self.robot_id]
         elif new_pose is not None:
-            self.planner._shared_poses_order[self.robot_id] = new_pose.path_pose.dict(exclude_unset=True)
+            self.planner._shared_poses_order[self.robot_id] = new_pose.path_pose.model_dump(exclude_unset=True)
             if self.robot_id in self.planner._shared_last_avoidance_pose_currents:
                 del self.planner._shared_last_avoidance_pose_currents[self.robot_id]
 
@@ -129,7 +129,7 @@ class Robot:
     def obstacles(self, obstacles: models.DynObstacleList):
         self._obstacles = obstacles
         self.planner._shared_obstacles[self.robot_id] = [
-            obstacle.dict(exclude_defaults=True)
+            obstacle.model_dump(exclude_defaults=True)
             for obstacle in obstacles
         ]
 
@@ -153,7 +153,7 @@ class Robot:
         self.pose_order = pose_order
 
         if self.game_context.strategy in [Strategy.LinearSpeedTest, Strategy.AngularSpeedTest]:
-            await self.planner._sio_ns.emit("pose_order", (self.robot_id, self.pose_order.pose.dict()))
+            await self.planner._sio_ns.emit("pose_order", (self.robot_id, self.pose_order.pose.model_dump()))
 
         return self.pose_order
 

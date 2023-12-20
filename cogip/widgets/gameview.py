@@ -4,9 +4,8 @@ from pathlib import Path
 import timeit
 from typing import Any, Dict, List
 
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 from pydantic.json import pydantic_encoder
-from pydantic.tools import parse_file_as
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.Qt3DCore import Qt3DCore
@@ -301,9 +300,9 @@ class GameView(QtWidgets.QWidget):
             filename: path of the JSON file
         """
         try:
-            obstacle_models = parse_file_as(models.ObstacleList, filename)
+            obstacle_models = TypeAdapter(models.ObstacleList).validate_json(filename.read_text())
             for obstacle_model in obstacle_models:
-                self.add_obstacle(**obstacle_model.dict())
+                self.add_obstacle(**obstacle_model.model_dump())
         except ValidationError as exc:
             print(exc)
 

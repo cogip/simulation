@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 async def pump_command(robot_id: int, planner: "Planner", pump: PumpEnum, command: bool) -> float:
     await planner._sio_ns.emit("actuator_command", data={
         "robot_id": robot_id,
-        "command": PumpCommand(id=pump, command=command).dict()
+        "command": PumpCommand(id=pump, command=command).model_dump()
     })
     return 0
 
@@ -40,7 +40,7 @@ async def pump_right_off(robot_id: int, planner: "Planner") -> float:
 async def servo_command(robot_id: int, planner: "Planner", servo: ServoEnum, command: int) -> float:
     await planner._sio_ns.emit("actuator_command", data={
         "robot_id": robot_id,
-        "command": ServoCommand(id=servo, command=command).dict()
+        "command": ServoCommand(id=servo, command=command).model_dump()
     })
     return 0
 
@@ -81,7 +81,7 @@ async def positional_motor_command(
         command: int) -> float:
     await planner._sio_ns.emit("actuator_command", data={
         "robot_id": robot_id,
-        "command": PositionalActuatorCommand(id=motor, command=command).dict()
+        "command": PositionalActuatorCommand(id=motor, command=command).model_dump()
     })
     return 0
 

@@ -1,7 +1,6 @@
 from enum import IntEnum
-from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from .messages import PB_Pids, PB_Pid
 
@@ -14,6 +13,11 @@ class PidEnum(IntEnum):
 
 
 class Pid(BaseModel):
+    model_config = ConfigDict(
+        title="PID Properties",
+        json_schema_extra=lambda s: s["properties"].pop("id")
+    )
+
     id: PidEnum = Field(
         ...,
         title="PID",
@@ -40,13 +44,6 @@ class Pid(BaseModel):
         description="Integral term limit"
     )
 
-    class Config:
-        title = "PID Properties"
-
-        @staticmethod
-        def schema_extra(schema: dict[str, Any]) -> None:
-            schema["properties"].pop("id")
-
     def pb_copy(self, message: PB_Pid) -> None:
         message.id = self.id
         message.kp = self.kp
@@ -56,14 +53,13 @@ class Pid(BaseModel):
 
 
 class Pids(BaseModel):
+    model_config = ConfigDict(title="PID List")
+
     pids: list[Pid] = Field(
         ...,
         title="PID List",
         description="List of PID properties"
     )
-
-    class Config:
-        title = "PID List"
 
     def pb_copy(self, message: PB_Pids) -> None:
         for pid in self.pids:

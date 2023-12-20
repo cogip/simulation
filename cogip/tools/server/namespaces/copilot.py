@@ -82,7 +82,7 @@ class CopilotNamespace(socketio.AsyncNamespace):
         """
         if not (robot_id := self._context.copilot_sids.get(sid)):
             return
-        self._context.shell_menu[robot_id] = models.ShellMenu.parse_obj(menu)
+        self._context.shell_menu[robot_id] = models.ShellMenu.model_validate(menu)
         await self.emit("shell_menu", (robot_id, menu), namespace="/dashboard")
 
     async def on_pose(self, sid, pose):

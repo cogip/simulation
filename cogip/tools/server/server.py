@@ -59,7 +59,7 @@ class Server:
             logger.warning(f"register_menu: missing 'menu' in data: {data}")
             return
         try:
-            menu = models.ShellMenu.parse_obj(menu_dict)
+            menu = models.ShellMenu.model_validate(menu_dict)
         except ValidationError as exc:
             logger.warning(f"register_menu: cannot validate 'menu': {exc}")
             return
@@ -73,6 +73,6 @@ class Server:
         self.context.tool_menus[ns_name] = menu
         await self.sio.emit(
             "tool_menu",
-            self.context.tool_menus[self.context.current_tool_menu].dict(),
+            self.context.tool_menus[self.context.current_tool_menu].model_dump(),
             namespace="/dashboard"
         )

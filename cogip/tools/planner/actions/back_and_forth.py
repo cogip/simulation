@@ -28,7 +28,7 @@ class BackAndForthAction(Action):
             x=x, y=y, O=angle,
             max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL
         )
-        pose2 = Pose(**self.robot.pose_current.dict())
+        pose2 = Pose(**self.robot.pose_current.model_dump())
         pose1.after_pose_func = partial(self.append_pose, pose1)
         pose2.after_pose_func = partial(self.append_pose, pose2)
         self.poses.append(pose1)

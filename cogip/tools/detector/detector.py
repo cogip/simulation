@@ -269,12 +269,12 @@ class Detector:
         with self._lidar_data_lock:
             filtered_distances = self.filter_distances()
         with self._robot_pose_lock:
-            robot_pose = self.robot_pose.copy()
+            robot_pose = self.robot_pose.model_copy()
 
         obstacles = self.generate_obstacles(robot_pose, filtered_distances)
         logger.debug(f"Generated obstacles: {obstacles}")
         if self._sio.connected:
-            self._sio.emit("obstacles", [o.dict(exclude_defaults=True) for o in obstacles], namespace="/detector")
+            self._sio.emit("obstacles", [o.model_dump(exclude_defaults=True) for o in obstacles], namespace="/detector")
 
     def start_lidar(self):
         """
