@@ -52,8 +52,6 @@ plugins:
             - asyncio.get_running_loop = MagicMock()
           selection:
             new_path_syntax: true
-      watch:
-        - cogip
 
   - gen-files:
       scripts:
@@ -62,6 +60,9 @@ plugins:
       nav_file: SUMMARY.md
 
   - search
+
+watch:
+  - cogip
 
 markdown_extensions:
   - admonition
