@@ -97,7 +97,7 @@ class SocketioController(QtCore.QObject):
         Connect to socket.io server.
         """
         # Poll in background to wait for the first connection.
-        # Deconnections/reconnections are handle directly by the client.
+        # Disconnections/reconnections are handle directly by the client.
         self._retry_connection = True
         Thread(target=self.try_connect).start()
 

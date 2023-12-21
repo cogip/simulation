@@ -107,7 +107,7 @@ class ObstacleEntity(Qt3DCore.QEntity):
         """
         Qt Slot
 
-        Update the Z position based on the obstacle heigth.
+        Update the Z position based on the obstacle height.
         This function is called each time the height is modified
         to set the bottom on Z=0.
         """
@@ -155,7 +155,7 @@ class ObstacleEntity(Qt3DCore.QEntity):
 
         Slot called on a ```released``` mouse event on the obstacle.
 
-        If this event occurs juste after a ```pressed``` event, it is only a mouse click,
+        If this event occurs just after a ```pressed``` event, it is only a mouse click,
         so display the property window.
 
         Emit a signal to re-enable the camera controller after moving the obstacle.
