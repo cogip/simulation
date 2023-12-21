@@ -143,6 +143,7 @@ class Detector:
                         "mode": "detection" if self._laser else "emulation"
                     }
                 )
+                self._sio.wait()
             except socketio.exceptions.ConnectionError:
                 time.sleep(2)
                 continue
