@@ -283,7 +283,12 @@ class Planner:
         """
         if robot_id in self._robots:
             await self.del_robot(robot_id)
+
         logger.debug(f"Planner: add robot {robot_id}")
+
+        if self._game_context._table == TableEnum.Training and len(self._robots) == 1:
+            logger.warning(f"Planner: only one robot is authorized on training table, ignoring robot {robot_id}")
+            return
 
         if robot_id not in self._sio_emitter_queues:
             self._sio_emitter_queues[robot_id] = self._process_manager.Queue()
@@ -722,6 +727,9 @@ class Planner:
                 new_camp = Camp.Colors[value]
                 if self._camp.color == new_camp:
                     return
+                if self._game_context._table == TableEnum.Training and new_camp == Camp.Colors.blue:
+                    logger.warning("Wizard: only yellow camp is authorized on training table")
+                    return
                 self._camp.color = new_camp
                 await self.reset()
                 logger.info(f"Wizard: New camp: {self._camp.color.name}")
@@ -747,6 +755,9 @@ class Planner:
             case "Choose Table":
                 new_table = TableEnum[value]
                 if self._game_context.table == new_table:
+                    return
+                if self._game_context.camp == Camp.Colors.blue and new_table == TableEnum.Training:
+                    logger.warning("Wizard: training table is not supported with blue camp")
                     return
                 self._game_context.table = new_table
                 self._shared_properties["table"] = new_table
