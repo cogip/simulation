@@ -59,3 +59,22 @@ include = ["cogip*"]
 "cogip.tools.robotcam.data" = [
     "*"
 ]
+
+[tool.ruff]
+exclude = [
+    ".git",
+    "__pycache__",
+    "submodules",
+    "tests",
+    "doc",
+    "cogip/tools/copilot/messages",
+]
+line-length = 127
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

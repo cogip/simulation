@@ -86,7 +86,7 @@ class Pose(Vertex):
         y: Y position
         O: Rotation
     """
-    O: float | None = 0.0
+    O: float | None = 0.0  # noqa
 
 
 class Speed(BaseModel):
