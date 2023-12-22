@@ -217,7 +217,7 @@ class SocketioController(QtCore.QObject):
                 self._retry_connection = False
                 self.signal_exit.emit()
                 return
-            logger.error("Monitor connection error:", data)
+            logger.error(f"Monitor connection error: {data}")
             self.signal_new_console_text.emit("Connection to server failed.")
             self.signal_connected.emit(False)
 

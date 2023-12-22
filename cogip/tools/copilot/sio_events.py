@@ -51,7 +51,11 @@ class SioEvents(socketio.AsyncClientNamespace):
         On connection error, check if a Planner is already connected and exit,
         or retry connection.
         """
-        logger.error(f"Connection to cogip-server failed: {data.get('message')}")
+        if isinstance(data, dict) and "message" in data:
+            message = data["message"]
+        else:
+            message = data
+        logger.error(f"Connection to cogip-server failed: {message}")
 
     async def on_command(self, data):
         """
