@@ -36,7 +36,7 @@ class ChartView(QtWidgets.QWidget):
     range_max_y: float = default_range_max_y
     zoom_max: int = 10
 
-    def __init__(self, parent=None, name: Optional[str] = None):
+    def __init__(self, parent: QtWidgets.QWidget | None = None, name: str | None = None):
         """
         Class constructor.
 

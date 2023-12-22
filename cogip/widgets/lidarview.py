@@ -39,7 +39,7 @@ class LidarView(QtWidgets.QWidget):
             distance_color: QtGui.QColor,
             intensity_color: QtGui.QColor,
             nb_angles: int,
-            parent=None):
+            parent: QtWidgets.QWidget | None = None):
         """
         Class constructor.
 
