@@ -20,10 +20,12 @@ class Action:
             self,
             name: str,
             planner: "Planner",
-            actions: "Actions"):
+            actions: "Actions",
+            interruptable: bool = True):
         self.name = name
         self.planner = planner
         self.actions = actions
+        self.interruptable = interruptable
         self.game_context = GameContext()
         self.robot: "Robot" | None = None
         self.poses: list[Pose] = []

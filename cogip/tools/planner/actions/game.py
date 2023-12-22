@@ -1,7 +1,6 @@
 import math
 from typing import TYPE_CHECKING
 
-# from cogip.models import actuators
 from cogip.models import models
 from .. import actuators
 from ..camp import Camp
@@ -20,9 +19,10 @@ class ParkingAction(Action):
             self,
             planner: "Planner", actions: Actions,
             pose: models.Pose):
-        super().__init__(f"Parking action at ({int(pose.x)}, {int(pose.y)})", planner, actions)
+        super().__init__(f"Parking action at ({int(pose.x)}, {int(pose.y)})", planner, actions, interruptable=False)
         self.before_action_func = self.before_action
         self.after_action_func = self.after_action
+        self.actions_backup: Actions = []
 
         self.pose = Pose(
             **pose.model_dump()
@@ -47,11 +47,22 @@ class ParkingAction(Action):
         await actuators.right_arm_up(self.robot.robot_id, self.planner)
 
         if ParkingAction.nb_robots == len(self.planner._robots):
+            # Backup actions in the the action is recycled
+            self.actions_backup = self.actions[:]
+
+            # Clear remaining actions
             self.actions.clear()
 
     async def after_action(self):
         self.robot.parked = True
         await self.planner._sio_ns.emit("robot_end", self.robot.robot_id)
+
+    async def recycle(self):
+        ParkingAction.nb_robots -= 1
+        if self.actions_backup:
+            self.actions = self.actions_backup[:]
+            self.actions_backup.clear()
+        self.recycled = True
 
 
 class GameActions(Actions):

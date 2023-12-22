@@ -476,7 +476,7 @@ class Planner:
         """
         Function called when a robot cannot find a path to go to the current pose of the current action
         """
-        if current_action := robot.action:
+        if (current_action := robot.action) and current_action.interruptable:
             logger.debug(f"Robot {robot.robot_id}: blocked")
             new_pose: pose.Pose | None = None
             if new_action := self.get_action(robot):
