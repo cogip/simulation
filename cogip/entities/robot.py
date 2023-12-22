@@ -7,12 +7,14 @@ from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
+from PySide6.Qt3DExtras import Qt3DExtras
+from PySide6.Qt3DRender import Qt3DRender
 
 from cogip.models import Pose
 
 from .asset import AssetEntity
 from .robot_order import RobotOrderEntity
-from .sensor import LidarSensor
+from .sensor import LidarSensor, Sensor
 
 
 class RobotEntity(AssetEntity):
@@ -44,6 +46,23 @@ class RobotEntity(AssetEntity):
         self.rect_obstacles_pool = []
         self.round_obstacles_pool = []
 
+        self.beacon_entity = Qt3DCore.QEntity(self)
+        self.beacon_mesh = Qt3DExtras.QCylinderMesh(self.beacon_entity)
+        self.beacon_mesh.setLength(80)
+        self.beacon_mesh.setRadius(40)
+        self.beacon_entity.addComponent(self.beacon_mesh)
+
+        self.beacon_transform = Qt3DCore.QTransform(self.beacon_entity)
+        self.beacon_transform.setTranslation(QtGui.QVector3D(0, 0, 350 + self.beacon_mesh.length() / 2))
+        self.beacon_transform.setRotationX(90)
+        self.beacon_entity.addComponent(self.beacon_transform)
+
+        # Create a layer used by sensors to activate detection on the beacon
+        self.beacon_entity.layer = Qt3DRender.QLayer(self.beacon_entity)
+        self.beacon_entity.layer.setRecursive(True)
+        self.beacon_entity.layer.setEnabled(True)
+        self.beacon_entity.addComponent(self.beacon_entity.layer)
+
         # Use a timer to trigger sensors update
         self.sensors_update_timer = QtCore.QTimer()
 
@@ -60,6 +79,8 @@ class RobotEntity(AssetEntity):
 
         self.add_lidar_sensors()
         self.order_robot = RobotOrderEntity(self.parent())
+
+        Sensor.add_obstacle(self.beacon_entity)
 
     def add_lidar_sensors(self):
         """
