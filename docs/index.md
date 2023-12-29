@@ -35,6 +35,9 @@ Tools running on the central beacon's Raspberry Pi 4 are:
 
 [`Dashboard`](usage/dashboard.md) is accessed through a web browser on the same network.
 
+[`Camera`](usage/camera.md) provides different commands to get information about cameras,
+calibrate them and detect Aruco tags.
+
 The touchscreens display the `Dashboard` using an web browser embedded in the Raspberry Pi.
 
 ## Emulation Software Architecture

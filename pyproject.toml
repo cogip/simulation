@@ -26,6 +26,7 @@ cogip-server = "cogip.tools.server.__main__:main"
 cogip-dashboard = "cogip.tools.dashboard.__main__:main"
 cogip-basket = "cogip.tools.basket.__main__:main"
 cogip-lidarusb = "cogip.tools.lidarusb.main:main"
+cogip-camera = "cogip.tools.camera.__main__:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
