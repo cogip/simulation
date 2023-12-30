@@ -16,6 +16,7 @@ Options:
   --help                Show this message and exit.
 
 Commands:
+  calibrate  Calibrate camera using images captured by the 'capture' command
   capture    Capture images to be used by the 'calibrate' command
   info       Get properties of connected cameras
 ```
@@ -105,6 +106,65 @@ Options:
   --capture-interval INTEGER      Capture an image every 'capture_interval' frames
                                   env var: CAMERA_CAPTURE_INTERVAL
                                   default: 10
+
+  --charuco-rows INTEGER          Number of rows on the Charuco board
+                                  env var: CAMERA_CHARUCO_ROWS
+                                  default: 8
+
+  --charuco-cols INTEGER          Number of columns on the Charuco board
+                                  env var: CAMERA_CHARUCO_COLS
+                                  default: 13
+
+  --charuco-marker-length INTEGER
+                                  Length of an Aruco marker on the Charuco board (in mm)
+                                  env var: CAMERA_CHARUCO_MARKER_LENGTH
+                                  default: 23
+
+  --charuco-square-length INTEGER
+                                  Length of a square in the Charuco board (in mm)
+                                  env var: CAMERA_CHARUCO_SQUARE_LENGTH
+                                  default: 30
+
+  --charuco-legacy / --no-charuco-legacy
+                                  Use Charuco boards compatible with OpenCV < 4.6
+                                  env var: CAMERA_CHARUCO_LEGACY
+                                  default: no-charuco-legacy
+
+  --help                          Show this message and exit.
+```
+
+## Calibrate Command
+
+Generate intrinsic calibration parameters using images recorded by the `capture` command.
+
+The parameter file is written in `cameras/<robot_id>/<camera_name>_<camera_codec>_<camera_width>x<camera_height>/params.yaml`.
+
+```bash
+$ cogip-camera calibrate --help
+Usage: cogip-camera calibrate [OPTIONS]
+
+  Calibrate camera using images captured by the 'capture' command
+
+Options:
+  -i, --id INTEGER RANGE          Robot ID.
+                                  env var: ROBOT_ID, CAMERA_ID
+                                  default: 1, x>=0
+
+  --camera-name [hbv|sonix]       Name of the camera
+                                  env var: CAMERA_NAME
+                                  default: hbv
+
+  --camera-codec [mjpg|yuyv]      Camera video codec
+                                  env var: CAMERA_CODEC
+                                  default: yuyv
+
+  --camera-width INTEGER          Camera frame width
+                                  env var: CAMERA_WIDTH
+                                  default: 640
+
+  --camera-height INTEGER         Camera frame height
+                                  env var: CAMERA_HEIGHT
+                                  default: 480
 
   --charuco-rows INTEGER          Number of rows on the Charuco board
                                   env var: CAMERA_CHARUCO_ROWS
