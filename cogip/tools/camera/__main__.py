@@ -5,11 +5,13 @@ from typing import Annotated
 import typer
 
 from . import logger
+from .capture import cmd_capture
 from .info import cmd_info
 
 
 app = typer.Typer()
 app.command(name="info")(cmd_info)
+app.command(name="capture")(cmd_capture)
 
 
 @app.callback()
