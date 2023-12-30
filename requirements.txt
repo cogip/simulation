@@ -7,7 +7,7 @@ httpx==0.26.0
 Jinja2==3.1.2
 luma.oled==3.13.0
 more_itertools==10.1.0
-opencv-contrib-python==4.5.5.64
+opencv-contrib-python==4.9.0.80
 pigpio==1.78
 polling2==0.5.0
 protobuf==3.20.3

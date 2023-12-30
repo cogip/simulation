@@ -31,7 +31,6 @@ class CameraHandler():
     _camera_codec: VideoCodec = None                    # Video codec
     _camera_frame_width: int = None                     # Camera frame width
     _camera_frame_height: int = None                    # Camera frame height
-    _camera_params_file: Path = None                    # Camera intrinsics parameters
     _camera_capture: cv2.VideoCapture = None            # OpenCV video capture
     _last_frame: SharedMemory = None                    # Last generated frame to stream on web server
     _frame_rate: float = 6                             # Number of images processed by seconds
