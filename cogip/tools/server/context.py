@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import Dict, List, Literal
+from typing import Literal
 
 from bidict import bidict
 
@@ -25,10 +25,10 @@ class Context(metaclass=Singleton):
     """
     copilot_sids = bidict()
     detector_sids = bidict()
-    detector_modes: Dict[int, Literal["detection", "emulation"]] = field(default_factory=dict)
+    detector_modes: dict[int, Literal["detection", "emulation"]] = field(default_factory=dict)
     robotcam_sids = bidict()
-    tool_menus: Dict[str, models.ShellMenu] = field(default_factory=dict)
+    tool_menus: dict[str, models.ShellMenu] = field(default_factory=dict)
     current_tool_menu: str | None = None
-    shell_menu: Dict[int, models.ShellMenu] = field(default_factory=dict)
-    connected_robots: List[int] = field(default_factory=list)
+    shell_menu: dict[int, models.ShellMenu] = field(default_factory=dict)
+    connected_robots: list[int] = field(default_factory=list)
     virtual_robots: list[int] = field(default_factory=list)

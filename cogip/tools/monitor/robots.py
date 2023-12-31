@@ -32,11 +32,6 @@ class RobotManager(QtCore.QObject):
         self._round_obstacles_pool: List[DynCircleObstacleEntity] = []
         self._lidar_emulation: Dict[int, bool] = {}
 
-        # Provision 2 robots
-        for i in range(2):
-            self.add_robot(i + 1)
-            self.del_robot(i + 1)
-
     def add_robot(self, robot_id: int, virtual: bool = False) -> None:
         """
         Add a new robot.

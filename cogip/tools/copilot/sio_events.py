@@ -3,7 +3,7 @@ import platform
 from typing import Any, Dict
 
 import polling2
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 import socketio
 
 from cogip import models
@@ -37,8 +37,8 @@ class SioEvents(socketio.AsyncClientNamespace):
         await self.emit("connected", (self._copilot.id, (platform.machine() != "aarch64")))
 
         if self._copilot.shell_menu:
-            await self.emit("menu", self._copilot.shell_menu.dict(exclude_defaults=True, exclude_unset=True))
-        await self.emit("register_menu", {"name": "copilot", "menu": menu.dict()})
+            await self.emit("menu", self._copilot.shell_menu.model_dump(exclude_defaults=True, exclude_unset=True))
+        await self.emit("register_menu", {"name": "copilot", "menu": menu.model_dump()})
 
     def on_disconnect(self) -> None:
         """
@@ -51,7 +51,11 @@ class SioEvents(socketio.AsyncClientNamespace):
         On connection error, check if a Planner is already connected and exit,
         or retry connection.
         """
-        logger.error(f"Connection to cogip-server failed: {data.get('message')}")
+        if isinstance(data, dict) and "message" in data:
+            message = data["message"]
+        else:
+            message = data
+        logger.error(f"Connection to cogip-server failed: {message}")
 
     async def on_command(self, data):
         """
@@ -87,7 +91,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         Callback on pose start (from planner).
         Forward to mcu-firmware.
         """
-        start_pose = models.PathPose.parse_obj(data)
+        start_pose = models.PathPose.model_validate(data)
         pb_start_pose = PB_PathPose()
         start_pose.copy_pb(pb_start_pose)
         await self._copilot.pbcom.send_serial_message(copilot.pose_start_uuid, pb_start_pose)
@@ -97,7 +101,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         Callback on pose order (from planner).
         Forward to mcu-firmware.
         """
-        pose_order = models.PathPose.parse_obj(data)
+        pose_order = models.PathPose.model_validate(data)
         pb_pose_order = PB_PathPose()
         pose_order.copy_pb(pb_pose_order)
         await self._copilot.pbcom.send_serial_message(copilot.pose_order_uuid, pb_pose_order)
@@ -114,7 +118,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         Callback on actuator_command (from dashboard).
         Forward to mcu-firmware.
         """
-        command = parse_obj_as(ActuatorCommand, data)
+        command = TypeAdapter(ActuatorCommand).validate_python(data)
 
         pb_command = PB_ActuatorCommand()
         if isinstance(command, ServoCommand):

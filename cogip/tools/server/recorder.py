@@ -42,7 +42,7 @@ class GameRecordFileHandler(RotatingFileHandler):
             self.stream = None
 
         current_record_file = Path(self.baseFilename)
-        if current_record_file.stat().st_size == 0:
+        if current_record_file.exists() and current_record_file.stat().st_size == 0:
             current_record_file.unlink()
 
         self.baseFilename = self.newBaseFilename()

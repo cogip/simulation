@@ -46,15 +46,16 @@ class PlannerNamespace(socketio.AsyncNamespace):
         Callback on pose start.
         Forward to pose to copilot.
         """
-        if robot_id in self._context.copilot_sids.inverse:
-            await self.emit("pose_start", pose, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
+        if copilot_sid := self._context.copilot_sids.inverse.get(robot_id):
+            await self.emit("pose_start", pose, to=copilot_sid, namespace="/copilot")
 
     async def on_pose_order(self, sid, robot_id: int, pose: Dict[str, Any]):
         """
         Callback on pose order.
         Forward to pose to copilot and dashboards.
         """
-        await self.emit("pose_order", pose, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
+        if copilot_sid := self._context.copilot_sids.inverse.get(robot_id):
+            await self.emit("pose_order", pose, to=copilot_sid, namespace="/copilot")
         await self.emit("pose_order", (robot_id, pose), namespace="/dashboard")
         await self._recorder.async_record({"pose_order": (robot_id, pose)})
 
@@ -130,13 +131,15 @@ class PlannerNamespace(socketio.AsyncNamespace):
         """
         Callback on robot_end message.
         """
-        await self.emit("game_end", to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
+        if copilot_sid := self._context.copilot_sids.inverse.get(robot_id):
+            await self.emit("game_end", to=copilot_sid, namespace="/copilot")
 
     async def on_game_reset(self, sid, robot_id):
         """
         Callback on game_reset message.
         """
-        await self.emit("game_reset", to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
+        if copilot_sid := self._context.copilot_sids.inverse.get(robot_id):
+            await self.emit("game_reset", to=copilot_sid, namespace="/copilot")
 
     async def on_score(self, sid, score: int):
         """
@@ -163,4 +166,5 @@ class PlannerNamespace(socketio.AsyncNamespace):
         """
         Callback on brake message.
         """
-        await self.emit("brake", to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
+        if copilot_sid := self._context.copilot_sids.inverse.get(robot_id):
+            await self.emit("brake", to=copilot_sid, namespace="/copilot")

@@ -10,6 +10,8 @@ src_root = Path("cogip")
 for path in sorted(src_root.glob("**/*.py")):
     if path.stem.endswith("_pb2"):
         continue
+    if path.stem == "__init__":
+        continue
     module_path = path.with_suffix("")
     doc_path = module_path.with_suffix(".md")
     full_doc_path = Path("reference", doc_path)

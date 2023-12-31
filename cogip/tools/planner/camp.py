@@ -9,9 +9,9 @@ class Camp(metaclass=Singleton):
     """
     class Colors(IntEnum):
         blue = 0
-        green = 1
+        yellow = 1
 
-    def __init__(self, color: Colors = Colors.blue):
+    def __init__(self, color: Colors = Colors.yellow):
         self.color = color
 
     def adapt_y(self, dist: float) -> float:

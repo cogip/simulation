@@ -1,0 +1,18 @@
+[Unit]
+Description=COGIP Dashboard
+
+Wants=network.target
+After=server.service
+Requires=server.service
+
+[Service]
+Type=simple
+Restart=on-failure
+User=root
+WorkingDirectory=/tmp
+ExecStart=/usr/local/bin/python3 -m cogip.tools.dashboard
+RestartSec=5
+EnvironmentFile=/etc/environment
+
+[Install]
+WantedBy=multi-user.target

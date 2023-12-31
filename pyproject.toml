@@ -23,6 +23,7 @@ cogip-planner = "cogip.tools.planner.__main__:main"
 cogip-beaconcam = "cogip.tools.beaconcam.main:main"
 cogip-robotcam = "cogip.tools.robotcam.main:main"
 cogip-server = "cogip.tools.server.__main__:main"
+cogip-dashboard = "cogip.tools.dashboard.__main__:main"
 cogip-basket = "cogip.tools.basket.__main__:main"
 cogip-lidarusb = "cogip.tools.lidarusb.main:main"
 
@@ -58,3 +59,22 @@ include = ["cogip*"]
 "cogip.tools.robotcam.data" = [
     "*"
 ]
+
+[tool.ruff]
+exclude = [
+    ".git",
+    "__pycache__",
+    "submodules",
+    "tests",
+    "doc",
+    "cogip/tools/copilot/messages",
+]
+line-length = 127
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"

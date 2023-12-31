@@ -102,6 +102,12 @@ make -C submodules/mcu-firmware/applications/cup2023 BOARD=cogip-native PORT="-c
 cogip-server
 ```
 
+`Dashboard` is run using:
+
+```bash
+cogip-dashboard
+```
+
 `Planner` is run using:
 
 ```bash
@@ -129,7 +135,7 @@ cogip-robotcam
 And finally `Monitor` is launched using:
 
 ```bash
-cogip-monitor http://localhost:8080
+cogip-monitor http://localhost:8090
 ```
 
 The `Dashboard` is accessible using a web browser at `http://localhost:8080`.

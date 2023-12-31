@@ -1,7 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Properties(BaseModel):
+    model_config = ConfigDict(title="Detector Properties")
+
     min_distance: int = Field(
         ..., ge=0, le=1000,
         title="Min Distance",
@@ -22,6 +24,3 @@ class Properties(BaseModel):
         title="Refresh Interval",
         description="Interval between each update of the obstacle list (seconds)"
     )
-
-    class Config:
-        title = "Detector Properties"

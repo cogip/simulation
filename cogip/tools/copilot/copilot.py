@@ -100,7 +100,6 @@ class Copilot:
             try:
                 await self._sio.connect(
                     self._server_url,
-                    socketio_path="sio/socket.io",
                     namespaces=["/copilot"],
                     auth={"id": self._id}
                 )
@@ -153,9 +152,9 @@ class Copilot:
             await self._loop.run_in_executor(None, pb_menu.ParseFromString, message)
 
         menu = MessageToDict(pb_menu)
-        self._shell_menu = models.ShellMenu.parse_obj(menu)
+        self._shell_menu = models.ShellMenu.model_validate(menu)
         if self._sio.connected:
-            await self._sio_events.emit("menu", self._shell_menu.dict(exclude_defaults=True, exclude_unset=True))
+            await self._sio_events.emit("menu", self._shell_menu.model_dump(exclude_defaults=True, exclude_unset=True))
 
     @pb_exception_handler
     async def handle_message_pose(self, message: bytes | None = None) -> None:
@@ -238,15 +237,15 @@ class Copilot:
         pids = Pids(pids=pid_list)
 
         # Get JSON Schema
-        pids_schema = pids.schema()
+        pids_schema = pids.model_json_schema()
         # Add namespace in JSON Schema
         pids_schema["namespace"] = "/copilot"
         # Add current values in JSON Schema
         values = []
         for pid in pids.pids:
-            pid_schema = copy.deepcopy(pid.schema())
+            pid_schema = copy.deepcopy(pid.model_json_schema())
             pid_schema["title"] = pid.id.name
-            for prop, value in pid.dict().items():
+            for prop, value in pid.model_dump().items():
                 if prop == "id":
                     continue
                 pid_schema["properties"][prop]["value"] = value

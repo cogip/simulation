@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>COGIP Dashboard</title>
+    <link rel="shortcut icon" href="#" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='css/purged/bootstrap-5.3.0-alpha.min.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', path='css/index.css') }}"
+    />
+  </head>
+
+  <body class="d-flex flex-column h-100 w-100 bg-dark">
+    <div class="row">
+      <div class="col-lg-3 col-sm-3" id="menu">
+        <img id="logoCogip" src="static/img/cogip-logo.png" />
+
+        <nav>
+          <div class="nav nav-tabs" id="nav-tab" role="tablist">
+            <button
+              class="nav-link active"
+              id="nav-tool-tab"
+              data-bs-toggle="tab"
+              data-bs-target="#nav-tool"
+              type="button"
+              role="tab"
+              aria-controls="nav-tool"
+              aria-selected="false"
+            >
+              Tool
+            </button>
+          </div>
+        </nav>
+        <div class="tab-content" id="nav-tabContent">
+          <div
+            class="tab-pane fade show active"
+            id="nav-tool"
+            role="tabpanel"
+            aria-labelledby="nav-tool-tab"
+            tabindex="0"
+          >
+            ...
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-9 col-sm-9">
+        <button
+          class="btn btn-outline-dark float-end"
+          id="buttonRefresh"
+          type="button"
+          onclick="location.reload();"
+        >
+          <img src="{{ url_for('static', path='img/refresh.svg') }}" />
+        </button>
+        <canvas id="board"></canvas>
+        <button
+          class="btn btn-outline-dark float-end"
+          id="buttonCameraModal"
+          type="button"
+          onclick="modalCamera()"
+          data-bs-toggle="modal"
+          data-bs-target="#cameraModal"
+        >
+          <img src="{{ url_for('static', path='img/camera.svg') }}" />
+        </button>
+      </div>
+    </div>
+
+    <footer class="footer mt-auto bg-dark">
+      <div class="container-lg pt-2">
+        <span class="text-muted" style="float: left" id="connection">
+          <pre><img src="{{ url_for('static', path='img/cross_red_circle.svg') }}" /></pre>
+        </span>
+        <span class="text-muted" style="float: right" id="state">
+          <pre id="state_robot_1"></pre>
+          <pre id="state_robot_2"></pre>
+        </span>
+      </div>
+    </footer>
+
+    <div
+      class="modal"
+      tabindex="-1"
+      id="cameraModal"
+      style="display: none"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark">
+          <div class="modal-body" id="displayFlux">
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal"
+      tabindex="-1"
+      id="wizardModal"
+      style="display: none"
+      aria-hidden="true"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+    >
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark">
+          <div class="modal-header">
+            <h5 class="modal-title" id="wizardModalTitle"></h5>
+          </div>
+          <div class="modal-body">
+            <div>
+              <span class="input-group-text" id="wizardName"></span>
+              <input
+                id="wizardInput"
+                type=""
+                class="use-keyboard-input"
+                placeholder=""
+                aria-label="wizardName"
+                aria-describedby="wizardName"
+              />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button id="btn-send-wizard" type="button" class="btn btn-primary">
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="modal"
+      tabindex="-1"
+      id="scoreModal"
+      style="display: none"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content bg-dark">
+          <div class="modal-header">
+            <h5 class="modal-title">Score</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="displayScore"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script
+      type="text/javascript"
+      src="{{ url_for('static', path='js/external/bootstrap-5.3.0-alpha.min.js') }}"
+    ></script>
+    <script
+      type="text/javascript"
+      src="{{ url_for('static', path='js/external/socket.io.min.js') }}"
+    ></script>
+
+    <script type="module">
+      import * as socketModule from "../static/js/socketModule.js";
+      import * as drawModule from "../static/js/drawModule.js";
+      import * as cameraModule from "../static/js/cameraModule.js";
+      import * as wizardModule from "../static/js/wizardModule.js";
+      import * as scoreModule from "../static/js/scoreModule.js";
+      import { virtualKeyboard } from "../static/js/keyboardModule.js";
+
+      window.addEventListener("resize", drawModule.resizeCanvas, false);
+
+      document.addEventListener("DOMContentLoaded", function (event) {
+        drawModule.resizeCanvas(); // draw background
+        virtualKeyboard.init(); // initialize keyboard
+
+        io.connect(":8090/dashboard")
+          .on("connect", function () {
+            socketModule.onConnection(this);
+          })
+          .on("disconnect", function () {
+            socketModule.onDisconnect();
+          })
+          .on("tool_menu", function (menu) {
+            socketModule.onMenu(menu, "tool", this);
+            virtualKeyboard._actualize();
+          })
+          .on("pose_current", function (robot_id, msg) {
+            drawModule.updatePoseCurrent(robot_id, msg);
+          })
+          .on("pose_order", function (robot_id, msg) {
+            drawModule.updatePoseOrder(robot_id, msg);
+          })
+          .on("obstacles", function (msg) {
+            drawModule.updateObstacles(msg);
+          })
+          .on("state", function (robot_id, msg) {
+            drawModule.displayMsg(robot_id, msg); // uses message to display information in bottom page
+            drawModule.drawBoardElement(msg); // move robot
+          })
+          .on("path", function (robot_id, msg) {
+            drawModule.recordPath(robot_id, msg);
+          })
+          .on("wizard", function (msg) {
+            wizardModule.openWizardModal(msg, this);
+            virtualKeyboard._actualize();
+          })
+          .on("close_wizard", function () {
+            document
+              .getElementById("wizardModal")
+              .setAttribute("style", "display: none;");
+            virtualKeyboard.close();
+          })
+          .on("score", function (score) {
+            scoreModule.openScoreModal(score);
+          })
+          .on("close_score", function () {
+            document
+              .getElementById("scoreModal")
+              .setAttribute("style", "display: none;");
+          });
+      });
+    </script>
+  </body>
+</html>

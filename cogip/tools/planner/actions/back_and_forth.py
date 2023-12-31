@@ -21,18 +21,14 @@ class BackAndForthAction(Action):
         self.before_action_func = self.compute_poses
 
     async def compute_poses(self) -> None:
-        x = self.game_context.table.x_min + self.game_context.table.x_max - self.robot.pose_current.x
+        x = self.robot.pose_current.x
         y = self.game_context.table.y_min + self.game_context.table.y_max - self.robot.pose_current.y
-        angle = self.robot.pose_current.O
-        if angle < 0:
-            angle = self.robot.pose_current.O + 180
-        else:
-            angle = self.robot.pose_current.O - 180
+        angle = -self.robot.pose_current.O
         pose1 = Pose(
             x=x, y=y, O=angle,
             max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL
         )
-        pose2 = Pose(**self.robot.pose_current.dict())
+        pose2 = Pose(**self.robot.pose_current.model_dump())
         pose1.after_pose_func = partial(self.append_pose, pose1)
         pose2.after_pose_func = partial(self.append_pose, pose2)
         self.poses.append(pose1)

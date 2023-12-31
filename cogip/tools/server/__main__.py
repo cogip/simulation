@@ -15,13 +15,13 @@ def changes_callback(changes):
 
 
 def main_opt(
-    port: int = typer.Option(
-        8080,
-        "-p", "--port",
-        min=8000,
-        max=8999,
-        help="Socket.IO/Web server port",
-        envvar="SERVER_PORT"
+    id: int = typer.Option(
+        0,
+        "-i", "--id",
+        min=0,
+        max=9,
+        help="Robot ID.",
+        envvar=["ROBOT_ID", "SERVER_ID"]
     ),
     record_dir: Path = typer.Option(
         Path("/var/tmp/cogip"),
@@ -49,7 +49,7 @@ def main_opt(
     uvicorn_args = ("cogip.tools.server.app:app",)
     uvicorn_kwargs = {
         "host": "0.0.0.0",
-        "port": port,
+        "port": 8090 + id,
         "workers": 1,
         "log_level": "warning"
     }

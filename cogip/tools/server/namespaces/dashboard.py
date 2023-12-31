@@ -18,9 +18,9 @@ class DashboardNamespace(socketio.AsyncNamespace):
 
     async def on_connected(self, sid):
         logger.info("Dashboard connected.")
-        await self.emit("tool_menu", self._context.tool_menus[self._context.current_tool_menu].dict(), to=sid)
+        await self.emit("tool_menu", self._context.tool_menus[self._context.current_tool_menu].model_dump(), to=sid)
         for robot_id, menu in self._context.shell_menu.items():
-            await self.emit("shell_menu", (robot_id, menu.dict()), to=sid)
+            await self.emit("shell_menu", (robot_id, menu.model_dump()), to=sid)
         for robot_id in self._context.connected_robots:
             await self.emit("add_robot", (robot_id, robot_id in self._context.virtual_robots), to=sid)
 
@@ -43,7 +43,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
             self._context.current_tool_menu = cmd
             await self.emit(
                 "tool_menu",
-                self._context.tool_menus[self._context.current_tool_menu].dict(),
+                self._context.tool_menus[self._context.current_tool_menu].model_dump(),
                 namespace="/dashboard"
             )
         else:
@@ -52,7 +52,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
                 self._context.current_tool_menu = "root"
                 await self.emit(
                     "tool_menu",
-                    self._context.tool_menus[self._context.current_tool_menu].dict(),
+                    self._context.tool_menus[self._context.current_tool_menu].model_dump(),
                     namespace="/dashboard"
                 )
             else:

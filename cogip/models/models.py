@@ -28,7 +28,7 @@ class MenuEntry(BaseModel):
         The following line shows how to initialize this class from a JSON
         string received on the serial port:
         ```py
-        MenuEntry.parse_raw("{\\"cmd\\": \\"_state\\", \\"desc\\": \\"Print current state\\"}")
+        MenuEntry.model_validate_json("{\\"cmd\\": \\"_state\\", \\"desc\\": \\"Print current state\\"}")
         ```
     """
     cmd: str
@@ -47,7 +47,7 @@ class ShellMenu(BaseModel):
         The following line shows how to initialize this class from a JSON
         string received on the serial port:
         ```py
-        ShellMenu.parse_raw(
+        ShellMenu.model_validate_json(
             "{\\"name\\": \\"planner\\","
             " \\"entries\\": ["
             "    {\\"cmd\\": \\"_help_json\\", \\"desc\\": \\"Display available commands in JSON format\\"},"
@@ -86,7 +86,7 @@ class Pose(Vertex):
         y: Y position
         O: Rotation
     """
-    O: float | None = 0.0
+    O: float | None = 0.0  # noqa
 
 
 class Speed(BaseModel):
@@ -137,7 +137,7 @@ class PathPose(Pose):
 
     @property
     def pose(self) -> Pose:
-        return Pose(**self.dict())
+        return Pose(**self.model_dump())
 
     def copy_pb(self, pb_path_pose: PB_PathPose) -> None:
         """

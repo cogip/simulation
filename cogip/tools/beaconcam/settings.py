@@ -1,14 +1,18 @@
 from pathlib import Path
 
-from pydantic import AnyHttpUrl, BaseSettings, Field, FilePath
+from pydantic import AnyHttpUrl, Field, FilePath
 
 from .codecs import VideoCodec
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    server_url: AnyHttpUrl = Field(
-        "http://localhost:8080",
-        description="Server URL"
+    model_config = SettingsConfigDict(env_prefix='beaconcam_')
+
+    socketio_server_url: AnyHttpUrl = Field(
+        "http://localhost:8090",
+        description="Socket.IO Server URL",
+        alias="cogip_socketio_server_url"
     )
     camera_device: Path = Field(
         default="/dev/v4l/by-id/usb-Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN0001-video-index0",
@@ -34,11 +38,3 @@ class Settings(BaseSettings):
         default=1,
         description="Number of uvicorn workers (ignored if launched by gunicorn)"
     )
-
-    class Config:
-        env_prefix = 'beaconcam_'
-        fields = {
-            'server_url': {
-                'env': 'cogip_server_url'
-            }
-        }

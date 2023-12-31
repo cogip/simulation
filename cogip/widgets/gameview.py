@@ -4,9 +4,8 @@ from pathlib import Path
 import timeit
 from typing import Any, Dict, List
 
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 from pydantic.json import pydantic_encoder
-from pydantic.tools import parse_file_as
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.Qt3DCore import Qt3DCore
@@ -19,7 +18,6 @@ from cogip.entities.line import LineEntity
 from cogip.entities.obstacle import ObstacleEntity
 from cogip.entities.path import PathEntity
 from cogip.entities.robot_manual import RobotManualEntity
-from cogip.entities.artifacts import CakeLayerEntity, CakeLayerID, CherryEntity, CherryID, create_cake_layers, create_cherries
 from cogip.models import models
 
 
@@ -131,17 +129,13 @@ class GameView(QtWidgets.QWidget):
     Attributes:
         ground_image: image to display on the table floor
         obstacle_entities: List of obstacles
-        cake_layer_entities: List of cake layers
-        cherry_entities: List of cherry entities
         plane_intersection: last active intersection of plane picker in world coordinates
         mouse_enabled: True to authorize translation and rotation of the scene using the mouse,
             False when an other object (obstacle, manual robot, ...) is picked.
         new_move_delta: signal emitted to movable entities when a mouse drag is detected
     """
-    ground_image: Path = Path("assets/table2023.png")
+    ground_image: Path = Path("assets/table2024.png")
     obstacle_entities: List[ObstacleEntity] = []
-    cake_layer_entities: Dict[CakeLayerID, CakeLayerEntity] = {}
-    cherry_entities: Dict[CherryID, CherryEntity] = {}
     plane_intersection: QtGui.QVector3D = None
     mouse_enabled: bool = True
     new_move_delta: qtSignal = qtSignal(QtGui.QVector3D)
@@ -191,7 +185,8 @@ class GameView(QtWidgets.QWidget):
 
         self.scene_transform = Qt3DCore.QTransform()
         self.scene_entity.addComponent(self.scene_transform)
-        self.scene_transform.setTranslation(QtGui.QVector3D(-1500, 0, 0))
+        self.scene_transform.setTranslation(QtGui.QVector3D(0, 0, 0))
+        self.scene_transform.setRotationZ(180)
 
         # Draw axis
         self.x_axis = LineEntity(QtCore.Qt.red, self.scene_entity)
@@ -222,8 +217,8 @@ class GameView(QtWidgets.QWidget):
         self.camera_entity.setViewCenter(QtGui.QVector3D(0, 0, 0))
 
         # Create lights
-        self.light_entity = create_ligth_entity(self.root_entity, 5000, -5000, 5000)
-        self.light_entity2 = create_ligth_entity(self.root_entity, -5000, -5000, 5000)
+        self.light_entity = create_light_entity(self.root_entity, 5000, 5000, 5000)
+        self.light_entity2 = create_light_entity(self.root_entity, 5000, -5000, 5000)
 
         # Create object picker
         self.create_object_picker()
@@ -253,14 +248,14 @@ class GameView(QtWidgets.QWidget):
     def top_view(self) -> None:
         self.root_transform.setRotationX(0),
         self.root_transform.setRotationY(0),
-        self.root_transform.setRotationZ(0)
-        self.root_transform.setTranslation(QtGui.QVector3D(0, 0, -4000))
+        self.root_transform.setRotationZ(-90)
+        self.root_transform.setTranslation(QtGui.QVector3D(0, 0, -3500))
 
     def default_view(self) -> None:
         self.root_transform.setRotationX(-45)
         self.root_transform.setRotationY(0)
-        self.root_transform.setRotationZ(-30)
-        self.root_transform.setTranslation(QtGui.QVector3D(0, 0, -5000))
+        self.root_transform.setRotationZ(-45)
+        self.root_transform.setTranslation(QtGui.QVector3D(100, 400, -3500))
 
     def add_asset(self, asset: AssetEntity) -> None:
         """
@@ -275,7 +270,7 @@ class GameView(QtWidgets.QWidget):
 
     def add_obstacle(
             self,
-            x: int = 1500,
+            x: int = 0,
             y: int = 0,
             rotation: int = 0,
             **kwargs) -> ObstacleEntity:
@@ -299,21 +294,21 @@ class GameView(QtWidgets.QWidget):
 
     def load_obstacles(self, filename: Path):
         """
-        Load obstables from a JSON file.
+        Load obstacles from a JSON file.
 
         Arguments:
             filename: path of the JSON file
         """
         try:
-            obstacle_models = parse_file_as(models.ObstacleList, filename)
+            obstacle_models = TypeAdapter(models.ObstacleList).validate_json(filename.read_text())
             for obstacle_model in obstacle_models:
-                self.add_obstacle(**obstacle_model.dict())
+                self.add_obstacle(**obstacle_model.model_dump())
         except ValidationError as exc:
             print(exc)
 
     def save_obstacles(self, filename: Path):
         """
-        Save obstables to a JSON file.
+        Save obstacles to a JSON file.
 
         Arguments:
             filename: path of the JSON file
@@ -324,36 +319,9 @@ class GameView(QtWidgets.QWidget):
         with filename.open('w') as fd:
             fd.write(json.dumps(obstacle_models, default=pydantic_encoder, indent=2))
 
-    def load_cake_layers(self, filename: Path):
-        """
-        Load cake layers from a JSON file.
-
-        Arguments:
-            filename: path of the JSON file
-        """
-        try:
-            cake_layer_models = parse_file_as(List[models.CakeLayer], filename)
-            for cake_layer_model in cake_layer_models:
-                self.cake_layer_entities[cake_layer_model.id].update_from_model(cake_layer_model)
-        except ValidationError as exc:
-            print(exc)
-
-    def save_cake_layers(self, filename: Path):
-        """
-        Save cake layers to a JSON file.
-
-        Arguments:
-            filename: path of the JSON file
-        """
-        cake_layer_models = []
-        for cake_layer_entity in self.cake_layer_entities.values():
-            cake_layer_models.append(cake_layer_entity.get_model())
-        with filename.open('w') as fd:
-            fd.write(json.dumps(cake_layer_models, default=pydantic_encoder, indent=2))
-
     def asset_ready(self):
         """
-        Create cake layers when all assets are ready (loading assets is done in background).
+        Create artifacts when all assets are ready (loading assets is done in background).
         """
         child_assets_not_ready = [
             child
@@ -361,13 +329,6 @@ class GameView(QtWidgets.QWidget):
             if not child.asset_ready
         ]
         if len(child_assets_not_ready) == 0:
-            self.cake_layer_entities = create_cake_layers(self.scene_entity, self.container)
-            for cake_layer in self.cake_layer_entities.values():
-                cake_layer.enable_controller.connect(self.enable_mouse)
-                self.new_move_delta.connect(cake_layer.new_move_delta)
-
-            self.cherry_entities = create_cherries(self.scene_entity, self.container)
-
             self.robot_manual = RobotManualEntity(self.scene_entity, self.container)
             self.robot_manual.enable_controller.connect(self.enable_mouse)
             self.new_move_delta.connect(self.robot_manual.new_move_delta)
@@ -399,8 +360,8 @@ class GameView(QtWidgets.QWidget):
         delta.setZ(0)
         rot_z = self.root_transform.rotationZ()
         delta = QtGui.QVector3D(
-            delta.x() * math.cos(math.radians(rot_z)) + delta.y() * math.sin(math.radians(rot_z)),
-            delta.y() * math.cos(math.radians(rot_z)) - delta.x() * math.sin(math.radians(rot_z)),
+            - delta.x() * math.cos(math.radians(rot_z)) - delta.y() * math.sin(math.radians(rot_z)),
+            - delta.y() * math.cos(math.radians(rot_z)) + delta.x() * math.sin(math.radians(rot_z)),
             0
         )
         self.new_move_delta.emit(delta)
@@ -457,17 +418,17 @@ class GameView(QtWidgets.QWidget):
 
     def pressed(self, pick: Qt3DRender.QPickEvent):
         """
-        Function called on a ```pressed``` mouse event on the cake layer.
+        Function called on a ```pressed``` mouse event on the artifact.
 
-        Emit a signal to disable the camera controller before moving the cake layer.
+        Emit a signal to disable the camera controller before moving the artifact.
         """
         self.last_mouse_pos = pick.worldIntersection()
 
     def moved(self, pick: Qt3DRender.QPickEvent):
         """
-        Function called on a ```moved``` mouse event on the cake layer.
+        Function called on a ```moved``` mouse event on the artifact.
 
-        Just record that the cake layer is moving, the translation is computed
+        Just record that the artifact is moving, the translation is computed
         in the [GameView][cogip.widgets.gameview.GameView] object.
         """
 
@@ -483,7 +444,7 @@ class GameView(QtWidgets.QWidget):
 
     def create_object_picker(self):
         """
-        Add a plane mesh with object picker to help moving objets with mouse drag and drop.
+        Add a plane mesh with object picker to help moving objects with mouse drag and drop.
         """
         self.plane_entity = Qt3DCore.QEntity(self.scene_entity)
 
@@ -511,8 +472,8 @@ class GameView(QtWidgets.QWidget):
         self.ground_entity = Qt3DCore.QEntity(self.scene_entity)
 
         ground_mesh = Qt3DExtras.QPlaneMesh(self.ground_entity)
-        ground_mesh.setHeight(2000)
-        ground_mesh.setWidth(3000)
+        ground_mesh.setHeight(3000)
+        ground_mesh.setWidth(2000)
         self.ground_entity.addComponent(ground_mesh)
 
         ground_material = Qt3DExtras.QTextureMaterial(self.ground_entity)
@@ -527,7 +488,7 @@ class GameView(QtWidgets.QWidget):
 
         ground_transform = Qt3DCore.QTransform(self.ground_entity)
         ground_transform.setRotationX(90)
-        ground_transform.setTranslation(QtGui.QVector3D(1500, 0, 0))
+        ground_transform.setTranslation(QtGui.QVector3D(0, 0, 0))
         self.ground_entity.addComponent(ground_transform)
 
     def get_camera_params(self) -> Dict[str, Any]:
@@ -553,15 +514,19 @@ class GameView(QtWidgets.QWidget):
         self.root_transform.setRotationZ(camera_params["rotation"][2])
 
 
-def create_ligth_entity(parent: Qt3DCore.QEntity, x: float, y: float, z: float) -> Qt3DCore.QEntity:
+def create_light_entity(
+        parent: Qt3DCore.QEntity,
+        x: float, y: float, z: float,
+        intensity: float = 1) -> Qt3DCore.QEntity:
     """
-    Create a ligth entity at the position specified in arguments.
+    Create a light entity at the position specified in arguments.
 
     Arguments:
         parent: parent entity
         x: X position
         y: Y position
         z: Z position
+        intensity: light intensity
 
     Return:
         The light entity
@@ -570,7 +535,7 @@ def create_ligth_entity(parent: Qt3DCore.QEntity, x: float, y: float, z: float) 
 
     light = Qt3DRender.QPointLight(light_entity)
     light.setColor(QtGui.QColor(QtCore.Qt.white))
-    light.setIntensity(1)
+    light.setIntensity(intensity)
     light_entity.addComponent(light)
 
     light_transform = Qt3DCore.QTransform(light_entity)

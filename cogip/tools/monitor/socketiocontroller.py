@@ -3,7 +3,7 @@ import time
 from typing import Any, Dict, List, Optional
 
 import polling2
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
@@ -97,14 +97,14 @@ class SocketioController(QtCore.QObject):
         Connect to socket.io server.
         """
         # Poll in background to wait for the first connection.
-        # Deconnections/reconnections are handle directly by the client.
+        # Disconnections/reconnections are handle directly by the client.
         self._retry_connection = True
         Thread(target=self.try_connect).start()
 
     def try_connect(self):
         while self._retry_connection:
             try:
-                self.sio.connect(self.url, socketio_path="sio/socket.io", namespaces=["/monitor", "/dashboard"])
+                self.sio.connect(self.url, namespaces=["/monitor", "/dashboard"])
             except socketio.exceptions.ConnectionError as ex:
                 print(ex)
                 time.sleep(2)
@@ -155,7 +155,7 @@ class SocketioController(QtCore.QObject):
             "actuator_command",
             data={
                 "robot_id": robot_id,
-                "command": command.dict()
+                "command": command.model_dump()
             },
             namespace="/dashboard"
         )
@@ -174,7 +174,7 @@ class SocketioController(QtCore.QObject):
         self.sio.emit("starter_changed", (robot_id, pushed), namespace="/monitor")
 
     def on_menu(self, menu_name: str, data):
-        menu = models.ShellMenu.parse_obj(data)
+        menu = models.ShellMenu.model_validate(data)
         if self.menus.get(menu_name) != menu:
             self.menus[menu_name] = menu
             self.signal_new_menu.emit(menu_name, menu)
@@ -217,7 +217,7 @@ class SocketioController(QtCore.QObject):
                 self._retry_connection = False
                 self.signal_exit.emit()
                 return
-            logger.error("Monitor connection error:", data)
+            logger.error(f"Monitor connection error: {data}")
             self.signal_new_console_text.emit("Connection to server failed.")
             self.signal_connected.emit(False)
 
@@ -263,7 +263,7 @@ class SocketioController(QtCore.QObject):
             """
             Callback on actuators_state message.
             """
-            state = ActuatorsState.parse_obj(actuators_state)
+            state = ActuatorsState.model_validate(actuators_state)
             self.signal_actuators_state.emit(state)
 
         @self.sio.on("pose_current", namespace="/dashboard")
@@ -271,7 +271,7 @@ class SocketioController(QtCore.QObject):
             """
             Callback on robot pose current message.
             """
-            pose = models.Pose.parse_obj(data)
+            pose = models.Pose.model_validate(data)
             self.signal_new_robot_pose_current.emit(robot_id, pose)
 
         @self.sio.on("pose_order", namespace="/dashboard")
@@ -279,7 +279,7 @@ class SocketioController(QtCore.QObject):
             """
             Callback on robot pose order message.
             """
-            pose = models.Pose.parse_obj(data)
+            pose = models.Pose.model_validate(data)
             self.signal_new_robot_pose_order.emit(robot_id, pose)
 
         @self.sio.on("state", namespace="/dashboard")
@@ -287,7 +287,7 @@ class SocketioController(QtCore.QObject):
             """
             Callback on robot state message.
             """
-            state = models.RobotState.parse_obj(data)
+            state = models.RobotState.model_validate(data)
             self.signal_new_robot_state.emit(robot_id, state)
 
         @self.sio.on("path", namespace="/dashboard")
@@ -295,7 +295,7 @@ class SocketioController(QtCore.QObject):
             """
             Callback on robot path message.
             """
-            path = parse_obj_as(list[models.Vertex], data)
+            path = TypeAdapter(list[models.Vertex]).validate_python(data)
             self.signal_new_robot_path.emit(robot_id, path)
 
         @self.sio.on("obstacles", namespace="/dashboard")
@@ -303,7 +303,7 @@ class SocketioController(QtCore.QObject):
             """
             Callback on obstacles message.
             """
-            obstacles = parse_obj_as(models.DynObstacleList, data)
+            obstacles = TypeAdapter(models.DynObstacleList).validate_python(data)
             self.signal_new_dyn_obstacles.emit(obstacles)
 
         @self.sio.on("add_robot", namespace="/dashboard")

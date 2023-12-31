@@ -25,7 +25,7 @@ class ServoControl(QtCore.QObject):
             layout: The parent layout
         """
         super().__init__()
-        position_schema = servo.schema()["properties"]["position"]
+        position_schema = servo.model_json_schema()["properties"]["position"]
         self._id = servo.id
 
         row = layout.rowCount()

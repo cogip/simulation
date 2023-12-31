@@ -216,7 +216,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.pause()
         with trace_file.open() as fd:
             lines = fd.readlines()
-        self.states = [RobotState.parse_raw(line) for line in lines]
+        self.states = [RobotState.model_validate_json(line) for line in lines]
         self.slider.setValue(0)
         self.slider.setMaximum(len(self.states) - 1)
         self.slider.setEnabled(True)

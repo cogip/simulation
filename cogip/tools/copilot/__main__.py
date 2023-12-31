@@ -21,9 +21,9 @@ def run(*args, **kwargs) -> None:
 
 def main_opt(
     server_url: str = typer.Option(
-        "http://localhost:8080",
-        help="Server URL",
-        envvar="COGIP_SERVER_URL"
+        "http://localhost:8090",
+        help="Socket.IO Server URL",
+        envvar="COGIP_SOCKETIO_SERVER_URL"
     ),
     id: int = typer.Option(
         1,

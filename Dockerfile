@@ -2,7 +2,7 @@ FROM ubuntu:23.04 as cogip-console
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update & \
+RUN apt-get update && \
     apt-get install -y \
         python3 \
         python3-pip \
@@ -51,25 +51,25 @@ FROM ubuntu:20.04 as cogip-firmware
 
 ENV DEBIAN_FRONTEND noninteractive
 
-RUN apt-get update & \
-    apt-get install -y \
-    g++ \
-    g++-multilib \
-    gcc-arm-none-eabi \
-    gcc-multilib \
-    gdb-multiarch \
-    git \
-    libstdc++-arm-none-eabi-newlib \
-    make \
-    ncat netcat-openbsd \
-    protobuf-compiler \
-    python3 \
-    python3-pip \
-    python3-venv \
-    quilt \
-    socat \
-    unzip \
-    wait-for-it
+RUN apt-get update && \
+        apt-get install -y \
+        g++ \
+        g++-multilib \
+        gcc-arm-none-eabi \
+        gcc-multilib \
+        gdb-multiarch \
+        git \
+        libstdc++-arm-none-eabi-newlib \
+        make \
+        ncat netcat-openbsd \
+        protobuf-compiler \
+        python3 \
+        python3-pip \
+        python3-venv \
+        quilt \
+        socat \
+        unzip \
+        wait-for-it
 
 RUN python3 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"

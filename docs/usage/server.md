@@ -23,9 +23,9 @@ $ cogip-server
 $ cogip-server --help
 Usage: cogip-server [OPTIONS]
 
-  -p, --port INTEGER RANGE        Socket.IO/Web server port
-                                  env var: SERVER_PORT
-                                  default: 8080; 8000<=x<=8999
+--id , -i INTEGER RANGE           Robot ID
+                                  env var: ROBOT_ID, SERVER_ID
+                                  default: 0; 0<=x<=9
 
   --record-dir PATH               Directory where games will be recorded
                                   env var: SERVER_RECORD_DIR

@@ -1,6 +1,6 @@
 import asyncio
 from typing import Any, Dict, TYPE_CHECKING
-from pydantic import parse_obj_as
+from pydantic import TypeAdapter
 
 import polling2
 import socketio
@@ -41,13 +41,13 @@ class SioEvents(socketio.AsyncClientNamespace):
         logger.info("Connected to cogip-server")
         await self.emit("connected")
         await self._planner.start()
-        await self.emit("register_menu", {"name": "planner", "menu": menu.dict()})
-        await self.emit("register_menu", {"name": "wizard", "menu": wizard_test_menu.dict()})
-        await self.emit("register_menu", {"name": "actuators1", "menu": actuators_menu_1.dict()})
-        await self.emit("register_menu", {"name": "actuators2", "menu": actuators_menu_2.dict()})
-        await self.emit("register_menu", {"name": "cherries1", "menu": cherries_menu_1.dict()})
-        await self.emit("register_menu", {"name": "cherries2", "menu": cherries_menu_2.dict()})
-        await self.emit("register_menu", {"name": "cameras", "menu": cameras_menu.dict()})
+        await self.emit("register_menu", {"name": "planner", "menu": menu.model_dump()})
+        await self.emit("register_menu", {"name": "wizard", "menu": wizard_test_menu.model_dump()})
+        await self.emit("register_menu", {"name": "actuators1", "menu": actuators_menu_1.model_dump()})
+        await self.emit("register_menu", {"name": "actuators2", "menu": actuators_menu_2.model_dump()})
+        await self.emit("register_menu", {"name": "cherries1", "menu": cherries_menu_1.model_dump()})
+        await self.emit("register_menu", {"name": "cherries2", "menu": cherries_menu_2.model_dump()})
+        await self.emit("register_menu", {"name": "cameras", "menu": cameras_menu.model_dump()})
 
     async def on_disconnect(self):
         """
@@ -110,7 +110,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         Callback on pose current message.
         """
-        self._planner.set_pose_current(robot_id, models.Pose.parse_obj(pose))
+        self._planner.set_pose_current(robot_id, models.Pose.model_validate(pose))
 
     async def on_pose_reached(self, robot_id: int):
         """
@@ -139,7 +139,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         self._planner.set_obstacles(
             robot_id,
-            parse_obj_as(list[models.Vertex], obstacles)
+            TypeAdapter(list[models.Vertex]).validate_python(obstacles)
         )
 
     async def on_wizard(self, message: dict[str, Any]):

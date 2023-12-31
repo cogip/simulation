@@ -21,8 +21,8 @@ All variables can be defined in the `.env` file.
 Example of `.env` file with all default values:
 
 ```bash
-# Server URL
-COGIP_SERVER_URL="http://localhost:8080"
+# Socket.IO Server URL
+COGIP_SOCKETIO_SERVER_URL="http://localhost:8090"
 
 # Robot ID
 ROBOTCAM_ID=1

@@ -6,10 +6,12 @@ import queue
 import time
 from typing import Any
 
+from pydantic import RootModel, TypeAdapter
 import socketio
 
 from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
+from cogip.utils.singleton import Singleton
 from .actions import actions, action_classes
 from cogip.utils.asyncloop import AsyncLoop
 from . import actuators, cameras, logger, menu, pose, sio_events
@@ -47,7 +49,7 @@ class Planner:
         Class constructor.
 
         Arguments:
-            server_url: Server URL
+            server_url: Socket.IO Server URL
             robot_width: Width of the robot (in )
             obstacle_radius: Radius of a dynamic obstacle (in mm)
             obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
@@ -62,6 +64,11 @@ class Planner:
         """
         self._server_url = server_url
         self._debug = debug
+
+        # We have to make sure the Planner is the first object call ing the constructor
+        # of the Properties singleton
+        if Properties in Singleton._instance:
+            raise RuntimeError("Properties class must not be initialized before this point.")
         self._properties = Properties(
             robot_width=robot_width,
             obstacle_radius=obstacle_radius,
@@ -97,7 +104,6 @@ class Planner:
         self._shared_poses_current: DictProxy = self._process_manager.dict()
         self._shared_poses_order: DictProxy = self._process_manager.dict()
         self._shared_obstacles: DictProxy = self._process_manager.dict()
-        self._shared_cake_obstacles: DictProxy = self._process_manager.dict()
         self._shared_last_avoidance_pose_currents: DictProxy = self._process_manager.dict()
         self._sio_emitter_queues: dict[int, queue.Queue] = {}
         self._sio_emitter_tasks: dict[int, asyncio.Task] = {}
@@ -113,7 +119,6 @@ class Planner:
         })
         self._sio_receiver_tasks: dict[int, asyncio.Task] = {}
         self._countdown_task: asyncio.Task | None = None
-        self.update_cake_obstacles()
 
     async def connect(self):
         """
@@ -138,7 +143,6 @@ class Planner:
             try:
                 await self._sio.connect(
                     self._server_url,
-                    socketio_path="sio/socket.io",
                     namespaces=["/planner"]
                 )
             except socketio.exceptions.ConnectionError:
@@ -181,7 +185,7 @@ class Planner:
                 name, value = await asyncio.to_thread(self._sio_emitter_queues[robot.robot_id].get)
                 match name:
                     case "avoidance_path":
-                        robot.avoidance_path = [pose.Pose.parse_obj(m) for m in value]
+                        robot.avoidance_path = [pose.Pose.model_validate(m) for m in value]
                     case "blocked":
                         if self._sio.connected:
                             await self._sio_ns.emit("brake", robot.robot_id)
@@ -269,8 +273,6 @@ class Planner:
         for robot_id in self._robots.keys():
             await actuators.led_on(robot_id, self)
         await self._sio_ns.emit("game_end")
-        if self._game_context.nb_cherries > 0:
-            self._game_context.score += 5 + self._game_context.nb_cherries
         if all([robot.parked for robot in self._robots.values()]):
             self._game_context.score += 15
         await self._sio_ns.emit("score", self._game_context.score)
@@ -281,7 +283,12 @@ class Planner:
         """
         if robot_id in self._robots:
             await self.del_robot(robot_id)
+
         logger.debug(f"Planner: add robot {robot_id}")
+
+        if self._game_context._table == TableEnum.Training and len(self._robots) == 1:
+            logger.warning(f"Planner: only one robot is authorized on training table, ignoring robot {robot_id}")
+            return
 
         if robot_id not in self._sio_emitter_queues:
             self._sio_emitter_queues[robot_id] = self._process_manager.Queue()
@@ -292,6 +299,10 @@ class Planner:
         await self._sio_ns.emit("starter_changed", (robot_id, robot.starter.is_pressed))
         new_start_pose = self._start_positions.get(robot_id, robot_id)
         available_start_poses = self._game_context.get_available_start_poses()
+        if len(available_start_poses) == 0:
+            logger.error(f"Planner: not start position for robot {robot_id}, removing robot.")
+            await self.del_robot(robot_id)
+            return
         if new_start_pose not in available_start_poses:
             new_start_pose = available_start_poses[(robot_id - 1) % len(available_start_poses)]
         await robot.set_pose_start(self._game_context.get_start_pose(new_start_pose).pose)
@@ -300,11 +311,9 @@ class Planner:
 
         self._shared_exiting[robot_id] = False
         self._shared_obstacles[robot_id] = []
-        self._shared_cake_obstacles[robot_id] = []
         self._sio_emitter_tasks[robot_id] = asyncio.create_task(
             self.task_sio_emitter(robot), name=f"Robot {robot_id}: Task SIO Emitter"
         )
-        self.update_cake_obstacles(robot_id)
         self._avoidance_processes[robot_id] = Process(target=avoidance_process, args=(
             robot.namespace,
             self._game_context.strategy,
@@ -315,7 +324,6 @@ class Planner:
             self._shared_poses_current,
             self._shared_poses_order,
             self._shared_obstacles,
-            self._shared_cake_obstacles,
             self._shared_last_avoidance_pose_currents,
             self._sio_emitter_queues[robot_id]
         ))
@@ -387,7 +395,7 @@ class Planner:
             menu.menu.entries.insert(0, menu_entry)
             self._start_pose_menu_entries[robot_id] = menu_entry
             setattr(self, "cmd_" + func_name, partial(self.cmd_choose_start_position, robot_id))
-            await self._sio_ns.emit("register_menu", {"name": "planner", "menu": menu.menu.dict()})
+            await self._sio_ns.emit("register_menu", {"name": "planner", "menu": menu.menu.model_dump()})
 
     async def reset(self):
         """
@@ -395,7 +403,6 @@ class Planner:
         """
         self._game_context.reset()
         await self._sio_ns.emit("stop_video_record")
-        self.update_cake_obstacles()
         self._actions = action_classes.get(self._game_context.strategy, actions.Actions)(self)
 
         # Remove robots and add them again to reset all robots.
@@ -405,24 +412,11 @@ class Planner:
         for robot_id, virtual in robots.items():
             await self.add_robot(robot_id, virtual)
 
-    def update_cake_obstacles(self, robot_id: int = 0):
-        robot_ids = self._robots.keys() if robot_id == 0 else [robot_id]
-        for robot_id in robot_ids:
-            obstacles = []
-            for cake in self._game_context.cakes:
-                if not cake.on_table:
-                    continue
-                if cake.robot and cake.robot.robot_id == robot_id:
-                    continue
-                cake.update_obstacle_properties(self._properties)
-                obstacles.append(cake.obstacle.dict(exclude_defaults=True))
-            self._shared_cake_obstacles[robot_id] = obstacles
-
     async def set_pose_start(self, robot_id: int, pose_start: models.Pose):
         """
         Set the start position of the robot for the next game.
         """
-        await self._sio_ns.emit("pose_start", (robot_id, pose_start.dict()))
+        await self._sio_ns.emit("pose_start", (robot_id, pose_start.model_dump()))
 
     def set_pose_current(self, robot_id: int, pose: models.Pose) -> None:
         """
@@ -430,7 +424,7 @@ class Planner:
         """
         if not (robot := self._robots.get(robot_id)):
             return
-        robot.pose_current = models.Pose.parse_obj(pose)
+        robot.pose_current = models.Pose.model_validate(pose)
 
     async def set_pose_reached(self, robot: "Robot"):
         """
@@ -487,7 +481,7 @@ class Planner:
         """
         Function called when a robot cannot find a path to go to the current pose of the current action
         """
-        if current_action := robot.action:
+        if (current_action := robot.action) and current_action.interruptable:
             logger.debug(f"Robot {robot.robot_id}: blocked")
             new_pose: pose.Pose | None = None
             if new_action := self.get_action(robot):
@@ -545,11 +539,10 @@ class Planner:
     @property
     def all_obstacles(self) -> models.DynObstacleList:
         obstacles = sum([robot.obstacles for robot in self._robots.values()], start=[])
-        obstacles.extend([cake.obstacle for cake in self._game_context.cakes if cake.on_table])
         return obstacles
 
     async def send_obstacles(self):
-        await self._sio_ns.emit("obstacles", [o.dict(exclude_defaults=True) for o in self.all_obstacles])
+        await self._sio_ns.emit("obstacles", [o.model_dump(exclude_defaults=True) for o in self.all_obstacles])
 
     async def command(self, cmd: str):
         """
@@ -569,11 +562,11 @@ class Planner:
 
         if cmd == "config":
             # Get JSON Schema
-            schema = self._properties.schema()
+            schema = TypeAdapter(Properties).json_schema()
             # Add namespace in JSON Schema
             schema["namespace"] = "/planner"
             # Add current values in JSON Schema
-            for prop, value in self._properties.dict().items():
+            for prop, value in RootModel[Properties](self._properties).model_dump().items():
                 schema["properties"][prop]["value"] = value
             # Send config
             await self._sio_ns.emit("config", schema)
@@ -603,7 +596,7 @@ class Planner:
                 for thread in self._avoidance_path_updaters.values():
                     thread.interval = self._properties.path_refresh_interval
             case "robot_width" | "obstacle_bb_vertices":
-                self.update_cake_obstacles()
+                pass
 
     async def cmd_play(self):
         """
@@ -734,6 +727,9 @@ class Planner:
                 new_camp = Camp.Colors[value]
                 if self._camp.color == new_camp:
                     return
+                if self._game_context._table == TableEnum.Training and new_camp == Camp.Colors.blue:
+                    logger.warning("Wizard: only yellow camp is authorized on training table")
+                    return
                 self._camp.color = new_camp
                 await self.reset()
                 logger.info(f"Wizard: New camp: {self._camp.color.name}")
@@ -759,6 +755,9 @@ class Planner:
             case "Choose Table":
                 new_table = TableEnum[value]
                 if self._game_context.table == new_table:
+                    return
+                if self._game_context.camp == Camp.Colors.blue and new_table == TableEnum.Training:
+                    logger.warning("Wizard: training table is not supported with blue camp")
                     return
                 self._game_context.table = new_table
                 self._shared_properties["table"] = new_table
@@ -849,7 +848,7 @@ class Planner:
                 message = {
                     "name": "Wizard Test Camp",
                     "type": "camp",
-                    "value": "green"
+                    "value": "yellow"
                 }
             case "wizard_camera":
                 message = {
@@ -876,7 +875,3 @@ class Planner:
         match command:
             case "beacon_snapshots":
                 await cameras.snapshot()
-            case "cherry_on_cake_1":
-                await cameras.is_cherry_on_cake(1)
-            case "cherry_on_cake_2":
-                await cameras.is_cherry_on_cake(2)

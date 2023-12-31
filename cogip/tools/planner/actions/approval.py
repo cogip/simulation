@@ -38,7 +38,7 @@ class ApprovalAction(Action):
         self.reset()
 
     def reset(self):
-        self.poses = [pose.copy() for pose in self.default_poses]
+        self.poses = [pose.model_copy() for pose in self.default_poses]
 
     def weight(self, robot: "Robot") -> float:
         return 1000000.0

@@ -1,6 +1,6 @@
 # Raspberry Pi OS Customization
 
-The [raspios](raspios/) directory provides a series of scripts to build and flash
+The `raspios` directory provides a series of scripts to build and flash
 a custom Raspberry Pi OS images running COGIP tools on the Pi 4
 embedded in the beacon and robots.
 

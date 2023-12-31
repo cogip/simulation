@@ -2,7 +2,8 @@
 Description=COGIP Beaconcam
 
 Wants=network.target
-After=syslog.target network-online.target detector.service
+After=syslog.target network-online.target server.service
+Requires=server.service
 
 [Service]
 Type=simple

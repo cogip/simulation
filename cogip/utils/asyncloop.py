@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import time
+from typing import Any, Callable
 
 
 class AsyncLoop:
@@ -10,7 +11,13 @@ class AsyncLoop:
     A warning is emitted if the function duration is longer than the loop
     interval.
     """
-    def __init__(self, name: str, interval: float, func, logger=False, args=None, kwargs=None):
+    def __init__(
+            self, name: str,
+            interval: float,
+            func: Callable,
+            logger: bool | logging.Logger = False,
+            args: list[Any] | None = None,
+            kwargs: dict[str, Any] | None = None):
         """
         Class constructor.
 
