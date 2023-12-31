@@ -3,6 +3,7 @@ Description=COGIP Dashboard
 
 Wants=network.target
 After=server.service
+Requires=server.service
 
 [Service]
 Type=simple
