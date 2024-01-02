@@ -29,7 +29,7 @@ def main() -> None:
     uvicorn.run(
         "cogip.tools.beaconcam.app:app",
         host="0.0.0.0",
-        port=8090,
+        port=8100,
         workers=settings.nb_workers,
         log_level="warning"
     )

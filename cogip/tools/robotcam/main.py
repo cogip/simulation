@@ -29,7 +29,7 @@ def main() -> None:
     uvicorn.run(
         "cogip.tools.robotcam.app:app",
         host="0.0.0.0",
-        port=(int(settings.socketio_server_url.port) or 80) + settings.id,
+        port=8100 + settings.id,
         workers=settings.nb_workers,
         log_level="warning"
     )
