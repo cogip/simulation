@@ -45,7 +45,7 @@ include = ["cogip*"]
     "static/js/external/*",
     "templates/*"
 ]
-"cogip.tools.server" = [
+"cogip.tools.dashboard" = [
     "static/css/*",
     "static/css/purged/*",
     "static/img/*",
