@@ -88,6 +88,7 @@ RUN systemctl set-default multi-user.target \
 # Configure pi account
 RUN chown -R pi /home/pi \
  && chmod 755 /home/pi \
+ && echo "root:cogip" | chpasswd \
  && echo "pi:cogip" | chpasswd \
  && rm -f /etc/systemd/system/multi-user.target.wants/userconfig.service
 
