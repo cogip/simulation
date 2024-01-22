@@ -7,6 +7,7 @@ import typer
 from . import logger
 from .calibrate import cmd_calibrate
 from .capture import cmd_capture
+from .detect import cmd_detect
 from .info import cmd_info
 
 
@@ -14,6 +15,7 @@ app = typer.Typer()
 app.command(name="info")(cmd_info)
 app.command(name="capture")(cmd_capture)
 app.command(name="calibrate")(cmd_calibrate)
+app.command(name="detect")(cmd_detect)
 
 
 @app.callback()
