@@ -171,3 +171,14 @@ class CameraServer():
             """
             stream = self.camera_streamer() if CameraServer._last_frame else ""
             return StreamingResponse(stream, media_type="multipart/x-mixed-replace;boundary=frame")
+
+        @self.app.get("/snapshot", status_code=200)
+        async def snapshot():
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            basename = f"robot{self.settings.id}-{timestamp}-snapshot"
+
+            jpg_as_np = np.frombuffer(self._last_frame.buf, dtype=np.uint8)
+            frame = cv2.imdecode(jpg_as_np, flags=1)
+            record_filename = self.records_dir / f"{basename}.jpg"
+            cv2.imwrite(str(record_filename), frame)
+
