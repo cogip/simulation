@@ -182,3 +182,51 @@ class CameraServer():
             record_filename = self.records_dir / f"{basename}.jpg"
             cv2.imwrite(str(record_filename), frame)
 
+        @self.app.get("/camera_calibration", status_code=200)
+        async def camera_calibration(x: float, y: float, angle: float) -> Vertex:
+            jpg_as_np = np.frombuffer(self._last_frame.buf, dtype=np.uint8)
+            frame = cv2.imdecode(jpg_as_np, flags=1)
+            dst = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Detect marker corners
+            marker_corners, marker_ids, _ = self.detector.detectMarkers(dst)
+
+            # Draw detected markers
+            cv2.aruco.drawDetectedMarkers(frame, marker_corners, marker_ids)
+
+            # Record image
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            basename = f"robot{self.settings.id}-{timestamp}-calibration"
+            record_filename = self.records_dir / f"{basename}.jpg"
+            cv2.imwrite(str(record_filename), frame)
+
+            if marker_ids is None:
+                raise HTTPException(status_code=404, detail="No marker found")
+
+            robot_pose = Pose(x=x, y=y, O=angle)
+
+            # Keep table markers only
+            table_markers = {
+                id[0]: corners
+                for id, corners in zip(marker_ids, marker_corners)
+                if id[0] in [20, 21, 22, 23]
+            }
+
+            if len(table_markers) == 0:
+                raise HTTPException(status_code=404, detail="No table marker found")
+
+            # Compute camera position on table
+            table_camera_tvec, table_camera_angle = get_camera_position_on_table(
+                table_markers,
+                self.camera_matrix,
+                self.dist_coefs
+            )
+
+            # Compute camera position in robot if robot position is given
+            camera_position = get_camera_position_in_robot(
+                robot_pose,
+                table_camera_tvec,
+                table_camera_angle
+            )
+
+            return camera_position
