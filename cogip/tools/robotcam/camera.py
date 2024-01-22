@@ -12,7 +12,7 @@ import polling2
 import socketio
 
 from cogip import logger
-from .codecs import VideoCodec
+from cogip.tools.camera.arguments import CameraName, VideoCodec
 from .settings import Settings
 
 
@@ -24,12 +24,8 @@ class CameraHandler():
     """
     Camera handler.
 
-    Handle camera initialization, sample detection.
+    Handle camera initialization.
     """
-    _camera_device: Path = None                         # Camera device
-    _camera_codec: VideoCodec = None                    # Video codec
-    _camera_frame_width: int = None                     # Camera frame width
-    _camera_frame_height: int = None                    # Camera frame height
     _camera_capture: cv2.VideoCapture = None            # OpenCV video capture
     _last_frame: SharedMemory = None                    # Last generated frame to stream on web server
     _frame_rate: float = 10                             # Number of images processed by seconds
@@ -85,38 +81,32 @@ class CameraHandler():
         """
         Initialize camera.
         """
-        self._camera_capture = cv2.VideoCapture(str(self.settings.camera_device), cv2.CAP_V4L2)
+        camera_name = CameraName[self.settings.camera_name].val
+        if not camera_name.exists():
+            logger.error(f"Camera not found: {camera_name}")
+            return
+
+        self._camera_capture = cv2.VideoCapture(str(camera_name), cv2.CAP_V4L2)
         if not self._camera_capture.isOpened():
-            logger.error(f"Camera handler: Cannot open camera device {self.settings.camera_device}")
+            logger.error(f"Camera handler: Cannot open camera device {camera_name}")
             self._camera_capture.release()
             self._camera_capture = None
             return
 
-        fourcc = cv2.VideoWriter_fourcc(*self.settings.camera_codec.value)
+        camera_codec = VideoCodec[self.settings.camera_codec].val
+
+        fourcc = cv2.VideoWriter_fourcc(*camera_codec)
         ret = self._camera_capture.set(cv2.CAP_PROP_FOURCC, fourcc)
         if not ret:
-            logger.warning(f"Video codec {self.settings.camera_codec} not supported")
-            self.settings.camera_codec = None
+            logger.warning(f"Video codec {camera_codec} not supported")
 
         ret = self._camera_capture.set(cv2.CAP_PROP_FRAME_WIDTH, self.settings.camera_width)
         if not ret:
             logger.warning(f"Frame width {self.settings.camera_width} not supported")
-            self.settings.camera_width = None
 
         ret = self._camera_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, self.settings.camera_height)
         if not ret:
             logger.warning(f"Frame height {self.settings.camera_height} not supported")
-            self.settings.camera_height = None
-
-        try:
-            if not self.settings.camera_params.exists():
-                raise OSError(f"Camera parameters file not found: {self.settings.camera_params}")
-            if not self.settings.camera_params.is_file():
-                raise OSError(f"Camera parameters file is not a file: {self.settings.camera_params}")
-        except OSError as exc:
-            logger.warning(exc)
-            self.settings.camera_params = None
-            return
 
     def close_camera(self) -> None:
         """
