@@ -273,3 +273,53 @@ class CameraServer():
             )
 
             return panels
+
+        @self.app.get("/robot_position", status_code=200)
+        async def robot_position() -> Pose:
+            jpg_as_np = np.frombuffer(self._last_frame.buf, dtype=np.uint8)
+            frame = cv2.imdecode(jpg_as_np, flags=1)
+            dst = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Detect marker corners
+            marker_corners, marker_ids, _ = self.detector.detectMarkers(dst)
+
+            # Draw detected markers
+            cv2.aruco.drawDetectedMarkers(frame, marker_corners, marker_ids)
+
+            # Record image
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            basename = f"robot{self.settings.id}-{timestamp}-position"
+            record_filename = self.records_dir / f"{basename}.jpg"
+            cv2.imwrite(str(record_filename), frame)
+
+            if marker_ids is None:
+                raise HTTPException(status_code=404, detail="No marker found")
+
+            # Keep table markers only
+            table_markers = {
+                id[0]: corners
+                for id, corners in zip(marker_ids, marker_corners)
+                if id[0] in [20, 21, 22, 23]
+            }
+
+            if len(table_markers) == 0:
+                raise HTTPException(status_code=404, detail="No table marker found")
+
+            # Compute camera position on table
+            camera_tvec, camera_angle = get_camera_position_on_table(
+                table_markers,
+                self.camera_matrix,
+                self.dist_coefs
+            )
+
+            # Compute robot position on table
+            delta_tvec = np.array([self.extrinsic_params.x, self.extrinsic_params.y])
+            camera_tvec_rotated = rotate_2d(camera_tvec[0:2], -camera_angle)
+            robot_tvec_rotated = camera_tvec_rotated + delta_tvec
+            robot_tvec = rotate_2d(robot_tvec_rotated, camera_angle)
+            camera_angle_degrees = np.rad2deg(camera_angle)
+            logger.info(
+                "Robot position: "
+                f"X={robot_tvec[0]:.0f} Y={robot_tvec[1]:.0f} Z={camera_tvec[2]:.0f} Angle={camera_angle_degrees:.0f}"
+            )
+            return Pose(x=robot_tvec[0], y=robot_tvec[1], z=camera_tvec[2], O=camera_angle_degrees)

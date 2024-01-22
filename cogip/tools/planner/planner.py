@@ -875,3 +875,17 @@ class Planner:
         match command:
             case "beacon_snapshots":
                 await cameras.snapshot()
+            case "robot1_camera_position":
+                await self.get_camera_position(1)
+            case "robot2_camera_position":
+                await self.get_camera_position(2)
+
+    async def get_camera_position(self, robot_id: int):
+        if robot := self._robots.get(robot_id):
+            if camera_position := await cameras.calibrate_camera(robot):
+                logger.info(
+                    f"Robot {robot_id}: Camera position in robot:"
+                    f" X={camera_position.x:.0f} Y={camera_position.y:.0f} Z={camera_position.z:.0f}"
+                )
+            else:
+                logger.info(f"Robot {robot_id}: No table marker found")
