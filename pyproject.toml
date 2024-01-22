@@ -38,14 +38,6 @@ dev = {file = ["requirements-dev.txt"]}
 include = ["cogip*"]
 
 [tool.setuptools.package-data]
-"cogip.tools.copilot" = [
-    "static/css/*",
-    "static/css/purged/*",
-    "static/img/*",
-    "static/js/*",
-    "static/js/external/*",
-    "templates/*"
-]
 "cogip.tools.dashboard" = [
     "static/css/*",
     "static/css/purged/*",
@@ -54,11 +46,8 @@ include = ["cogip*"]
     "static/js/external/*",
     "templates/*"
 ]
-"cogip.tools.beaconcam" = [
-    "data/*"
-]
-"cogip.tools.robotcam.data" = [
-    "*"
+"cogip.tools.camera" = [
+    "cameras/**/params.yaml"
 ]
 
 [tool.ruff]
