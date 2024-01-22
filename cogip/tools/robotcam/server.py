@@ -230,3 +230,46 @@ class CameraServer():
             )
 
             return camera_position
+
+        @self.app.get("/solar_panels", status_code=200)
+        async def solar_panels(x: float, y: float, angle: float) -> dict[int, float]:
+            jpg_as_np = np.frombuffer(self._last_frame.buf, dtype=np.uint8)
+            frame = cv2.imdecode(jpg_as_np, flags=1)
+            dst = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Detect marker corners
+            marker_corners, marker_ids, rejected = self.detector.detectMarkers(dst)
+
+            # Draw detected markers
+            cv2.aruco.drawDetectedMarkers(frame, marker_corners, marker_ids)
+
+            # Record image
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            basename = f"robot{self.settings.id}-{timestamp}-panels"
+            record_filename = self.records_dir / f"{basename}.jpg"
+            cv2.imwrite(str(record_filename), frame)
+
+            if marker_ids is None:
+                return {}
+
+            robot_pose = Pose(x=x, y=y, O=angle)
+
+            # Keep solar panel markers only
+            solar_panel_markers = [
+                corners
+                for id, corners in zip(marker_ids, marker_corners)
+                if id[0] == 47
+            ]
+
+            if len(solar_panel_markers) == 0:
+                return {}
+
+            panels = get_solar_panel_positions(
+                solar_panel_markers,
+                self.camera_matrix,
+                self.dist_coefs,
+                self.extrinsic_params,
+                robot_pose
+            )
+
+            return panels
