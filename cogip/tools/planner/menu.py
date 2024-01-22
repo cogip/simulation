@@ -55,6 +55,7 @@ actuators_commands = [
     "left_arm_extended",
     "right_arm_folded",
     "right_arm_extended",
+    "right_arm_mid",
     "led_off",
     "led_on",
     "central_arm_up",
