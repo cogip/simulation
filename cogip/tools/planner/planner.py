@@ -212,8 +212,9 @@ class Planner:
         except asyncio.CancelledError:
             logger.info(f"Robot {robot.robot_id}: Task SIO Emitter cancelled")
             raise
-        except Exception as exc:
-            logger.warning(f"Robot {robot.robot_id}: Task SIO Emitter: Unexpected exception {exc}")
+        except Exception as exc:  # noqa
+            logger.warning(f"Robot {robot.robot_id}: Task SIO Emitter: Unknown exception {exc}")
+            raise
 
     async def task_sio_receiver(self, robot_id: id, queue: asyncio.Queue):
         logger.info(f"Robot {robot_id}: Task SIO Receiver started")
@@ -224,6 +225,9 @@ class Planner:
                 queue.task_done()
         except asyncio.CancelledError:
             logger.info(f"Robot {robot_id}: Task SIO Receiver cancelled")
+            raise
+        except Exception as exc:  # noqa
+            logger.warning(f"Robot {robot_id}: Task SIO Receiver: Unknown exception {exc}")
             raise
 
     async def countdown_loop(self):
@@ -250,6 +254,9 @@ class Planner:
         except asyncio.CancelledError:
             logger.info("Planner: Task Countdown cancelled")
             raise
+        except Exception as exc:  # noqa
+            logger.warning(f"Planner: Unknown exception {exc}")
+            raise
 
     async def countdown_start(self):
         if self._countdown_task is None:
@@ -264,6 +271,9 @@ class Planner:
             await self._countdown_task
         except asyncio.CancelledError:
             logger.info("Planner: Task Countdown stopped")
+        except Exception as exc:
+            logger.warning(f"Planner: Unexpected exception {exc}")
+
         self._countdown_task = None
 
     async def final_action(self):
@@ -347,6 +357,9 @@ class Planner:
                 await task
             except asyncio.CancelledError:
                 logger.info(f"Planner {robot_id}: Task SIO Emitter stopped")
+            except Exception as exc:  # noqa
+                logger.warning(f"Planner {robot_id}: Unknown exception {exc}")
+                raise
             del self._sio_emitter_tasks[robot_id]
         if sio_emitter_queue := self._sio_emitter_queues.get(robot_id):
             while not sio_emitter_queue.empty():
@@ -354,8 +367,8 @@ class Planner:
         if robot_id in self._robots:
             try:
                 self._robots[robot_id].starter.close()
-            except:  # noqa
-                logger.warning(f"Planner {robot_id}: Failed to close starter")
+            except Exception as exc:  # noqa
+                logger.warning(f"Planner {robot_id}: Failed to close starter ({exc})")
             del self._robots[robot_id]
         if task := self._sio_receiver_tasks.get(robot_id):
             task.cancel()
@@ -451,13 +464,17 @@ class Planner:
         Select the next pose for a robot.
         """
         logger.debug(f"Planner: next_pose({robot.robot_id})")
-        # Get and set new pose
-        new_pose_order = await robot.next_pose()
+        try:
+            # Get and set new pose
+            new_pose_order = await robot.next_pose()
 
-        # If no pose left in current action, get and set new action
-        if not new_pose_order and (new_action := self.get_action(robot)):
-            if not await robot.set_action(new_action):
-                await robot.sio_receiver_queue.put(self.set_pose_reached(robot))
+            # If no pose left in current action, get and set new action
+            if not new_pose_order and (new_action := self.get_action(robot)):
+                if not await robot.set_action(new_action):
+                    await robot.sio_receiver_queue.put(self.set_pose_reached(robot))
+        except Exception as exc:  # noqa
+            logger.warning(f"Planner {robot.robot_id}: Unknown exception {exc}")
+            raise
 
     def get_action(self, robot: "Robot") -> actions.Action | None:
         """
