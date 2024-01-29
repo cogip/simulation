@@ -1,13 +1,13 @@
 import math
+import time
 from multiprocessing import Queue
 from multiprocessing.managers import DictProxy, Namespace
-import time
 
 from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
 from .. import logger
-from ..table import Table
 from ..strategy import Strategy
+from ..table import Table
 from .avoidance import Avoidance, AvoidanceStrategy
 
 

@@ -2,9 +2,9 @@ from typing import TYPE_CHECKING
 
 import httpx
 
+from cogip.models import Pose, Vertex
 from . import logger
 from .camp import Camp
-from cogip.models import Pose, Vertex
 
 if TYPE_CHECKING:
     from .robot import Robot

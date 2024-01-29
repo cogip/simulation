@@ -1,3 +1,16 @@
-from .models import DynObstacleList, DynObstacleRect, DynRoundObstacle, Vertex, Pose, RobotState  # noqa: F401
-from .models import Obstacle, MenuEntry, ShellMenu, LogMessage, SerialMessage  # noqa: F401
-from .models import PathPose, SpeedEnum, CameraExtrinsicParameters  # noqa: F401
+from .models import (  # noqa
+    CameraExtrinsicParameters,
+    DynObstacleList,
+    DynObstacleRect,
+    DynRoundObstacle,
+    LogMessage,
+    MenuEntry,
+    Obstacle,
+    PathPose,
+    Pose,
+    RobotState,
+    SerialMessage,
+    ShellMenu,
+    SpeedEnum,
+    Vertex,
+)

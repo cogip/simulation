@@ -1,9 +1,9 @@
 from pathlib import Path
 
 from pydantic import AnyHttpUrl, Field, FilePath
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .codecs import VideoCodec
-from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):

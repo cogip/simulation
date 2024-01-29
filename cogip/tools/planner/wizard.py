@@ -1,12 +1,12 @@
 import asyncio
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from cogip.utils.asyncloop import AsyncLoop
+from . import actuators
 from .avoidance.avoidance import AvoidanceStrategy
 from .camp import Camp
 from .context import GameContext
 from .strategy import Strategy
-from . import actuators
 
 if TYPE_CHECKING:
     from cogip.tools.planner.planner import Planner

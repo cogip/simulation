@@ -1,17 +1,16 @@
 import asyncio
 import copy
-from pathlib import Path
 import time
+from pathlib import Path
 
-from google.protobuf.json_format import MessageToDict
 import socketio
+from google.protobuf.json_format import MessageToDict
 
 from cogip import models
 from .messages import PB_ActuatorsState, PB_Menu, PB_Pids, PB_Pose, PB_State
 from .pbcom import PBCom, pb_exception_handler
 from .pid import Pid, Pids
 from .sio_events import SioEvents
-
 
 reset_uuid: int = 3351980141
 command_uuid: int = 2168120333

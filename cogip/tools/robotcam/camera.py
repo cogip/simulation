@@ -1,10 +1,10 @@
+import signal
+import time
 from datetime import datetime
 from multiprocessing.shared_memory import SharedMemory
 from pathlib import Path
-import signal
 from threading import Thread
 from time import sleep
-import time
 
 import cv2
 import numpy as np

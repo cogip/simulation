@@ -1,5 +1,5 @@
-from gpiozero import Button
 import httpx
+from gpiozero import Button
 from luma.core.interface.serial import i2c
 from luma.core.render import canvas
 from luma.oled.device import sh1106

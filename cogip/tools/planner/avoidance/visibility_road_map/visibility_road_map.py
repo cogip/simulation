@@ -6,13 +6,13 @@ author: Atsushi Sakai (@Atsushi_twi)
 
 """
 
-from copy import deepcopy
 import math
+from copy import deepcopy
 
 import numpy as np
 
-from .geometry import Geometry
 from .dijkstra_search import DijkstraSearch
+from .geometry import Geometry
 
 try:
     from ..debug import DebugWindow

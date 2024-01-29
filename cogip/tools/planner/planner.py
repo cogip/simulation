@@ -1,28 +1,28 @@
 import asyncio
+import queue
+import time
 from functools import partial
 from multiprocessing import Manager, Process
 from multiprocessing.managers import DictProxy
-import queue
-import time
 from typing import Any
 
-from pydantic import RootModel, TypeAdapter
 import socketio
+from pydantic import RootModel, TypeAdapter
 
 from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
-from cogip.utils.singleton import Singleton
-from .actions import actions, action_classes
 from cogip.utils.asyncloop import AsyncLoop
+from cogip.utils.singleton import Singleton
 from . import actuators, cameras, logger, menu, pose, sio_events
+from .actions import action_classes, actions
+from .avoidance.avoidance import AvoidanceStrategy
+from .avoidance.process import avoidance_process
 from .camp import Camp
 from .context import GameContext
 from .properties import Properties
 from .robot import Robot
-from .table import TableEnum
 from .strategy import Strategy
-from .avoidance.avoidance import AvoidanceStrategy
-from .avoidance.process import avoidance_process
+from .table import TableEnum
 from .wizard import GameWizard
 
 

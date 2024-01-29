@@ -1,6 +1,6 @@
 from typing import List
 
-from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6 import QtCore, QtGui, QtWidgets
 
 
 class LidarTableModel(QtCore.QAbstractTableModel):

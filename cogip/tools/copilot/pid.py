@@ -2,7 +2,7 @@ from enum import IntEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .messages import PB_Pids, PB_Pid
+from .messages import PB_Pid, PB_Pids
 
 
 class PidEnum(IntEnum):

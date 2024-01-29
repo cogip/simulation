@@ -3,12 +3,11 @@
 import sys
 from threading import Thread
 
-from PySide6 import QtWidgets, QtGui
 import typer
+from PySide6 import QtGui, QtWidgets
 
 from cogip.utils.lidartablemodel import LidarTableModel
 from cogip.widgets.lidarview import LidarView
-
 from .dataproxy import DataProxy
 from .lidar import Lidar
 from .mainwindow import MainWindow

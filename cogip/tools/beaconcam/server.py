@@ -4,10 +4,10 @@ from pathlib import Path
 from threading import Thread
 
 import cv2
-from fastapi import FastAPI
-from fastapi.responses import StreamingResponse
 import numpy as np
 import polling2
+from fastapi import FastAPI
+from fastapi.responses import StreamingResponse
 from uvicorn.main import Server as UvicornServer
 
 from cogip import logger

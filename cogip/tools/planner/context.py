@@ -1,11 +1,11 @@
 from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.singleton import Singleton
+from .avoidance.avoidance import AvoidanceStrategy
 from .camp import Camp
 from .pose import AdaptedPose, Pose
 from .properties import Properties
-from .table import Table, TableEnum, tables
 from .strategy import Strategy
-from .avoidance.avoidance import AvoidanceStrategy
+from .table import Table, TableEnum, tables
 
 
 class GameContext(metaclass=Singleton):

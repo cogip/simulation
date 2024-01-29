@@ -1,16 +1,16 @@
 import asyncio
+from functools import partial
 from multiprocessing.managers import Namespace
 from typing import TYPE_CHECKING
 
-from functools import partial
 from gpiozero import Button
 from gpiozero.pins.mock import MockFactory
 from gpiozero.pins.pigpio import PiGPIOFactory
 
 from cogip.models import models
 from cogip.tools.copilot.controller import ControllerEnum
-from .actions import actions
 from . import context, logger, pose
+from .actions import actions
 from .strategy import Strategy
 
 if TYPE_CHECKING:

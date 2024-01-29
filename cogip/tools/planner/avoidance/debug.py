@@ -1,7 +1,7 @@
-from itertools import chain
 import sys
 import threading
 import time
+from itertools import chain
 
 from PySide6 import QtCore, QtGui, QtWidgets
 

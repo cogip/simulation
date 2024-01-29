@@ -1,17 +1,20 @@
 import asyncio
-from typing import Any, Dict, TYPE_CHECKING
-from pydantic import TypeAdapter
+from typing import TYPE_CHECKING, Any, Dict
 
 import polling2
 import socketio
+from pydantic import TypeAdapter
 
 from cogip import models
 from . import context, logger
 from .menu import (
-    menu, wizard_test_menu,
-    actuators_menu_1, actuators_menu_2,
-    cherries_menu_1, cherries_menu_2,
-    cameras_menu
+    actuators_menu_1,
+    actuators_menu_2,
+    cameras_menu,
+    cherries_menu_1,
+    cherries_menu_2,
+    menu,
+    wizard_test_menu,
 )
 
 if TYPE_CHECKING:

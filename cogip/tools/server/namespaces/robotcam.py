@@ -1,5 +1,5 @@
-from bidict import bidict
 import socketio
+from bidict import bidict
 
 from .. import logger
 

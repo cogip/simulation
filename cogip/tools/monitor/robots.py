@@ -3,7 +3,7 @@ from typing import Dict, List
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 
-from cogip.entities.dynobstacle import DynRectObstacleEntity, DynCircleObstacleEntity
+from cogip.entities.dynobstacle import DynCircleObstacleEntity, DynRectObstacleEntity
 from cogip.entities.robot import RobotEntity
 from cogip.models import DynObstacleList, DynObstacleRect, Pose
 from cogip.widgets.gameview import GameView

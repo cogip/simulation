@@ -2,8 +2,10 @@ from pydantic import AnyHttpUrl, Field, FilePath
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from cogip.tools.camera.arguments import (
-    CameraName, CameraNameLiteral,
-    VideoCodec, VideoCodecLiteral
+    CameraName,
+    CameraNameLiteral,
+    VideoCodec,
+    VideoCodecLiteral,
 )
 
 

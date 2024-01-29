@@ -1,7 +1,7 @@
 from typing import Awaitable, Callable, ClassVar, final
 
-from pydantic import field_validator
 import socketio
+from pydantic import field_validator
 
 from cogip.models.models import PathPose
 from .camp import Camp

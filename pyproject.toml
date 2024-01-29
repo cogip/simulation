@@ -59,9 +59,18 @@ exclude = [
     "doc",
     "cogip/tools/copilot/messages",
 ]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+]
 line-length = 127
 indent-width = 4
 target-version = "py311"
+
+[tool.ruff.lint.isort]
+no-lines-before = ["future", "standard-library", "local-folder"]
 
 [tool.ruff.format]
 quote-style = "double"

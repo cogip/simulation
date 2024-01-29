@@ -1,21 +1,21 @@
-from functools import partial
 import json
-from pathlib import Path
 import re
+from functools import partial
+from pathlib import Path
 from typing import Any, Dict, List, Tuple
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 
+from cogip.models import Pose, RobotState, ShellMenu
+from cogip.models.actuators import ActuatorCommand, ActuatorsState
+from cogip.widgets.actuators import ActuatorsDialog
 from cogip.widgets.chartsview import ChartsView
 from cogip.widgets.gameview import GameView
 from cogip.widgets.help import HelpCameraControlDialog
-from cogip.widgets.actuators import ActuatorsDialog
 from cogip.widgets.properties import PropertiesDialog
 from cogip.widgets.wizard import WizardDialog
-from cogip.models import Pose, ShellMenu, RobotState
-from cogip.models.actuators import ActuatorsState, ActuatorCommand
 
 
 class MainWindow(QtWidgets.QMainWindow):

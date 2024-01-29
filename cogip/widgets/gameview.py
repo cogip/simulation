@@ -1,16 +1,15 @@
 import json
 import math
-from pathlib import Path
 import timeit
+from pathlib import Path
 from typing import Any, Dict, List
 
 from pydantic import TypeAdapter, ValidationError
 from pydantic.json import pydantic_encoder
-
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.Qt3DCore import Qt3DCore
-from PySide6.Qt3DRender import Qt3DRender
 from PySide6.Qt3DExtras import Qt3DExtras
+from PySide6.Qt3DRender import Qt3DRender
 from PySide6.QtCore import Signal as qtSignal
 
 from cogip.entities.asset import AssetEntity

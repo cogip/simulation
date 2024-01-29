@@ -1,7 +1,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
 
-
 help_text = """
 | Keyboard | Mouse | Action |
 | --- | --- | --- |

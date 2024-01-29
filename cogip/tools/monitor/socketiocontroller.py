@@ -1,13 +1,13 @@
-from threading import Thread
 import time
+from threading import Thread
 from typing import Any, Dict, List, Optional
 
 import polling2
+import socketio
 from pydantic import TypeAdapter
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
-import socketio
 
 from cogip import logger
 from cogip.models import models

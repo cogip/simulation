@@ -3,14 +3,14 @@ import platform
 from typing import Any, Dict
 
 import polling2
-from pydantic import TypeAdapter
 import socketio
+from pydantic import TypeAdapter
 
 from cogip import models
-from cogip.models.actuators import ServoCommand, PumpCommand, PositionalActuatorCommand, ActuatorCommand
+from cogip.models.actuators import ActuatorCommand, PositionalActuatorCommand, PumpCommand, ServoCommand
 from . import copilot, logger
 from .menu import menu
-from .messages import PB_ActuatorCommand, PB_Command, PB_PathPose, PB_Controller
+from .messages import PB_ActuatorCommand, PB_Command, PB_Controller, PB_PathPose
 from .pid import PidEnum
 
 

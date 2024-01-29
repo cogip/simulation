@@ -1,5 +1,5 @@
 import asyncio
-from typing import Awaitable, Callable, final, TYPE_CHECKING
+from typing import TYPE_CHECKING, Awaitable, Callable, final
 
 from .. import logger
 from ..context import GameContext

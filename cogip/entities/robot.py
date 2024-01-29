@@ -1,17 +1,16 @@
 from __future__ import annotations
-from typing import List
 import math
 from pathlib import Path
+from typing import List
 
-from PySide6.QtCore import Signal as qtSignal
-from PySide6.QtCore import Slot as qtSlot
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
 from PySide6.Qt3DExtras import Qt3DExtras
 from PySide6.Qt3DRender import Qt3DRender
+from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip.models import Pose
-
 from .asset import AssetEntity
 from .robot_order import RobotOrderEntity
 from .sensor import LidarSensor, Sensor

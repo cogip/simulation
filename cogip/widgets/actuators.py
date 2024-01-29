@@ -2,9 +2,14 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
 
 from cogip.models.actuators import (
-    ActuatorsState, ActuatorCommand,
-    ServoEnum, Servo, ServoCommand,
-    PumpEnum, Pump, PumpCommand
+    ActuatorCommand,
+    ActuatorsState,
+    Pump,
+    PumpCommand,
+    PumpEnum,
+    Servo,
+    ServoCommand,
+    ServoEnum,
 )
 
 

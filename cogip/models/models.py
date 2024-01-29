@@ -7,13 +7,13 @@ All values are automatically verified and converted to the expected data type,
 an exception being raised if impossible.
 """
 
-from enum import IntEnum
-import platform
 import math
-import numpy as np
-from numpy.typing import ArrayLike
+import platform
+from enum import IntEnum
 from typing import List, Union
 
+import numpy as np
+from numpy.typing import ArrayLike
 from pydantic import BaseModel
 
 from cogip.tools.copilot.messages import PB_PathPose

@@ -1,6 +1,5 @@
 from cogip import models
 
-
 menu = models.ShellMenu(
     name="Detector",
     entries=[

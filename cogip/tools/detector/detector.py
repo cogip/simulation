@@ -3,8 +3,8 @@ import threading
 import time
 from typing import List
 
-from more_itertools import consecutive_groups
 import socketio
+from more_itertools import consecutive_groups
 
 try:
     import ydlidar
@@ -14,8 +14,8 @@ except:  # noqa
 from cogip import models
 from cogip.utils import ThreadLoop
 from . import logger
-from .sio_events import SioEvents
 from .properties import Properties
+from .sio_events import SioEvents
 
 
 class Detector:

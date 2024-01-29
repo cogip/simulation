@@ -1,8 +1,8 @@
 import os
 from typing import Any
 
-from pydantic import ValidationError
 import socketio
+from pydantic import ValidationError
 from socketio.exceptions import ConnectionRefusedError
 
 from cogip import models

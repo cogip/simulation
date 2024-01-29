@@ -1,6 +1,6 @@
 from typing import List
 
-from PySide6 import QtCharts, QtCore, QtWidgets, QtGui
+from PySide6 import QtCharts, QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 

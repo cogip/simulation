@@ -2,9 +2,12 @@ import asyncio
 from typing import TYPE_CHECKING
 
 from cogip.models.actuators import (
-    PumpEnum, PumpCommand,
-    ServoEnum, ServoCommand,
-    PositionalActuatorEnum, PositionalActuatorCommand
+    PositionalActuatorCommand,
+    PositionalActuatorEnum,
+    PumpCommand,
+    PumpEnum,
+    ServoCommand,
+    ServoEnum,
 )
 
 if TYPE_CHECKING:

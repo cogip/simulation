@@ -1,10 +1,9 @@
 from enum import IntEnum
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from ..tools.copilot.messages import PB_PumpCommand, PB_ServoCommand, PB_PositionalActuatorCommand
-from typing import Literal
-
+from ..tools.copilot.messages import PB_PositionalActuatorCommand, PB_PumpCommand, PB_ServoCommand
 
 # Actuators common definitions
 

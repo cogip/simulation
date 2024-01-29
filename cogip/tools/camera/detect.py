@@ -2,25 +2,24 @@ from functools import lru_cache
 from typing import Annotated, Optional
 
 import cv2
-from cv2.typing import MatLike
 import numpy as np
-from numpy.typing import ArrayLike
 import typer
+from cv2.typing import MatLike
+from numpy.typing import ArrayLike
 
+from cogip.models import CameraExtrinsicParameters, Pose, Vertex
 from . import logger
 from .arguments import CameraName, VideoCodec
 from .utils import (
+    R_flip,
     get_camera_extrinsic_params_filename,
     get_camera_intrinsic_params_filename,
     load_camera_extrinsic_params,
     load_camera_intrinsic_params,
-    R_flip,
     rotate_2d,
     rotation_matrix_to_euler_angles,
     wrap_to_pi,
 )
-from cogip.models import CameraExtrinsicParameters, Pose, Vertex
-
 
 # Best distance for plant detection: ~ 65 cm
 

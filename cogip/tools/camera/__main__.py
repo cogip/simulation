@@ -10,7 +10,6 @@ from .capture import cmd_capture
 from .detect import cmd_detect
 from .info import cmd_info
 
-
 app = typer.Typer()
 app.command(name="info")(cmd_info)
 app.command(name="capture")(cmd_capture)

@@ -1,10 +1,10 @@
 import math
 import time
 
+import ydlidar
 from more_itertools import consecutive_groups
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
-import ydlidar
 
 
 class Lidar(QtCore.QObject):

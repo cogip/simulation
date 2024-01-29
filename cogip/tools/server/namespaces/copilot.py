@@ -1,4 +1,5 @@
 from typing import Any, Dict
+
 import socketio
 
 from cogip import models

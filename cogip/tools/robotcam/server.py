@@ -5,26 +5,26 @@ from threading import Thread
 
 import cv2
 import cv2.typing
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import StreamingResponse
 import numpy as np
 import polling2
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import StreamingResponse
 from uvicorn.main import Server as UvicornServer
 
 from cogip import logger
 from cogip.models import CameraExtrinsicParameters, Pose, Vertex
 from cogip.tools.camera.arguments import CameraName, VideoCodec
-from cogip.tools.camera.utils import (
-    get_camera_intrinsic_params_filename,
-    get_camera_extrinsic_params_filename,
-    load_camera_intrinsic_params,
-    load_camera_extrinsic_params,
-    rotate_2d,
-)
 from cogip.tools.camera.detect import (
     get_camera_position_in_robot,
     get_camera_position_on_table,
     get_solar_panel_positions,
+)
+from cogip.tools.camera.utils import (
+    get_camera_extrinsic_params_filename,
+    get_camera_intrinsic_params_filename,
+    load_camera_extrinsic_params,
+    load_camera_intrinsic_params,
+    rotate_2d,
 )
 from .settings import Settings
 

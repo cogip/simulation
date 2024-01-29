@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Optional
 
 from PySide6 import QtCharts, QtCore, QtGui, QtWidgets
-from PySide6.QtCore import Slot as qtSlot
 from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip.models import RobotState
 

@@ -6,9 +6,9 @@ from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 
+from cogip.models import RobotState
 from cogip.widgets.chartsview import ChartsView
 from cogip.widgets.gameview import GameView
-from cogip.models import RobotState
 
 
 class MainWindow(QtWidgets.QMainWindow):
