@@ -7,6 +7,8 @@ running on the central beacon over Wifi.
 
 It handles the robot camera, detect game elements using Aruco markers and stream the video to a web server.
 
+The web server listen on port `8100 + robot_id`, ie `8100` on the beacon or `8101` on robot 1.
+
 ## Run RobotCam
 
 ```bash

@@ -1,16 +1,15 @@
 [Unit]
-Description=COGIP Detector
+Description=COGIP Robotcam
 
 Wants=network.target
-Before=robotcam.service
-After=syslog.target network-online.target
+After=syslog.target network-online.target cogip-detector.service
 
 [Service]
 Type=simple
 Restart=on-failure
 User=root
 WorkingDirectory=/tmp
-ExecStart=/usr/local/bin/python3 -m cogip.tools.detector
+ExecStart=/usr/local/bin/python3 -m cogip.tools.robotcam
 RestartSec=5
 EnvironmentFile=/etc/environment
 

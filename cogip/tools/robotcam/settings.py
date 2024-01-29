@@ -1,13 +1,14 @@
-from pathlib import Path
-
 from pydantic import AnyHttpUrl, Field, FilePath
-
-from .codecs import VideoCodec
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from cogip.tools.camera.arguments import (
+    CameraName, CameraNameLiteral,
+    VideoCodec, VideoCodecLiteral
+)
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix='robotcam_')
+    model_config = SettingsConfigDict(env_prefix='robotcam_', use_enum_values=False)
 
     id: int = Field(
         default=1,
@@ -20,9 +21,10 @@ class Settings(BaseSettings):
         description="Socket.IO Server URL",
         alias="cogip_socketio_server_url"
     )
-    camera_device: Path = Field(
-        default="/dev/v4l/by-id/usb-HBV_HD_CAMERA_HBV_HD_CAMERA-video-index0",
-        description="Camera device"
+    camera_name: CameraNameLiteral = Field(
+        default=CameraName.hbv.name,
+        description="Name of the camera",
+        validate_default=True
     )
     camera_width: int = Field(
         default=640,
@@ -32,19 +34,20 @@ class Settings(BaseSettings):
         default=480,
         description="Camera frame height"
     )
-    camera_codec: VideoCodec = Field(
-        default=VideoCodec.yuyv,
-        description="Camera video codec"
+    camera_codec: VideoCodecLiteral = Field(
+        default=VideoCodec.yuyv.name,
+        description="Camera video codec",
+        validate_default=True
     )
-    camera_params: FilePath = Field(
-        default=Path(__file__).parent / "data" / "coefs-camera-hbv-640x480-yuyv.json",
-        description="Camera intrinsics parameters"
+    camera_intrinsic_params: FilePath | None = Field(
+        default=None,
+        description="Camera intrinsic parameters"
+    )
+    camera_extrinsic_params: FilePath | None = Field(
+        default=None,
+        description="Camera extrinsic parameters"
     )
     nb_workers: int = Field(
         default=1,
         description="Number of uvicorn workers (ignored if launched by gunicorn)"
-    )
-    calibration: bool = Field(
-        default=False,
-        description="Using sample calibration board, display distance between tags"
     )

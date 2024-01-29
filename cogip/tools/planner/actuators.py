@@ -73,6 +73,10 @@ async def right_arm_extended(robot_id: int, planner: "Planner") -> float:
     return await servo_command(robot_id, planner, ServoEnum.LXSERVO_RIGHT_ARM, 666)
 
 
+async def right_arm_mid(robot_id: int, planner: "Planner") -> float:
+    return await servo_command(robot_id, planner, ServoEnum.LXSERVO_RIGHT_ARM, 333)
+
+
 # Positional Motors
 async def positional_motor_command(
         robot_id: int,

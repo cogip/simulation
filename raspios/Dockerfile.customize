@@ -19,29 +19,33 @@ RUN apt-get install -y --no-install-recommends ntp
 
 # Pre-install some Python requirements for COGIP tools
 RUN python3 -m pip install \
-    bidict==0.22.0 \
+    aiohttp==3.9.1 \
+    aioserial==1.3.1 \
+    bidict==0.22.1 \
     devtools==0.10.0 \
-    more_itertools==9.0.0 \
-    py-spy==0.3.14 \
-    pydantic==1.10.4 \
-    pyserial==3.5 \
-    python-dotenv==0.19.2 \
-    typer[all]==0.7.0 \
-    aiohttp==3.8.4 \
-    aioserial==1.3.0 \
-    fastapi==0.91.0 \
-    httpx==0.23.3 \
+    fastapi==0.105.0 \
+    httpx==0.26.0 \
     gpiozero==1.6.2 \
-    Jinja2==3.0.3 \
-    luma.oled==3.12.0 \
-    opencv-contrib-python==4.5.5.64 \
+    Jinja2==3.1.2 \
+    luma.oled==3.13.0 \
+    more_itertools==10.1.0 \
+    opencv-contrib-python==4.8.1.78 \
     pigpio==1.78 \
     polling2==0.5.0 \
-    protobuf==3.19.5 \
-    python-socketio==5.7.1 \
-    requests==2.27.1 \
-    uvicorn[standard]==0.17.6 \
-    websocket-client==1.4.1 \
+    protobuf==3.20.3 \
+    py-spy==0.3.14 \
+    pydantic==2.5.2 \
+    pydantic_settings==2.1.0 \
+    pyserial==3.5 \
+    python-dotenv==1.0.0 \
+    python-engineio==4.8.0 \
+    python-socketio==5.10.0 \
+    requests==2.31.0 \
+    typer[all]==0.9.0 \
+    uvicorn[standard]==0.24.0.post1 \
+    v4l2py==2.3.0 \
+    watchfiles==0.21.0 \
+    websocket-client==1.7.0 \
     git+https://git@github.com/YDLIDAR/YDLidar-SDK.git@V1.1.3#egg=ydlidar
 
 # Configure locale, timezone and keyboard
@@ -72,6 +76,9 @@ RUN apt-get install -y --no-install-recommends pigpio && \
 # Install i2c packages
 RUN apt-get install -y --no-install-recommends i2c-tools libi2c-dev
 
+# Install Cockpit
+RUN apt-get install -y --no-install-recommends cockpit
+
 # Add custom configuration files
 ADD overlay-rootfs /
 
@@ -84,6 +91,7 @@ RUN systemctl set-default multi-user.target \
 # Configure pi account
 RUN chown -R pi /home/pi \
  && chmod 755 /home/pi \
+ && echo "root:cogip" | chpasswd \
  && echo "pi:cogip" | chpasswd \
  && rm -f /etc/systemd/system/multi-user.target.wants/userconfig.service
 
@@ -94,6 +102,9 @@ RUN chown pi:pi -R /home/pi/.ssh \
  && chmod 600 /etc/ssh/ssh_host_* \
  && chmod 640 /etc/ssh/ssh_host_*.pub \
  && systemctl enable ssh
+
+# Configure Cockpit
+RUN chgrp cockpit-ws /etc/cockpit/cockpit.conf
 
 # Cleanup
 RUN apt-get clean
@@ -126,10 +137,10 @@ RUN python3 -m pip install /root/cogip-tools-*.tar.gz \
 FROM common as beacon
 
 # Enable COGIP services
-RUN systemctl enable server
-RUN systemctl enable dashboard
-RUN systemctl enable planner
-RUN systemctl enable beaconcam
+RUN systemctl enable cogip-server
+RUN systemctl enable cogip-dashboard
+RUN systemctl enable cogip-planner
+RUN systemctl enable cogip-beaconcam
 
 RUN apt-get install -y --no-install-recommends dnsmasq iptables
 COPY overlay-rootfs-beacon/ /
@@ -143,9 +154,9 @@ FROM common as robot
 RUN systemctl enable openocd
 
 # Enable COGIP services
-RUN systemctl enable copilot
-RUN systemctl enable detector
-RUN systemctl enable robotcam
+RUN systemctl enable cogip-copilot
+RUN systemctl enable cogip-detector
+RUN systemctl enable cogip-robotcam
 
 RUN apt-get install -y --no-install-recommends ifmetric
 
@@ -153,4 +164,4 @@ RUN apt-get install -y --no-install-recommends ifmetric
 FROM common as basket
 
 # Enable COGIP services
-RUN systemctl enable basket
+RUN systemctl enable cogip-basket

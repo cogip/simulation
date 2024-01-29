@@ -10,3 +10,4 @@ site
 raspios/work
 raspios/cogip-tools-*.tar.gz
 raspios/overlay-kernel
+cogip/tools/camera/cameras/*/*/images

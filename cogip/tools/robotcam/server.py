@@ -4,13 +4,28 @@ from pathlib import Path
 from threading import Thread
 
 import cv2
-from fastapi import FastAPI
+import cv2.typing
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import StreamingResponse
 import numpy as np
 import polling2
 from uvicorn.main import Server as UvicornServer
 
 from cogip import logger
+from cogip.models import CameraExtrinsicParameters, Pose, Vertex
+from cogip.tools.camera.arguments import CameraName, VideoCodec
+from cogip.tools.camera.utils import (
+    get_camera_intrinsic_params_filename,
+    get_camera_extrinsic_params_filename,
+    load_camera_intrinsic_params,
+    load_camera_extrinsic_params,
+    rotate_2d,
+)
+from cogip.tools.camera.detect import (
+    get_camera_position_in_robot,
+    get_camera_position_on_table,
+    get_solar_panel_positions,
+)
 from .settings import Settings
 
 
@@ -48,6 +63,47 @@ class CameraServer():
             1: (295, 480, 170, 540),
             2: (295, 480, 170, 540)
         }
+
+        # Load camera intrinsic parameters
+        self.camera_matrix: cv2.typing.MatLike | None = None
+        self.dist_coefs: cv2.typing.MatLike | None = None
+        if self.settings.camera_intrinsic_params:
+            params_filename = self.settings.camera_intrinsic_params
+        else:
+            params_filename = get_camera_intrinsic_params_filename(
+                self.settings.id,
+                CameraName[self.settings.camera_name],
+                VideoCodec[self.settings.camera_codec],
+                self.settings.camera_width,
+                self.settings.camera_height
+            )
+
+        if not params_filename.exists():
+            logger.warning(f"Camera intrinsic parameters file not found: {params_filename}")
+        else:
+            self.camera_matrix, self.dist_coefs = load_camera_intrinsic_params(params_filename)
+
+        # Load camera extrinsic parameters
+        self.extrinsic_params: CameraExtrinsicParameters | None = None
+        if self.settings.camera_extrinsic_params:
+            params_filename = self.settings.camera_extrinsic_params
+        else:
+            params_filename = get_camera_extrinsic_params_filename(
+                self.settings.id,
+                CameraName[self.settings.camera_name],
+                VideoCodec[self.settings.camera_codec],
+                self.settings.camera_width,
+                self.settings.camera_height
+            )
+
+        if not params_filename.exists():
+            logger.warning(f"Camera extrinsic parameters file not found: {params_filename}")
+        else:
+            self.extrinsic_params = load_camera_extrinsic_params(params_filename)
+
+        self.aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_50)
+        self.parameters = cv2.aruco.DetectorParameters()
+        self.detector = cv2.aruco.ArucoDetector(self.aruco_dict, self.parameters)
 
     @staticmethod
     def handle_exit(*args, **kwargs):
@@ -116,57 +172,154 @@ class CameraServer():
             stream = self.camera_streamer() if CameraServer._last_frame else ""
             return StreamingResponse(stream, media_type="multipart/x-mixed-replace;boundary=frame")
 
-        @self.app.get("/cherry_on_cake", status_code=200)
-        async def cherry_on_cake() -> bool:
+        @self.app.get("/snapshot", status_code=200)
+        async def snapshot():
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            basename = f"robot{self.settings.id}-{timestamp}"
-            start_row, end_row, start_col, end_col = self.crop_zones[self.settings.id]
+            basename = f"robot{self.settings.id}-{timestamp}-snapshot"
 
             jpg_as_np = np.frombuffer(self._last_frame.buf, dtype=np.uint8)
             frame = cv2.imdecode(jpg_as_np, flags=1)
-            record_filename_full = self.records_dir / f"{basename}_full.jpg"
-            cv2.imwrite(str(record_filename_full), frame)
+            record_filename = self.records_dir / f"{basename}.jpg"
+            cv2.imwrite(str(record_filename), frame)
 
-            frame_crop = frame[start_row:end_row, start_col:end_col]
-            record_filename_crop = self.records_dir / f"{basename}_crop.jpg"
-            cv2.imwrite(str(record_filename_crop), frame_crop)
+        @self.app.get("/camera_calibration", status_code=200)
+        async def camera_calibration(x: float, y: float, angle: float) -> Vertex:
+            jpg_as_np = np.frombuffer(self._last_frame.buf, dtype=np.uint8)
+            frame = cv2.imdecode(jpg_as_np, flags=1)
+            dst = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            frame_hsv = cv2.cvtColor(frame_crop, cv2.COLOR_BGR2HSV)
+            # Detect marker corners
+            marker_corners, marker_ids, _ = self.detector.detectMarkers(dst)
 
-            red_low = np.array([128, 148, 0])
-            red_high = np.array([189, 225, 241])
-            mask = cv2.inRange(frame_hsv, red_low, red_high)
+            # Draw detected markers
+            cv2.aruco.drawDetectedMarkers(frame, marker_corners, marker_ids)
 
-            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (7, 7))
-            mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-            mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-            record_filename_mask = self.records_dir / f"{basename}_mask.jpg"
-            cv2.imwrite(str(record_filename_mask), mask)
+            # Record image
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            basename = f"robot{self.settings.id}-{timestamp}-calibration"
+            record_filename = self.records_dir / f"{basename}.jpg"
+            cv2.imwrite(str(record_filename), frame)
 
-            contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            if marker_ids is None:
+                raise HTTPException(status_code=404, detail="No marker found")
 
-            # TODO: filter on circle size
+            robot_pose = Pose(x=x, y=y, O=angle)
 
-            # Use a list to store the center and radius of the target circles:
-            detectedCircles = []
+            # Keep table markers only
+            table_markers = {
+                id[0]: corners
+                for id, corners in zip(marker_ids, marker_corners)
+                if id[0] in [20, 21, 22, 23]
+            }
 
-            # Look for the outer contours:
-            for i, c in enumerate(contours):
-                # Approximate the contour to a circle:
-                (x, y), radius = cv2.minEnclosingCircle(c)
+            if len(table_markers) == 0:
+                raise HTTPException(status_code=404, detail="No table marker found")
 
-                # Compute the center and radius:
-                center = (int(x), int(y))
-                radius = int(radius)
+            # Compute camera position on table
+            table_camera_tvec, table_camera_angle = get_camera_position_on_table(
+                table_markers,
+                self.camera_matrix,
+                self.dist_coefs
+            )
 
-                # Draw the circles:
-                cv2.circle(frame, center, radius, (0, 255, 0), 2)
+            # Compute camera position in robot if robot position is given
+            camera_position = get_camera_position_in_robot(
+                robot_pose,
+                table_camera_tvec,
+                table_camera_angle
+            )
 
-                # Store the center and radius:
-                detectedCircles.append([center, radius])
+            return camera_position
 
-            suffix = "ok" if len(contours) > 0 else "ko"
-            record_filename_circle = self.records_dir / f"{basename}_circle_{suffix}.jpg"
-            cv2.imwrite(str(record_filename_circle), frame)
+        @self.app.get("/solar_panels", status_code=200)
+        async def solar_panels(x: float, y: float, angle: float) -> dict[int, float]:
+            jpg_as_np = np.frombuffer(self._last_frame.buf, dtype=np.uint8)
+            frame = cv2.imdecode(jpg_as_np, flags=1)
+            dst = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-            return (len(contours) > 0)
+            # Detect marker corners
+            marker_corners, marker_ids, rejected = self.detector.detectMarkers(dst)
+
+            # Draw detected markers
+            cv2.aruco.drawDetectedMarkers(frame, marker_corners, marker_ids)
+
+            # Record image
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            basename = f"robot{self.settings.id}-{timestamp}-panels"
+            record_filename = self.records_dir / f"{basename}.jpg"
+            cv2.imwrite(str(record_filename), frame)
+
+            if marker_ids is None:
+                return {}
+
+            robot_pose = Pose(x=x, y=y, O=angle)
+
+            # Keep solar panel markers only
+            solar_panel_markers = [
+                corners
+                for id, corners in zip(marker_ids, marker_corners)
+                if id[0] == 47
+            ]
+
+            if len(solar_panel_markers) == 0:
+                return {}
+
+            panels = get_solar_panel_positions(
+                solar_panel_markers,
+                self.camera_matrix,
+                self.dist_coefs,
+                self.extrinsic_params,
+                robot_pose
+            )
+
+            return panels
+
+        @self.app.get("/robot_position", status_code=200)
+        async def robot_position() -> Pose:
+            jpg_as_np = np.frombuffer(self._last_frame.buf, dtype=np.uint8)
+            frame = cv2.imdecode(jpg_as_np, flags=1)
+            dst = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+            # Detect marker corners
+            marker_corners, marker_ids, _ = self.detector.detectMarkers(dst)
+
+            # Draw detected markers
+            cv2.aruco.drawDetectedMarkers(frame, marker_corners, marker_ids)
+
+            # Record image
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            basename = f"robot{self.settings.id}-{timestamp}-position"
+            record_filename = self.records_dir / f"{basename}.jpg"
+            cv2.imwrite(str(record_filename), frame)
+
+            if marker_ids is None:
+                raise HTTPException(status_code=404, detail="No marker found")
+
+            # Keep table markers only
+            table_markers = {
+                id[0]: corners
+                for id, corners in zip(marker_ids, marker_corners)
+                if id[0] in [20, 21, 22, 23]
+            }
+
+            if len(table_markers) == 0:
+                raise HTTPException(status_code=404, detail="No table marker found")
+
+            # Compute camera position on table
+            camera_tvec, camera_angle = get_camera_position_on_table(
+                table_markers,
+                self.camera_matrix,
+                self.dist_coefs
+            )
+
+            # Compute robot position on table
+            delta_tvec = np.array([self.extrinsic_params.x, self.extrinsic_params.y])
+            camera_tvec_rotated = rotate_2d(camera_tvec[0:2], -camera_angle)
+            robot_tvec_rotated = camera_tvec_rotated + delta_tvec
+            robot_tvec = rotate_2d(robot_tvec_rotated, camera_angle)
+            camera_angle_degrees = np.rad2deg(camera_angle)
+            logger.info(
+                "Robot position: "
+                f"X={robot_tvec[0]:.0f} Y={robot_tvec[1]:.0f} Z={camera_tvec[2]:.0f} Angle={camera_angle_degrees:.0f}"
+            )
+            return Pose(x=robot_tvec[0], y=robot_tvec[1], z=camera_tvec[2], O=camera_angle_degrees)

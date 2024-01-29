@@ -11,3 +11,4 @@ class Strategy(IntEnum):
     AngularSpeedTest = 3
     LinearSpeedTest = 4
     Training = 5
+    CameraCalibration = 6

@@ -1,13 +1,13 @@
 # Server
 
-The `Server` tool is running on the Raspberry Pi embedded in the central beacon.
+The `Server` tool is running on the Raspberry Pi embedded in the central beacon or in a robot.
+Only one device must run the server.
 
-It implements a Socket.IO server on which all other tools from robot and centra beacon
+It implements a Socket.IO server on which all other tools from robot and central beacon
 are connected on their own namespace.
 This server is only used to redirect messages from a tool to another.
 
-It also runs a web server to provide monitoring on any devices (PC, smartphones)
-connected to the same network.
+The Socket.IO server listen on port `8090 + robot_id`, ie `8090` on the beacon or `8091` on robot 1.
 
 ## Run Server
 

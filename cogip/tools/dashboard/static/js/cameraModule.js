@@ -9,11 +9,20 @@ window.modalCamera = function () {
   streaming.setAttribute("style", "width: 100%");
   streaming.setAttribute("loading", "lazy");
 
-  const hostname = robotId === "0" ? "beacon" : "robot" + robotId;
-  const port = robotId === "0" ? "90" : "8" + robotId;
+  let hostname = null;
+  let port = null;
+  if (robotId === null) {
+    hostname = window.location.hostname
+    port = parseInt(window.location.port) + 20;
+  }
+  else {
+    hostname = robotId === "0" ? "beacon" : "robot" + robotId;
+    port = port = 8100 + parseInt(robotId);
+  }
+
   streaming.setAttribute(
     "src",
-    `http://${hostname}:80${port}/`
+    `http://${hostname}:${port}/`
   );
 
   document.getElementById("displayFlux").appendChild(streaming);
