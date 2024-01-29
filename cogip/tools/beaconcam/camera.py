@@ -22,7 +22,7 @@ class ExitSignal(Exception):
     pass
 
 
-class CameraHandler():
+class CameraHandler:
     """
     Camera handler.
 

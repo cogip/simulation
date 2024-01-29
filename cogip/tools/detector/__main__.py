@@ -32,7 +32,7 @@ def main_opt(
         help="Robot ID.",
         envvar=["ROBOT_ID", "DETECTOR_ID"]
     ),
-    lidar_port: Optional[Path] = typer.Option(
+    lidar_port: Optional[Path] = typer.Option(  # noqa
         None,
         "-p", "--lidar-port",
         help="Serial port connected to the Lidar",

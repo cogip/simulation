@@ -1,7 +1,6 @@
 import math
 import threading
 import time
-from typing import List
 
 import socketio
 from more_itertools import consecutive_groups
@@ -61,7 +60,7 @@ class Detector:
             beacon_radius=beacon_radius,
             refresh_interval=refresh_interval
         )
-        self._lidar_data: List[int] = list()
+        self._lidar_data: list[int] = list()
         self._lidar_data_lock = threading.Lock()
         self._robot_pose = models.Pose()
         self._robot_pose_lock = threading.Lock()
@@ -173,14 +172,14 @@ class Detector:
         self._obstacles_updater_loop.interval = self._properties.refresh_interval
         self._lidar_reader_loop.interval = self._properties.refresh_interval
 
-    def update_lidar_data(self, lidar_data: List[int]):
+    def update_lidar_data(self, lidar_data: list[int]):
         """
         Receive Lidar data.
         """
         with self._lidar_data_lock:
             self._lidar_data[:] = lidar_data[:]
 
-    def filter_distances(self) -> List[int]:
+    def filter_distances(self) -> list[int]:
         """
         Find consecutive obstacles and keep the nearest obstacle at the middle.
         """
@@ -241,7 +240,7 @@ class Detector:
 
         return filtered_distances
 
-    def generate_obstacles(self, robot_pose: models.Pose, distances: List[int]) -> list[models.Vertex]:
+    def generate_obstacles(self, robot_pose: models.Pose, distances: list[int]) -> list[models.Vertex]:
         """
         Update obstacles list from lidar data.
         """

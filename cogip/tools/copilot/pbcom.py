@@ -1,8 +1,8 @@
 import asyncio
 import base64
 import binascii
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict
 
 from aioserial import AioSerial
 from google.protobuf.message import DecodeError as ProtobufDecodeError
@@ -31,7 +31,7 @@ class PBCom:
             self,
             serial_port: Path,
             serial_baud: int,
-            message_handlers: Dict[int, Callable]):
+            message_handlers: dict[int, Callable]):
 
         self._serial_port = AioSerial()
         self._serial_port.port = str(serial_port)

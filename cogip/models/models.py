@@ -10,7 +10,6 @@ an exception being raised if impossible.
 import math
 import platform
 from enum import IntEnum
-from typing import List, Union
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -60,7 +59,7 @@ class ShellMenu(BaseModel):
         ```
     """
     name: str
-    entries: List[MenuEntry]
+    entries: list[MenuEntry]
 
 
 class Vertex(BaseModel):
@@ -180,7 +179,7 @@ class DynObstacleRect(BaseModel):
     angle: float
     length_x: float
     length_y: float
-    bb: List[Vertex] = []
+    bb: list[Vertex] = []
 
     def __hash__(self):
         """
@@ -202,7 +201,7 @@ class DynRoundObstacle(BaseModel):
     x: float
     y: float
     radius: float
-    bb: List[Vertex] = []
+    bb: list[Vertex] = []
 
     def contains(self, point: Vertex) -> bool:
         return (point.x - self.x) * (point.x - self.x) + (point.y - self.y) * (point.y - self.y) <= self.radius ** 2
@@ -211,7 +210,7 @@ class DynRoundObstacle(BaseModel):
         self.bb = [
             Vertex(
                 x=self.x + bb_radius * math.cos(
-                    (tmp := (i * 2 * math.pi) / nb_vertices)
+                    tmp := (i * 2 * math.pi) / nb_vertices
                 ),
                 y=self.y + bb_radius * math.sin(tmp),
             )
@@ -225,8 +224,8 @@ class DynRoundObstacle(BaseModel):
         return hash((type(self),) + tuple(self.__root__))
 
 
-DynObstacle = Union[DynRoundObstacle, DynObstacleRect]
-DynObstacleList = List[DynObstacle]
+DynObstacle = DynRoundObstacle | DynObstacleRect
+DynObstacleList = list[DynObstacle]
 
 
 class RobotState(BaseModel):
@@ -270,7 +269,7 @@ class Obstacle(BaseModel):
     height: int = 600
 
 
-ObstacleList = List[Obstacle]
+ObstacleList = list[Obstacle]
 
 
 class LogMessage(BaseModel):
@@ -283,7 +282,7 @@ class LogMessage(BaseModel):
     log: str
 
 
-SerialMessage = Union[RobotState, ShellMenu, LogMessage]
+SerialMessage = RobotState | ShellMenu | LogMessage
 
 
 class CameraExtrinsicParameters(BaseModel):

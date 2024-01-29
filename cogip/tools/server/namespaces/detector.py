@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 import socketio
 
@@ -48,13 +48,13 @@ class DetectorNamespace(socketio.AsyncNamespace):
         else:
             logger.warning(f"Detector: attempt to disconnect with unknown sid {sid}.")
 
-    async def on_register_menu(self, sid, data: Dict[str, Any]):
+    async def on_register_menu(self, sid, data: dict[str, Any]):
         """
         Callback on register_menu.
         """
         await self._cogip_server.register_menu("detector", data)
 
-    async def on_obstacles(self, sid, obstacles: List[Dict[str, Any]]):
+    async def on_obstacles(self, sid, obstacles: list[dict[str, Any]]):
         """
         Callback on obstacles message.
 
@@ -65,7 +65,7 @@ class DetectorNamespace(socketio.AsyncNamespace):
         await self.emit("obstacles", (robot_id, obstacles), namespace="/planner")
         await self._recorder.async_record({"obstacles": obstacles})
 
-    async def on_config(self, sid, config: Dict[str, Any]):
+    async def on_config(self, sid, config: dict[str, Any]):
         """
         Callback on config message.
         """

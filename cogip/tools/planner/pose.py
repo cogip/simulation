@@ -1,4 +1,5 @@
-from typing import Awaitable, Callable, ClassVar, final
+from collections.abc import Awaitable, Callable
+from typing import ClassVar, final
 
 import socketio
 from pydantic import field_validator

@@ -29,7 +29,7 @@ from cogip.tools.camera.utils import (
 from .settings import Settings
 
 
-class CameraServer():
+class CameraServer:
     """
     Camera web server.
 

@@ -1,7 +1,8 @@
 import logging
 import threading
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 class ThreadLoop:

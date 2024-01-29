@@ -12,7 +12,7 @@ from cogip.entities.table import TableEntity
 from .mainwindow import MainWindow
 
 
-def main_opt(trace_file: Optional[Path] = typer.Argument(None)):
+def main_opt(trace_file: Optional[Path] = typer.Argument(None)):  # noqa
     """
     Starts replay.
     """

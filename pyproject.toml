@@ -64,6 +64,7 @@ select = [
     "W",  # pycodestyle warnings
     "F",  # pyflakes
     "I",  # isort
+    "UP",  # pyupgrade
 ]
 line-length = 127
 indent-width = 4

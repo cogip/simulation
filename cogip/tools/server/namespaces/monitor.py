@@ -1,4 +1,3 @@
-from typing import List
 
 import socketio
 
@@ -31,7 +30,7 @@ class MonitorNamespace(socketio.AsyncNamespace):
         self._connected = False
         logger.info("Monitor disconnected.")
 
-    async def on_lidar_data(self, sid, robot_id: int, lidar_data: List[int]):
+    async def on_lidar_data(self, sid, robot_id: int, lidar_data: list[int]):
         """
         Callback on lidar data.
 

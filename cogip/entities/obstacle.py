@@ -48,7 +48,7 @@ class ObstacleEntity(Qt3DCore.QEntity):
             width: Width
             height: Height
         """
-        super(ObstacleEntity, self).__init__()
+        super().__init__()
 
         self.parent_widget = parent_widget
 
@@ -237,7 +237,7 @@ class ObstacleProperties(QtWidgets.QDialog):
             parent: The parent widget
             obstacle_entity: The related obstacle entity
         """
-        super(ObstacleProperties, self).__init__(parent)
+        super().__init__(parent)
 
         self.obstacle_entity = obstacle_entity
         self.setWindowTitle("Obstacle Properties")

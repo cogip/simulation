@@ -19,7 +19,7 @@ class ImpactEntity(Qt3DCore.QEntity):
             radius: Radius of the sphere
             color: Color of the sphere
         """
-        super(ImpactEntity, self).__init__()
+        super().__init__()
 
         self.mesh = Qt3DExtras.QSphereMesh()
         self.mesh.setRadius(radius)

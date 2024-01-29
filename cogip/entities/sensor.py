@@ -1,5 +1,4 @@
 import math
-from typing import List, Optional
 
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
@@ -26,9 +25,9 @@ class Sensor(QtCore.QObject):
         all_sensors: Class attribute recording all sensors
         hit: Last hit of this sensor
     """
-    obstacles: List[Qt3DCore.QEntity] = []
-    all_sensors: List["Sensor"] = []
-    hit: Optional[Qt3DRender.QRayCasterHit] = None
+    obstacles: list[Qt3DCore.QEntity] = []
+    all_sensors: list["Sensor"] = []
+    hit: Qt3DRender.QRayCasterHit | None = None
 
     def __init__(
             self,
@@ -59,7 +58,7 @@ class Sensor(QtCore.QObject):
             impact_radius: Radius of the `ImpactEntity` representing the collision
             impact_color: Color of the `ImpactEntity` representing the collision
         """
-        super(Sensor, self).__init__()
+        super().__init__()
 
         Sensor.all_sensors.append(self)
 
@@ -165,7 +164,7 @@ class ToFSensor(Sensor):
             origin_x: X origin of the ray caster
             origin_y: Y origin of the ray caster
         """
-        super(ToFSensor, self).__init__(
+        super().__init__(
             asset_entity=asset_entity,
             name=name,
             origin_x=origin_x,
@@ -179,7 +178,7 @@ class ToFSensor(Sensor):
         self.tof_id = ToFSensor.nb_tof_sensors
         ToFSensor.nb_tof_sensors += 1
 
-        rotation = math.degrees(math.acos((origin_x / math.dist((0, 0), (origin_x, origin_y)))))
+        rotation = math.degrees(math.acos(origin_x / math.dist((0, 0), (origin_x, origin_y))))
 
         self.entity = Qt3DCore.QEntity()
         self.entity.setParent(self.asset_entity)
@@ -229,7 +228,7 @@ class LidarSensor(Sensor):
             direction_y: Y direction of the ray caster
         """
 
-        super(LidarSensor, self).__init__(
+        super().__init__(
             asset_entity=asset_entity,
             name=name,
             origin_x=origin_x,

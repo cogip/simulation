@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any
 
 import socketio
 
@@ -72,7 +72,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
         """
         await self.emit("shell_command", cmd, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
 
-    async def on_config_updated(self, sid, config: Dict[str, Any]) -> None:
+    async def on_config_updated(self, sid, config: dict[str, Any]) -> None:
         namespace = config.pop("namespace")
         await self.emit("config_updated", config, namespace=namespace)
 

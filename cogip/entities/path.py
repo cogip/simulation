@@ -1,4 +1,3 @@
-from typing import List, Optional
 
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
@@ -12,7 +11,7 @@ class PathEntity(Qt3DCore.QEntity):
     A simple entity drawing a path along a list of vertices.
     """
 
-    def __init__(self, color: QtGui.QColor = QtCore.Qt.blue, parent: Optional[Qt3DCore.QEntity] = None):
+    def __init__(self, color: QtGui.QColor = QtCore.Qt.blue, parent: Qt3DCore.QEntity | None = None):
         """
         Class constructor.
 
@@ -23,10 +22,10 @@ class PathEntity(Qt3DCore.QEntity):
         super().__init__(parent)
         self.points = []
         self.color = color
-        self.lines: List[LineEntity] = []
-        self.lines_pool: List[LineEntity] = []
+        self.lines: list[LineEntity] = []
+        self.lines_pool: list[LineEntity] = []
 
-    def set_points(self, points: List[models.Vertex]):
+    def set_points(self, points: list[models.Vertex]):
         """
         Set points of the path.
 

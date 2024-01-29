@@ -2,7 +2,7 @@ import json
 import math
 import timeit
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 from pydantic import TypeAdapter, ValidationError
 from pydantic.json import pydantic_encoder
@@ -134,7 +134,7 @@ class GameView(QtWidgets.QWidget):
         new_move_delta: signal emitted to movable entities when a mouse drag is detected
     """
     ground_image: Path = Path("assets/table2024.png")
-    obstacle_entities: List[ObstacleEntity] = []
+    obstacle_entities: list[ObstacleEntity] = []
     plane_intersection: QtGui.QVector3D = None
     mouse_enabled: bool = True
     new_move_delta: qtSignal = qtSignal(QtGui.QVector3D)
@@ -206,7 +206,7 @@ class GameView(QtWidgets.QWidget):
             models.Vertex(x=0, y=0, z=5000)
         )
 
-        self.path: Dict[int, PathEntity] = {}
+        self.path: dict[int, PathEntity] = {}
 
         # Init Camera
         self.camera_entity: Qt3DRender.QCamera = self.view.camera()
@@ -490,7 +490,7 @@ class GameView(QtWidgets.QWidget):
         ground_transform.setTranslation(QtGui.QVector3D(0, 0, 0))
         self.ground_entity.addComponent(ground_transform)
 
-    def get_camera_params(self) -> Dict[str, Any]:
+    def get_camera_params(self) -> dict[str, Any]:
         """
         Return current camera parameters to save them for next session.
         """
@@ -503,7 +503,7 @@ class GameView(QtWidgets.QWidget):
             ]
         }
 
-    def set_camera_params(self, camera_params: Dict[str, Any]) -> None:
+    def set_camera_params(self, camera_params: dict[str, Any]) -> None:
         """
         Set camera parameters to restore them from previous session.
         """

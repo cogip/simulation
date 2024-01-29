@@ -1,4 +1,3 @@
-from typing import List, Tuple
 
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
@@ -36,7 +35,7 @@ class DynBaseObstacleEntity(Qt3DCore.QEntity):
 
         self.bb = PathEntity(QtCore.Qt.darkRed, self.parent)
 
-    def set_bounding_box(self, points: List[models.Vertex]) -> None:
+    def set_bounding_box(self, points: list[models.Vertex]) -> None:
         """
         """
         if self.points == points:
@@ -67,8 +66,8 @@ class DynRectObstacleEntity(DynBaseObstacleEntity):
         Class constructor.
         """
         super().__init__(parent)
-        self.size: Tuple[int, int] = None
-        self.position: Tuple[int, int, int] = None
+        self.size: tuple[int, int] = None
+        self.position: tuple[int, int, int] = None
 
         self.mesh = Qt3DExtras.QCuboidMesh()
         self.mesh.setZExtent(200)
@@ -120,7 +119,7 @@ class DynCircleObstacleEntity(DynBaseObstacleEntity):
         Class constructor.
         """
         super().__init__(parent)
-        self.position: Tuple[int, int, int] = None
+        self.position: tuple[int, int, int] = None
 
         self.mesh = Qt3DExtras.QCylinderMesh()
         self.mesh.setLength(200)

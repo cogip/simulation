@@ -12,7 +12,7 @@ from .arguments import CameraName, VideoCodec
 
 def cmd_info(
     ctx: typer.Context,
-    camera_name: Annotated[Optional[CameraName], typer.Option(
+    camera_name: Annotated[Optional[CameraName], typer.Option(  # noqa
         help="Name of the camera (all if not specified)",
         envvar="CAMERA_NAME",
     )] = None,

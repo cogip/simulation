@@ -1,6 +1,5 @@
 from functools import partial
 from pathlib import Path
-from typing import Dict, Optional
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
@@ -30,15 +29,15 @@ class MainWindow(QtWidgets.QMainWindow):
     signal_new_robot_state: qtSignal = qtSignal(RobotState)
     rate: int = 60
 
-    def __init__(self, trace: Optional[Path] = None, *args, **kwargs):
+    def __init__(self, trace: Path | None = None, *args, **kwargs):
         """
         """
-        super(MainWindow, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.states = []
         self.timer = QtCore.QTimer()
         self.timer.timeout.connect(self.increment)
 
-        self.menu_widgets: Dict[str, QtWidgets.QWidget] = {}
+        self.menu_widgets: dict[str, QtWidgets.QWidget] = {}
 
         self.setWindowTitle('COGIP Replay')
 

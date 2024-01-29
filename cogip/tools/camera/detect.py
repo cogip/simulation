@@ -161,7 +161,7 @@ def cmd_detect(
         help="Camera frame height",
         envvar="CAMERA_HEIGHT",
     )] = 480,
-    robot_position: Annotated[Optional[int], typer.Option(
+    robot_position: Annotated[Optional[int], typer.Option(  # noqa
         help="Define the robot position",
         envvar="CAMERA_ROBOT_POSITION",
         min=1, max=6,

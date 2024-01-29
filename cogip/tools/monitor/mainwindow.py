@@ -2,7 +2,7 @@ import json
 import re
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
@@ -59,12 +59,12 @@ class MainWindow(QtWidgets.QMainWindow):
         Arguments:
             url: URL of the copilot web server
         """
-        super(MainWindow, self).__init__(*args, **kwargs)
-        self.robot_status_row: Dict[int, int] = {}
+        super().__init__(*args, **kwargs)
+        self.robot_status_row: dict[int, int] = {}
         self.robot_starters: dict[int, QtWidgets.QCheckBox] = {}
-        self.charts_view: Dict[int, ChartsView] = {}
-        self.available_chart_views: List[ChartsView] = []
-        self.menu_widgets: Dict[str, Dict[str, QtWidgets.QWidget]] = {}
+        self.charts_view: dict[int, ChartsView] = {}
+        self.available_chart_views: list[ChartsView] = []
+        self.menu_widgets: dict[str, dict[str, QtWidgets.QWidget]] = {}
         self.wizard: WizardDialog | None = None
 
         self.setWindowTitle('COGIP Monitor')
@@ -179,7 +179,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menu_tab_widget = QtWidgets.QTabWidget()
         self.central_layout.insertWidget(0, self.menu_tab_widget, 1)
 
-        self.menu_staked_widgets: Dict[str, QtWidgets.QStackedWidget] = {}
+        self.menu_staked_widgets: dict[str, QtWidgets.QStackedWidget] = {}
 
         # GameView widget
         self.game_view = GameView()
@@ -547,7 +547,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connected_label.setText("Connected" if state else "Disconnected")
 
     @qtSlot(dict)
-    def config_request(self, config: Dict[str, Any]):
+    def config_request(self, config: dict[str, Any]):
         properties = self.properties.get(f'{config["namespace"]}/{config["title"]}')
         if not properties:
             properties = PropertiesDialog(config, self)
@@ -560,7 +560,7 @@ class MainWindow(QtWidgets.QMainWindow):
         properties.activateWindow()
 
     @qtSlot(dict)
-    def config_updated(self, config: Dict[str, Any]):
+    def config_updated(self, config: dict[str, Any]):
         self.signal_config_updated.emit(config)
 
     @qtSlot(dict)
@@ -658,7 +658,7 @@ class MainWindow(QtWidgets.QMainWindow):
             pass
 
 
-def split_command(command: str) -> Tuple[str, List[str]]:
+def split_command(command: str) -> tuple[str, list[str]]:
     """
     Split the full command string to separate the name of the command
     and its arguments.
@@ -674,7 +674,7 @@ def split_command(command: str) -> Tuple[str, List[str]]:
     Return:
         A tuple of the command name and a list of arguments
     """
-    result: List[str] = list()
+    result: list[str] = list()
     arg_match = re.findall(r"(<[\d\w]+>)", command)
     for arg in arg_match:
         result.append(arg[1:-1])

@@ -1,5 +1,4 @@
 from array import array
-from typing import Optional
 
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
@@ -14,7 +13,7 @@ class LineEntity(Qt3DCore.QEntity):
     A simple entity drawing a line between two vertices.
     """
 
-    def __init__(self, color: QtGui.QColor = QtCore.Qt.blue, parent: Optional[Qt3DCore.QEntity] = None):
+    def __init__(self, color: QtGui.QColor = QtCore.Qt.blue, parent: Qt3DCore.QEntity | None = None):
         """
         Class constructor.
 

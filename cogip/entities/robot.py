@@ -1,7 +1,6 @@
 from __future__ import annotations
 import math
 from pathlib import Path
-from typing import List
 
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
@@ -31,7 +30,7 @@ class RobotEntity(AssetEntity):
     sensors_update_interval: int = 5
     lidar_emit_interval: int = 20
     lidar_emit_data_signal: qtSignal = qtSignal(int, list)
-    order_robot: "RobotOrderEntity" = None
+    order_robot: RobotOrderEntity = None
 
     def __init__(self, robot_id: int, parent: Qt3DCore.QEntity | None = None):
         """
@@ -152,7 +151,7 @@ class RobotEntity(AssetEntity):
         self.sensors_update_timer.stop()
         self.lidar_emit_timer.stop()
 
-    def lidar_data(self) -> List[int]:
+    def lidar_data(self) -> list[int]:
         """
         Return a list of distances for each 360 Lidar angles.
         """

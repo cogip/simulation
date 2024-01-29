@@ -1,5 +1,5 @@
 import asyncio
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 import polling2
 import socketio
@@ -59,7 +59,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         await self._planner.stop()
         logger.info("Disconnected from cogip-server")
 
-    async def on_connect_error(self, data: Dict[str, Any]):
+    async def on_connect_error(self, data: dict[str, Any]):
         """
         On connection error, check if a Planner is already connected and exit,
         or retry connection.
@@ -109,7 +109,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         await self._planner.add_robot(robot_id, self._planner._robots[robot_id].virtual)
 
-    async def on_pose_current(self, robot_id: int, pose: Dict[str, Any]):
+    async def on_pose_current(self, robot_id: int, pose: dict[str, Any]):
         """
         Callback on pose current message.
         """
@@ -136,7 +136,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         self._planner.update_config(config)
 
-    async def on_obstacles(self, robot_id: int, obstacles: Dict[str, Any]):
+    async def on_obstacles(self, robot_id: int, obstacles: dict[str, Any]):
         """
         Callback on obstacles message.
         """

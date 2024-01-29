@@ -11,7 +11,7 @@ Other formats could be also supported, but not tested
 """
 
 from pathlib import Path
-from typing import TextIO, Tuple
+from typing import TextIO
 
 from PySide6 import QtCore
 from PySide6.Qt3DCore import Qt3DCore
@@ -125,7 +125,7 @@ class AssetEntity(Qt3DCore.QEntity):
         pass
 
 
-def traverse_tree(node: Qt3DCore.QEntity, next_node_nb: int, fd: TextIO) -> Tuple[int, int]:
+def traverse_tree(node: Qt3DCore.QEntity, next_node_nb: int, fd: TextIO) -> tuple[int, int]:
     """
     Recursive function traversing all child entities and write its node
     and all its components to the .dot file.

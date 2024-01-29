@@ -1,5 +1,6 @@
 import collections
-from typing import Any, Dict, OrderedDict
+from collections import OrderedDict
+from typing import Any
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
@@ -15,7 +16,7 @@ class IntegerProperty(QtCore.QObject):
     """
     value_updated: qtSignal = qtSignal(str, int)
 
-    def __init__(self, name: str, props: Dict[str, Any], layout: QtWidgets.QGridLayout):
+    def __init__(self, name: str, props: dict[str, Any], layout: QtWidgets.QGridLayout):
         """
         Class constructor.
 
@@ -82,7 +83,7 @@ class NumberProperty(QtCore.QObject):
     """
     value_updated: qtSignal = qtSignal(str, float)
 
-    def __init__(self, name: str, props: Dict[str, Any], layout: QtWidgets.QGridLayout):
+    def __init__(self, name: str, props: dict[str, Any], layout: QtWidgets.QGridLayout):
         """
         Class constructor.
 
@@ -153,7 +154,7 @@ class PropertiesDialog(QtWidgets.QDialog):
     property_updated: qtSignal = qtSignal(dict)
     closed: qtSignal = qtSignal()
 
-    def __init__(self, config: Dict[str, Any], parent: QtWidgets.QWidget = None):
+    def __init__(self, config: dict[str, Any], parent: QtWidgets.QWidget = None):
         """
         Class constructor.
 
@@ -204,7 +205,7 @@ class PropertiesDialog(QtWidgets.QDialog):
                 case _:
                     logger.error(f"Unsupported property type: {type}")
 
-    def update_values(self, config: Dict[str, Any]):
+    def update_values(self, config: dict[str, Any]):
         """
         Update properties with new values.
 

@@ -5,7 +5,7 @@ import os
 import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from cogip.utils.singleton import Singleton
 from . import logger
@@ -81,7 +81,7 @@ class GameRecorder(metaclass=Singleton):
     def recording(self, enabled: bool) -> None:
         self._recording = enabled
 
-    def record(self, record: Dict[str, Any]) -> None:
+    def record(self, record: dict[str, Any]) -> None:
         """
         Write a record in the current record file.
         Do it only the the robot the game has started.
@@ -89,7 +89,7 @@ class GameRecorder(metaclass=Singleton):
         if self._record_handler and self._recording:
             self._game_recorder.info(json.dumps(record))
 
-    async def async_record(self, record: Dict[str, Any]) -> None:
+    async def async_record(self, record: dict[str, Any]) -> None:
         """
         Async version of [`record()`][cogip.tools.server.recorder.GameRecorder.record] .
         """

@@ -15,7 +15,7 @@ from cogip.tools.planner.camp import Camp
 from .settings import Settings
 
 
-class CameraServer():
+class CameraServer:
     """
     Camera web server.
 

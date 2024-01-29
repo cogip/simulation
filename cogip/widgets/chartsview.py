@@ -1,6 +1,5 @@
 import csv
 from pathlib import Path
-from typing import Optional
 
 from PySide6 import QtCharts, QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
@@ -169,7 +168,7 @@ class ChartView(QtWidgets.QWidget):
 
     def new_robot_state(
             self, cycle: int,
-            current: Optional[float], order: Optional[float]) -> None:
+            current: float | None, order: float | None) -> None:
         """
         Add a new point on the chart view.
 
@@ -230,7 +229,7 @@ class ChartsView(QtWidgets.QDialog):
     """
     closed: qtSignal = qtSignal()
 
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(self, parent: QtWidgets.QWidget | None = None):
         """
         Class constructor.
 

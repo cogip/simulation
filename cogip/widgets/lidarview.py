@@ -1,4 +1,3 @@
-from typing import List
 
 from PySide6 import QtCharts, QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
@@ -33,9 +32,9 @@ class LidarView(QtWidgets.QWidget):
     def __init__(
             self,
             table_model: LidarTableModel,
-            angle_values: List[int],
-            distance_values: List[int],
-            intensity_values: List[int],
+            angle_values: list[int],
+            distance_values: list[int],
+            intensity_values: list[int],
             distance_color: QtGui.QColor,
             intensity_color: QtGui.QColor,
             nb_angles: int,

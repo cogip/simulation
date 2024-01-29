@@ -1,6 +1,6 @@
 import asyncio
 import platform
-from typing import Any, Dict
+from typing import Any
 
 import polling2
 import socketio
@@ -46,7 +46,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         logger.info("Disconnected from cogip-server")
 
-    async def on_connect_error(self, data: Dict[str, Any]) -> None:
+    async def on_connect_error(self, data: dict[str, Any]) -> None:
         """
         On connection error, check if a Planner is already connected and exit,
         or retry connection.
@@ -86,7 +86,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         response.cmd, _, response.desc = data.partition(" ")
         await self._copilot.pbcom.send_serial_message(copilot.command_uuid, response)
 
-    async def on_pose_start(self, data: Dict[str, Any]):
+    async def on_pose_start(self, data: dict[str, Any]):
         """
         Callback on pose start (from planner).
         Forward to mcu-firmware.
@@ -96,7 +96,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         start_pose.copy_pb(pb_start_pose)
         await self._copilot.pbcom.send_serial_message(copilot.pose_start_uuid, pb_start_pose)
 
-    async def on_pose_order(self, data: Dict[str, Any]):
+    async def on_pose_order(self, data: dict[str, Any]):
         """
         Callback on pose order (from planner).
         Forward to mcu-firmware.
@@ -113,7 +113,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         await self._copilot.pbcom.send_serial_message(copilot.actuators_thread_stop_uuid, None)
 
-    async def on_actuator_command(self, data: Dict[str, Any]):
+    async def on_actuator_command(self, data: dict[str, Any]):
         """
         Callback on actuator_command (from dashboard).
         Forward to mcu-firmware.
@@ -129,7 +129,7 @@ class SioEvents(socketio.AsyncClientNamespace):
             command.pb_copy(pb_command.positional_actuator)
         await self._copilot.pbcom.send_serial_message(copilot.actuators_command_uuid, pb_command)
 
-    async def on_config_updated(self, config: Dict[str, Any]) -> None:
+    async def on_config_updated(self, config: dict[str, Any]) -> None:
         """
         Callback on config_updated from dashboard.
         Update pid PB message and send it back to firmware.
