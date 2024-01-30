@@ -7,5 +7,5 @@ mkdocs-material==9.5.2
 mkdocstrings[python]==0.24.0
 pymdown-extensions==10.5
 PySide6==6.6.1
+ruff==0.1.15
 toposort==1.10
-ruff==0.1.9
