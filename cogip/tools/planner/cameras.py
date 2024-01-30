@@ -21,7 +21,6 @@ async def snapshot():
             logger.error(f"Request snapshot: HTTP Exception: {exc}")
 
 
-
 async def calibrate_camera(robot: "Robot") -> Vertex | None:
     async with httpx.AsyncClient() as client:
         try:

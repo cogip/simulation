@@ -15,18 +15,13 @@ if TYPE_CHECKING:
 class ParkingAction(Action):
     nb_robots: int = 0
 
-    def __init__(
-            self,
-            planner: "Planner", actions: Actions,
-            pose: models.Pose):
+    def __init__(self, planner: "Planner", actions: Actions, pose: models.Pose):
         super().__init__(f"Parking action at ({int(pose.x)}, {int(pose.y)})", planner, actions, interruptable=False)
         self.before_action_func = self.before_action
         self.after_action_func = self.after_action
         self.actions_backup: Actions = []
 
-        self.pose = Pose(
-            **pose.model_dump()
-        )
+        self.pose = Pose(**pose.model_dump())
         self.poses = [self.pose]
 
     def weight(self, robot: "Robot") -> float:

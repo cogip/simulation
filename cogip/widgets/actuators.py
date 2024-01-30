@@ -19,6 +19,7 @@ class ServoControl(QtCore.QObject):
 
     Build a widget to control a servo.
     """
+
     command_updated: qtSignal = qtSignal(ServoCommand)
 
     def __init__(self, servo: Servo, layout: QtWidgets.QGridLayout):
@@ -80,6 +81,7 @@ class PumpControl(QtCore.QObject):
 
     Build a widget to control a pump.
     """
+
     command_updated: qtSignal = qtSignal(PumpCommand)
 
     def __init__(self, pump: Pump, layout: QtWidgets.QGridLayout):
@@ -130,6 +132,7 @@ class ActuatorsDialog(QtWidgets.QDialog):
         new_actuator_command: Qt signal emitted when a actuator command is updated
         closed: Qt signal emitted when the window is hidden
     """
+
     new_actuator_command: qtSignal = qtSignal(int, object)
     closed: qtSignal = qtSignal(int)
 

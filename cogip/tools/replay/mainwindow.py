@@ -26,12 +26,12 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_new_robot_state: Qt signal emitted on robot state update
         rate: number of milliseconds between two states during automatic playback
     """
+
     signal_new_robot_state: qtSignal = qtSignal(RobotState)
     rate: int = 60
 
     def __init__(self, trace: Path | None = None, *args, **kwargs):
-        """
-        """
+        """ """
         super().__init__(*args, **kwargs)
         self.states = []
         self.timer = QtCore.QTimer()
@@ -39,7 +39,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.menu_widgets: dict[str, QtWidgets.QWidget] = {}
 
-        self.setWindowTitle('COGIP Replay')
+        self.setWindowTitle("COGIP Replay")
 
         self.central_widget = QtWidgets.QWidget()
         self.central_layout = QtWidgets.QVBoxLayout()
@@ -48,11 +48,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Menu bar
         menubar = self.menuBar()
-        file_menu = menubar.addMenu('&File')
-        view_menu = menubar.addMenu('&View')
+        file_menu = menubar.addMenu("&File")
+        view_menu = menubar.addMenu("&View")
 
         # Toolbars
-        file_toolbar = self.addToolBar('File')
+        file_toolbar = self.addToolBar("File")
 
         # Status bar
         status_bar = self.statusBar()
@@ -89,25 +89,17 @@ class MainWindow(QtWidgets.QMainWindow):
         # Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons
 
         # Exit action
-        self.exit_action = QtGui.QAction(
-            QtGui.QIcon.fromTheme("application-exit"),
-            'Exit',
-            self
-        )
-        self.exit_action.setShortcut('Ctrl+Q')
-        self.exit_action.setStatusTip('Exit application')
+        self.exit_action = QtGui.QAction(QtGui.QIcon.fromTheme("application-exit"), "Exit", self)
+        self.exit_action.setShortcut("Ctrl+Q")
+        self.exit_action.setStatusTip("Exit application")
         self.exit_action.triggered.connect(self.close)
         file_menu.addAction(self.exit_action)
         file_toolbar.addAction(self.exit_action)
 
         # Add obstacle action
-        self.open_trace_action = QtGui.QAction(
-            QtGui.QIcon.fromTheme("document-open"),
-            'Open trace',
-            self
-        )
-        self.open_trace_action.setShortcut('Ctrl+O')
-        self.open_trace_action.setStatusTip('Open trace')
+        self.open_trace_action = QtGui.QAction(QtGui.QIcon.fromTheme("document-open"), "Open trace", self)
+        self.open_trace_action.setShortcut("Ctrl+O")
+        self.open_trace_action.setStatusTip("Open trace")
         self.open_trace_action.triggered.connect(self.open_trace)
         file_menu.addAction(self.open_trace_action)
         file_toolbar.addAction(self.open_trace_action)
@@ -124,14 +116,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.play_button = QtWidgets.QPushButton()
         self.play_button.setIcon(QtGui.QIcon.fromTheme("media-playback-start"))
-        self.play_button.setStatusTip('Play')
+        self.play_button.setStatusTip("Play")
         self.play_button.setEnabled(False)
         self.play_button.clicked.connect(self.play)
         slider_layout.addWidget(self.play_button)
 
         self.pause_button = QtWidgets.QPushButton()
         self.pause_button.setIcon(QtGui.QIcon.fromTheme("media-playback-pause"))
-        self.pause_button.setStatusTip('Pause')
+        self.pause_button.setStatusTip("Pause")
         self.pause_button.setEnabled(False)
         self.pause_button.clicked.connect(self.pause)
         slider_layout.addWidget(self.pause_button)
@@ -148,8 +140,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.charts_view = ChartsView(self)
 
         # Add view action
-        self.view_charts_action = QtGui.QAction('Calibration Charts', self)
-        self.view_charts_action.setStatusTip('Display/Hide calibration charts')
+        self.view_charts_action = QtGui.QAction("Calibration Charts", self)
+        self.view_charts_action.setStatusTip("Display/Hide calibration charts")
         self.view_charts_action.setCheckable(True)
         self.view_charts_action.toggled.connect(self.charts_toggled)
         self.charts_view.closed.connect(partial(self.view_charts_action.setChecked, False))
@@ -200,7 +192,7 @@ class MainWindow(QtWidgets.QMainWindow):
             dir="",
             filter="Text files (*.txt)",
             # Workaround a know Qt bug
-            options=QtWidgets.QFileDialog.DontUseNativeDialog
+            options=QtWidgets.QFileDialog.DontUseNativeDialog,
         )
         if filename:
             self.load_trace(Path(filename))

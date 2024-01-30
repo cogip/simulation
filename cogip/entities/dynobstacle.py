@@ -1,4 +1,3 @@
-
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
 from PySide6.Qt3DExtras import Qt3DExtras
@@ -36,8 +35,6 @@ class DynBaseObstacleEntity(Qt3DCore.QEntity):
         self.bb = PathEntity(QtCore.Qt.darkRed, self.parent)
 
     def set_bounding_box(self, points: list[models.Vertex]) -> None:
-        """
-        """
         if self.points == points:
             return
 

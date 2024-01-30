@@ -17,6 +17,7 @@ class CameraCalibrationAction(Action):
     This action moves around the front right table marker, and take pictures to compute
     camera extrinsic parameters (ie, the position of the camera relative to the robot center).
     """
+
     def __init__(self, planner: "Planner", actions: Actions):
         super().__init__("CameraCalibration action", planner, actions)
         self.camera_positions: list[Vertex] = []
@@ -113,7 +114,7 @@ class CameraCalibrationAction(Action):
     async def calibrate_camera(self):
         await asyncio.sleep(1)
         if pose := await calibrate_camera(self.robot):
-                self.camera_positions.append(pose)
+            self.camera_positions.append(pose)
         await asyncio.sleep(0.5)
 
     async def print_camera_positions(self):
@@ -126,8 +127,8 @@ class CameraCalibrationAction(Action):
             y += p.y
             z += p.z
 
-        if n:= len(self.camera_positions):
-            p = Vertex(x=x/n, y=y/n, z=z/n)
+        if n := len(self.camera_positions):
+            p = Vertex(x=x / n, y=y / n, z=z / n)
             logger.info(f"=> Camera position mean: X={p.x:.0f} Y={p.y:.0f} Z={p.z:.0f}")
         else:
             logger.warning("No camera position found")

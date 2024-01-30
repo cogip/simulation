@@ -31,7 +31,7 @@ class SioEvents(socketio.AsyncClientNamespace):
             polling2.poll,
             lambda: self.client.connected is True,
             step=1,
-            poll_forever=True
+            poll_forever=True,
         )
         logger.info("Connected to cogip-server")
         await self.emit("connected", (self._copilot.id, (platform.machine() != "aarch64")))

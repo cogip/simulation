@@ -25,12 +25,13 @@ class RobotManualEntity(Qt3DCore.QEntity):
     enable_controller = qtSignal(bool)
 
     def __init__(
-            self,
-            parent: Qt3DCore.QEntity,
-            parent_widget: QtWidgets.QWidget,
-            x: int = 1200,
-            y: int = 1200,
-            rotation: int = 180):
+        self,
+        parent: Qt3DCore.QEntity,
+        parent_widget: QtWidgets.QWidget,
+        x: int = 1200,
+        y: int = 1200,
+        rotation: int = 180,
+    ):
         """
         Class constructor.
 
@@ -171,6 +172,7 @@ class RobotManualProperties(QtWidgets.QDialog):
     Attributes:
         active_properties: The current property window displayed.
     """
+
     active_properties: "RobotManualProperties" = None
 
     def __init__(self, parent: QtWidgets.QWidget, robot_entity: RobotManualEntity):

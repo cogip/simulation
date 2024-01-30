@@ -22,8 +22,12 @@ def main_opt(nb_angles: int = 360):  # 420, 724, 1020
     intensity_values = [0 for i in range(nb_angles)]
 
     table_model = LidarTableModel(
-        angle_values, distance_values, intensity_values,
-        distance_color, intensity_color, nb_angles
+        angle_values,
+        distance_values,
+        intensity_values,
+        distance_color,
+        intensity_color,
+        nb_angles,
     )
 
     data_proxy = DataProxy(angle_values, distance_values, intensity_values)
@@ -36,10 +40,7 @@ def main_opt(nb_angles: int = 360):  # 420, 724, 1020
 
     # Create main widget
     lidar_view = LidarView(
-        table_model,
-        angle_values, distance_values, intensity_values,
-        distance_color, intensity_color,
-        nb_angles
+        table_model, angle_values, distance_values, intensity_values, distance_color, intensity_color, nb_angles
     )
 
     # Create main window

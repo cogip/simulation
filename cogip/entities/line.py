@@ -38,7 +38,7 @@ class LineEntity(Qt3DCore.QEntity):
         self.geometry.addAttribute(self.position_attribute)
 
         # Connectivity between vertices
-        self.indices = array('I', [0, 1])
+        self.indices = array("I", [0, 1])
         self.indices_bytes = QtCore.QByteArray(self.indices.tobytes())
         self.indices_buffer = Qt3DCore.QBuffer(self.geometry)
         self.indices_buffer.setData(self.indices_bytes)
@@ -71,7 +71,7 @@ class LineEntity(Qt3DCore.QEntity):
         """
 
         # Position vertices (start and end)
-        positions = array('f')
+        positions = array("f")
         positions.fromlist([start.x, start.y, start.z])
         positions.fromlist([end.x, end.y, end.z])
         buffer_bytes = QtCore.QByteArray(positions.tobytes())

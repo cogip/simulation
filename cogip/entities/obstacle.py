@@ -28,14 +28,15 @@ class ObstacleEntity(Qt3DCore.QEntity):
     enable_controller = qtSignal(bool)
 
     def __init__(
-            self,
-            parent_widget: QtWidgets.QWidget,
-            x: int = 0,
-            y: int = 0,
-            rotation: int = 0,
-            length: int = 225,
-            width: int = 225,
-            height: int = 350):
+        self,
+        parent_widget: QtWidgets.QWidget,
+        x: int = 0,
+        y: int = 0,
+        rotation: int = 0,
+        length: int = 225,
+        width: int = 225,
+        height: int = 350,
+    ):
         """
         Class constructor.
 
@@ -83,7 +84,9 @@ class ObstacleEntity(Qt3DCore.QEntity):
         self.beacon_entity.addComponent(self.beacon_material)
 
         self.beacon_transform = Qt3DCore.QTransform(self.beacon_entity)
-        self.beacon_transform.setTranslation(QtGui.QVector3D(0, 0, self.mesh.zExtent() / 2 + self.beacon_mesh.length() / 2))
+        self.beacon_transform.setTranslation(
+            QtGui.QVector3D(0, 0, self.mesh.zExtent() / 2 + self.beacon_mesh.length() / 2)
+        )
         self.beacon_transform.setRotationX(90)
         self.beacon_entity.addComponent(self.beacon_transform)
 
@@ -196,7 +199,7 @@ class ObstacleEntity(Qt3DCore.QEntity):
             rotation=self.transform.rotationZ(),
             length=self.mesh.yExtent(),
             width=self.mesh.xExtent(),
-            height=self.mesh.zExtent()
+            height=self.mesh.zExtent(),
         )
 
     @qtSlot(QtGui.QVector3D)
@@ -227,6 +230,7 @@ class ObstacleProperties(QtWidgets.QDialog):
     Attributes:
         active_properties: The current property window displayed.
     """
+
     active_properties: "ObstacleProperties" = None
 
     def __init__(self, parent: QtWidgets.QWidget, obstacle_entity: ObstacleEntity):

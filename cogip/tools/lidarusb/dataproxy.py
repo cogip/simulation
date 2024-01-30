@@ -1,4 +1,3 @@
-
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 
@@ -15,10 +14,11 @@ class DataProxy(QtCore.QObject):
     update_data: qtSignal = qtSignal()
 
     def __init__(
-            self,
-            angle_values: list[int],
-            distance_values: list[int],
-            intensity_values: list[int]):
+        self,
+        angle_values: list[int],
+        distance_values: list[int],
+        intensity_values: list[int],
+    ):
         """Class constructor
 
         Arguments:

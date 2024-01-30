@@ -12,14 +12,15 @@ class GameContext(metaclass=Singleton):
     """
     A class recording the current game context.
     """
+
     game_duration: int = 100
     minimum_score: int = 1 + 5
 
     def __init__(self):
         self.properties = Properties()
         self.camp = Camp()
-        self._strategy = Strategy.BackAndForth
-        self._table = TableEnum.Game
+        self._strategy = Strategy.SolarPanel
+        self._table = TableEnum.Training
         self._avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
         self.playing: bool = False
         self.score: int = self.minimum_score
@@ -88,19 +89,19 @@ class GameContext(metaclass=Singleton):
                 return AdaptedPose(
                     x=1000 - 450 + self.properties.robot_width / 2,
                     y=1500 - 450 + self.properties.robot_width / 2,
-                    O=-90
+                    O=-90,
                 )
             case 2:  # Bottom left
                 return AdaptedPose(
                     x=-(1000 - 450 + self.properties.robot_width / 2),
                     y=1500 - 450 + self.properties.robot_width / 2,
-                    O=-90
+                    O=-90,
                 )
             case 3:  # Middle right
                 return AdaptedPose(
                     x=self.properties.robot_width / 2,
                     y=-(1500 - 450 + self.properties.robot_width / 2),
-                    O=90
+                    O=90,
                 )
 
     def get_available_start_poses(self) -> list[int]:

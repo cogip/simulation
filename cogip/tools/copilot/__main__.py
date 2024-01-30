@@ -23,39 +23,44 @@ def main_opt(
     server_url: str = typer.Option(
         "http://localhost:8090",
         help="Socket.IO Server URL",
-        envvar="COGIP_SOCKETIO_SERVER_URL"
+        envvar="COGIP_SOCKETIO_SERVER_URL",
     ),
     id: int = typer.Option(
         1,
-        "-i", "--id",
+        "-i",
+        "--id",
         min=1,
         help="Robot ID.",
-        envvar=["ROBOT_ID", "COPILOT_ID"]
+        envvar=["ROBOT_ID", "COPILOT_ID"],
     ),
     serial_port: Path = typer.Option(
         "/dev/ttyUSB0",
-        "-p", "--serial-port",
+        "-p",
+        "--serial-port",
         help="Serial port connected to STM32 device",
-        envvar="COPILOT_SERIAL_PORT"
+        envvar="COPILOT_SERIAL_PORT",
     ),
     serial_baud: int = typer.Option(
         230400,
-        "-b", "--serial-baudrate",
+        "-b",
+        "--serial-baudrate",
         help="Baud rate",
-        envvar="COPILOT_BAUD_RATE"
+        envvar="COPILOT_BAUD_RATE",
     ),
     reload: bool = typer.Option(
         False,
-        "-r", "--reload",
+        "-r",
+        "--reload",
         help="Reload app on source file changes",
-        envvar=["COGIP_RELOAD", "COPILOT_RELOAD"]
+        envvar=["COGIP_RELOAD", "COPILOT_RELOAD"],
     ),
     debug: bool = typer.Option(
         False,
-        "-d", "--debug",
+        "-d",
+        "--debug",
         help="Turn on debug messages",
-        envvar=["COGIP_DEBUG", "COPILOT_DEBUG"]
-    )
+        envvar=["COGIP_DEBUG", "COPILOT_DEBUG"],
+    ),
 ):
     if debug:
         logger.setLevel(logging.DEBUG)
@@ -69,7 +74,7 @@ def main_opt(
             args=args,
             callback=changes_callback,
             watch_filter=PythonFilter(),
-            debug=False
+            debug=False,
         )
     else:
         run(*args)
@@ -85,5 +90,5 @@ def main():
     typer.run(main_opt)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

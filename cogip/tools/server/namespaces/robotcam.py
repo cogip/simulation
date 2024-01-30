@@ -10,6 +10,7 @@ class RobotcamNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to robotcam.
     """
+
     def __init__(self):
         super().__init__("/robotcam")
 

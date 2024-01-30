@@ -11,6 +11,7 @@ class PlannerNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to planner.
     """
+
     def __init__(self, cogip_server: "server.Server"):
         super().__init__("/planner")
         self._cogip_server = cogip_server
@@ -81,7 +82,9 @@ class PlannerNamespace(socketio.AsyncNamespace):
         Callback on set_controller message.
         Forward to copilot.
         """
-        await self.emit("set_controller", controller, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
+        await self.emit(
+            "set_controller", controller, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot"
+        )
 
     async def on_path(self, sid, robot_id: int, path: list[dict[str, float]]):
         """

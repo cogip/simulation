@@ -7,6 +7,7 @@ from ..tools.copilot.messages import PB_PositionalActuatorCommand, PB_PumpComman
 
 # Actuators common definitions
 
+
 class ActuatorsKindEnum(IntEnum):
     SERVO = 0
     PUMP = 1
@@ -21,20 +22,23 @@ class ActuatorBase(BaseModel):
     group: ActuatorsGroupEnum = Field(
         ActuatorsGroupEnum.NO_GROUP,
         title="Group",
-        description="Actuators group"
+        description="Actuators group",
     )
     order: int = Field(
-        0, ge=0,
+        0,
+        ge=0,
         title="Order",
-        description="Order in group"
+        description="Order in group",
     )
     enabled: bool = Field(
-        False, title="Enabled",
-        description="An actuator is enabled if it has been initialized with its current value"
+        False,
+        title="Enabled",
+        description="An actuator is enabled if it has been initialized with its current value",
     )
 
 
 # Servo related definitions
+
 
 class ServoEnum(IntEnum):
     LXSERVO_BALL_SWITCH = 1
@@ -47,12 +51,14 @@ class ServoCommand(BaseModel):
     id: ServoEnum = Field(
         ...,
         title="Id",
-        description="Servo identifier"
+        description="Servo identifier",
     )
     command: int = Field(
-        0, ge=0, le=999,
+        0,
+        ge=0,
+        le=999,
         title="Position Command",
-        description="Current servo position command"
+        description="Current servo position command",
     )
 
     def pb_copy(self, message: PB_ServoCommand) -> None:
@@ -62,13 +68,16 @@ class ServoCommand(BaseModel):
 
 class Servo(ActuatorBase, ServoCommand):
     position: int = Field(
-        0, ge=0, le=999,
+        0,
+        ge=0,
+        le=999,
         title="Position",
-        description="Current servo position"
+        description="Current servo position",
     )
 
 
 # Pump related definitions
+
 
 class PumpEnum(IntEnum):
     PUMP_RIGHT_ARM = 0
@@ -77,16 +86,8 @@ class PumpEnum(IntEnum):
 
 class PumpCommand(BaseModel):
     kind: Literal[ActuatorsKindEnum.PUMP] = ActuatorsKindEnum.PUMP
-    id: PumpEnum = Field(
-        ...,
-        title="Id",
-        description="Pump identifier"
-    )
-    command: bool = Field(
-        False,
-        title="Pump Command",
-        description="Current pump command"
-    )
+    id: PumpEnum = Field(..., title="Id", description="Pump identifier")
+    command: bool = Field(False, title="Pump Command", description="Current pump command")
 
     def pb_copy(self, message: PB_PumpCommand) -> None:
         message.id = self.id
@@ -94,19 +95,12 @@ class PumpCommand(BaseModel):
 
 
 class Pump(ActuatorBase, PumpCommand):
-    activated: bool = Field(
-        False,
-        title="Activated",
-        description="Current pump state"
-    )
-    under_pressure: bool = Field(
-        False,
-        title="Under pressure",
-        description="Is pump under pressure"
-    )
+    activated: bool = Field(False, title="Activated", description="Current pump state")
+    under_pressure: bool = Field(False, title="Under pressure", description="Is pump under pressure")
 
 
 # Positional Actuators related definitions
+
 
 class PositionalActuatorEnum(IntEnum):
     MOTOR_CENTRAL_LIFT = 0
@@ -121,15 +115,13 @@ class PositionalActuatorEnum(IntEnum):
 
 class PositionalActuatorCommand(BaseModel):
     kind: Literal[ActuatorsKindEnum.POSITIONAL] = ActuatorsKindEnum.POSITIONAL
-    id: PositionalActuatorEnum = Field(
-        ...,
-        title="Id",
-        description="Positional Actuator identifier"
-    )
+    id: PositionalActuatorEnum = Field(..., title="Id", description="Positional Actuator identifier")
     command: int = Field(
-        0, ge=-100, le=999,
+        0,
+        ge=-100,
+        le=999,
         title="Position Command",
-        description="Current positional actuator position command"
+        description="Current positional actuator position command",
     )
 
     def pb_copy(self, message: PB_PositionalActuatorCommand) -> None:

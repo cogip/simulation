@@ -81,7 +81,9 @@ class AssetEntity(Qt3DCore.QEntity):
         Arguments:
             status: current loader status
         """
-        if status.value != Qt3DRender.QSceneLoader.Ready.value:  # .value is workaround to a Python binding bug in PySide6 6.4.
+        if (
+            status.value != Qt3DRender.QSceneLoader.Ready.value
+        ):  # .value is workaround to a Python binding bug in PySide6 6.4.
             return
 
         self.post_init()
@@ -109,9 +111,9 @@ class AssetEntity(Qt3DCore.QEntity):
         """
 
         tree_filename = self.asset_path.with_suffix(".tree.dot")
-        with tree_filename.open(mode='w') as fd:
+        with tree_filename.open(mode="w") as fd:
             fd.write('graph ""\n')
-            fd.write('{\n')
+            fd.write("{\n")
             fd.write('label="Entity tree"\n')
             root_node_number = 0
             traverse_tree(self, root_node_number, fd)
@@ -143,19 +145,14 @@ def traverse_tree(node: Qt3DCore.QEntity, next_node_nb: int, fd: TextIO) -> tupl
     next_node_nb += 1
 
     # Insert current node in the tree
-    fd.write("n%03d [label=\"%s\n%s\"] ;\n" % (
-        current_node_nb,
-        node.metaObject().className(),
-        node.objectName()))
+    fd.write('n%03d [label="%s\n%s"] ;\n' % (current_node_nb, node.metaObject().className(), node.objectName()))
 
     # Enumerate components
     for comp in node.components():
-        fd.write("n%03d [shape=box,label=\"%s\n%s\"] ;\n" % (
-            next_node_nb,
-            comp.metaObject().className(),
-            comp.objectName()))
-        fd.write("n%03d -- n%03d [style=dotted];\n" % (
-            current_node_nb, next_node_nb))
+        fd.write(
+            'n%03d [shape=box,label="%s\n%s"] ;\n' % (next_node_nb, comp.metaObject().className(), comp.objectName())
+        )
+        fd.write("n%03d -- n%03d [style=dotted];\n" % (current_node_nb, next_node_nb))
         next_node_nb += 1
 
     # Build tree for children

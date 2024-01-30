@@ -27,6 +27,7 @@ class EventFilter(QtCore.QObject):
     Filter all mouse and keyboard events related to moving the scene
     in front of the camera.
     """
+
     def __init__(self, parent: "GameView"):
         """
         Class constructor
@@ -133,6 +134,7 @@ class GameView(QtWidgets.QWidget):
             False when an other object (obstacle, manual robot, ...) is picked.
         new_move_delta: signal emitted to movable entities when a mouse drag is detected
     """
+
     ground_image: Path = Path("assets/table2024.png")
     obstacle_entities: list[ObstacleEntity] = []
     plane_intersection: QtGui.QVector3D = None
@@ -191,19 +193,19 @@ class GameView(QtWidgets.QWidget):
         self.x_axis = LineEntity(QtCore.Qt.red, self.scene_entity)
         self.x_axis.set_points(
             models.Vertex(x=0, y=0, z=0),
-            models.Vertex(x=5000, y=0, z=0)
+            models.Vertex(x=5000, y=0, z=0),
         )
 
         self.y_axis = LineEntity(QtCore.Qt.green, self.scene_entity)
         self.y_axis.set_points(
             models.Vertex(x=0, y=0, z=0),
-            models.Vertex(x=0, y=5000, z=0)
+            models.Vertex(x=0, y=5000, z=0),
         )
 
         self.z_axis = LineEntity(QtCore.Qt.blue, self.scene_entity)
         self.z_axis.set_points(
             models.Vertex(x=0, y=0, z=0),
-            models.Vertex(x=0, y=0, z=5000)
+            models.Vertex(x=0, y=0, z=5000),
         )
 
         self.path: dict[int, PathEntity] = {}
@@ -235,18 +237,18 @@ class GameView(QtWidgets.QWidget):
             QtGui.QVector3D(
                 max(-1500, min(1500, self.root_transform.translation().x() + x)),
                 max(-1000, min(1000, self.root_transform.translation().y() + y)),
-                max(-5000, min(-10, self.root_transform.translation().z() + z))
+                max(-5000, min(-10, self.root_transform.translation().z() + z)),
             )
         )
 
     def rotate(self, x: int, y: int, z: int) -> None:
-        self.root_transform.setRotationX((self.root_transform.rotationX() + x) % 360),
-        self.root_transform.setRotationY((self.root_transform.rotationY() + y) % 360),
+        (self.root_transform.setRotationX((self.root_transform.rotationX() + x) % 360),)
+        (self.root_transform.setRotationY((self.root_transform.rotationY() + y) % 360),)
         self.root_transform.setRotationZ((self.root_transform.rotationZ() - z) % 360)
 
     def top_view(self) -> None:
-        self.root_transform.setRotationX(0),
-        self.root_transform.setRotationY(0),
+        (self.root_transform.setRotationX(0),)
+        (self.root_transform.setRotationY(0),)
         self.root_transform.setRotationZ(-90)
         self.root_transform.setTranslation(QtGui.QVector3D(0, 0, -3500))
 
@@ -267,12 +269,7 @@ class GameView(QtWidgets.QWidget):
         asset.setParent(self.scene_entity)
         asset.ready.connect(self.asset_ready)
 
-    def add_obstacle(
-            self,
-            x: int = 0,
-            y: int = 0,
-            rotation: int = 0,
-            **kwargs) -> ObstacleEntity:
+    def add_obstacle(self, x: int = 0, y: int = 0, rotation: int = 0, **kwargs) -> ObstacleEntity:
         """
         Create a new obstacle in the 3D view.
 
@@ -315,7 +312,7 @@ class GameView(QtWidgets.QWidget):
         obstacle_models = []
         for obstacle_entity in self.obstacle_entities:
             obstacle_models.append(obstacle_entity.get_model())
-        with filename.open('w') as fd:
+        with filename.open("w") as fd:
             fd.write(json.dumps(obstacle_models, default=pydantic_encoder, indent=2))
 
     def asset_ready(self):
@@ -323,9 +320,7 @@ class GameView(QtWidgets.QWidget):
         Create artifacts when all assets are ready (loading assets is done in background).
         """
         child_assets_not_ready = [
-            child
-            for child in self.scene_entity.findChildren(AssetEntity)
-            if not child.asset_ready
+            child for child in self.scene_entity.findChildren(AssetEntity) if not child.asset_ready
         ]
         if len(child_assets_not_ready) == 0:
             self.robot_manual = RobotManualEntity(self.scene_entity, self.container)
@@ -359,9 +354,9 @@ class GameView(QtWidgets.QWidget):
         delta.setZ(0)
         rot_z = self.root_transform.rotationZ()
         delta = QtGui.QVector3D(
-            - delta.x() * math.cos(math.radians(rot_z)) - delta.y() * math.sin(math.radians(rot_z)),
-            - delta.y() * math.cos(math.radians(rot_z)) + delta.x() * math.sin(math.radians(rot_z)),
-            0
+            -delta.x() * math.cos(math.radians(rot_z)) - delta.y() * math.sin(math.radians(rot_z)),
+            -delta.y() * math.cos(math.radians(rot_z)) + delta.x() * math.sin(math.radians(rot_z)),
+            0,
         )
         self.new_move_delta.emit(delta)
         self.plane_intersection = new_intersection
@@ -499,8 +494,8 @@ class GameView(QtWidgets.QWidget):
             "rotation": [
                 self.root_transform.rotationX(),
                 self.root_transform.rotationY(),
-                self.root_transform.rotationZ()
-            ]
+                self.root_transform.rotationZ(),
+            ],
         }
 
     def set_camera_params(self, camera_params: dict[str, Any]) -> None:
@@ -514,9 +509,8 @@ class GameView(QtWidgets.QWidget):
 
 
 def create_light_entity(
-        parent: Qt3DCore.QEntity,
-        x: float, y: float, z: float,
-        intensity: float = 1) -> Qt3DCore.QEntity:
+    parent: Qt3DCore.QEntity, x: float, y: float, z: float, intensity: float = 1
+) -> Qt3DCore.QEntity:
     """
     Create a light entity at the position specified in arguments.
 

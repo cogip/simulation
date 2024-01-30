@@ -11,6 +11,7 @@ class BeaconcamNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to beaconcam.
     """
+
     def __init__(self):
         super().__init__("/beaconcam")
         self._connected = False

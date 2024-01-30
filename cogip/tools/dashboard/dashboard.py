@@ -9,7 +9,7 @@ from . import routes
 
 
 class Dashboard:
-    _exiting: bool = False                               # True if Uvicorn server was ask to shutdown
+    _exiting: bool = False  # True if Uvicorn server was ask to shutdown
     _original_uvicorn_exit_handler = Server.handle_exit  # Backup of original exit handler to overload it
 
     def __init__(self):

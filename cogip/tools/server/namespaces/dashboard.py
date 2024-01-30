@@ -10,6 +10,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to dashboards.
     """
+
     def __init__(self):
         super().__init__("/dashboard")
         self._context = Context()
@@ -45,7 +46,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
             await self.emit(
                 "tool_menu",
                 self._context.tool_menus[self._context.current_tool_menu].model_dump(),
-                namespace="/dashboard"
+                namespace="/dashboard",
             )
         else:
             # Forward command to corresponding namespace
@@ -54,7 +55,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
                 await self.emit(
                     "tool_menu",
                     self._context.tool_menus[self._context.current_tool_menu].model_dump(),
-                    namespace="/dashboard"
+                    namespace="/dashboard",
                 )
             else:
                 split_ns = self._context.current_tool_menu.split("/")

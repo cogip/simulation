@@ -21,6 +21,7 @@ class Robot:
     """
     Class representing a robot context.
     """
+
     def __init__(self, robot_id: int, planner: "Planner", virtual: bool):
         self.namespace: Namespace = planner._process_manager.Namespace()
         self.robot_id = robot_id
@@ -48,7 +49,7 @@ class Robot:
                 17 if robot_id == 1 else 27,
                 pull_up=True,
                 bounce_time=0.1,
-                pin_factory=MockFactory()
+                pin_factory=MockFactory(),
             )
         else:
             starter = Button(
@@ -56,7 +57,7 @@ class Robot:
                 pull_up=None,
                 bounce_time=None,
                 active_state=False,
-                pin_factory=PiGPIOFactory(host=f"robot{robot_id}")
+                pin_factory=PiGPIOFactory(host=f"robot{robot_id}"),
             )
 
         starter.when_pressed = partial(planner._sio_emitter_queues[robot_id].put, ("starter_changed", True))
@@ -129,8 +130,7 @@ class Robot:
     def obstacles(self, obstacles: models.DynObstacleList):
         self._obstacles = obstacles
         self.planner._shared_obstacles[self.robot_id] = [
-            obstacle.model_dump(exclude_defaults=True)
-            for obstacle in obstacles
+            obstacle.model_dump(exclude_defaults=True) for obstacle in obstacles
         ]
 
     async def next_pose(self) -> pose.Pose | None:

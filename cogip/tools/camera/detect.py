@@ -61,10 +61,7 @@ table_markers_positions = {
     23: {"x": -500, "y": -750},
 }
 
-table_markers_tvecs = {
-    n: np.array([t["x"], t["y"], 0])
-    for n, t in table_markers_positions.items()
-}
+table_markers_tvecs = {n: np.array([t["x"], t["y"], 0]) for n, t in table_markers_positions.items()}
 
 solar_panels_positions = {
     1: Vertex(x=-1037, y=1225, z=104),
@@ -78,10 +75,7 @@ solar_panels_positions = {
     9: Vertex(x=-1037, y=-1225, z=104),
 }
 
-solar_panels_tvecs = {
-    n: np.array([v.x, v.y, v.z])
-    for n, v in solar_panels_positions.items()
-}
+solar_panels_tvecs = {n: np.array([v.x, v.y, v.z]) for n, v in solar_panels_positions.items()}
 
 robot_width = 225.0
 robot_length = 225.0
@@ -139,33 +133,53 @@ def get_robot_position(n: int) -> Pose | None:
 
 
 def cmd_detect(
-    id: Annotated[int, typer.Option(
-        "-i", "--id",
-        min=0,
-        help="Robot ID.",
-        envvar=["ROBOT_ID", "CAMERA_ID"],
-    )] = 1,
-    camera_name: Annotated[CameraName, typer.Option(
-        help="Name of the camera",
-        envvar="CAMERA_NAME",
-    )] = CameraName.hbv.name,
-    camera_codec: Annotated[VideoCodec, typer.Option(
-        help="Camera video codec",
-        envvar="CAMERA_CODEC",
-    )] = VideoCodec.yuyv.name,
-    camera_width: Annotated[int, typer.Option(
-        help="Camera frame width",
-        envvar="CAMERA_WIDTH",
-    )] = 640,
-    camera_height: Annotated[int, typer.Option(
-        help="Camera frame height",
-        envvar="CAMERA_HEIGHT",
-    )] = 480,
-    robot_position: Annotated[Optional[int], typer.Option(  # noqa
-        help="Define the robot position",
-        envvar="CAMERA_ROBOT_POSITION",
-        min=1, max=6,
-    )] = None,
+    id: Annotated[
+        int,
+        typer.Option(
+            "-i",
+            "--id",
+            min=0,
+            help="Robot ID.",
+            envvar=["ROBOT_ID", "CAMERA_ID"],
+        ),
+    ] = 1,
+    camera_name: Annotated[
+        CameraName,
+        typer.Option(
+            help="Name of the camera",
+            envvar="CAMERA_NAME",
+        ),
+    ] = CameraName.hbv.name,
+    camera_codec: Annotated[
+        VideoCodec,
+        typer.Option(
+            help="Camera video codec",
+            envvar="CAMERA_CODEC",
+        ),
+    ] = VideoCodec.yuyv.name,
+    camera_width: Annotated[
+        int,
+        typer.Option(
+            help="Camera frame width",
+            envvar="CAMERA_WIDTH",
+        ),
+    ] = 640,
+    camera_height: Annotated[
+        int,
+        typer.Option(
+            help="Camera frame height",
+            envvar="CAMERA_HEIGHT",
+        ),
+    ] = 480,
+    robot_position: Annotated[
+        Optional[int],  # noqa
+        typer.Option(
+            help="Define the robot position",
+            envvar="CAMERA_ROBOT_POSITION",
+            min=1,
+            max=6,
+        ),
+    ] = None,
 ):
     """Detect Aruco tags and estimate their positions"""
     exit_key = 27  # use this key (Esc) to exit before max_frames
@@ -271,7 +285,7 @@ def cmd_detect(
             # Draw all markers borders
             cv2.aruco.drawDetectedMarkers(frame, marker_corners, marker_ids)
 
-            # Draw all markers axes
+            # Draw all markers axes
             for id, corner in zip(marker_ids, marker_corners):
                 marker_id = id[0]
                 if marker_id not in marker_sizes:
@@ -288,7 +302,7 @@ def cmd_detect(
                 )
                 cv2.drawFrameAxes(frame, camera_matrix, dist_coefs, rvec, tvec, 50)
 
-        cv2.imshow('Marker Detection', frame)
+        cv2.imshow("Marker Detection", frame)
 
         k = cv2.waitKey(1)
         if k == exit_key:
@@ -301,7 +315,7 @@ def handle_table_markers(
     dist_coefs: MatLike,
     robot_position: Vertex | None,
 ):
-    """ Compute camera position on table and camera position in robot if robot position is given """
+    """Compute camera position on table and camera position in robot if robot position is given"""
     if len(markers) == 0:
         logger.debug("No table marker found, skip robot positioning.")
         return
@@ -313,7 +327,7 @@ def handle_table_markers(
         dist_coefs,
     )
 
-    # Compute camera position in robot if robot position is given
+    # Compute camera position in robot if robot position is given
     if robot_position:
         get_camera_position_in_robot(
             robot_position,
@@ -352,7 +366,8 @@ def get_solar_panel_positions(
         marker_rvec = rvec[:, 0]
         marker_rvec_degrees = np.rad2deg(marker_rvec)
         logger.info(f"Solar panel marker {i}:")
-        logger.info(f"- Position relative to camera coordinate system: "
+        logger.info(
+            f"- Position relative to camera coordinate system: "
             f"X={marker_tvec[0]:.0f} "
             f"Y={marker_tvec[1]:.0f} "
             f"Z={marker_tvec[2]:.0f} "
@@ -368,7 +383,7 @@ def get_solar_panel_positions(
         marker_camera_tvec = np.asarray(marker_camera_tvec).flatten()  # 1D array: [x, y, z]
         marker_camera_rvec = rotation_matrix_to_euler_angles(R_flip * R_tc)  # 1D array: [roll, pitch, yaw]
 
-        # Use same axes as the table
+        # Use same axes as the table
         marker_camera_tvec[0], marker_camera_tvec[1] = marker_camera_tvec[1], marker_camera_tvec[0]
         marker_camera_rvec[2] = -marker_camera_rvec[2]
 
@@ -390,11 +405,13 @@ def get_solar_panel_positions(
         angle_marker = np.arcsin(marker_tvec[1] / hypot)
         angle_camera = np.pi / 2 - marker_camera_rvec[0] + angle_marker
 
-        dist_camera_to_marker_tvec = np.array([
-            hypot * np.cos(angle_camera),
-            -marker_tvec[0],
-            hypot * np.sin(angle_camera),
-        ])
+        dist_camera_to_marker_tvec = np.array(
+            [
+                hypot * np.cos(angle_camera),
+                -marker_tvec[0],
+                hypot * np.sin(angle_camera),
+            ]
+        )
         logger.info(
             "- Marker position relative to the camera in the robot axes: "
             f"X={dist_camera_to_marker_tvec[0]:.0f} "
@@ -403,11 +420,13 @@ def get_solar_panel_positions(
         )
 
         # Compute marker position relative to the robot in the robot axes
-        dist_robot_to_marker_tvec = np.array([
-            dist_camera_to_marker_tvec[0] - extrinsic_params.x,
-            dist_camera_to_marker_tvec[1] - extrinsic_params.y,
-            extrinsic_params.z -dist_camera_to_marker_tvec[2],
-        ])
+        dist_robot_to_marker_tvec = np.array(
+            [
+                dist_camera_to_marker_tvec[0] - extrinsic_params.x,
+                dist_camera_to_marker_tvec[1] - extrinsic_params.y,
+                extrinsic_params.z - dist_camera_to_marker_tvec[2],
+            ]
+        )
         logger.info(
             "- Marker position relative to the robot in the robot axes: "
             f"X={dist_robot_to_marker_tvec[0]:.0f} "
@@ -419,12 +438,12 @@ def get_solar_panel_positions(
             # Compute solar panel angle in the table coordinate system
             panel_angle = wrap_to_pi(np.deg2rad(robot_position.O) - marker_camera_rvec[2])
             panel_angle_degrees = np.rad2deg(panel_angle)
-            logger.info(
-                f"- Angle in table the axes : {panel_angle_degrees:.0f} ({marker_camera_rvec[2]})"
-            )
+            logger.info(f"- Angle in table the axes : {panel_angle_degrees:.0f} ({marker_camera_rvec[2]})")
 
             # Compute solar panel marker position  in the table coordinate system
-            table_robot_rotated = rotate_2d(np.array([robot_position.x, robot_position.y]), -np.deg2rad(robot_position.O))
+            table_robot_rotated = rotate_2d(
+                np.array([robot_position.x, robot_position.y]), -np.deg2rad(robot_position.O)
+            )
             table_marker_rotated = table_robot_rotated + dist_robot_to_marker_tvec[0:2]
             table_marker_xy = rotate_2d(table_marker_rotated, np.deg2rad(robot_position.O))
             table_marker_tvec = np.array([table_marker_xy[0], table_marker_xy[1], dist_robot_to_marker_tvec[2]])
@@ -439,7 +458,7 @@ def get_solar_panel_positions(
             # Find solar panel id
             for n, panel_tvec in solar_panels_tvecs.items():
                 # Solar panel are separated by a minimum of 250 mm.
-                # Considering the precision of the detection, a solar panel detected less than 60 mm around
+                # Considering the precision of the detection, a solar panel detected less than 60 mm around
                 # its theoretical position is enough to identify a specific solar panel.
                 maximum_detection_distance = 60
                 if np.linalg.norm(panel_tvec - table_marker_tvec) < maximum_detection_distance:
@@ -448,17 +467,18 @@ def get_solar_panel_positions(
 
     return panels
 
+
 @lru_cache
 def get_marker_points(marker_size: float):
-    """ Get marker points matrix based on marker size, as used by cv2.solvePnP """
+    """Get marker points matrix based on marker size, as used by cv2.solvePnP"""
     return np.array(
         [
             [-marker_size / 2, marker_size / 2, 0],
             [marker_size / 2, marker_size / 2, 0],
             [marker_size / 2, -marker_size / 2, 0],
-            [-marker_size / 2, -marker_size / 2, 0]
+            [-marker_size / 2, -marker_size / 2, 0],
         ],
-        dtype=np.float32
+        dtype=np.float32,
     )
 
 
@@ -555,7 +575,7 @@ def get_camera_position_on_table(
 def get_camera_position_in_robot(
     robot_position: Vertex,
     table_camera_tvec: ArrayLike,
-    table_camera_angle: float
+    table_camera_angle: float,
 ) -> Vertex:
     # If we know the real robot position on the table,
     # we can compute camera extrinsic parameters
@@ -567,9 +587,6 @@ def get_camera_position_in_robot(
     robot_tvec_rotated = rotate_2d(robot_tvec, -table_camera_angle)
     relative_tvec = np.append(robot_tvec_rotated - camera_tvec_rotated, table_camera_tvec[2])
     logger.info(
-        "Camera extrinsic parameters: "
-        f"X={relative_tvec[0]:.0f} "
-        f"Y={relative_tvec[1]:.0f} "
-        f"Z={relative_tvec[2]:.0f}"
+        f"Camera extrinsic parameters: X={relative_tvec[0]:.0f} Y={relative_tvec[1]:.0f} Z={relative_tvec[2]:.0f}"
     )
     return Vertex(x=relative_tvec[0], y=relative_tvec[1], z=relative_tvec[2])

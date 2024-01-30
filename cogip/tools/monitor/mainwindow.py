@@ -42,6 +42,7 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_actuators_closed: Qt signal to stop actuators state request
         signal_starter_changed: Qt signal emitted the starter state has changed
     """
+
     signal_config_updated: qtSignal = qtSignal(dict)
     signal_wizard_response: qtSignal = qtSignal(dict)
     signal_send_command: qtSignal = qtSignal(str, str)
@@ -67,7 +68,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menu_widgets: dict[str, dict[str, QtWidgets.QWidget]] = {}
         self.wizard: WizardDialog | None = None
 
-        self.setWindowTitle('COGIP Monitor')
+        self.setWindowTitle("COGIP Monitor")
 
         self.central_widget = QtWidgets.QWidget()
         self.central_layout = QtWidgets.QHBoxLayout()
@@ -76,15 +77,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
         # Menu bar
         menubar = self.menuBar()
-        file_menu = menubar.addMenu('&File')
-        obstacles_menu = menubar.addMenu('&Obstacles')
-        self.view_menu = menubar.addMenu('&View')
-        help_menu = menubar.addMenu('&Help')
+        file_menu = menubar.addMenu("&File")
+        obstacles_menu = menubar.addMenu("&Obstacles")
+        self.view_menu = menubar.addMenu("&View")
+        help_menu = menubar.addMenu("&Help")
 
         # Toolbars
-        file_toolbar = self.addToolBar('File')
+        file_toolbar = self.addToolBar("File")
         file_toolbar.setObjectName("File Toolbar")
-        obstacles_toolbar = self.addToolBar('Obstacles')
+        obstacles_toolbar = self.addToolBar("Obstacles")
         obstacles_toolbar.setObjectName("Obstacles Toolbar")
 
         # Status bar
@@ -118,49 +119,33 @@ class MainWindow(QtWidgets.QMainWindow):
         # Icons: https://commons.wikimedia.org/wiki/GNOME_Desktop_icons
 
         # Exit action
-        self.exit_action = QtGui.QAction(
-            QtGui.QIcon.fromTheme("application-exit"),
-            'Exit',
-            self
-        )
-        self.exit_action.setShortcut('Ctrl+Q')
-        self.exit_action.setStatusTip('Exit application')
+        self.exit_action = QtGui.QAction(QtGui.QIcon.fromTheme("application-exit"), "Exit", self)
+        self.exit_action.setShortcut("Ctrl+Q")
+        self.exit_action.setStatusTip("Exit application")
         self.exit_action.triggered.connect(self.close)
         file_menu.addAction(self.exit_action)
         file_toolbar.addAction(self.exit_action)
 
         # Add obstacle action
-        self.add_obstacle_action = QtGui.QAction(
-            QtGui.QIcon.fromTheme("list-add"),
-            'Add obstacle',
-            self
-        )
-        self.add_obstacle_action.setShortcut('Ctrl+A')
-        self.add_obstacle_action.setStatusTip('Add obstacle')
+        self.add_obstacle_action = QtGui.QAction(QtGui.QIcon.fromTheme("list-add"), "Add obstacle", self)
+        self.add_obstacle_action.setShortcut("Ctrl+A")
+        self.add_obstacle_action.setStatusTip("Add obstacle")
         self.add_obstacle_action.triggered.connect(self.add_obstacle)
         obstacles_menu.addAction(self.add_obstacle_action)
         obstacles_toolbar.addAction(self.add_obstacle_action)
 
         # Open obstacles action
-        self.load_obstacles_action = QtGui.QAction(
-            QtGui.QIcon.fromTheme("document-open"),
-            'Load obstacles',
-            self
-        )
-        self.load_obstacles_action.setShortcut('Ctrl+O')
-        self.load_obstacles_action.setStatusTip('Load obstacles')
+        self.load_obstacles_action = QtGui.QAction(QtGui.QIcon.fromTheme("document-open"), "Load obstacles", self)
+        self.load_obstacles_action.setShortcut("Ctrl+O")
+        self.load_obstacles_action.setStatusTip("Load obstacles")
         self.load_obstacles_action.triggered.connect(self.load_obstacles)
         obstacles_menu.addAction(self.load_obstacles_action)
         obstacles_toolbar.addAction(self.load_obstacles_action)
 
         # Save obstacles action
-        self.save_obstacles_action = QtGui.QAction(
-            QtGui.QIcon.fromTheme("document-save"),
-            'Save obstacles',
-            self
-        )
-        self.save_obstacles_action.setShortcut('Ctrl+S')
-        self.save_obstacles_action.setStatusTip('Save obstacles')
+        self.save_obstacles_action = QtGui.QAction(QtGui.QIcon.fromTheme("document-save"), "Save obstacles", self)
+        self.save_obstacles_action.setShortcut("Ctrl+S")
+        self.save_obstacles_action.setStatusTip("Save obstacles")
         self.save_obstacles_action.triggered.connect(self.save_obstacles)
         obstacles_menu.addAction(self.save_obstacles_action)
         obstacles_toolbar.addAction(self.save_obstacles_action)
@@ -195,8 +180,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actuators_dialogs: dict[int, ActuatorsDialog] = {}
 
         # Add help action
-        self.help_camera_control_action = QtGui.QAction('Camera control', self)
-        self.help_camera_control_action.setStatusTip('Display camera control help')
+        self.help_camera_control_action = QtGui.QAction("Camera control", self)
+        self.help_camera_control_action.setStatusTip("Display camera control help")
         self.help_camera_control_action.triggered.connect(self.display_help_camera_control)
         help_menu.addAction(self.help_camera_control_action)
 
@@ -423,7 +408,7 @@ class MainWindow(QtWidgets.QMainWindow):
         layout.addWidget(title)
 
         for entry in new_menu.entries:
-            if entry.cmd[0] == '_':
+            if entry.cmd[0] == "_":
                 continue
             cmd_widget = QtWidgets.QWidget()
             cmd_layout = QtWidgets.QHBoxLayout()
@@ -441,13 +426,9 @@ class MainWindow(QtWidgets.QMainWindow):
                 edit.setToolTip(arg)
                 cmd_layout.addWidget(edit)
                 edit.returnPressed.connect(
-                    lambda cmd=entry.cmd, layout=cmd_layout:
-                        self.build_command(menu_name, cmd, layout)
+                    lambda cmd=entry.cmd, layout=cmd_layout: self.build_command(menu_name, cmd, layout)
                 )
-            button.clicked.connect(
-                lambda cmd=entry.cmd, layout=cmd_layout:
-                    self.build_command(menu_name, cmd, layout)
-            )
+            button.clicked.connect(lambda cmd=entry.cmd, layout=cmd_layout: self.build_command(menu_name, cmd, layout))
 
         layout.addStretch()
 
@@ -501,7 +482,7 @@ class MainWindow(QtWidgets.QMainWindow):
             dir="",
             filter="JSON Files (*.json)",
             # Workaround a know Qt bug
-            options=QtWidgets.QFileDialog.DontUseNativeDialog
+            options=QtWidgets.QFileDialog.DontUseNativeDialog,
         )
         if filename:
             self.signal_load_obstacles.emit(Path(filename))
@@ -519,7 +500,7 @@ class MainWindow(QtWidgets.QMainWindow):
             dir="",
             filter="JSON Files (*.json)",
             # Workaround a know Qt bug
-            options=QtWidgets.QFileDialog.DontUseNativeDialog
+            options=QtWidgets.QFileDialog.DontUseNativeDialog,
         )
         if filename:
             self.signal_save_obstacles.emit(Path(filename))

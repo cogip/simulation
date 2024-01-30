@@ -57,6 +57,7 @@ class SocketioController(QtCore.QObject):
         signal_starter_changed:
             Qt signal emitted the starter state has changed
     """
+
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(str, models.ShellMenu)
     signal_new_robot_pose_current: qtSignal = qtSignal(int, models.Pose)
@@ -153,11 +154,8 @@ class SocketioController(QtCore.QObject):
         """
         self.sio.emit(
             "actuator_command",
-            data={
-                "robot_id": robot_id,
-                "command": command.model_dump()
-            },
-            namespace="/dashboard"
+            data={"robot_id": robot_id, "command": command.model_dump()},
+            namespace="/dashboard",
         )
 
     def actuators_closed(self, robot_id: str):
@@ -209,10 +207,12 @@ class SocketioController(QtCore.QObject):
             """
             Callback on server connection error.
             """
-            if data \
-               and isinstance(data, dict) \
-               and (message := data.get("message")) \
-               and message == "A monitor is already connected":
+            if (
+                data
+                and isinstance(data, dict)
+                and (message := data.get("message"))
+                and message == "A monitor is already connected"
+            ):
                 logger.error(f"Error: {message}.")
                 self._retry_connection = False
                 self.signal_exit.emit()

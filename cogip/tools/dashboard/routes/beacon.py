@@ -4,7 +4,6 @@ from fastapi.templating import Jinja2Templates
 
 
 class BeaconRouter(APIRouter):
-
     def __init__(self, templates: Jinja2Templates, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

@@ -11,8 +11,7 @@ except ImportError:
     DebugWindow = bool
 
 
-fixed_obstacles = [
-]
+fixed_obstacles = []
 
 
 class AvoidanceStrategy(IntEnum):
@@ -30,11 +29,12 @@ class Avoidance:
         self.last_expand: int = -1
 
     def get_path(
-            self,
-            pose_current: models.PathPose,
-            goal: models.PathPose,
-            obstacles: models.DynObstacleList,
-            strategy: AvoidanceStrategy = AvoidanceStrategy.Disabled) -> list[models.PathPose]:
+        self,
+        pose_current: models.PathPose,
+        goal: models.PathPose,
+        obstacles: models.DynObstacleList,
+        strategy: AvoidanceStrategy = AvoidanceStrategy.Disabled,
+    ) -> list[models.PathPose]:
         robot_width = self.shared_properties["robot_width"]
         match strategy:
             case AvoidanceStrategy.VisibilityRoadMapQuadPid | AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
@@ -82,14 +82,15 @@ class VisibilityRoadMapWrapper:
             y_min=self.table.y_min + robot_width / 2,
             y_max=self.table.y_max - robot_width / 2,
             fixed_obstacles=self.fixed_obstacles,
-            win=self.win
+            win=self.win,
         )
 
     def get_path(
-            self,
-            start: models.PathPose,
-            goal: models.PathPose,
-            obstacles: models.DynObstacleList) -> list[models.PathPose]:
+        self,
+        start: models.PathPose,
+        goal: models.PathPose,
+        obstacles: models.DynObstacleList,
+    ) -> list[models.PathPose]:
         if self.win:
             self.win.reset()
             self.win.point_start = start
@@ -105,21 +106,26 @@ class VisibilityRoadMapWrapper:
             y_list = list(y_list)
             x_list.append(x_list[0])
             y_list.append(y_list[0])
-            converted_obstacles.append(visibility_road_map.ObstaclePolygon(
-                x_list,
-                y_list,
-                self.expand
-            ))
+            converted_obstacles.append(
+                visibility_road_map.ObstaclePolygon(
+                    x_list,
+                    y_list,
+                    self.expand,
+                )
+            )
         if self.win:
             self.win.dyn_obstacles.extend(converted_obstacles)
             self.win.update()
 
         # Compute path
         rx, ry = self.visibility_road_map.planning(
-            start.x, start.y,
-            goal.x, goal.y,
+            start.x,
+            start.y,
+            goal.x,
+            goal.y,
             converted_obstacles,
-            self.shared_properties["max_distance"])
+            self.shared_properties["max_distance"],
+        )
 
         if self.win:
             self.win.path = [(x, y) for x, y in zip(rx, ry)]

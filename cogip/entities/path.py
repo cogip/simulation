@@ -1,4 +1,3 @@
-
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
 

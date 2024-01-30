@@ -19,6 +19,7 @@ class Singleton(type):
         print(Data())          # output: Data(name='foo')
         print(data is Data())  # output: True
     """
+
     _instance = {}
 
     def __call__(cls, *args, **kwargs):

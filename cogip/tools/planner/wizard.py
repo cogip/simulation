@@ -23,7 +23,7 @@ class GameWizard:
             "Waiting start thread",
             0.1,
             self.check_start,
-            logger=True
+            logger=True,
         )
 
         self.steps = [
@@ -32,7 +32,7 @@ class GameWizard:
             (self.request_strategy, self.response_strategy),
             (self.request_avoidance, self.response_avoidance),
             (self.request_starter, self.response_starter),
-            (self.request_wait, self.response_wait)
+            (self.request_wait, self.response_wait),
         ]
 
     def reset(self):
@@ -59,7 +59,7 @@ class GameWizard:
         message = {
             "name": "Game Wizard: Choose Camp",
             "type": "camp",
-            "value": self.planner._camp.color.name
+            "value": self.planner._camp.color.name,
         }
         await self.planner._sio_ns.emit("wizard", message)
 
@@ -81,7 +81,7 @@ class GameWizard:
             "type": "choice_integer",
             "choices": list(range(1, 4)),
             "value": self.planner._start_positions.get(robot_id, robot_id),
-            "robot_id": robot_id
+            "robot_id": robot_id,
         }
         await self.planner._sio_ns.emit("wizard", message)
 
@@ -102,7 +102,7 @@ class GameWizard:
             "name": "Game Wizard: Choose Strategy",
             "type": "choice_str",
             "choices": [e.name for e in Strategy],
-            "value": self.game_context.strategy.name
+            "value": self.game_context.strategy.name,
         }
         await self.planner._sio_ns.emit("wizard", message)
 
@@ -120,7 +120,7 @@ class GameWizard:
             "name": "Game Wizard: Choose Avoidance",
             "type": "choice_str",
             "choices": [e.name for e in AvoidanceStrategy],
-            "value": self.game_context.avoidance_strategy.name
+            "value": self.game_context.avoidance_strategy.name,
         }
         await self.planner._sio_ns.emit("wizard", message)
 
@@ -144,7 +144,7 @@ class GameWizard:
             "name": "Game Wizard: Starter Check",
             "type": "message",
             "value": f"Please insert starter in Robot {robot_id}",
-            "robot_id": robot_id
+            "robot_id": robot_id,
         }
         await self.planner._sio_ns.emit("wizard", message)
 
@@ -172,7 +172,7 @@ class GameWizard:
         message = {
             "name": "Game Wizard: Waiting Start",
             "type": "message",
-            "value": f"Remove starter {robot_id} to start the game"
+            "value": f"Remove starter {robot_id} to start the game",
         }
         await self.planner._sio_ns.emit("wizard", message)
 

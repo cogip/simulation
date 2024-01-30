@@ -12,10 +12,11 @@ from .avoidance import Avoidance, AvoidanceStrategy
 
 
 def create_dyn_obstacle(
-        center: models.Vertex,
-        shared_properties: DictProxy,
-        radius: float | None = None,
-        bb_radius: float | None = None) -> models.DynRoundObstacle:
+    center: models.Vertex,
+    shared_properties: DictProxy,
+    radius: float | None = None,
+    bb_radius: float | None = None,
+) -> models.DynRoundObstacle:
     """
     Create a dynamic obstacle.
 
@@ -33,7 +34,7 @@ def create_dyn_obstacle(
     obstacle = models.DynRoundObstacle(
         x=center.x,
         y=center.y,
-        radius=radius
+        radius=radius,
     )
     obstacle.create_bounding_box(bb_radius, shared_properties["obstacle_bb_vertices"])
 
@@ -41,17 +42,18 @@ def create_dyn_obstacle(
 
 
 def avoidance_process(
-        robot: Namespace,
-        strategy: Strategy,
-        avoidance_strategy: AvoidanceStrategy,
-        table: Table,
-        shared_properties: DictProxy,
-        shared_exiting: DictProxy,
-        shared_poses_current: DictProxy,
-        shared_poses_order: DictProxy,
-        shared_obstacles: DictProxy,
-        shared_last_avoidance_pose_currents: DictProxy,
-        queue_sio: Queue):
+    robot: Namespace,
+    strategy: Strategy,
+    avoidance_strategy: AvoidanceStrategy,
+    table: Table,
+    shared_properties: DictProxy,
+    shared_exiting: DictProxy,
+    shared_poses_current: DictProxy,
+    shared_poses_order: DictProxy,
+    shared_obstacles: DictProxy,
+    shared_last_avoidance_pose_currents: DictProxy,
+    queue_sio: Queue,
+):
     robot_id = robot.robot_id
     logger.info(f"Avoidance {robot_id}: process started")
     avoidance = Avoidance(robot_id, table, shared_properties)
@@ -92,12 +94,20 @@ def avoidance_process(
             continue
 
         # Check if robot has moved enough since the last avoidance path was computed
-        if robot_id in shared_last_avoidance_pose_currents and \
-            shared_last_avoidance_pose_currents[robot_id] != (pose_current.x, pose_current.y) and \
-            (dist := math.dist(
-                (pose_current.x, pose_current.y),
-                (shared_last_avoidance_pose_currents[robot_id][0], shared_last_avoidance_pose_currents[robot_id][1]))
-             ) < 20:
+        if (
+            robot_id in shared_last_avoidance_pose_currents
+            and shared_last_avoidance_pose_currents[robot_id] != (pose_current.x, pose_current.y)
+            and (
+                dist := math.dist(
+                    (pose_current.x, pose_current.y),
+                    (
+                        shared_last_avoidance_pose_currents[robot_id][0],
+                        shared_last_avoidance_pose_currents[robot_id][1],
+                    ),
+                )
+            )
+            < 20
+        ):
             logger.debug(f"Avoidance {robot_id}: Skip path update (current pose too close: {dist:0.2f})")
             continue
 
@@ -106,7 +116,7 @@ def avoidance_process(
             create_dyn_obstacle(
                 models.PathPose.model_validate(p),
                 shared_properties,
-                radius=shared_properties["robot_width"] / 1.5
+                radius=shared_properties["robot_width"] / 1.5,
             )
             for rid, p in shared_poses_current.items()
             if rid != robot_id
@@ -114,8 +124,7 @@ def avoidance_process(
 
         # Create dynamic obstacles
         dyn_obstacles = [
-            models.DynRoundObstacle.model_validate(obstacle)
-            for obstacle in shared_obstacles.get(robot_id, [])
+            models.DynRoundObstacle.model_validate(obstacle) for obstacle in shared_obstacles.get(robot_id, [])
         ]
 
         # Filter dynamic obstacles by excluding obstacles detected near robot positions
@@ -138,12 +147,7 @@ def avoidance_process(
         else:
             shared_last_avoidance_pose_currents[robot_id] = (pose_current.x, pose_current.y)
 
-            path = avoidance.get_path(
-                pose_current,
-                pose_order,
-                all_obstacles,
-                avoidance_strategy
-            )
+            path = avoidance.get_path(pose_current, pose_order, all_obstacles, avoidance_strategy)
 
         if len(path) == 0:
             logger.debug(f"Avoidance {robot_id}: No path found")
@@ -175,12 +179,11 @@ def avoidance_process(
                     new_controller = ControllerEnum.LINEAR_POSE_DISABLED
 
             if len(path) > 2 and last_emitted_pose_order:
-                dist = math.dist(
-                    (last_emitted_pose_order.x, last_emitted_pose_order.y),
-                    (path[1].x, path[1].y)
-                )
+                dist = math.dist((last_emitted_pose_order.x, last_emitted_pose_order.y), (path[1].x, path[1].y))
                 if dist < 20:
-                    logger.debug(f"Avoidance {robot_id}: Skip path update (new intermediate pose too close: {dist:0.2f})")
+                    logger.debug(
+                        f"Avoidance {robot_id}: Skip path update (new intermediate pose too close: {dist:0.2f})"
+                    )
                     continue
 
             next_delta_x = path[2].x - path[1].x

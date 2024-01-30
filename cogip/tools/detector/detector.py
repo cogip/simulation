@@ -26,18 +26,20 @@ class Detector:
 
     Build obstacles and send the list to the server.
     """
+
     NB_ANGLES_WITHOUT_OBSTACLE_TO_IGNORE: int = 3
 
     def __init__(
-            self,
-            server_url: str,
-            robot_id: int,
-            lidar_port: str | None,
-            min_distance: int,
-            max_distance: int,
-            beacon_radius: int,
-            refresh_interval: float,
-            emulation: bool):
+        self,
+        server_url: str,
+        robot_id: int,
+        lidar_port: str | None,
+        min_distance: int,
+        max_distance: int,
+        beacon_radius: int,
+        refresh_interval: float,
+        emulation: bool,
+    ):
         """
         Class constructor.
 
@@ -58,7 +60,7 @@ class Detector:
             min_distance=min_distance,
             max_distance=max_distance,
             beacon_radius=beacon_radius,
-            refresh_interval=refresh_interval
+            refresh_interval=refresh_interval,
         )
         self._lidar_data: list[int] = list()
         self._lidar_data_lock = threading.Lock()
@@ -69,14 +71,14 @@ class Detector:
             "Obstacles updater loop",
             refresh_interval,
             self.process_lidar_data,
-            logger=True
+            logger=True,
         )
 
         self._lidar_reader_loop = ThreadLoop(
             "Lidar reader loop",
             refresh_interval,
             self.read_lidar,
-            logger=True
+            logger=True,
         )
 
         self._laser: ydlidar.CYdLidar | None = None
@@ -139,8 +141,8 @@ class Detector:
                     namespaces=["/detector"],
                     auth={
                         "id": self._robot_id,
-                        "mode": "detection" if self._laser else "emulation"
-                    }
+                        "mode": "detection" if self._laser else "emulation",
+                    },
                 )
                 self._sio.wait()
             except socketio.exceptions.ConnectionError:
@@ -213,8 +215,9 @@ class Detector:
                 dist_current = self._lidar_data[last % 360]
 
                 # Keep the nearest distance of consecutive obstacles
-                if dist_current < (self.properties.max_distance - self.properties.beacon_radius) or \
-                   self._lidar_data[(last + 1) % 360] < (self.properties.max_distance - self.properties.beacon_radius):
+                if dist_current < (self.properties.max_distance - self.properties.beacon_radius) or self._lidar_data[
+                    (last + 1) % 360
+                ] < (self.properties.max_distance - self.properties.beacon_radius):
                     dist_min = dist_current if dist_current < dist_min else dist_min
                     continue
 
@@ -247,8 +250,10 @@ class Detector:
         obstacles: list[models.Vertex] = []
 
         for angle, distance in enumerate(distances):
-            if distance < self.properties.min_distance or \
-               distance >= self.properties.max_distance - self.properties.beacon_radius:
+            if (
+                distance < self.properties.min_distance
+                or distance >= self.properties.max_distance - self.properties.beacon_radius
+            ):
                 continue
 
             angle = (360 - angle) % 360

@@ -38,14 +38,10 @@ class Copilot:
     """
     Main copilot class.
     """
-    _loop: asyncio.AbstractEventLoop = None          # Event loop to use for all coroutines
 
-    def __init__(
-            self,
-            server_url: str,
-            id: int,
-            serial_port: Path,
-            serial_baud: int):
+    _loop: asyncio.AbstractEventLoop = None  # Event loop to use for all coroutines
+
+    def __init__(self, server_url: str, id: int, serial_port: Path, serial_baud: int):
         """
         Class constructor.
 
@@ -72,7 +68,7 @@ class Copilot:
             state_uuid: self.handle_message_state,
             pose_reached_uuid: self.handle_pose_reached,
             actuators_state_uuid: self.handle_actuators_state,
-            pid_uuid: self.handle_pid
+            pid_uuid: self.handle_pid,
         }
 
         self._pbcom = PBCom(serial_port, serial_baud, pb_message_handlers)
@@ -97,11 +93,7 @@ class Copilot:
         """
         while self.retry_connection:
             try:
-                await self._sio.connect(
-                    self._server_url,
-                    namespaces=["/copilot"],
-                    auth={"id": self._id}
-                )
+                await self._sio.connect(self._server_url, namespaces=["/copilot"], auth={"id": self._id})
             except socketio.exceptions.ConnectionError:
                 time.sleep(2)
                 continue
@@ -169,7 +161,7 @@ class Copilot:
             pb_pose,
             including_default_value_fields=True,
             preserving_proto_field_name=True,
-            use_integers_for_enums=True
+            use_integers_for_enums=True,
         )
         if self._sio.connected:
             await self._sio_events.emit("pose", pose)
@@ -188,7 +180,7 @@ class Copilot:
             pb_state,
             including_default_value_fields=True,
             preserving_proto_field_name=True,
-            use_integers_for_enums=True
+            use_integers_for_enums=True,
         )
         if self._sio.connected:
             await self._sio_events.emit("state", state)
@@ -207,7 +199,7 @@ class Copilot:
             pb_actuators_state,
             including_default_value_fields=True,
             preserving_proto_field_name=True,
-            use_integers_for_enums=True
+            use_integers_for_enums=True,
         )
         if self._sio.connected:
             actuators_state["robot_id"] = self._id
@@ -230,7 +222,7 @@ class Copilot:
                     kp=pb_pid.kp,
                     ki=pb_pid.ki,
                     kd=pb_pid.kd,
-                    integral_term_limit=pb_pid.integral_term_limit
+                    integral_term_limit=pb_pid.integral_term_limit,
                 )
             )
         pids = Pids(pids=pid_list)

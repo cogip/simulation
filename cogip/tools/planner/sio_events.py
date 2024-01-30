@@ -39,7 +39,7 @@ class SioEvents(socketio.AsyncClientNamespace):
             polling2.poll,
             lambda: self.client.connected is True,
             step=0.2,
-            poll_forever=True
+            poll_forever=True,
         )
         logger.info("Connected to cogip-server")
         await self.emit("connected")
@@ -64,10 +64,12 @@ class SioEvents(socketio.AsyncClientNamespace):
         On connection error, check if a Planner is already connected and exit,
         or retry connection.
         """
-        if data \
-           and isinstance(data, dict) \
-           and (message := data.get("message")) \
-           and message == "A planner is already connected":
+        if (
+            data
+            and isinstance(data, dict)
+            and (message := data.get("message"))
+            and message == "A planner is already connected"
+        ):
             logger.error(f"Connection to cogip-server failed: {message}")
             self._planner.retry_connection = False
             return
@@ -140,10 +142,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         Callback on obstacles message.
         """
-        self._planner.set_obstacles(
-            robot_id,
-            TypeAdapter(list[models.Vertex]).validate_python(obstacles)
-        )
+        self._planner.set_obstacles(robot_id, TypeAdapter(list[models.Vertex]).validate_python(obstacles))
 
     async def on_wizard(self, message: dict[str, Any]):
         """

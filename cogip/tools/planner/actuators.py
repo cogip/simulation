@@ -16,10 +16,13 @@ if TYPE_CHECKING:
 
 # Pumps
 async def pump_command(robot_id: int, planner: "Planner", pump: PumpEnum, command: bool) -> float:
-    await planner._sio_ns.emit("actuator_command", data={
-        "robot_id": robot_id,
-        "command": PumpCommand(id=pump, command=command).model_dump()
-    })
+    await planner._sio_ns.emit(
+        "actuator_command",
+        data={
+            "robot_id": robot_id,
+            "command": PumpCommand(id=pump, command=command).model_dump(),
+        },
+    )
     return 0
 
 
@@ -41,10 +44,13 @@ async def pump_right_off(robot_id: int, planner: "Planner") -> float:
 
 # Servos
 async def servo_command(robot_id: int, planner: "Planner", servo: ServoEnum, command: int) -> float:
-    await planner._sio_ns.emit("actuator_command", data={
-        "robot_id": robot_id,
-        "command": ServoCommand(id=servo, command=command).model_dump()
-    })
+    await planner._sio_ns.emit(
+        "actuator_command",
+        data={
+            "robot_id": robot_id,
+            "command": ServoCommand(id=servo, command=command).model_dump(),
+        },
+    )
     return 0
 
 
@@ -82,14 +88,18 @@ async def right_arm_mid(robot_id: int, planner: "Planner") -> float:
 
 # Positional Motors
 async def positional_motor_command(
-        robot_id: int,
-        planner: "Planner",
-        motor: PositionalActuatorEnum,
-        command: int) -> float:
-    await planner._sio_ns.emit("actuator_command", data={
-        "robot_id": robot_id,
-        "command": PositionalActuatorCommand(id=motor, command=command).model_dump()
-    })
+    robot_id: int,
+    planner: "Planner",
+    motor: PositionalActuatorEnum,
+    command: int,
+) -> float:
+    await planner._sio_ns.emit(
+        "actuator_command",
+        data={
+            "robot_id": robot_id,
+            "command": PositionalActuatorCommand(id=motor, command=command).model_dump(),
+        },
+    )
     return 0
 
 
@@ -123,8 +133,10 @@ async def cherry_arm_down(robot_id: int, planner: "Planner") -> float:
 
 async def cherry_esc_on(robot_id: int, planner: "Planner") -> float:
     await positional_motor_command(
-        robot_id, planner,
-        PositionalActuatorEnum.ANALOGSERVO_CHERRY_ESC, planner._properties.esc_speed
+        robot_id,
+        planner,
+        PositionalActuatorEnum.ANALOGSERVO_CHERRY_ESC,
+        planner._properties.esc_speed,
     )
     return 0
 
@@ -171,8 +183,10 @@ async def right_arm_down(robot_id: int, planner: "Planner") -> float:
 
 async def cherry_conveyor_on(robot_id: int, planner: "Planner") -> float:
     await positional_motor_command(
-        robot_id, planner,
-        PositionalActuatorEnum.MOTOR_CONVEYOR_LAUNCHER, planner._properties.launcher_speed
+        robot_id,
+        planner,
+        PositionalActuatorEnum.MOTOR_CONVEYOR_LAUNCHER,
+        planner._properties.launcher_speed,
     )
     return 0
 

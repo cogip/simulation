@@ -10,7 +10,7 @@ from . import context, logger, namespaces
 
 
 class Server:
-    _exiting: bool = False                           # True if Uvicorn server was ask to shutdown
+    _exiting: bool = False  # True if Uvicorn server was ask to shutdown
 
     def __init__(self):
         """
@@ -23,7 +23,7 @@ class Server:
             async_mode="asgi",
             cors_allowed_origins="*",
             logger=False,
-            engineio_logger=False
+            engineio_logger=False,
         )
         self.app = socketio.ASGIApp(self.sio)
         self.sio.register_namespace(namespaces.DashboardNamespace())
@@ -74,5 +74,5 @@ class Server:
         await self.sio.emit(
             "tool_menu",
             self.context.tool_menus[self.context.current_tool_menu].model_dump(),
-            namespace="/dashboard"
+            namespace="/dashboard",
         )

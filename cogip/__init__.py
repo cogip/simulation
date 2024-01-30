@@ -8,13 +8,14 @@ try:
 except ImportError:
     pass
 else:
-    __builtins__['debug'] = debug
+    __builtins__["debug"] = debug
 
 
 load_dotenv(find_dotenv(), verbose=False)
 
 logging.basicConfig(
     level=logging.INFO,  # logging.DEBUG
-    format='[%(asctime)s][%(name)s][%(threadName)s] %(levelname)s: %(message)s')
+    format="[%(asctime)s][%(name)s][%(threadName)s] %(levelname)s: %(message)s",
+)
 
 logger = logging.getLogger(__name__)

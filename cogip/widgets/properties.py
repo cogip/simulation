@@ -14,6 +14,7 @@ class IntegerProperty(QtCore.QObject):
 
     Build a widget to configure a integer property.
     """
+
     value_updated: qtSignal = qtSignal(str, int)
 
     def __init__(self, name: str, props: dict[str, Any], layout: QtWidgets.QGridLayout):
@@ -81,6 +82,7 @@ class NumberProperty(QtCore.QObject):
 
     Build a widget to configure a number property.
     """
+
     value_updated: qtSignal = qtSignal(str, float)
 
     def __init__(self, name: str, props: dict[str, Any], layout: QtWidgets.QGridLayout):
@@ -121,9 +123,7 @@ class NumberProperty(QtCore.QObject):
             self._slider.setMaximum(maximum * 100)
             self._slider.setSingleStep(step * 100)
             self._slider.setValue(props["value"] * 100)
-            self._slider.valueChanged.connect(
-                lambda v: self._value.setValue(v / 100)
-            )
+            self._slider.valueChanged.connect(lambda v: self._value.setValue(v / 100))
             layout.addWidget(self._slider, row, 2)
 
     def value_changed(self, value):
@@ -151,6 +151,7 @@ class PropertiesDialog(QtWidgets.QDialog):
         property_updated: Qt signal emitted when a property is updated
         closed: Qt signal emitted when the window is hidden
     """
+
     property_updated: qtSignal = qtSignal(dict)
     closed: qtSignal = qtSignal()
 
@@ -220,11 +221,13 @@ class PropertiesDialog(QtWidgets.QDialog):
         """
         Emit updated values with namespace, name and value.
         """
-        self.property_updated.emit({
-            "namespace": self._config["namespace"],
-            "name": name,
-            "value": value
-        })
+        self.property_updated.emit(
+            {
+                "namespace": self._config["namespace"],
+                "name": name,
+                "value": value,
+            }
+        )
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         """

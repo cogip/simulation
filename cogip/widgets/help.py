@@ -30,6 +30,7 @@ class HelpCameraControlDialog(QtWidgets.QDialog):
         saved_geometry: Saved window position
         closed: Qt signal emitted when the window is hidden
     """
+
     closed: qtSignal = qtSignal()
 
     def __init__(self, parent: QtWidgets.QWidget = None):

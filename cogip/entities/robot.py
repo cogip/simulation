@@ -26,6 +26,7 @@ class RobotEntity(AssetEntity):
         lidar_emit_data_signal: Qt Signal emitting Lidar data
         order_robot:: Entity that represents the robot next destination
     """
+
     asset_path: Path = Path("assets/robot2023.dae")
     sensors_update_interval: int = 5
     lidar_emit_interval: int = 20
@@ -118,9 +119,7 @@ class RobotEntity(AssetEntity):
         Arguments:
             new_pose: new robot pose
         """
-        self.transform_component.setTranslation(
-            QtGui.QVector3D(new_pose.x, new_pose.y, 0)
-        )
+        self.transform_component.setTranslation(QtGui.QVector3D(new_pose.x, new_pose.y, 0))
         self.transform_component.setRotationZ(new_pose.O)
 
     @qtSlot(Pose)
@@ -132,9 +131,7 @@ class RobotEntity(AssetEntity):
             new_pose: new robot pose
         """
         if self.order_robot:
-            self.order_robot.transform.setTranslation(
-                QtGui.QVector3D(new_pose.x, new_pose.y, 0)
-            )
+            self.order_robot.transform.setTranslation(QtGui.QVector3D(new_pose.x, new_pose.y, 0))
             self.order_robot.transform.setRotationZ(new_pose.O)
 
     def start_lidar_emulation(self) -> None:

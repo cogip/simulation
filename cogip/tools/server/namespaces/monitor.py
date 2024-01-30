@@ -1,4 +1,3 @@
-
 import socketio
 
 from .. import logger
@@ -9,6 +8,7 @@ class MonitorNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to monitor.
     """
+
     def __init__(self):
         super().__init__("/monitor")
         self._connected = False

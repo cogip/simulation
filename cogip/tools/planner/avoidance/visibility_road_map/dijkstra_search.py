@@ -30,8 +30,7 @@ class DijkstraSearch:
             self.edge_ids = edge_ids
 
         def __str__(self):
-            return str(self.x) + "," + str(self.y) + "," + str(
-                self.cost) + "," + str(self.parent)
+            return str(self.x) + "," + str(self.y) + "," + str(self.cost) + "," + str(self.parent)
 
     def __init__(self, win: DebugWindow | None = None):
         self.win = win
@@ -85,8 +84,7 @@ class DijkstraSearch:
                 dx = node_x[n_id] - current_node.x
                 dy = node_y[n_id] - current_node.y
                 d = math.hypot(dx, dy)
-                node = self.Node(node_x[n_id], node_y[n_id],
-                                 current_node.cost + d, current_id)
+                node = self.Node(node_x[n_id], node_y[n_id], current_node.cost + d, current_id)
 
                 if n_id in close_set:
                     continue
@@ -122,19 +120,16 @@ class DijkstraSearch:
 
     def find_id(self, node_x_list, node_y_list, target_node):
         for i, _ in enumerate(node_x_list):
-            if self.is_same_node_with_xy(node_x_list[i], node_y_list[i],
-                                         target_node):
+            if self.is_same_node_with_xy(node_x_list[i], node_y_list[i], target_node):
                 return i
         return None
 
     @staticmethod
     def is_same_node_with_xy(node_x, node_y, node_b):
-        dist = np.hypot(node_x - node_b.x,
-                        node_y - node_b.y)
+        dist = np.hypot(node_x - node_b.x, node_y - node_b.y)
         return dist <= 0.1
 
     @staticmethod
     def is_same_node(node_a, node_b):
-        dist = np.hypot(node_a.x - node_b.x,
-                        node_a.y - node_b.y)
+        dist = np.hypot(node_a.x - node_b.x, node_a.y - node_b.y)
         return dist <= 0.1

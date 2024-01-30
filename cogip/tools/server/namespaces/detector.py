@@ -11,6 +11,7 @@ class DetectorNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to detector.
     """
+
     def __init__(self, cogip_server: "server.Server"):
         super().__init__("/detector")
         self._cogip_server = cogip_server

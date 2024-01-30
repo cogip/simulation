@@ -35,8 +35,9 @@ class CameraServer:
 
     Handle FastAPI server to stream camera video and SocketIO client to send detected samples to server.
     """
-    _exiting: bool = False                              # True if Uvicorn server was ask to shutdown
-    _last_frame: SharedMemory = None                    # Last generated frame to stream on web server
+
+    _exiting: bool = False  # True if Uvicorn server was ask to shutdown
+    _last_frame: SharedMemory = None  # Last generated frame to stream on web server
     _original_uvicorn_exit_handler = UvicornServer.handle_exit
 
     def __init__(self):
@@ -56,7 +57,7 @@ class CameraServer:
         self.records_dir = Path.home() / "records"
         self.records_dir.mkdir(exist_ok=True)
         # Keep only 100 last records
-        for old_record in sorted(self.records_dir.glob('*.jpg'))[:-100]:
+        for old_record in sorted(self.records_dir.glob("*.jpg"))[:-100]:
             old_record.unlink()
 
         # Load camera intrinsic parameters
@@ -70,7 +71,7 @@ class CameraServer:
                 CameraName[self.settings.camera_name],
                 VideoCodec[self.settings.camera_codec],
                 self.settings.camera_width,
-                self.settings.camera_height
+                self.settings.camera_height,
             )
 
         if not params_filename.exists():
@@ -88,7 +89,7 @@ class CameraServer:
                 CameraName[self.settings.camera_name],
                 VideoCodec[self.settings.camera_codec],
                 self.settings.camera_width,
-                self.settings.camera_height
+                self.settings.camera_height,
             )
 
         if not params_filename.exists():
@@ -133,24 +134,25 @@ class CameraServer:
         Yield frames produced by [camera_handler][cogip.tools.robotcam.camera.CameraHandler.camera_handler].
         """
         while not self._exiting:
-            yield b'--frame\r\n'
-            yield b'Content-Type: image/bmp\r\n\r\n'
+            yield b"--frame\r\n"
+            yield b"Content-Type: image/bmp\r\n\r\n"
             yield bytes(self._last_frame.buf)
-            yield b'\r\n'
+            yield b"\r\n"
 
     def register_endpoints(self) -> None:
-
         @self.app.on_event("startup")
         async def startup_event():
             """
             Function called at FastAPI server startup.
             """
             # Poll in background to wait for camera server connection through shared memory.
-            Thread(target=lambda: polling2.poll(
-                self.camera_connect,
-                step=1,
-                poll_forever=True
-            )).start()
+            Thread(
+                target=lambda: polling2.poll(
+                    self.camera_connect,
+                    step=1,
+                    poll_forever=True,
+                )
+            ).start()
 
         @self.app.on_event("shutdown")
         async def shutdown_event():
@@ -202,9 +204,7 @@ class CameraServer:
 
             # Keep table markers only
             table_markers = {
-                id[0]: corners
-                for id, corners in zip(marker_ids, marker_corners)
-                if id[0] in [20, 21, 22, 23]
+                id[0]: corners for id, corners in zip(marker_ids, marker_corners) if id[0] in [20, 21, 22, 23]
             }
 
             if len(table_markers) == 0:
@@ -214,14 +214,14 @@ class CameraServer:
             table_camera_tvec, table_camera_angle = get_camera_position_on_table(
                 table_markers,
                 self.camera_matrix,
-                self.dist_coefs
+                self.dist_coefs,
             )
 
-            # Compute camera position in robot if robot position is given
+            # Compute camera position in robot if robot position is given
             camera_position = get_camera_position_in_robot(
                 robot_pose,
                 table_camera_tvec,
-                table_camera_angle
+                table_camera_angle,
             )
 
             return camera_position
@@ -250,11 +250,7 @@ class CameraServer:
             robot_pose = Pose(x=x, y=y, O=angle)
 
             # Keep solar panel markers only
-            solar_panel_markers = [
-                corners
-                for id, corners in zip(marker_ids, marker_corners)
-                if id[0] == 47
-            ]
+            solar_panel_markers = [corners for id, corners in zip(marker_ids, marker_corners) if id[0] == 47]
 
             if len(solar_panel_markers) == 0:
                 return {}
@@ -264,7 +260,7 @@ class CameraServer:
                 self.camera_matrix,
                 self.dist_coefs,
                 self.extrinsic_params,
-                robot_pose
+                robot_pose,
             )
 
             return panels
@@ -292,9 +288,7 @@ class CameraServer:
 
             # Keep table markers only
             table_markers = {
-                id[0]: corners
-                for id, corners in zip(marker_ids, marker_corners)
-                if id[0] in [20, 21, 22, 23]
+                id[0]: corners for id, corners in zip(marker_ids, marker_corners) if id[0] in [20, 21, 22, 23]
             }
 
             if len(table_markers) == 0:
@@ -304,7 +298,7 @@ class CameraServer:
             camera_tvec, camera_angle = get_camera_position_on_table(
                 table_markers,
                 self.camera_matrix,
-                self.dist_coefs
+                self.dist_coefs,
             )
 
             # Compute robot position on table

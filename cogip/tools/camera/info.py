@@ -12,22 +12,34 @@ from .arguments import CameraName, VideoCodec
 
 def cmd_info(
     ctx: typer.Context,
-    camera_name: Annotated[Optional[CameraName], typer.Option(  # noqa
-        help="Name of the camera (all if not specified)",
-        envvar="CAMERA_NAME",
-    )] = None,
-    camera_codec: Annotated[VideoCodec, typer.Option(
-        help="Camera video codec",
-        envvar="CAMERA_CODEC",
-    )] = VideoCodec.yuyv.name,
-    camera_width: Annotated[int, typer.Option(
-        help="Camera frame width",
-        envvar="CAMERA_WIDTH",
-    )] = 640,
-    camera_height: Annotated[int, typer.Option(
-        help="Camera frame height",
-        envvar="CAMERA_HEIGHT",
-    )] = 480,
+    camera_name: Annotated[
+        Optional[CameraName],  # noqa
+        typer.Option(
+            help="Name of the camera (all if not specified)",
+            envvar="CAMERA_NAME",
+        ),
+    ] = None,
+    camera_codec: Annotated[
+        VideoCodec,
+        typer.Option(
+            help="Camera video codec",
+            envvar="CAMERA_CODEC",
+        ),
+    ] = VideoCodec.yuyv.name,
+    camera_width: Annotated[
+        int,
+        typer.Option(
+            help="Camera frame width",
+            envvar="CAMERA_WIDTH",
+        ),
+    ] = 640,
+    camera_height: Annotated[
+        int,
+        typer.Option(
+            help="Camera frame height",
+            envvar="CAMERA_HEIGHT",
+        ),
+    ] = 480,
 ):
     """Get properties of connected cameras"""
     obj = ctx.ensure_object(dict)

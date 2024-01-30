@@ -25,22 +25,24 @@ class Sensor(QtCore.QObject):
         all_sensors: Class attribute recording all sensors
         hit: Last hit of this sensor
     """
+
     obstacles: list[Qt3DCore.QEntity] = []
     all_sensors: list["Sensor"] = []
     hit: Qt3DRender.QRayCasterHit | None = None
 
     def __init__(
-            self,
-            asset_entity: AssetEntity,
-            name: str,
-            origin_x: int,
-            origin_y: int,
-            origin_z: int,
-            direction_x: int,
-            direction_y: int,
-            direction_z: int,
-            impact_radius: float = 50,
-            impact_color: QtCore.Qt.GlobalColor = QtCore.Qt.red):
+        self,
+        asset_entity: AssetEntity,
+        name: str,
+        origin_x: int,
+        origin_y: int,
+        origin_z: int,
+        direction_x: int,
+        direction_y: int,
+        direction_z: int,
+        impact_radius: float = 50,
+        impact_color: QtCore.Qt.GlobalColor = QtCore.Qt.red,
+    ):
         """
         Class constructor.
 
@@ -91,11 +93,7 @@ class Sensor(QtCore.QObject):
 
         Compute the distance with the closest detected obstacle.
         """
-        distances = [
-            hit
-            for hit in self.ray_caster.hits()
-            if hit.distance() != 0.0
-        ]
+        distances = [hit for hit in self.ray_caster.hits() if hit.distance() != 0.0]
         self.hit = None
         if len(distances):
             self.hit = min(distances, key=lambda x: x.distance())
@@ -147,14 +145,16 @@ class ToFSensor(Sensor):
 
     Its impact entity is represented by a small red sphere.
     """
+
     nb_tof_sensors = 0
 
     def __init__(
-            self,
-            asset_entity: AssetEntity,
-            name: str,
-            origin_x: int,
-            origin_y: int):
+        self,
+        asset_entity: AssetEntity,
+        name: str,
+        origin_x: int,
+        origin_y: int,
+    ):
         """
         Class constructor.
 
@@ -174,7 +174,8 @@ class ToFSensor(Sensor):
             direction_y=origin_y,
             direction_z=0,
             impact_radius=50,
-            impact_color=QtCore.Qt.red)
+            impact_color=QtCore.Qt.red,
+        )
         self.tof_id = ToFSensor.nb_tof_sensors
         ToFSensor.nb_tof_sensors += 1
 
@@ -209,13 +210,14 @@ class LidarSensor(Sensor):
     nb_lidar_sensors = 0
 
     def __init__(
-            self,
-            asset_entity: AssetEntity,
-            name: str,
-            origin_x: int,
-            origin_y: int,
-            direction_x: int,
-            direction_y: int):
+        self,
+        asset_entity: AssetEntity,
+        name: str,
+        origin_x: int,
+        origin_y: int,
+        direction_x: int,
+        direction_y: int,
+    ):
         """
         Class constructor.
 
@@ -238,7 +240,8 @@ class LidarSensor(Sensor):
             direction_y=direction_y,
             direction_z=0,
             impact_radius=20,
-            impact_color=QtCore.Qt.cyan)
+            impact_color=QtCore.Qt.cyan,
+        )
 
         self.lidar_id = LidarSensor.nb_lidar_sensors
         LidarSensor.nb_lidar_sensors += 1

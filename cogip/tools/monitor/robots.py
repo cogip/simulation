@@ -1,4 +1,3 @@
-
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 
@@ -14,6 +13,7 @@ class RobotManager(QtCore.QObject):
     Attributes:
         lidar_emit_data_signal: Qt Signal emitting Lidar data
     """
+
     lidar_emit_data_signal: qtSignal = qtSignal(int, list)
 
     def __init__(self, game_view: GameView):

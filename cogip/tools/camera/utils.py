@@ -39,7 +39,7 @@ def rotation_matrix_to_euler_angles(R):
 
     Source: https://www.learnopencv.com/rotation-matrix-to-euler-angles/
     """
-    assert (is_rotation_matrix(R))
+    assert is_rotation_matrix(R)
 
     sy = np.sqrt(R[0, 0] * R[0, 0] + R[1, 0] * R[1, 0])
 
@@ -59,10 +59,7 @@ def rotation_matrix_to_euler_angles(R):
 
 def rotate_2d(vector: cv2.typing.MatLike, angle: float) -> cv2.typing.MatLike:
     """Rotate a 2D point with specify angle"""
-    rotation_matrix = np.array([
-        [np.cos(angle), -np.sin(angle)],
-        [np.sin(angle), np.cos(angle)]
-    ])
+    rotation_matrix = np.array([[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
     vector = vector.reshape(1, 2)
     vector = vector.T
     rotated: cv2.typing.MatLike = (rotation_matrix @ vector).T
@@ -85,20 +82,22 @@ def wrap_to_pi(angle: float):
 # Utility functions to handle calibration parameters
 #
 
+
 def get_camera_intrinsic_params_filename(
-        robot_id: int,
-        name: CameraName,
-        codec: VideoCodec,
-        width: int,
-        height: int) -> Path:
-    """ Get parameters filename based on current package path and camera parameters """
+    robot_id: int,
+    name: CameraName,
+    codec: VideoCodec,
+    width: int,
+    height: int,
+) -> Path:
+    """Get parameters filename based on current package path and camera parameters"""
     params_filename = Path(__file__).parent
     params_filename /= f"cameras/{robot_id}/{name.name}_{codec.name}_{width}x{height}/intrinsic_params.yaml"
     return params_filename
 
 
 def save_camera_intrinsic_params(camera_matrix: cv2.typing.MatLike, dist_coefs: cv2.typing.MatLike, path: Path):
-    """ Save the camera matrix and the distortion coefficients to given path/file. """
+    """Save the camera matrix and the distortion coefficients to given path/file."""
     cv_file = cv2.FileStorage(str(path), cv2.FILE_STORAGE_WRITE)
     cv_file.write("K", camera_matrix)
     cv_file.write("D", dist_coefs)
@@ -106,7 +105,7 @@ def save_camera_intrinsic_params(camera_matrix: cv2.typing.MatLike, dist_coefs: 
 
 
 def load_camera_intrinsic_params(path: Path) -> tuple[cv2.typing.MatLike, cv2.typing.MatLike]:
-    """ Loads camera matrix and distortion coefficients. """
+    """Loads camera matrix and distortion coefficients."""
     cv_file = cv2.FileStorage(str(path), cv2.FILE_STORAGE_READ)
     camera_matrix = cv_file.getNode("K").mat()
     dist_coefs = cv_file.getNode("D").mat()
@@ -115,22 +114,23 @@ def load_camera_intrinsic_params(path: Path) -> tuple[cv2.typing.MatLike, cv2.ty
 
 
 def get_camera_extrinsic_params_filename(
-        robot_id: int,
-        name: CameraName,
-        codec: VideoCodec,
-        width: int,
-        height: int) -> Path:
-    """ Get parameters filename based on current package path and camera parameters """
+    robot_id: int,
+    name: CameraName,
+    codec: VideoCodec,
+    width: int,
+    height: int,
+) -> Path:
+    """Get parameters filename based on current package path and camera parameters"""
     params_filename = Path(__file__).parent
     params_filename /= f"cameras/{robot_id}/{name.name}_{codec.name}_{width}x{height}/extrinsic_params.json"
     return params_filename
 
 
 def save_camera_extrinsic_params(params: CameraExtrinsicParameters, path: Path):
-    """ Save the camera position relative to robot center to given path/file. """
+    """Save the camera position relative to robot center to given path/file."""
     path.write_text(CameraExtrinsicParameters.model_dump_json(indent=2))
 
 
 def load_camera_extrinsic_params(path: Path) -> CameraExtrinsicParameters:
-    """ Loads camera position relative to robot center. """
+    """Loads camera position relative to robot center."""
     return CameraExtrinsicParameters.model_validate_json(path.read_text())

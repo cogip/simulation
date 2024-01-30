@@ -21,8 +21,9 @@ class CameraServer:
 
     Handle FastAPI server to stream camera video and SocketIO client.
     """
-    _exiting: bool = False                              # True if Uvicorn server was ask to shutdown
-    _last_frame: SharedMemory = None                    # Last generated frame to stream on web server
+
+    _exiting: bool = False  # True if Uvicorn server was ask to shutdown
+    _last_frame: SharedMemory = None  # Last generated frame to stream on web server
     _original_uvicorn_exit_handler = UvicornServer.handle_exit
 
     def __init__(self):
@@ -42,7 +43,7 @@ class CameraServer:
         self.records_dir = Path.home() / "records"
         self.records_dir.mkdir(exist_ok=True)
         # Keep only 100 last records
-        for old_record in sorted(self.records_dir.glob('*.jpg'))[:-100]:
+        for old_record in sorted(self.records_dir.glob("*.jpg"))[:-100]:
             old_record.unlink()
 
     @staticmethod
@@ -78,24 +79,25 @@ class CameraServer:
         Yield frames produced by [camera_handler][cogip.tools.beaconcam.camera.CameraHandler.camera_handler].
         """
         while not self._exiting:
-            yield b'--frame\r\n'
-            yield b'Content-Type: image/bmp\r\n\r\n'
+            yield b"--frame\r\n"
+            yield b"Content-Type: image/bmp\r\n\r\n"
             yield bytes(self._last_frame.buf)
-            yield b'\r\n'
+            yield b"\r\n"
 
     def register_endpoints(self) -> None:
-
         @self.app.on_event("startup")
         async def startup_event():
             """
             Function called at FastAPI server startup.
             """
             # Poll in background to wait for camera server connection through shared memory.
-            Thread(target=lambda: polling2.poll(
-                self.camera_connect,
-                step=1,
-                poll_forever=True
-            )).start()
+            Thread(
+                target=lambda: polling2.poll(
+                    self.camera_connect,
+                    step=1,
+                    poll_forever=True,
+                )
+            ).start()
 
         @self.app.on_event("shutdown")
         async def shutdown_event():

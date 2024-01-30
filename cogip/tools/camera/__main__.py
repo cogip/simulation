@@ -20,11 +20,15 @@ app.command(name="detect")(cmd_detect)
 @app.callback()
 def common(
     ctx: typer.Context,
-    debug: Annotated[bool, typer.Option(
-        "-d", "--debug",
-        help="Turn on debug messages",
-        envvar=["COGIP_DEBUG", "CAMERA_DEBUG"],
-    )] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "-d",
+            "--debug",
+            help="Turn on debug messages",
+            envvar=["COGIP_DEBUG", "CAMERA_DEBUG"],
+        ),
+    ] = False,
 ):
     if debug:
         logger.setLevel(logging.DEBUG)
@@ -42,5 +46,5 @@ def main():
     app()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
