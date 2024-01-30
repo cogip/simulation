@@ -59,11 +59,6 @@ class CameraServer():
         for old_record in sorted(self.records_dir.glob('*.jpg'))[:-100]:
             old_record.unlink()
 
-        self.crop_zones = {
-            1: (295, 480, 170, 540),
-            2: (295, 480, 170, 540)
-        }
-
         # Load camera intrinsic parameters
         self.camera_matrix: cv2.typing.MatLike | None = None
         self.dist_coefs: cv2.typing.MatLike | None = None
