@@ -1,4 +1,5 @@
-from typing import Any, Dict
+from typing import Any
+
 import socketio
 
 from .. import logger
@@ -9,6 +10,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to dashboards.
     """
+
     def __init__(self):
         super().__init__("/dashboard")
         self._context = Context()
@@ -44,7 +46,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
             await self.emit(
                 "tool_menu",
                 self._context.tool_menus[self._context.current_tool_menu].model_dump(),
-                namespace="/dashboard"
+                namespace="/dashboard",
             )
         else:
             # Forward command to corresponding namespace
@@ -53,7 +55,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
                 await self.emit(
                     "tool_menu",
                     self._context.tool_menus[self._context.current_tool_menu].model_dump(),
-                    namespace="/dashboard"
+                    namespace="/dashboard",
                 )
             else:
                 split_ns = self._context.current_tool_menu.split("/")
@@ -71,7 +73,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
         """
         await self.emit("shell_command", cmd, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
 
-    async def on_config_updated(self, sid, config: Dict[str, Any]) -> None:
+    async def on_config_updated(self, sid, config: dict[str, Any]) -> None:
         namespace = config.pop("namespace")
         await self.emit("config_updated", config, namespace=namespace)
 

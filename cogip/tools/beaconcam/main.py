@@ -31,7 +31,7 @@ def main() -> None:
         host="0.0.0.0",
         port=8100,
         workers=settings.nb_workers,
-        log_level="warning"
+        log_level="warning",
     )
 
     p.terminate()

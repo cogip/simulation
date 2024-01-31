@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 import socketio
 
@@ -11,6 +11,7 @@ class PlannerNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to planner.
     """
+
     def __init__(self, cogip_server: "server.Server"):
         super().__init__("/planner")
         self._cogip_server = cogip_server
@@ -35,13 +36,13 @@ class PlannerNamespace(socketio.AsyncNamespace):
         self._connected = False
         logger.info("Planner disconnected.")
 
-    async def on_register_menu(self, sid, data: Dict[str, Any]):
+    async def on_register_menu(self, sid, data: dict[str, Any]):
         """
         Callback on register_menu.
         """
         await self._cogip_server.register_menu("planner", data)
 
-    async def on_pose_start(self, sid, robot_id: int, pose: Dict[str, Any]):
+    async def on_pose_start(self, sid, robot_id: int, pose: dict[str, Any]):
         """
         Callback on pose start.
         Forward to pose to copilot.
@@ -49,7 +50,7 @@ class PlannerNamespace(socketio.AsyncNamespace):
         if copilot_sid := self._context.copilot_sids.inverse.get(robot_id):
             await self.emit("pose_start", pose, to=copilot_sid, namespace="/copilot")
 
-    async def on_pose_order(self, sid, robot_id: int, pose: Dict[str, Any]):
+    async def on_pose_order(self, sid, robot_id: int, pose: dict[str, Any]):
         """
         Callback on pose order.
         Forward to pose to copilot and dashboards.
@@ -59,7 +60,7 @@ class PlannerNamespace(socketio.AsyncNamespace):
         await self.emit("pose_order", (robot_id, pose), namespace="/dashboard")
         await self._recorder.async_record({"pose_order": (robot_id, pose)})
 
-    async def on_obstacles(self, sid, obstacles: List[Dict[str, Any]]):
+    async def on_obstacles(self, sid, obstacles: list[dict[str, Any]]):
         """
         Callback on obstacles message.
 
@@ -81,7 +82,9 @@ class PlannerNamespace(socketio.AsyncNamespace):
         Callback on set_controller message.
         Forward to copilot.
         """
-        await self.emit("set_controller", controller, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot")
+        await self.emit(
+            "set_controller", controller, to=self._context.copilot_sids.inverse[robot_id], namespace="/copilot"
+        )
 
     async def on_path(self, sid, robot_id: int, path: list[dict[str, float]]):
         """

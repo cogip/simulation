@@ -16,24 +16,27 @@ def changes_callback(changes):
 def main_opt(
     id: int = typer.Option(
         0,
-        "-i", "--id",
+        "-i",
+        "--id",
         min=0,
         max=9,
         help="Robot ID.",
-        envvar=["ROBOT_ID", "DASHBOARD_ID"]
+        envvar=["ROBOT_ID", "DASHBOARD_ID"],
     ),
     reload: bool = typer.Option(
         False,
-        "-r", "--reload",
+        "-r",
+        "--reload",
         help="Reload app on source file changes",
-        envvar=["COGIP_RELOAD", "DASHBOARD_RELOAD"]
+        envvar=["COGIP_RELOAD", "DASHBOARD_RELOAD"],
     ),
     debug: bool = typer.Option(
         False,
-        "-d", "--debug",
+        "-d",
+        "--debug",
         help="Turn on debug messages",
-        envvar=["COGIP_DEBUG", "DASHBOARD_DEBUG"]
-    )
+        envvar=["COGIP_DEBUG", "DASHBOARD_DEBUG"],
+    ),
 ):
     if debug:
         logger.setLevel(logging.DEBUG)
@@ -43,7 +46,7 @@ def main_opt(
         "host": "0.0.0.0",
         "port": 8080 + id,
         "workers": 1,
-        "log_level": "warning"
+        "log_level": "warning",
     }
 
     if reload:
@@ -55,7 +58,7 @@ def main_opt(
             kwargs=uvicorn_kwargs,
             callback=changes_callback,
             watch_filter=PythonFilter(),
-            debug=False
+            debug=False,
         )
     else:
         uvicorn.run(*uvicorn_args, **uvicorn_kwargs)
@@ -71,5 +74,5 @@ def main():
     typer.run(main_opt)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

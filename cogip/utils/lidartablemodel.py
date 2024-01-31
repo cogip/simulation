@@ -1,6 +1,4 @@
-from typing import List
-
-from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6 import QtCore, QtGui, QtWidgets
 
 
 class LidarTableModel(QtCore.QAbstractTableModel):
@@ -11,13 +9,14 @@ class LidarTableModel(QtCore.QAbstractTableModel):
     headers = ["Angle", "Distance", "Intensity"]
 
     def __init__(
-            self,
-            angle_values: List[float],
-            distance_values: List[int],
-            intensity_values: List[int],
-            distance_color: QtGui.QColor,
-            intensity_color: QtGui.QColor,
-            nb_angles: int = 360):
+        self,
+        angle_values: list[float],
+        distance_values: list[int],
+        intensity_values: list[int],
+        distance_color: QtGui.QColor,
+        intensity_color: QtGui.QColor,
+        nb_angles: int = 360,
+    ):
         """Class constructor
 
         Arguments:

@@ -1,10 +1,9 @@
 import math
 import threading
 import time
-from typing import List
 
-from more_itertools import consecutive_groups
 import socketio
+from more_itertools import consecutive_groups
 
 try:
     import ydlidar
@@ -14,8 +13,8 @@ except:  # noqa
 from cogip import models
 from cogip.utils import ThreadLoop
 from . import logger
-from .sio_events import SioEvents
 from .properties import Properties
+from .sio_events import SioEvents
 
 
 class Detector:
@@ -27,18 +26,20 @@ class Detector:
 
     Build obstacles and send the list to the server.
     """
+
     NB_ANGLES_WITHOUT_OBSTACLE_TO_IGNORE: int = 3
 
     def __init__(
-            self,
-            server_url: str,
-            robot_id: int,
-            lidar_port: str | None,
-            min_distance: int,
-            max_distance: int,
-            beacon_radius: int,
-            refresh_interval: float,
-            emulation: bool):
+        self,
+        server_url: str,
+        robot_id: int,
+        lidar_port: str | None,
+        min_distance: int,
+        max_distance: int,
+        beacon_radius: int,
+        refresh_interval: float,
+        emulation: bool,
+    ):
         """
         Class constructor.
 
@@ -59,9 +60,9 @@ class Detector:
             min_distance=min_distance,
             max_distance=max_distance,
             beacon_radius=beacon_radius,
-            refresh_interval=refresh_interval
+            refresh_interval=refresh_interval,
         )
-        self._lidar_data: List[int] = list()
+        self._lidar_data: list[int] = list()
         self._lidar_data_lock = threading.Lock()
         self._robot_pose = models.Pose()
         self._robot_pose_lock = threading.Lock()
@@ -70,14 +71,14 @@ class Detector:
             "Obstacles updater loop",
             refresh_interval,
             self.process_lidar_data,
-            logger=True
+            logger=True,
         )
 
         self._lidar_reader_loop = ThreadLoop(
             "Lidar reader loop",
             refresh_interval,
             self.read_lidar,
-            logger=True
+            logger=True,
         )
 
         self._laser: ydlidar.CYdLidar | None = None
@@ -140,8 +141,8 @@ class Detector:
                     namespaces=["/detector"],
                     auth={
                         "id": self._robot_id,
-                        "mode": "detection" if self._laser else "emulation"
-                    }
+                        "mode": "detection" if self._laser else "emulation",
+                    },
                 )
                 self._sio.wait()
             except socketio.exceptions.ConnectionError:
@@ -173,14 +174,14 @@ class Detector:
         self._obstacles_updater_loop.interval = self._properties.refresh_interval
         self._lidar_reader_loop.interval = self._properties.refresh_interval
 
-    def update_lidar_data(self, lidar_data: List[int]):
+    def update_lidar_data(self, lidar_data: list[int]):
         """
         Receive Lidar data.
         """
         with self._lidar_data_lock:
             self._lidar_data[:] = lidar_data[:]
 
-    def filter_distances(self) -> List[int]:
+    def filter_distances(self) -> list[int]:
         """
         Find consecutive obstacles and keep the nearest obstacle at the middle.
         """
@@ -214,8 +215,9 @@ class Detector:
                 dist_current = self._lidar_data[last % 360]
 
                 # Keep the nearest distance of consecutive obstacles
-                if dist_current < (self.properties.max_distance - self.properties.beacon_radius) or \
-                   self._lidar_data[(last + 1) % 360] < (self.properties.max_distance - self.properties.beacon_radius):
+                if dist_current < (self.properties.max_distance - self.properties.beacon_radius) or self._lidar_data[
+                    (last + 1) % 360
+                ] < (self.properties.max_distance - self.properties.beacon_radius):
                     dist_min = dist_current if dist_current < dist_min else dist_min
                     continue
 
@@ -241,15 +243,17 @@ class Detector:
 
         return filtered_distances
 
-    def generate_obstacles(self, robot_pose: models.Pose, distances: List[int]) -> list[models.Vertex]:
+    def generate_obstacles(self, robot_pose: models.Pose, distances: list[int]) -> list[models.Vertex]:
         """
         Update obstacles list from lidar data.
         """
         obstacles: list[models.Vertex] = []
 
         for angle, distance in enumerate(distances):
-            if distance < self.properties.min_distance or \
-               distance >= self.properties.max_distance - self.properties.beacon_radius:
+            if (
+                distance < self.properties.min_distance
+                or distance >= self.properties.max_distance - self.properties.beacon_radius
+            ):
                 continue
 
             angle = (360 - angle) % 360

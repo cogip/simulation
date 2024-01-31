@@ -17,6 +17,7 @@ class SetRobotPositionAction(Action):
     """
     Use the camera and a table Aruco marker to find the current robot position.
     """
+
     def __init__(self, planner: "Planner", actions: Actions):
         super().__init__("SetRobotPosition action", planner, actions)
         self.after_action_func = self.get_position
@@ -45,6 +46,7 @@ class DiscoverSolarPanelsAction(Action):
     """
     Use the camera to find orientation of solar panels.
     """
+
     def __init__(self, planner: "Planner", actions: Actions):
         super().__init__("DiscoverSolarPanel action", planner, actions)
         self.poses.append(
@@ -83,6 +85,7 @@ class SolarPanelAction(Action):
     """
     Activate a solar panel.
     """
+
     def __init__(self, planner: "Planner", actions: Actions, panel_id: int, angle: float):
         super().__init__("SolarPanelAction action", planner, actions)
         self.panel_id = panel_id
@@ -196,6 +199,6 @@ class SolarPanelActions(Actions):
                     x=-(1000 - 450 + self.game_context.properties.robot_width / 2),
                     y=-(1500 - 450 + self.game_context.properties.robot_width / 2),
                     O=90,
-                )
+                ),
             )
         )

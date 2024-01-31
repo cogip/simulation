@@ -1,10 +1,10 @@
 import math
 import time
 
+import ydlidar
 from more_itertools import consecutive_groups
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
-import ydlidar
 
 
 class Lidar(QtCore.QObject):
@@ -17,6 +17,7 @@ class Lidar(QtCore.QObject):
         signal_new_data:
             Qt signal emitted when a new frame is available
     """
+
     signal_new_data: qtSignal = qtSignal(bytes)
 
     def __init__(self):
@@ -91,11 +92,7 @@ class Lidar(QtCore.QObject):
                     else:
                         empty_angles.append(angle)
 
-                    result.append((
-                        angle - 180,
-                        distance,
-                        intensity
-                    ))
+                    result.append((angle - 180, distance, intensity))
 
                 # If a degree has no valid point and is isolated (no other empty angle before and after)
                 # it is probably a bad value, so set it to the mean of surrounding degrees.

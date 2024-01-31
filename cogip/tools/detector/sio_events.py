@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import Any
 
 import polling2
 import socketio
@@ -34,16 +34,18 @@ class SioEvents(socketio.ClientNamespace):
         logger.info("Disconnected from cogip-server")
         self._detector.stop()
 
-    def on_connect_error(self, data: Dict[str, Any]) -> None:
+    def on_connect_error(self, data: dict[str, Any]) -> None:
         """
         On connection error, check if a Detector is already connected and exit,
         or retry connection.
         """
         logger.error(f"Connect to cogip-server error: {data = }")
-        if data \
-           and isinstance(data, dict) \
-           and (message := data.get("message")) \
-           and message == "A detector is already connected":
+        if (
+            data
+            and isinstance(data, dict)
+            and (message := data.get("message"))
+            and message == "A detector is already connected"
+        ):
             logger.error(message)
             self._detector.retry_connection = False
             return
@@ -65,18 +67,18 @@ class SioEvents(socketio.ClientNamespace):
         else:
             logger.warning(f"Unknown command: {cmd}")
 
-    def on_config_updated(self, config: Dict[str, Any]) -> None:
+    def on_config_updated(self, config: dict[str, Any]) -> None:
         self._detector.properties.__setattr__(name := config["name"], config["value"])
         if name == "refresh_interval":
             self._detector.update_refresh_interval()
 
-    def on_pose_current(self, data: Dict[str, Any]) -> None:
+    def on_pose_current(self, data: dict[str, Any]) -> None:
         """
         Callback on robot pose message.
         """
         self._detector.robot_pose = models.Pose.model_validate(data)
 
-    def on_lidar_data(self, data: List[int]) -> None:
+    def on_lidar_data(self, data: list[int]) -> None:
         """
         Callback on Lidar data.
         """

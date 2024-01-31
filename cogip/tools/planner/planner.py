@@ -1,28 +1,28 @@
 import asyncio
+import queue
+import time
 from functools import partial
 from multiprocessing import Manager, Process
 from multiprocessing.managers import DictProxy
-import queue
-import time
 from typing import Any
 
-from pydantic import RootModel, TypeAdapter
 import socketio
+from pydantic import RootModel, TypeAdapter
 
 from cogip import models
 from cogip.tools.copilot.controller import ControllerEnum
-from cogip.utils.singleton import Singleton
-from .actions import actions, action_classes
 from cogip.utils.asyncloop import AsyncLoop
+from cogip.utils.singleton import Singleton
 from . import actuators, cameras, logger, menu, pose, sio_events
+from .actions import action_classes, actions
+from .avoidance.avoidance import AvoidanceStrategy
+from .avoidance.process import avoidance_process
 from .camp import Camp
 from .context import GameContext
 from .properties import Properties
 from .robot import Robot
-from .table import TableEnum
 from .strategy import Strategy
-from .avoidance.avoidance import AvoidanceStrategy
-from .avoidance.process import avoidance_process
+from .table import TableEnum
 from .wizard import GameWizard
 
 
@@ -32,19 +32,20 @@ class Planner:
     """
 
     def __init__(
-            self,
-            server_url: str,
-            robot_width: int,
-            obstacle_radius: int,
-            obstacle_bb_margin: float,
-            obstacle_bb_vertices: int,
-            max_distance: int,
-            obstacle_sender_interval: float,
-            path_refresh_interval: float,
-            launcher_speed: int,
-            esc_speed: int,
-            plot: bool,
-            debug: bool):
+        self,
+        server_url: str,
+        robot_width: int,
+        obstacle_radius: int,
+        obstacle_bb_margin: float,
+        obstacle_bb_vertices: int,
+        max_distance: int,
+        obstacle_sender_interval: float,
+        path_refresh_interval: float,
+        launcher_speed: int,
+        esc_speed: int,
+        plot: bool,
+        debug: bool,
+    ):
         """
         Class constructor.
 
@@ -79,7 +80,7 @@ class Planner:
             path_refresh_interval=path_refresh_interval,
             launcher_speed=launcher_speed,
             esc_speed=esc_speed,
-            plot=plot
+            plot=plot,
         )
         self._retry_connection = True
         self._sio = socketio.AsyncClient(logger=False)
@@ -96,7 +97,7 @@ class Planner:
             "Obstacles sender loop",
             obstacle_sender_interval,
             self.send_obstacles,
-            logger=self._debug
+            logger=self._debug,
         )
         self._game_wizard = GameWizard(self)
         self._process_manager = Manager()
@@ -108,15 +109,17 @@ class Planner:
         self._sio_emitter_queues: dict[int, queue.Queue] = {}
         self._sio_emitter_tasks: dict[int, asyncio.Task] = {}
         self._avoidance_processes: dict[int, Process] = {}
-        self._shared_properties: DictProxy = self._process_manager.dict({
-            "path_refresh_interval": path_refresh_interval,
-            "robot_width": robot_width,
-            "obstacle_radius": obstacle_radius,
-            "obstacle_bb_vertices": obstacle_bb_vertices,
-            "obstacle_bb_margin": obstacle_bb_margin,
-            "max_distance": max_distance,
-            "plot": plot
-        })
+        self._shared_properties: DictProxy = self._process_manager.dict(
+            {
+                "path_refresh_interval": path_refresh_interval,
+                "robot_width": robot_width,
+                "obstacle_radius": obstacle_radius,
+                "obstacle_bb_vertices": obstacle_bb_vertices,
+                "obstacle_bb_margin": obstacle_bb_margin,
+                "max_distance": max_distance,
+                "plot": plot,
+            }
+        )
         self._sio_receiver_tasks: dict[int, asyncio.Task] = {}
         self._countdown_task: asyncio.Task | None = None
 
@@ -139,12 +142,9 @@ class Planner:
         Poll to wait for the first connection.
         Disconnections/reconnections are handle directly by the client.
         """
-        while (self.retry_connection):
+        while self.retry_connection:
             try:
-                await self._sio.connect(
-                    self._server_url,
-                    namespaces=["/planner"]
-                )
+                await self._sio.connect(self._server_url, namespaces=["/planner"])
             except socketio.exceptions.ConnectionError:
                 time.sleep(2)
                 continue
@@ -238,7 +238,7 @@ class Planner:
             while True:
                 await asyncio.sleep(0.5)
                 now = time.time()
-                self._game_context.countdown -= (now - last_now)
+                self._game_context.countdown -= now - last_now
                 logger.debug(f"Planner: countdown = {self._game_context.countdown}")
                 if self._game_context.playing and self._game_context.countdown < 15 and last_countdown > 15:
                     logger.debug("Planner: countdown==15: force blocked")
@@ -324,19 +324,22 @@ class Planner:
         self._sio_emitter_tasks[robot_id] = asyncio.create_task(
             self.task_sio_emitter(robot), name=f"Robot {robot_id}: Task SIO Emitter"
         )
-        self._avoidance_processes[robot_id] = Process(target=avoidance_process, args=(
-            robot.namespace,
-            self._game_context.strategy,
-            self._game_context.avoidance_strategy,
-            self._game_context.table,
-            self._shared_properties,
-            self._shared_exiting,
-            self._shared_poses_current,
-            self._shared_poses_order,
-            self._shared_obstacles,
-            self._shared_last_avoidance_pose_currents,
-            self._sio_emitter_queues[robot_id]
-        ))
+        self._avoidance_processes[robot_id] = Process(
+            target=avoidance_process,
+            args=(
+                robot.namespace,
+                self._game_context.strategy,
+                self._game_context.avoidance_strategy,
+                self._game_context.table,
+                self._shared_properties,
+                self._shared_exiting,
+                self._shared_poses_current,
+                self._shared_poses_order,
+                self._shared_obstacles,
+                self._shared_last_avoidance_pose_currents,
+                self._sio_emitter_queues[robot_id],
+            ),
+        )
         self._avoidance_processes[robot_id].start()
         await self.update_start_pose_commands()
 
@@ -401,10 +404,7 @@ class Planner:
 
         for robot_id in sorted(self._robots.keys(), reverse=True):
             func_name = f"choose_start_position_{robot_id}"
-            menu_entry = models.MenuEntry(
-                cmd=func_name,
-                desc=f"Choose Start Position {robot_id}"
-            )
+            menu_entry = models.MenuEntry(cmd=func_name, desc=f"Choose Start Position {robot_id}")
             menu.menu.entries.insert(0, menu_entry)
             self._start_pose_menu_entries[robot_id] = menu_entry
             setattr(self, "cmd_" + func_name, partial(self.cmd_choose_start_position, robot_id))
@@ -483,7 +483,7 @@ class Planner:
         """
         sorted_actions = sorted(
             [action for action in self._actions if not action.recycled and action.weight(robot) > 0],
-            key=lambda action: action.weight(robot)
+            key=lambda action: action.weight(robot),
         )
 
         if len(sorted_actions) == 0:
@@ -509,10 +509,11 @@ class Planner:
                 await robot.sio_receiver_queue.put(self.set_pose_reached(robot))
 
     def create_dyn_obstacle(
-            self,
-            center: models.Vertex,
-            radius: float | None = None,
-            bb_radius: float | None = None) -> models.DynRoundObstacle:
+        self,
+        center: models.Vertex,
+        radius: float | None = None,
+        bb_radius: float | None = None,
+    ) -> models.DynRoundObstacle:
         """
         Create a dynamic obstacle.
 
@@ -530,7 +531,7 @@ class Planner:
         obstacle = models.DynRoundObstacle(
             x=center.x,
             y=center.y,
-            radius=radius
+            radius=radius,
         )
         obstacle.create_bounding_box(bb_radius, self._properties.obstacle_bb_vertices)
 
@@ -667,8 +668,8 @@ class Planner:
             {
                 "name": "Choose Camp",
                 "type": "camp",
-                "value": self._camp.color.name
-            }
+                "value": self._camp.color.name,
+            },
         )
 
     async def cmd_choose_strategy(self):
@@ -682,8 +683,8 @@ class Planner:
                 "name": "Choose Strategy",
                 "type": "choice_str",
                 "choices": [e.name for e in Strategy],
-                "value": self._game_context.strategy.name
-            }
+                "value": self._game_context.strategy.name,
+            },
         )
 
     async def cmd_choose_avoidance(self):
@@ -697,8 +698,8 @@ class Planner:
                 "name": "Choose Avoidance",
                 "type": "choice_str",
                 "choices": [e.name for e in AvoidanceStrategy],
-                "value": self._game_context.avoidance_strategy.name
-            }
+                "value": self._game_context.avoidance_strategy.name,
+            },
         )
 
     async def cmd_choose_start_position(self, robot_id):
@@ -713,8 +714,8 @@ class Planner:
                 "type": "choice_integer",
                 "choices": self._game_context.get_available_start_poses(),
                 "value": self._start_positions.get(robot_id, robot_id),
-                "robot_id": robot_id
-            }
+                "robot_id": robot_id,
+            },
         )
 
     async def cmd_choose_table(self):
@@ -728,8 +729,8 @@ class Planner:
                 "name": "Choose Table",
                 "type": "choice_str",
                 "choices": [e.name for e in TableEnum],
-                "value": self._game_context._table.name
-            }
+                "value": self._game_context._table.name,
+            },
         )
 
     async def wizard_response(self, message: dict[str, Any]):
@@ -756,14 +757,14 @@ class Planner:
                     return
                 self._game_context.strategy = new_strategy
                 await self.reset()
-                logger.info(f'Wizard: New strategy: {self._game_context.strategy.name}')
+                logger.info(f"Wizard: New strategy: {self._game_context.strategy.name}")
             case "Choose Avoidance":
                 new_strategy = AvoidanceStrategy[value]
                 if self._game_context.avoidance_strategy == new_strategy:
                     return
                 self._game_context.avoidance_strategy = new_strategy
                 await self.reset()
-                logger.info(f'Wizard: New avoidance strategy: {self._game_context.avoidance_strategy.name}')
+                logger.info(f"Wizard: New avoidance strategy: {self._game_context.avoidance_strategy.name}")
             case chose_start_pose if chose_start_pose.startswith("Choose Start Position"):
                 if robot := self._robots.get(robot_id := message.get("robot_id")):
                     start_position = int(value)
@@ -779,7 +780,7 @@ class Planner:
                 self._game_context.table = new_table
                 self._shared_properties["table"] = new_table
                 await self.reset()
-                logger.info(f'Wizard: New table: {self._game_context._table.name}')
+                logger.info(f"Wizard: New table: {self._game_context._table.name}")
             case game_wizard_response if game_wizard_response.startswith("Game Wizard"):
                 await self._game_wizard.response(message)
             case wizard_test_response if wizard_test_response.startswith("Wizard Test"):
@@ -793,84 +794,84 @@ class Planner:
                 message = {
                     "name": "Wizard Test Boolean",
                     "type": "boolean",
-                    "value": True
+                    "value": True,
                 }
             case "wizard_integer":
                 message = {
                     "name": "Wizard Test Integer",
                     "type": "integer",
-                    "value": 42
+                    "value": 42,
                 }
             case "wizard_floating":
                 message = {
                     "name": "Wizard Test Float",
                     "type": "floating",
-                    "value": 66.6
+                    "value": 66.6,
                 }
             case "wizard_str":
                 message = {
                     "name": "Wizard Test String",
                     "type": "str",
-                    "value": "cogip"
+                    "value": "cogip",
                 }
             case "wizard_message":
                 message = {
                     "name": "Wizard Test Message",
                     "type": "message",
-                    "value": "Hello Robot!"
+                    "value": "Hello Robot!",
                 }
             case "wizard_choice_integer":
                 message = {
                     "name": "Wizard Test Choice Integer",
                     "type": "choice_integer",
                     "choices": [1, 2, 3],
-                    "value": 2
+                    "value": 2,
                 }
             case "wizard_choice_floating":
                 message = {
                     "name": "Wizard Test Choice Float",
                     "type": "choice_floating",
                     "choices": [1.1, 2.2, 3.3],
-                    "value": 2.2
+                    "value": 2.2,
                 }
             case "wizard_choice_str":
                 message = {
                     "name": "Wizard Test Choice String",
                     "type": "choice_str",
                     "choices": ["one", "two", "tree"],
-                    "value": "two"
+                    "value": "two",
                 }
             case "wizard_select_integer":
                 message = {
                     "name": "Wizard Test Select Integer",
                     "type": "select_integer",
                     "choices": [1, 2, 3],
-                    "value": [1, 3]
+                    "value": [1, 3],
                 }
             case "wizard_select_floating":
                 message = {
                     "name": "Wizard Test Select Float",
                     "type": "select_floating",
                     "choices": [1.1, 2.2, 3.3],
-                    "value": [1.1, 3.3]
+                    "value": [1.1, 3.3],
                 }
             case "wizard_select_str":
                 message = {
                     "name": "Wizard Test Select String",
                     "type": "select_str",
                     "choices": ["one", "two", "tree"],
-                    "value": ["one", "tree"]
+                    "value": ["one", "tree"],
                 }
             case "wizard_camp":
                 message = {
                     "name": "Wizard Test Camp",
                     "type": "camp",
-                    "value": "yellow"
+                    "value": "yellow",
                 }
             case "wizard_camera":
                 message = {
                     "name": "Wizard Test Camera",
-                    "type": "camera"
+                    "type": "camera",
                 }
             case "wizard_score":
                 await self._sio_ns.emit("score", 100)

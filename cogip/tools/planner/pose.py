@@ -1,7 +1,8 @@
-from typing import Awaitable, Callable, ClassVar, final
+from collections.abc import Awaitable, Callable
+from typing import ClassVar, final
 
-from pydantic import field_validator
 import socketio
+from pydantic import field_validator
 
 from cogip.models.models import PathPose
 from .camp import Camp
@@ -12,6 +13,7 @@ class Pose(PathPose):
     Pose class used in actions.
     A function can be executed before moving and an other once it is reached.
     """
+
     before_pose_func: Callable[[socketio.ClientNamespace], Awaitable[None]] | None = None
     after_pose_func: Callable[[socketio.ClientNamespace], Awaitable[None]] | None = None
 
@@ -46,9 +48,10 @@ class AdaptedPose(Pose):
     So to define static positions in actions, we can use this class to set pose related
     to the default camp, and if the camp changes, the pose will be adapted on reset.
     """
+
     _camp: ClassVar[Camp] = Camp()
 
-    @field_validator('y')
+    @field_validator("y")
     @classmethod
     def adapt_y(cls, v, **kwargs):
         """
@@ -56,7 +59,7 @@ class AdaptedPose(Pose):
         """
         return Camp().adapt_y(v)
 
-    @field_validator('O')
+    @field_validator("O")
     @classmethod
     def adapt_O(cls, v, **kwargs):
         """

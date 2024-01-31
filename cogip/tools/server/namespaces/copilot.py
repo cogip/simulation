@@ -1,4 +1,5 @@
-from typing import Any, Dict
+from typing import Any
+
 import socketio
 
 from cogip import models
@@ -11,6 +12,7 @@ class CopilotNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to copilot.
     """
+
     def __init__(self, cogip_server: "server.Server"):
         super().__init__("/copilot")
         self._cogip_server = cogip_server
@@ -60,7 +62,7 @@ class CopilotNamespace(socketio.AsyncNamespace):
         await self._recorder.async_do_rollover()
         self._recorder.recording = True
 
-    async def on_register_menu(self, sid, data: Dict[str, Any]):
+    async def on_register_menu(self, sid, data: dict[str, Any]):
         """
         Callback on register_menu.
         """
@@ -107,7 +109,7 @@ class CopilotNamespace(socketio.AsyncNamespace):
         await self.emit("state", (robot_id, state), namespace="/dashboard")
         await self._recorder.async_record({"state": (robot_id, state)})
 
-    async def on_actuators_state(self, sid, actuators_state: Dict[str, Any]):
+    async def on_actuators_state(self, sid, actuators_state: dict[str, Any]):
         """
         Callback on actuators_state message.
         """
@@ -119,7 +121,7 @@ class CopilotNamespace(socketio.AsyncNamespace):
         """
         await self.emit("pid", pid, namespace="/dashboard")
 
-    async def on_config(self, sid, config: Dict[str, Any]):
+    async def on_config(self, sid, config: dict[str, Any]):
         """
         Callback on config message.
         """

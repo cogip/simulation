@@ -1,5 +1,4 @@
 class Geometry:
-
     class Point:
         def __init__(self, x, y):
             self.x = x
@@ -7,12 +6,8 @@ class Geometry:
 
     @staticmethod
     def is_seg_intersect(p1, q1, p2, q2):
-
         def on_segment(p, q, r):
-            if (q.x <= max(p.x, r.x)) and \
-               (q.x >= min(p.x, r.x)) and \
-               (q.y <= max(p.y, r.y)) and \
-               (q.y >= min(p.y, r.y)):
+            if (q.x <= max(p.x, r.x)) and (q.x >= min(p.x, r.x)) and (q.y <= max(p.y, r.y)) and (q.y >= min(p.y, r.y)):
                 return True
             return False
 

@@ -1,7 +1,7 @@
-from itertools import chain
 import sys
 import threading
 import time
+from itertools import chain
 
 from PySide6 import QtCore, QtGui, QtWidgets
 
@@ -30,14 +30,14 @@ class MainWindow(QtWidgets.QWidget):
             qp.setPen(QtGui.QPen(QtCore.Qt.blue, 20, QtCore.Qt.SolidLine))
             qp.drawPoint(
                 self.margin + self.win.point_start.x,
-                self.margin + (self.offset_y - self.win.point_start.y)
+                self.margin + (self.offset_y - self.win.point_start.y),
             )
 
         if self.win.point_goal:
             qp.setPen(QtGui.QPen(QtCore.Qt.darkBlue, 20, QtCore.Qt.SolidLine))
             qp.drawPoint(
                 self.margin + self.win.point_goal.x,
-                self.margin + (self.offset_y - self.win.point_goal.y)
+                self.margin + (self.offset_y - self.win.point_goal.y),
             )
 
         self.draw_border(qp)
@@ -57,9 +57,12 @@ class MainWindow(QtWidgets.QWidget):
     def draw_obstacles(self, qp: QtGui.QPainter):
         qp.setPen(QtGui.QPen(QtCore.Qt.black, 5, QtCore.Qt.SolidLine))
         for obstacle in chain(self.win.fixed_obstacles, self.win.dyn_obstacles):
-            points = QtGui.QPolygon([
-                QtCore.QPoint(self.margin + x, self.margin + (self.offset_y - y))
-                for x, y in zip(obstacle.x_list, obstacle.y_list)])
+            points = QtGui.QPolygon(
+                [
+                    QtCore.QPoint(self.margin + x, self.margin + (self.offset_y - y))
+                    for x, y in zip(obstacle.x_list, obstacle.y_list)
+                ]
+            )
             qp.drawPolyline(points)
 
         qp.setPen(QtGui.QPen(QtCore.Qt.magenta, 20))
@@ -67,7 +70,8 @@ class MainWindow(QtWidgets.QWidget):
         for obstacle in chain(self.win.fixed_obstacles, self.win.dyn_obstacles):
             cv_points = [
                 QtCore.QPoint(self.margin + x, (self.margin + self.offset_y - y))
-                for x, y in zip(obstacle.cvx_list, obstacle.cvy_list)]
+                for x, y in zip(obstacle.cvx_list, obstacle.cvy_list)
+            ]
             qp.drawPoints(cv_points)
 
     def draw_graph(self, qp: QtGui.QPainter):
@@ -83,16 +87,20 @@ class MainWindow(QtWidgets.QWidget):
     def draw_road_map(self, qp: QtGui.QPainter):
         qp.setPen(QtGui.QPen(QtCore.Qt.blue, 5, QtCore.Qt.SolidLine))
         for x1, y1, x2, y2 in self.win.road_map:
-            qp.drawLine(QtCore.QLine(
-                self.margin + x1, self.margin + (self.offset_y - y1),
-                self.margin + x2, self.margin + (self.offset_y - y2),
-            ))
+            qp.drawLine(
+                QtCore.QLine(
+                    self.margin + x1,
+                    self.margin + (self.offset_y - y1),
+                    self.margin + x2,
+                    self.margin + (self.offset_y - y2),
+                )
+            )
 
     def draw_path(self, qp: QtGui.QPainter):
         qp.setPen(QtGui.QPen(QtCore.Qt.red, 10, QtCore.Qt.SolidLine))
-        points = QtGui.QPolygon([
-            QtCore.QPoint(self.margin + x, self.margin + (self.offset_y - y))
-            for x, y in self.win.path])
+        points = QtGui.QPolygon(
+            [QtCore.QPoint(self.margin + x, self.margin + (self.offset_y - y)) for x, y in self.win.path]
+        )
         qp.drawPolyline(points)
 
 

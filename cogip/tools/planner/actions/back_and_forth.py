@@ -16,6 +16,7 @@ class BackAndForthAction(Action):
     at the beginning of the action.
     The robot will go from the current position to its opposite position in loop.
     """
+
     def __init__(self, planner: "Planner", actions: Actions):
         super().__init__("BackAnForth action", planner, actions)
         self.before_action_func = self.compute_poses
@@ -25,8 +26,11 @@ class BackAndForthAction(Action):
         y = self.game_context.table.y_min + self.game_context.table.y_max - self.robot.pose_current.y
         angle = -self.robot.pose_current.O
         pose1 = Pose(
-            x=x, y=y, O=angle,
-            max_speed_linear=SpeedEnum.NORMAL, max_speed_angular=SpeedEnum.NORMAL
+            x=x,
+            y=y,
+            O=angle,
+            max_speed_linear=SpeedEnum.NORMAL,
+            max_speed_angular=SpeedEnum.NORMAL,
         )
         pose2 = Pose(**self.robot.pose_current.model_dump())
         pose1.after_pose_func = partial(self.append_pose, pose1)

@@ -1,8 +1,8 @@
 import asyncio
 import base64
 import binascii
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Dict
 
 from aioserial import AioSerial
 from google.protobuf.message import DecodeError as ProtobufDecodeError
@@ -18,21 +18,17 @@ def pb_exception_handler(func):
             logger.error(f"Protobuf decode error: {exc}")
         except Exception as exc:
             logger.error(f"{func}: Unknown Protobuf decode error in {type(exc)}: {exc}")
+
     return inner_function
 
 
 class PBCom:
-    _loop: asyncio.AbstractEventLoop = None          # Event loop to use for all async objects
-    _serial_port: AioSerial = None                   # Async serial port
+    _loop: asyncio.AbstractEventLoop = None  # Event loop to use for all async objects
+    _serial_port: AioSerial = None  # Async serial port
     _serial_messages_received: asyncio.Queue = None  # Queue for messages received from serial port
-    _serial_messages_to_send: asyncio.Queue = None   # Queue for messages waiting to be sent on serial port
+    _serial_messages_to_send: asyncio.Queue = None  # Queue for messages waiting to be sent on serial port
 
-    def __init__(
-            self,
-            serial_port: Path,
-            serial_baud: int,
-            message_handlers: Dict[int, Callable]):
-
+    def __init__(self, serial_port: Path, serial_baud: int, message_handlers: dict[int, Callable]):
         self._serial_port = AioSerial()
         self._serial_port.port = str(serial_port)
         self._serial_port.baudrate = serial_baud
@@ -55,7 +51,7 @@ class PBCom:
             await asyncio.gather(
                 self.serial_decoder(),
                 self.serial_receiver(),
-                self.serial_sender()
+                self.serial_sender(),
             )
         except asyncio.CancelledError:
             pass

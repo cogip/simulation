@@ -1,10 +1,9 @@
 from array import array
-from typing import Optional
 
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
-from PySide6.Qt3DRender import Qt3DRender
 from PySide6.Qt3DExtras import Qt3DExtras
+from PySide6.Qt3DRender import Qt3DRender
 
 from cogip.models import models
 
@@ -14,7 +13,7 @@ class LineEntity(Qt3DCore.QEntity):
     A simple entity drawing a line between two vertices.
     """
 
-    def __init__(self, color: QtGui.QColor = QtCore.Qt.blue, parent: Optional[Qt3DCore.QEntity] = None):
+    def __init__(self, color: QtGui.QColor = QtCore.Qt.blue, parent: Qt3DCore.QEntity | None = None):
         """
         Class constructor.
 
@@ -39,7 +38,7 @@ class LineEntity(Qt3DCore.QEntity):
         self.geometry.addAttribute(self.position_attribute)
 
         # Connectivity between vertices
-        self.indices = array('I', [0, 1])
+        self.indices = array("I", [0, 1])
         self.indices_bytes = QtCore.QByteArray(self.indices.tobytes())
         self.indices_buffer = Qt3DCore.QBuffer(self.geometry)
         self.indices_buffer.setData(self.indices_bytes)
@@ -72,7 +71,7 @@ class LineEntity(Qt3DCore.QEntity):
         """
 
         # Position vertices (start and end)
-        positions = array('f')
+        positions = array("f")
         positions.fromlist([start.x, start.y, start.z])
         positions.fromlist([end.x, end.y, end.z])
         buffer_bytes = QtCore.QByteArray(positions.tobytes())

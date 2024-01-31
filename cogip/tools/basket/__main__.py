@@ -22,25 +22,29 @@ def main_opt(
     server_url: str = typer.Option(
         "http://localhost:8090",
         help="Socket.IO Server URL",
-        envvar="COGIP_SOCKETIO_SERVER_URL"
+        envvar="COGIP_SOCKETIO_SERVER_URL",
     ),
     refresh_interval: float = typer.Option(
-        1, min=0.1, max=10,
+        1,
+        min=0.1,
+        max=10,
         help="Interval between each update of the score (in seconds)",
-        envvar="BASKET_REFRESH_INTERVAL"
+        envvar="BASKET_REFRESH_INTERVAL",
     ),
     reload: bool = typer.Option(
         False,
-        "-r", "--reload",
+        "-r",
+        "--reload",
         help="Reload app on source file changes.",
-        envvar=["COGIP_RELOAD", "BASKET_RELOAD"]
+        envvar=["COGIP_RELOAD", "BASKET_RELOAD"],
     ),
     debug: bool = typer.Option(
         False,
-        "-d", "--debug",
+        "-d",
+        "--debug",
         help="Turn on debug messages.",
-        envvar=["COGIP_DEBUG", "BASKET_DEBUG"]
-    )
+        envvar=["COGIP_DEBUG", "BASKET_DEBUG"],
+    ),
 ):
     if debug:
         logger.setLevel(logging.DEBUG)
@@ -58,7 +62,7 @@ def main_opt(
             args=args,
             callback=changes_callback,
             watch_filter=PythonFilter(),
-            debug=False
+            debug=False,
         )
     else:
         run(*args)
@@ -74,5 +78,5 @@ def main():
     typer.run(main_opt)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

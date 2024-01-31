@@ -1,11 +1,12 @@
+import signal
+import time
 from datetime import datetime
+
 # import functools
 from multiprocessing.shared_memory import SharedMemory
 from pathlib import Path
-import signal
 from threading import Thread
 from time import sleep
-import time
 
 import cv2
 import numpy as np
@@ -21,20 +22,21 @@ class ExitSignal(Exception):
     pass
 
 
-class CameraHandler():
+class CameraHandler:
     """
     Camera handler.
 
     Handle camera initialization, sample detection.
     """
-    _camera_device: Path = None                         # Camera device
-    _camera_codec: VideoCodec = None                    # Video codec
-    _camera_frame_width: int = None                     # Camera frame width
-    _camera_frame_height: int = None                    # Camera frame height
-    _camera_capture: cv2.VideoCapture = None            # OpenCV video capture
-    _last_frame: SharedMemory = None                    # Last generated frame to stream on web server
-    _frame_rate: float = 6                             # Number of images processed by seconds
-    _exiting: bool = False                              # Exit requested if True
+
+    _camera_device: Path = None  # Camera device
+    _camera_codec: VideoCodec = None  # Video codec
+    _camera_frame_width: int = None  # Camera frame width
+    _camera_frame_height: int = None  # Camera frame height
+    _camera_capture: cv2.VideoCapture = None  # OpenCV video capture
+    _last_frame: SharedMemory = None  # Last generated frame to stream on web server
+    _frame_rate: float = 6  # Number of images processed by seconds
+    _exiting: bool = False  # Exit requested if True
 
     def __init__(self):
         """
@@ -50,12 +52,14 @@ class CameraHandler():
 
         self.sio = socketio.Client(logger=False, engineio_logger=False)
         self.register_sio_events()
-        Thread(target=lambda: polling2.poll(
-            self.sio_connect,
-            step=1,
-            ignore_exceptions=(socketio.exceptions.ConnectionError),
-            poll_forever=True
-        )).start()
+        Thread(
+            target=lambda: polling2.poll(
+                self.sio_connect,
+                step=1,
+                ignore_exceptions=(socketio.exceptions.ConnectionError),
+                poll_forever=True,
+            )
+        ).start()
 
     @staticmethod
     def exit_handler(signum, frame):
@@ -73,10 +77,7 @@ class CameraHandler():
         if self._exiting:
             return True
 
-        self.sio.connect(
-            str(self.settings.socketio_server_url),
-            namespaces=["/beaconcam"]
-        )
+        self.sio.connect(str(self.settings.socketio_server_url), namespaces=["/beaconcam"])
         return True
 
     def open_camera(self):
@@ -217,7 +218,7 @@ class CameraHandler():
         self.open_last_frame(len(frame))
 
         if self._last_frame:
-            self._last_frame.buf[0:len(frame)] = frame
+            self._last_frame.buf[0 : len(frame)] = frame
 
         if self.record_writer:
             self.record_writer.write(image_stream)
@@ -228,7 +229,7 @@ class CameraHandler():
         records_dir = Path.home() / "records"
         records_dir.mkdir(exist_ok=True)
         # Keep only 20 last records
-        for old_record in sorted(records_dir.glob('*.mp4'))[:-20]:
+        for old_record in sorted(records_dir.glob("*.mp4"))[:-20]:
             old_record.unlink()
         timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
         self.record_filename = records_dir / f"beacon_{timestamp}.mp4"
@@ -236,9 +237,10 @@ class CameraHandler():
         logger.info(f"Start recording video in {self.record_filename}")
         self.record_writer = cv2.VideoWriter(
             str(self.record_filename),
-            cv2.VideoWriter_fourcc(*'mp4v'),
+            cv2.VideoWriter_fourcc(*"mp4v"),
             self._frame_rate,
-            (self.settings.camera_width, self.settings.camera_height))
+            (self.settings.camera_width, self.settings.camera_height),
+        )
 
     def stop_video_record(self):
         if self.record_writer:

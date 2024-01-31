@@ -1,5 +1,3 @@
-from typing import List, Tuple
-
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 
@@ -16,10 +14,11 @@ class DataProxy(QtCore.QObject):
     update_data: qtSignal = qtSignal()
 
     def __init__(
-            self,
-            angle_values: List[int],
-            distance_values: List[int],
-            intensity_values: List[int]):
+        self,
+        angle_values: list[int],
+        distance_values: list[int],
+        intensity_values: list[int],
+    ):
         """Class constructor
 
         Arguments:
@@ -60,7 +59,7 @@ class DataProxy(QtCore.QObject):
             return distance
         return self.filter
 
-    def new_data(self, points: List[Tuple[float, int, int]]) -> None:
+    def new_data(self, points: list[tuple[float, int, int]]) -> None:
         """
         Get new list of points.
 

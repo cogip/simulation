@@ -23,6 +23,7 @@ class Context(metaclass=Singleton):
         connected_robots:   list of robots already connected
         virtual_robots:     list of virtual robots connected
     """
+
     copilot_sids = bidict()
     detector_sids = bidict()
     detector_modes: dict[int, Literal["detection", "emulation"]] = field(default_factory=dict)

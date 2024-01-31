@@ -1,17 +1,15 @@
 from __future__ import annotations
-from typing import List
 import math
 from pathlib import Path
 
-from PySide6.QtCore import Signal as qtSignal
-from PySide6.QtCore import Slot as qtSlot
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
 from PySide6.Qt3DExtras import Qt3DExtras
 from PySide6.Qt3DRender import Qt3DRender
+from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip.models import Pose
-
 from .asset import AssetEntity
 from .robot_order import RobotOrderEntity
 from .sensor import LidarSensor, Sensor
@@ -28,11 +26,12 @@ class RobotEntity(AssetEntity):
         lidar_emit_data_signal: Qt Signal emitting Lidar data
         order_robot:: Entity that represents the robot next destination
     """
+
     asset_path: Path = Path("assets/robot2023.dae")
     sensors_update_interval: int = 5
     lidar_emit_interval: int = 20
     lidar_emit_data_signal: qtSignal = qtSignal(int, list)
-    order_robot: "RobotOrderEntity" = None
+    order_robot: RobotOrderEntity = None
 
     def __init__(self, robot_id: int, parent: Qt3DCore.QEntity | None = None):
         """
@@ -120,9 +119,7 @@ class RobotEntity(AssetEntity):
         Arguments:
             new_pose: new robot pose
         """
-        self.transform_component.setTranslation(
-            QtGui.QVector3D(new_pose.x, new_pose.y, 0)
-        )
+        self.transform_component.setTranslation(QtGui.QVector3D(new_pose.x, new_pose.y, 0))
         self.transform_component.setRotationZ(new_pose.O)
 
     @qtSlot(Pose)
@@ -134,9 +131,7 @@ class RobotEntity(AssetEntity):
             new_pose: new robot pose
         """
         if self.order_robot:
-            self.order_robot.transform.setTranslation(
-                QtGui.QVector3D(new_pose.x, new_pose.y, 0)
-            )
+            self.order_robot.transform.setTranslation(QtGui.QVector3D(new_pose.x, new_pose.y, 0))
             self.order_robot.transform.setRotationZ(new_pose.O)
 
     def start_lidar_emulation(self) -> None:
@@ -153,7 +148,7 @@ class RobotEntity(AssetEntity):
         self.sensors_update_timer.stop()
         self.lidar_emit_timer.stop()
 
-    def lidar_data(self) -> List[int]:
+    def lidar_data(self) -> list[int]:
         """
         Return a list of distances for each 360 Lidar angles.
         """

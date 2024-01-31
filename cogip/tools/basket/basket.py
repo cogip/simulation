@@ -1,5 +1,5 @@
-from gpiozero import Button
 import httpx
+from gpiozero import Button
 from luma.core.interface.serial import i2c
 from luma.core.render import canvas
 from luma.oled.device import sh1106
@@ -16,10 +16,8 @@ class Basket:
     Count cherries stored in the basket, display the count on a screen,
     and periodically send current count to the server.
     """
-    def __init__(
-            self,
-            server_url: str,
-            refresh_interval: float):
+
+    def __init__(self, server_url: str, refresh_interval: float):
         """
         Class constructor.
 
@@ -34,7 +32,7 @@ class Basket:
             "Count sender loop",
             refresh_interval,
             self.send_count,
-            logger=True
+            logger=True,
         )
 
         self.button = Button(17, pull_up=True, bounce_time=0.1)

@@ -1,10 +1,9 @@
 import math
-from typing import List, Optional
 
 from PySide6 import QtCore, QtGui
 from PySide6.Qt3DCore import Qt3DCore
-from PySide6.Qt3DRender import Qt3DRender
 from PySide6.Qt3DExtras import Qt3DExtras
+from PySide6.Qt3DRender import Qt3DRender
 from PySide6.QtCore import Slot as qtSlot
 
 from cogip.entities.asset import AssetEntity
@@ -26,22 +25,24 @@ class Sensor(QtCore.QObject):
         all_sensors: Class attribute recording all sensors
         hit: Last hit of this sensor
     """
-    obstacles: List[Qt3DCore.QEntity] = []
-    all_sensors: List["Sensor"] = []
-    hit: Optional[Qt3DRender.QRayCasterHit] = None
+
+    obstacles: list[Qt3DCore.QEntity] = []
+    all_sensors: list["Sensor"] = []
+    hit: Qt3DRender.QRayCasterHit | None = None
 
     def __init__(
-            self,
-            asset_entity: AssetEntity,
-            name: str,
-            origin_x: int,
-            origin_y: int,
-            origin_z: int,
-            direction_x: int,
-            direction_y: int,
-            direction_z: int,
-            impact_radius: float = 50,
-            impact_color: QtCore.Qt.GlobalColor = QtCore.Qt.red):
+        self,
+        asset_entity: AssetEntity,
+        name: str,
+        origin_x: int,
+        origin_y: int,
+        origin_z: int,
+        direction_x: int,
+        direction_y: int,
+        direction_z: int,
+        impact_radius: float = 50,
+        impact_color: QtCore.Qt.GlobalColor = QtCore.Qt.red,
+    ):
         """
         Class constructor.
 
@@ -59,7 +60,7 @@ class Sensor(QtCore.QObject):
             impact_radius: Radius of the `ImpactEntity` representing the collision
             impact_color: Color of the `ImpactEntity` representing the collision
         """
-        super(Sensor, self).__init__()
+        super().__init__()
 
         Sensor.all_sensors.append(self)
 
@@ -92,11 +93,7 @@ class Sensor(QtCore.QObject):
 
         Compute the distance with the closest detected obstacle.
         """
-        distances = [
-            hit
-            for hit in self.ray_caster.hits()
-            if hit.distance() != 0.0
-        ]
+        distances = [hit for hit in self.ray_caster.hits() if hit.distance() != 0.0]
         self.hit = None
         if len(distances):
             self.hit = min(distances, key=lambda x: x.distance())
@@ -148,14 +145,16 @@ class ToFSensor(Sensor):
 
     Its impact entity is represented by a small red sphere.
     """
+
     nb_tof_sensors = 0
 
     def __init__(
-            self,
-            asset_entity: AssetEntity,
-            name: str,
-            origin_x: int,
-            origin_y: int):
+        self,
+        asset_entity: AssetEntity,
+        name: str,
+        origin_x: int,
+        origin_y: int,
+    ):
         """
         Class constructor.
 
@@ -165,7 +164,7 @@ class ToFSensor(Sensor):
             origin_x: X origin of the ray caster
             origin_y: Y origin of the ray caster
         """
-        super(ToFSensor, self).__init__(
+        super().__init__(
             asset_entity=asset_entity,
             name=name,
             origin_x=origin_x,
@@ -175,11 +174,12 @@ class ToFSensor(Sensor):
             direction_y=origin_y,
             direction_z=0,
             impact_radius=50,
-            impact_color=QtCore.Qt.red)
+            impact_color=QtCore.Qt.red,
+        )
         self.tof_id = ToFSensor.nb_tof_sensors
         ToFSensor.nb_tof_sensors += 1
 
-        rotation = math.degrees(math.acos((origin_x / math.dist((0, 0), (origin_x, origin_y)))))
+        rotation = math.degrees(math.acos(origin_x / math.dist((0, 0), (origin_x, origin_y))))
 
         self.entity = Qt3DCore.QEntity()
         self.entity.setParent(self.asset_entity)
@@ -210,13 +210,14 @@ class LidarSensor(Sensor):
     nb_lidar_sensors = 0
 
     def __init__(
-            self,
-            asset_entity: AssetEntity,
-            name: str,
-            origin_x: int,
-            origin_y: int,
-            direction_x: int,
-            direction_y: int):
+        self,
+        asset_entity: AssetEntity,
+        name: str,
+        origin_x: int,
+        origin_y: int,
+        direction_x: int,
+        direction_y: int,
+    ):
         """
         Class constructor.
 
@@ -229,7 +230,7 @@ class LidarSensor(Sensor):
             direction_y: Y direction of the ray caster
         """
 
-        super(LidarSensor, self).__init__(
+        super().__init__(
             asset_entity=asset_entity,
             name=name,
             origin_x=origin_x,
@@ -239,7 +240,8 @@ class LidarSensor(Sensor):
             direction_y=direction_y,
             direction_z=0,
             impact_radius=20,
-            impact_color=QtCore.Qt.cyan)
+            impact_color=QtCore.Qt.cyan,
+        )
 
         self.lidar_id = LidarSensor.nb_lidar_sensors
         LidarSensor.nb_lidar_sensors += 1

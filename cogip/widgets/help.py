@@ -1,7 +1,6 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
 
-
 help_text = """
 | Keyboard | Mouse | Action |
 | --- | --- | --- |
@@ -31,6 +30,7 @@ class HelpCameraControlDialog(QtWidgets.QDialog):
         saved_geometry: Saved window position
         closed: Qt signal emitted when the window is hidden
     """
+
     closed: qtSignal = qtSignal()
 
     def __init__(self, parent: QtWidgets.QWidget = None):

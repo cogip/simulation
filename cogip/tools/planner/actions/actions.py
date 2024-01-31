@@ -1,5 +1,6 @@
 import asyncio
-from typing import Awaitable, Callable, final, TYPE_CHECKING
+from collections.abc import Awaitable, Callable
+from typing import TYPE_CHECKING, final
 
 from .. import logger
 from ..context import GameContext
@@ -16,12 +17,8 @@ class Action:
     It contains a list of Pose to reach in order.
     A function can be executed before the action starts and after it ends.
     """
-    def __init__(
-            self,
-            name: str,
-            planner: "Planner",
-            actions: "Actions",
-            interruptable: bool = True):
+
+    def __init__(self, name: str, planner: "Planner", actions: "Actions", interruptable: bool = True):
         self.name = name
         self.planner = planner
         self.actions = actions
@@ -73,6 +70,7 @@ class WaitAction(Action):
     Action used if no other action is available.
     Reset recycled attribute of all actions at the end.
     """
+
     def __init__(self, planner: "Planner", actions: "Actions"):
         super().__init__("Wait action", planner, actions)
         self.before_action_func = self.before_wait
@@ -99,6 +97,7 @@ class Actions(list[Action]):
     List of actions.
     Just inherits from list for now.
     """
+
     def __init__(self, planner: "Planner"):
         super().__init__()
         self.planner = planner

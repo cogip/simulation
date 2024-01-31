@@ -7,6 +7,7 @@ class Camp(metaclass=Singleton):
     """
     Class representing the camp selected before the game starts.
     """
+
     class Colors(IntEnum):
         blue = 0
         yellow = 1

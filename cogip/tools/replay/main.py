@@ -1,19 +1,18 @@
 #!/usr/bin/env python3
-from pathlib import Path
 import sys
+from pathlib import Path
 from typing import Optional
 
-from PySide6 import QtWidgets
 import typer
+from PySide6 import QtWidgets
 
 from cogip import logger
 from cogip.entities.robot import RobotEntity
 from cogip.entities.table import TableEntity
-
 from .mainwindow import MainWindow
 
 
-def main_opt(trace_file: Optional[Path] = typer.Argument(None)):
+def main_opt(trace_file: Optional[Path] = typer.Argument(None)):  # noqa
     """
     Starts replay.
     """

@@ -1,5 +1,5 @@
-from bidict import bidict
 import socketio
+from bidict import bidict
 
 from .. import logger
 
@@ -10,6 +10,7 @@ class RobotcamNamespace(socketio.AsyncNamespace):
     """
     Handle all SocketIO events related to robotcam.
     """
+
     def __init__(self):
         super().__init__("/robotcam")
 

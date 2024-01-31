@@ -13,6 +13,7 @@ class SpeedTestAction(Action):
     Dummy action for pid calibration.
     Same dummy pose in loop.
     """
+
     def __init__(self, planner: "Planner", actions: Actions):
         super().__init__("Pid calibration action", planner, actions)
         self.pose = Pose()

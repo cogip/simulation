@@ -1,9 +1,7 @@
-from typing import Dict, List
-
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 
-from cogip.entities.dynobstacle import DynRectObstacleEntity, DynCircleObstacleEntity
+from cogip.entities.dynobstacle import DynCircleObstacleEntity, DynRectObstacleEntity
 from cogip.entities.robot import RobotEntity
 from cogip.models import DynObstacleList, DynObstacleRect, Pose
 from cogip.widgets.gameview import GameView
@@ -15,6 +13,7 @@ class RobotManager(QtCore.QObject):
     Attributes:
         lidar_emit_data_signal: Qt Signal emitting Lidar data
     """
+
     lidar_emit_data_signal: qtSignal = qtSignal(int, list)
 
     def __init__(self, game_view: GameView):
@@ -26,11 +25,11 @@ class RobotManager(QtCore.QObject):
         """
         super().__init__()
         self._game_view = game_view
-        self._robots: Dict[int, RobotEntity] = dict()
+        self._robots: dict[int, RobotEntity] = dict()
         self._available_robots: dict[int, RobotEntity] = dict()
-        self._rect_obstacles_pool: List[DynRectObstacleEntity] = []
-        self._round_obstacles_pool: List[DynCircleObstacleEntity] = []
-        self._lidar_emulation: Dict[int, bool] = {}
+        self._rect_obstacles_pool: list[DynRectObstacleEntity] = []
+        self._round_obstacles_pool: list[DynCircleObstacleEntity] = []
+        self._lidar_emulation: dict[int, bool] = {}
 
     def add_robot(self, robot_id: int, virtual: bool = False) -> None:
         """
@@ -116,7 +115,7 @@ class RobotManager(QtCore.QObject):
         if robot:
             robot.start_lidar_emulation()
 
-    def emit_lidar_data(self, robot_id: int, data: List[int]) -> None:
+    def emit_lidar_data(self, robot_id: int, data: list[int]) -> None:
         """
         Send Lidar data to server.
 

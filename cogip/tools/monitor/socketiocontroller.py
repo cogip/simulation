@@ -1,13 +1,13 @@
-from threading import Thread
 import time
-from typing import Any, Dict, List, Optional
+from threading import Thread
+from typing import Any
 
 import polling2
+import socketio
 from pydantic import TypeAdapter
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
-import socketio
 
 from cogip import logger
 from cogip.models import models
@@ -57,6 +57,7 @@ class SocketioController(QtCore.QObject):
         signal_starter_changed:
             Qt signal emitted the starter state has changed
     """
+
     signal_new_console_text: qtSignal = qtSignal(str)
     signal_new_menu: qtSignal = qtSignal(str, models.ShellMenu)
     signal_new_robot_pose_current: qtSignal = qtSignal(int, models.Pose)
@@ -90,7 +91,7 @@ class SocketioController(QtCore.QObject):
         self.sio = socketio.Client()
         self.register_handlers()
 
-        self.menus: Dict[str, Optional[models.ShellMenu]] = {}
+        self.menus: dict[str, models.ShellMenu | None] = {}
 
     def start(self):
         """
@@ -136,7 +137,7 @@ class SocketioController(QtCore.QObject):
         self.signal_new_console_text.emit(f"Send '{command}' to {menu_name}")
 
     @qtSlot(dict)
-    def config_updated(self, config: Dict[str, Any]):
+    def config_updated(self, config: dict[str, Any]):
         self.sio.emit("config_updated", config, namespace="/dashboard")
 
     @qtSlot(dict)
@@ -153,11 +154,8 @@ class SocketioController(QtCore.QObject):
         """
         self.sio.emit(
             "actuator_command",
-            data={
-                "robot_id": robot_id,
-                "command": command.model_dump()
-            },
-            namespace="/dashboard"
+            data={"robot_id": robot_id, "command": command.model_dump()},
+            namespace="/dashboard",
         )
 
     def actuators_closed(self, robot_id: str):
@@ -209,10 +207,12 @@ class SocketioController(QtCore.QObject):
             """
             Callback on server connection error.
             """
-            if data \
-               and isinstance(data, dict) \
-               and (message := data.get("message")) \
-               and message == "A monitor is already connected":
+            if (
+                data
+                and isinstance(data, dict)
+                and (message := data.get("message"))
+                and message == "A monitor is already connected"
+            ):
                 logger.error(f"Error: {message}.")
                 self._retry_connection = False
                 self.signal_exit.emit()
@@ -238,7 +238,7 @@ class SocketioController(QtCore.QObject):
             logger.info("Monitor disconnected from cogip-server")
 
         @self.sio.on("shell_menu", namespace="/dashboard")
-        def on_shell_menu(robot_id: int, menu: Dict[str, Any]) -> None:
+        def on_shell_menu(robot_id: int, menu: dict[str, Any]) -> None:
             """
             Callback on shell menu message.
             """
@@ -267,7 +267,7 @@ class SocketioController(QtCore.QObject):
             self.signal_actuators_state.emit(state)
 
         @self.sio.on("pose_current", namespace="/dashboard")
-        def on_pose_current(robot_id: int, data: Dict[str, Any]) -> None:
+        def on_pose_current(robot_id: int, data: dict[str, Any]) -> None:
             """
             Callback on robot pose current message.
             """
@@ -275,7 +275,7 @@ class SocketioController(QtCore.QObject):
             self.signal_new_robot_pose_current.emit(robot_id, pose)
 
         @self.sio.on("pose_order", namespace="/dashboard")
-        def on_pose_order(robot_id: int, data: Dict[str, Any]) -> None:
+        def on_pose_order(robot_id: int, data: dict[str, Any]) -> None:
             """
             Callback on robot pose order message.
             """
@@ -283,7 +283,7 @@ class SocketioController(QtCore.QObject):
             self.signal_new_robot_pose_order.emit(robot_id, pose)
 
         @self.sio.on("state", namespace="/dashboard")
-        def on_state(robot_id: int, data: Dict[str, Any]) -> None:
+        def on_state(robot_id: int, data: dict[str, Any]) -> None:
             """
             Callback on robot state message.
             """
@@ -321,7 +321,7 @@ class SocketioController(QtCore.QObject):
             self.signal_del_robot.emit(robot_id)
 
         @self.sio.on("wizard", namespace="/dashboard")
-        def on_wizard_request(data: Dict[str, Any]) -> None:
+        def on_wizard_request(data: dict[str, Any]) -> None:
             """
             Wizard request.
             """
@@ -362,7 +362,7 @@ class SocketioController(QtCore.QObject):
             """
             self.signal_starter_changed.emit(robot_id, pushed)
 
-    def emit_lidar_data(self, robot_id: int, data: List[int]) -> None:
+    def emit_lidar_data(self, robot_id: int, data: list[int]) -> None:
         """
         Send Lidar data to server.
 

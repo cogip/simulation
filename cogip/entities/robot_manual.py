@@ -1,7 +1,7 @@
-from PySide6 import QtCore, QtWidgets, QtGui
+from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.Qt3DCore import Qt3DCore
-from PySide6.Qt3DRender import Qt3DRender
 from PySide6.Qt3DExtras import Qt3DExtras
+from PySide6.Qt3DRender import Qt3DRender
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 
@@ -25,12 +25,13 @@ class RobotManualEntity(Qt3DCore.QEntity):
     enable_controller = qtSignal(bool)
 
     def __init__(
-            self,
-            parent: Qt3DCore.QEntity,
-            parent_widget: QtWidgets.QWidget,
-            x: int = 1200,
-            y: int = 1200,
-            rotation: int = 180):
+        self,
+        parent: Qt3DCore.QEntity,
+        parent_widget: QtWidgets.QWidget,
+        x: int = 1200,
+        y: int = 1200,
+        rotation: int = 180,
+    ):
         """
         Class constructor.
 
@@ -171,6 +172,7 @@ class RobotManualProperties(QtWidgets.QDialog):
     Attributes:
         active_properties: The current property window displayed.
     """
+
     active_properties: "RobotManualProperties" = None
 
     def __init__(self, parent: QtWidgets.QWidget, robot_entity: RobotManualEntity):

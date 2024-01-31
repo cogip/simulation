@@ -1,7 +1,8 @@
 import logging
 import threading
 import time
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 
 class ThreadLoop:
@@ -11,13 +12,16 @@ class ThreadLoop:
     A warning is emitted if the function duration is longer than the loop
     interval.
     """
+
     def __init__(
-            self, name: str,
-            interval: float,
-            func: Callable,
-            logger: bool | logging.Logger = False,
-            args: list[Any] | None = None,
-            kwargs: dict[str, Any] | None = None):
+        self,
+        name: str,
+        interval: float,
+        func: Callable,
+        logger: bool | logging.Logger = False,
+        args: list[Any] | None = None,
+        kwargs: dict[str, Any] | None = None,
+    ):
         """
         Class constructor.
 

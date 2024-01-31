@@ -1,6 +1,5 @@
 from cogip import models
 
-
 menu = models.ShellMenu(
     name="Planner",
     entries=[
@@ -13,8 +12,8 @@ menu = models.ShellMenu(
         models.MenuEntry(cmd="stop", desc="Stop"),
         models.MenuEntry(cmd="next", desc="Next"),
         models.MenuEntry(cmd="reset", desc="Reset"),
-        models.MenuEntry(cmd="config", desc="Configuration")
-    ]
+        models.MenuEntry(cmd="config", desc="Configuration"),
+    ],
 )
 
 wizard_test_menu = models.ShellMenu(
@@ -33,8 +32,8 @@ wizard_test_menu = models.ShellMenu(
         models.MenuEntry(cmd="wizard_select_str", desc="Select String"),
         models.MenuEntry(cmd="wizard_camp", desc="Camp"),
         models.MenuEntry(cmd="wizard_camera", desc="Camera"),
-        models.MenuEntry(cmd="wizard_score", desc="Score")
-    ]
+        models.MenuEntry(cmd="wizard_score", desc="Score"),
+    ],
 )
 
 cameras_menu = models.ShellMenu(
@@ -43,7 +42,7 @@ cameras_menu = models.ShellMenu(
         models.MenuEntry(cmd="cam_beacon_snapshots", desc="Beacon Snapshot"),
         models.MenuEntry(cmd="cam_robot1_camera_position", desc="Camera 1 Position"),
         models.MenuEntry(cmd="cam_robot2_camera_position", desc="Camera 2 Position"),
-    ]
+    ],
 )
 
 actuators_commands = [
@@ -63,23 +62,21 @@ actuators_commands = [
     "left_arm_up",
     "left_arm_down",
     "right_arm_up",
-    "right_arm_down"
+    "right_arm_down",
 ]
 
 actuators_menu_1 = models.ShellMenu(
     name="Actuators 1",
     entries=[
-        models.MenuEntry(cmd=f"act_{cmd}_1", desc=f"{cmd.replace('_', ' ').title()}")
-        for cmd in actuators_commands
-    ]
+        models.MenuEntry(cmd=f"act_{cmd}_1", desc=f"{cmd.replace('_', ' ').title()}") for cmd in actuators_commands
+    ],
 )
 
 actuators_menu_2 = models.ShellMenu(
     name="Actuators 2",
     entries=[
-        models.MenuEntry(cmd=f"act_{cmd}_2", desc=f"{cmd.replace('_', ' ').title()}")
-        for cmd in actuators_commands
-    ]
+        models.MenuEntry(cmd=f"act_{cmd}_2", desc=f"{cmd.replace('_', ' ').title()}") for cmd in actuators_commands
+    ],
 )
 
 
@@ -106,15 +103,13 @@ cherries_commands = [
 cherries_menu_1 = models.ShellMenu(
     name="Cherries 1",
     entries=[
-        models.MenuEntry(cmd=f"act_{cmd}_1", desc=f"{cmd.replace('_', ' ').title()}")
-        for cmd in cherries_commands
-    ]
+        models.MenuEntry(cmd=f"act_{cmd}_1", desc=f"{cmd.replace('_', ' ').title()}") for cmd in cherries_commands
+    ],
 )
 
 cherries_menu_2 = models.ShellMenu(
     name="Cherries 2",
     entries=[
-        models.MenuEntry(cmd=f"act_{cmd}_2", desc=f"{cmd.replace('_', ' ').title()}")
-        for cmd in cherries_commands
-    ]
+        models.MenuEntry(cmd=f"act_{cmd}_2", desc=f"{cmd.replace('_', ' ').title()}") for cmd in cherries_commands
+    ],
 )

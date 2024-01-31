@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Optional
 
 from PySide6.Qt3DCore import Qt3DCore
 
@@ -13,9 +12,10 @@ class TableEntity(AssetEntity):
     Attributes:
         asset_path: Path of the asset file
     """
+
     asset_path: Path = Path("assets/table2024.dae")
 
-    def __init__(self, parent: Optional[Qt3DCore.QEntity] = None):
+    def __init__(self, parent: Qt3DCore.QEntity | None = None):
         """
         Class constructor.
 

@@ -1,17 +1,20 @@
 import asyncio
-from typing import Any, Dict, TYPE_CHECKING
-from pydantic import TypeAdapter
+from typing import TYPE_CHECKING, Any
 
 import polling2
 import socketio
+from pydantic import TypeAdapter
 
 from cogip import models
 from . import context, logger
 from .menu import (
-    menu, wizard_test_menu,
-    actuators_menu_1, actuators_menu_2,
-    cherries_menu_1, cherries_menu_2,
-    cameras_menu
+    actuators_menu_1,
+    actuators_menu_2,
+    cameras_menu,
+    cherries_menu_1,
+    cherries_menu_2,
+    menu,
+    wizard_test_menu,
 )
 
 if TYPE_CHECKING:
@@ -36,7 +39,7 @@ class SioEvents(socketio.AsyncClientNamespace):
             polling2.poll,
             lambda: self.client.connected is True,
             step=0.2,
-            poll_forever=True
+            poll_forever=True,
         )
         logger.info("Connected to cogip-server")
         await self.emit("connected")
@@ -56,15 +59,17 @@ class SioEvents(socketio.AsyncClientNamespace):
         await self._planner.stop()
         logger.info("Disconnected from cogip-server")
 
-    async def on_connect_error(self, data: Dict[str, Any]):
+    async def on_connect_error(self, data: dict[str, Any]):
         """
         On connection error, check if a Planner is already connected and exit,
         or retry connection.
         """
-        if data \
-           and isinstance(data, dict) \
-           and (message := data.get("message")) \
-           and message == "A planner is already connected":
+        if (
+            data
+            and isinstance(data, dict)
+            and (message := data.get("message"))
+            and message == "A planner is already connected"
+        ):
             logger.error(f"Connection to cogip-server failed: {message}")
             self._planner.retry_connection = False
             return
@@ -106,7 +111,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         await self._planner.add_robot(robot_id, self._planner._robots[robot_id].virtual)
 
-    async def on_pose_current(self, robot_id: int, pose: Dict[str, Any]):
+    async def on_pose_current(self, robot_id: int, pose: dict[str, Any]):
         """
         Callback on pose current message.
         """
@@ -133,14 +138,11 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         self._planner.update_config(config)
 
-    async def on_obstacles(self, robot_id: int, obstacles: Dict[str, Any]):
+    async def on_obstacles(self, robot_id: int, obstacles: dict[str, Any]):
         """
         Callback on obstacles message.
         """
-        self._planner.set_obstacles(
-            robot_id,
-            TypeAdapter(list[models.Vertex]).validate_python(obstacles)
-        )
+        self._planner.set_obstacles(robot_id, TypeAdapter(list[models.Vertex]).validate_python(obstacles))
 
     async def on_wizard(self, message: dict[str, Any]):
         """

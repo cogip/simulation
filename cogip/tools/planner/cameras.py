@@ -2,9 +2,9 @@ from typing import TYPE_CHECKING
 
 import httpx
 
+from cogip.models import Pose, Vertex
 from . import logger
 from .camp import Camp
-from cogip.models import Pose, Vertex
 
 if TYPE_CHECKING:
     from .robot import Robot
@@ -19,7 +19,6 @@ async def snapshot():
                 logger.warning(f"Request snapshot: Failed: {response.status_code}: {response.text}")
         except httpx.HTTPError as exc:
             logger.error(f"Request snapshot: HTTP Exception: {exc}")
-
 
 
 async def calibrate_camera(robot: "Robot") -> Vertex | None:

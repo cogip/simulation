@@ -13,6 +13,7 @@ class BooleanWizard(QtCore.QObject):
 
     Build a widget to input a boolean.
     """
+
     response: qtSignal = qtSignal(bool)
 
     def __init__(self, wizard: dict[str, Any], parent: QtWidgets.QWidget):
@@ -52,6 +53,7 @@ class InputWizard(QtCore.QObject):
 
     Build a widget to input an integer, float or string.
     """
+
     response: qtSignal = qtSignal(str)
 
     def __init__(self, wizard: dict[str, Any], parent: QtWidgets.QWidget):
@@ -97,6 +99,7 @@ class MessageWizard(QtCore.QObject):
 
     Build a widget to display a message.
     """
+
     response: qtSignal = qtSignal(str)
 
     def __init__(self, wizard: dict[str, Any], parent: QtWidgets.QWidget):
@@ -136,6 +139,7 @@ class ChoiceWizard(QtCore.QObject):
 
     Build a widget to choose a integer, float or string from a list.
     """
+
     response: qtSignal = qtSignal(str)
 
     def __init__(self, wizard: dict[str, Any], parent: QtWidgets.QWidget):
@@ -176,6 +180,7 @@ class SelectWizard(QtCore.QObject):
 
     Build a widget to select one or more integer, float or string from a list.
     """
+
     response: qtSignal = qtSignal(list)
 
     def __init__(self, wizard: dict[str, Any], parent: QtWidgets.QWidget):
@@ -217,6 +222,7 @@ class CampWizard(QtCore.QObject):
 
     Build a widget to select a string.
     """
+
     response: qtSignal = qtSignal(str)
 
     def __init__(self, wizard: dict[str, Any], parent: QtWidgets.QWidget):
@@ -259,7 +265,8 @@ class CampWizard(QtCore.QObject):
             QRadioButton#blueCamp::indicator {
                 border-width: 0;
             }
-            """)
+            """
+        )
         self.buttons.addButton(self.button_blue)
         button_layout.addWidget(self.button_blue)
 
@@ -284,7 +291,8 @@ class CampWizard(QtCore.QObject):
             QRadioButton#yellowCamp::indicator {
                 border-width: 0;
             }
-            """)
+            """
+        )
         self.buttons.addButton(self.button_yellow)
         button_layout.addWidget(self.button_yellow)
 
@@ -312,6 +320,7 @@ class WizardDialog(QtWidgets.QDialog):
         property_updated: Qt signal emitted when a property is updated
         closed: Qt signal emitted when the window is hidden
     """
+
     response: qtSignal = qtSignal(dict)
 
     def __init__(self, message: dict[str, Any], parent: QtWidgets.QWidget = None):

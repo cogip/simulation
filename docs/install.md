@@ -140,6 +140,23 @@ cogip-monitor http://localhost:8090
 
 The `Dashboard` is accessible using a web browser at `http://localhost:8080`.
 
+### Linting and Formatting
+
+While installing the `dev` environment, `ruff` and `pre-commit` package have been installed.
+
+To run `ruff` manually, just run:
+
+```bash
+ruff check [--fix]
+ruff format
+```
+
+To enable pre-commit hooks prevent committing code not respecting linting and formatting rules, run:
+
+```bash
+pre-commit install
+```
+
 ### Packaging
 
 To build a source distribution package, use:

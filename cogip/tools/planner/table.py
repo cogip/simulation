@@ -9,6 +9,7 @@ class TableEnum(IntEnum):
     """
     Enum for available tables.
     """
+
     Training = 0
     Game = 1
 
@@ -20,10 +21,12 @@ class Table(BaseModel):
     y_max: int
 
     def contains(self, point: Vertex, margin: int = 0) -> bool:
-        return point.x >= self.x_min + margin \
-            and point.x <= self.x_max - margin \
-            and point.y >= self.y_min + margin \
+        return (
+            point.x >= self.x_min + margin
+            and point.x <= self.x_max - margin
+            and point.y >= self.y_min + margin
             and point.y <= self.y_max - margin
+        )
 
 
 # Full table
@@ -35,5 +38,5 @@ table_training = Table(x_min=-1000, x_max=0, y_min=-1500, y_max=0)
 
 tables: dict[TableEnum, Table] = {
     TableEnum.Training: table_training,
-    TableEnum.Game: table_game
+    TableEnum.Game: table_game,
 }

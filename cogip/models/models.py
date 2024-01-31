@@ -7,13 +7,12 @@ All values are automatically verified and converted to the expected data type,
 an exception being raised if impossible.
 """
 
-from enum import IntEnum
-import platform
 import math
+import platform
+from enum import IntEnum
+
 import numpy as np
 from numpy.typing import ArrayLike
-from typing import List, Union
-
 from pydantic import BaseModel
 
 from cogip.tools.copilot.messages import PB_PathPose
@@ -34,6 +33,7 @@ class MenuEntry(BaseModel):
         MenuEntry.model_validate_json("{\\"cmd\\": \\"_state\\", \\"desc\\": \\"Print current state\\"}")
         ```
     """
+
     cmd: str
     desc: str
 
@@ -59,8 +59,9 @@ class ShellMenu(BaseModel):
         )
         ```
     """
+
     name: str
-    entries: List[MenuEntry]
+    entries: list[MenuEntry]
 
 
 class Vertex(BaseModel):
@@ -72,6 +73,7 @@ class Vertex(BaseModel):
         y: Y position
         z: Z position (optional)
     """
+
     x: float = 0.0
     y: float = 0.0
     z: float = 0.0
@@ -89,6 +91,7 @@ class Pose(Vertex):
         y: Y position
         O: Rotation
     """
+
     O: float | None = 0.0  # noqa
 
 
@@ -100,11 +103,13 @@ class Speed(BaseModel):
         distance: Linear speed
         angle: Angular speed
     """
+
     distance: float = 0.0
     angle: float = 0.0
 
 
 if platform.machine() == "x86_64":
+
     class SpeedEnum(IntEnum):
         """
         Speed levels.
@@ -118,10 +123,12 @@ if platform.machine() == "x86_64":
             NORMAL:
             MAX:
         """
+
         LOW = 33
         NORMAL = 66
         MAX = 100
 else:
+
     class SpeedEnum(IntEnum):
         LOW = 0
         NORMAL = 1
@@ -130,16 +137,17 @@ else:
 
 class PathPose(Pose):
     """
-        Class representing a position in a path.
+    Class representing a position in a path.
 
-        Attributes:
-            x: X coordinate
-            y: Y coordinate
-            O: 0-orientation
-            max_speed_linear: max speed linear
-            max_speed_angular: max speed angular
-            allow_reverse: reverse mode
+    Attributes:
+        x: X coordinate
+        y: Y coordinate
+        O: 0-orientation
+        max_speed_linear: max speed linear
+        max_speed_angular: max speed angular
+        allow_reverse: reverse mode
     """
+
     max_speed_linear: SpeedEnum = SpeedEnum.NORMAL
     max_speed_angular: SpeedEnum = SpeedEnum.NORMAL
     allow_reverse: bool = True
@@ -175,12 +183,13 @@ class DynObstacleRect(BaseModel):
         length_y: length along Y axis
         bb: bounding box
     """
+
     x: float
     y: float
     angle: float
     length_x: float
     length_y: float
-    bb: List[Vertex] = []
+    bb: list[Vertex] = []
 
     def __hash__(self):
         """
@@ -199,20 +208,19 @@ class DynRoundObstacle(BaseModel):
         radius: Radius of the obstacle
         bb: bounding box
     """
+
     x: float
     y: float
     radius: float
-    bb: List[Vertex] = []
+    bb: list[Vertex] = []
 
     def contains(self, point: Vertex) -> bool:
-        return (point.x - self.x) * (point.x - self.x) + (point.y - self.y) * (point.y - self.y) <= self.radius ** 2
+        return (point.x - self.x) * (point.x - self.x) + (point.y - self.y) * (point.y - self.y) <= self.radius**2
 
     def create_bounding_box(self, bb_radius, nb_vertices):
         self.bb = [
             Vertex(
-                x=self.x + bb_radius * math.cos(
-                    (tmp := (i * 2 * math.pi) / nb_vertices)
-                ),
+                x=self.x + bb_radius * math.cos(tmp := (i * 2 * math.pi) / nb_vertices),
                 y=self.y + bb_radius * math.sin(tmp),
             )
             for i in reversed(range(nb_vertices))
@@ -225,8 +233,8 @@ class DynRoundObstacle(BaseModel):
         return hash((type(self),) + tuple(self.__root__))
 
 
-DynObstacle = Union[DynRoundObstacle, DynObstacleRect]
-DynObstacleList = List[DynObstacle]
+DynObstacle = DynRoundObstacle | DynObstacleRect
+DynObstacleList = list[DynObstacle]
 
 
 class RobotState(BaseModel):
@@ -242,6 +250,7 @@ class RobotState(BaseModel):
         speed_order: Speed order
         path: Computed path
     """
+
     pose_current: Pose = Pose()
     pose_order: Pose = Pose()
     cycle: int = 0
@@ -262,6 +271,7 @@ class Obstacle(BaseModel):
         height: Height
         bb: bounding box
     """
+
     x: int = 0
     y: int = 1000
     rotation: int = 0
@@ -270,7 +280,7 @@ class Obstacle(BaseModel):
     height: int = 600
 
 
-ObstacleList = List[Obstacle]
+ObstacleList = list[Obstacle]
 
 
 class LogMessage(BaseModel):
@@ -280,14 +290,16 @@ class LogMessage(BaseModel):
     Attributes:
         log: message
     """
+
     log: str
 
 
-SerialMessage = Union[RobotState, ShellMenu, LogMessage]
+SerialMessage = RobotState | ShellMenu | LogMessage
 
 
 class CameraExtrinsicParameters(BaseModel):
-    """ Model representing camera extrinsic properties """
+    """Model representing camera extrinsic properties"""
+
     x: float
     y: float
     z: float

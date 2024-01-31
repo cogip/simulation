@@ -1,5 +1,6 @@
 import collections
-from typing import Any, Dict, OrderedDict
+from collections import OrderedDict
+from typing import Any
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
@@ -13,9 +14,10 @@ class IntegerProperty(QtCore.QObject):
 
     Build a widget to configure a integer property.
     """
+
     value_updated: qtSignal = qtSignal(str, int)
 
-    def __init__(self, name: str, props: Dict[str, Any], layout: QtWidgets.QGridLayout):
+    def __init__(self, name: str, props: dict[str, Any], layout: QtWidgets.QGridLayout):
         """
         Class constructor.
 
@@ -80,9 +82,10 @@ class NumberProperty(QtCore.QObject):
 
     Build a widget to configure a number property.
     """
+
     value_updated: qtSignal = qtSignal(str, float)
 
-    def __init__(self, name: str, props: Dict[str, Any], layout: QtWidgets.QGridLayout):
+    def __init__(self, name: str, props: dict[str, Any], layout: QtWidgets.QGridLayout):
         """
         Class constructor.
 
@@ -120,9 +123,7 @@ class NumberProperty(QtCore.QObject):
             self._slider.setMaximum(maximum * 100)
             self._slider.setSingleStep(step * 100)
             self._slider.setValue(props["value"] * 100)
-            self._slider.valueChanged.connect(
-                lambda v: self._value.setValue(v / 100)
-            )
+            self._slider.valueChanged.connect(lambda v: self._value.setValue(v / 100))
             layout.addWidget(self._slider, row, 2)
 
     def value_changed(self, value):
@@ -150,10 +151,11 @@ class PropertiesDialog(QtWidgets.QDialog):
         property_updated: Qt signal emitted when a property is updated
         closed: Qt signal emitted when the window is hidden
     """
+
     property_updated: qtSignal = qtSignal(dict)
     closed: qtSignal = qtSignal()
 
-    def __init__(self, config: Dict[str, Any], parent: QtWidgets.QWidget = None):
+    def __init__(self, config: dict[str, Any], parent: QtWidgets.QWidget = None):
         """
         Class constructor.
 
@@ -204,7 +206,7 @@ class PropertiesDialog(QtWidgets.QDialog):
                 case _:
                     logger.error(f"Unsupported property type: {type}")
 
-    def update_values(self, config: Dict[str, Any]):
+    def update_values(self, config: dict[str, Any]):
         """
         Update properties with new values.
 
@@ -219,11 +221,13 @@ class PropertiesDialog(QtWidgets.QDialog):
         """
         Emit updated values with namespace, name and value.
         """
-        self.property_updated.emit({
-            "namespace": self._config["namespace"],
-            "name": name,
-            "value": value
-        })
+        self.property_updated.emit(
+            {
+                "namespace": self._config["namespace"],
+                "name": name,
+                "value": value,
+            }
+        )
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         """

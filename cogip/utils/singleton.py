@@ -19,9 +19,10 @@ class Singleton(type):
         print(Data())          # output: Data(name='foo')
         print(data is Data())  # output: True
     """
+
     _instance = {}
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instance:
-            cls._instance[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            cls._instance[cls] = super().__call__(*args, **kwargs)
         return cls._instance[cls]

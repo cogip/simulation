@@ -1,10 +1,9 @@
 import csv
 from pathlib import Path
-from typing import Optional
 
 from PySide6 import QtCharts, QtCore, QtGui, QtWidgets
-from PySide6.QtCore import Slot as qtSlot
 from PySide6.QtCore import Signal as qtSignal
+from PySide6.QtCore import Slot as qtSlot
 
 from cogip.models import RobotState
 
@@ -74,7 +73,7 @@ class ChartView(QtWidgets.QWidget):
 
         self.save_button = QtWidgets.QPushButton()
         self.save_button.setIcon(QtGui.QIcon.fromTheme("document-save"))
-        self.save_button.setStatusTip('Save values')
+        self.save_button.setStatusTip("Save values")
         self.save_button.clicked.connect(self.save_values)
         sliders_layout.addWidget(self.save_button, 0, 1, 2, 1)
 
@@ -167,9 +166,7 @@ class ChartView(QtWidgets.QWidget):
 
         self.recalculate_range_x()
 
-    def new_robot_state(
-            self, cycle: int,
-            current: Optional[float], order: Optional[float]) -> None:
+    def new_robot_state(self, cycle: int, current: float | None, order: float | None) -> None:
         """
         Add a new point on the chart view.
 
@@ -209,7 +206,7 @@ class ChartView(QtWidgets.QWidget):
             dir="",
             filter="CSV Files (*.csv)",
             # Workaround a know Qt bug
-            options=QtWidgets.QFileDialog.DontUseNativeDialog
+            options=QtWidgets.QFileDialog.DontUseNativeDialog,
         )
         if filename:
             with Path(filename).open("w", newline="") as csv_file:
@@ -228,9 +225,10 @@ class ChartsView(QtWidgets.QDialog):
     Attributes:
         closed: Qt signal emitted when the window is hidden
     """
+
     closed: qtSignal = qtSignal()
 
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(self, parent: QtWidgets.QWidget | None = None):
         """
         Class constructor.
 
@@ -280,12 +278,16 @@ class ChartsView(QtWidgets.QDialog):
         Arguments:
             state: New robot state
         """
-        self.linear_speed_chart.new_robot_state(state.cycle,
-                                                state.speed_current.distance,
-                                                state.speed_order.distance)
-        self.angular_speed_chart.new_robot_state(state.cycle,
-                                                 state.speed_current.angle,
-                                                 state.speed_order.angle)
+        self.linear_speed_chart.new_robot_state(
+            state.cycle,
+            state.speed_current.distance,
+            state.speed_order.distance,
+        )
+        self.angular_speed_chart.new_robot_state(
+            state.cycle,
+            state.speed_current.angle,
+            state.speed_order.angle,
+        )
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         """
