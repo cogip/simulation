@@ -1,6 +1,5 @@
 import asyncio
 import time
-from pathlib import Path
 
 import socketio
 from google.protobuf.json_format import MessageToDict
@@ -11,26 +10,26 @@ from .pbcom import PBCom, pb_exception_handler
 from .pid import Pid
 from .sio_events import SioEvents
 
-reset_uuid: int = 3351980141
-command_uuid: int = 2168120333
-menu_uuid: int = 1485239280
-state_uuid: int = 3422642571
-copilot_connected_uuid: int = 1132911482
-copilot_disconnected_uuid: int = 1412808668
-pose_order_uuid: int = 1534060156
-pose_reached_uuid: int = 2736246403
-pose_start_uuid: int = 2741980922
-actuators_thread_start_uuid: int = 1525532810
-actuators_thread_stop_uuid: int = 3781855956
-actuators_state_uuid: int = 1538397045
-actuators_command_uuid: int = 2552455996
-pid_request_uuid: int = 3438831927
-pid_uuid: int = 4159164681
-controller_uuid: int = 2750239003
-game_start_uuid: int = 3138845474
-game_end_uuid: int = 1532296089
-game_reset_uuid: int = 1549868731
-brake_uuid: int = 3239255374
+reset_uuid: int = 10
+command_uuid: int = 15
+menu_uuid: int = 20
+state_uuid: int = 25
+copilot_connected_uuid: int = 30
+copilot_disconnected_uuid: int = 35
+pose_order_uuid: int = 40
+pose_reached_uuid: int = 45
+pose_start_uuid: int = 50
+actuators_thread_start_uuid: int = 55
+actuators_thread_stop_uuid: int = 60
+actuators_state_uuid: int = 65
+actuators_command_uuid: int = 70
+pid_request_uuid: int = 75
+pid_uuid: int = 80
+controller_uuid: int = 85
+game_start_uuid: int = 90
+game_end_uuid: int = 95
+game_reset_uuid: int = 100
+brake_uuid: int = 105
 
 
 class Copilot:
@@ -40,7 +39,7 @@ class Copilot:
 
     _loop: asyncio.AbstractEventLoop = None  # Event loop to use for all coroutines
 
-    def __init__(self, server_url: str, id: int, serial_port: Path, serial_baud: int):
+    def __init__(self, server_url: str, id: int, can_channel: str, can_bitrate: int, canfd_data_bitrate: int):
         """
         Class constructor.
 
@@ -70,7 +69,12 @@ class Copilot:
             pid_uuid: self.handle_pid,
         }
 
-        self._pbcom = PBCom(serial_port, serial_baud, pb_message_handlers)
+        self._pbcom = PBCom(
+            can_channel=can_channel,
+            can_bitrate=can_bitrate,
+            canfd_data_bitrate=canfd_data_bitrate,
+            message_handlers=pb_message_handlers,
+        )
 
     async def run(self):
         """
@@ -81,7 +85,7 @@ class Copilot:
         self.retry_connection = True
         await self.try_connect()
 
-        await self._pbcom.send_serial_message(copilot_connected_uuid, None)
+        await self._pbcom.send_can_message(copilot_connected_uuid, None)
 
         await self._pbcom.run()
 
@@ -128,7 +132,7 @@ class Copilot:
 
         Send a reset message to all connected clients.
         """
-        await self._pbcom.send_serial_message(copilot_connected_uuid, None)
+        await self._pbcom.send_can_message(copilot_connected_uuid, None)
         await self._sio_events.emit("reset")
 
     @pb_exception_handler
@@ -157,10 +161,7 @@ class Copilot:
             await self._loop.run_in_executor(None, pb_pose.ParseFromString, message)
 
         pose = MessageToDict(
-            pb_pose,
-            including_default_value_fields=True,
-            preserving_proto_field_name=True,
-            use_integers_for_enums=True,
+            pb_pose, including_default_value_fields=True, preserving_proto_field_name=True, use_integers_for_enums=True
         )
         if self._sio.connected:
             await self._sio_events.emit("pose", pose)
@@ -176,10 +177,7 @@ class Copilot:
             await self._loop.run_in_executor(None, pb_state.ParseFromString, message)
 
         state = MessageToDict(
-            pb_state,
-            including_default_value_fields=True,
-            preserving_proto_field_name=True,
-            use_integers_for_enums=True,
+            pb_state, including_default_value_fields=True, preserving_proto_field_name=True, use_integers_for_enums=True
         )
         if self._sio.connected:
             await self._sio_events.emit("state", state)

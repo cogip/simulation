@@ -1,22 +1,25 @@
 x-build-console: &build-console
+  network_mode: "host"
   build:
     context: .
     target: cogip-console
 
 x-build-gui: &build-gui
+  network_mode: "host"
   build:
     context: .
     target: cogip-gui
 
 x-build-firmware: &build-firmware
+  network_mode: "host"
   build:
     context: .
     target: cogip-firmware
 
 x-env-common: &env-common
-  COGIP_SOCKETIO_SERVER_HOST: beacon
+  COGIP_SOCKETIO_SERVER_HOST: localhost
   COGIP_SOCKETIO_SERVER_PORT: 8090
-  COGIP_SOCKETIO_SERVER_URL: http://beacon:8090
+  COGIP_SOCKETIO_SERVER_URL: http://localhost:8090
 
 x-vol-cogip: &vol-cogip
   "./cogip:/src/cogip"
@@ -41,8 +44,9 @@ x-extra-hosts-common: &extra-hosts-common
   extra_hosts:
     host.docker.internal: host-gateway
 
-x-socat: &socat
+x-socketcan: &socketcan
   <<: *build-console
+  privileged: true
   volumes:
     - *vol-run
     - *vol-pts
@@ -51,7 +55,8 @@ x-socat: &socat
     - -x
     - -c
     - |
-      socat -d -d pty,raw,echo=0,link=/var/run/cogip/ptySTM32-$${ROBOT_ID} pty,raw,echo=0,link=/var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      ip link add dev vcan0 type vcan bitrate 500000 dbitrate 1000000 fd on sample-point 0.875 mtu 72
+      ip link set up vcan0
       sleep infinity
 
 x-firmware: &firmware
@@ -61,18 +66,20 @@ x-firmware: &firmware
     FIRMWARE_BOARD: ${FIRMWARE_BOARD:-cogip-native}
   stdin_open: true
   tty: true
-  working_dir: /simulation/submodules/mcu-firmware
+  working_dir: /cogip/mcu-firmware
   volumes:
     - *vol-run
     - *vol-pts
     - *vol-vscode
-    - ".:/simulation"
+    - "..:/cogip"
   command:
     - /bin/sh
     - -x
     - -c
     - |
-      applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf -c /tmp -c /var/run/cogip/ptySTM32-$${ROBOT_ID}
+      applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf
+      
+      #make -C applications/$${FIRMWARE_APP} BOARD=$${FIRMWARE_BOARD} term
   depends_on: &depends-firmware
       make-firmware:
         condition: service_completed_successfully
@@ -99,7 +106,7 @@ x-robot: &robot
     - -c
     - |
       wait-for-it -t 0 $${COGIP_SOCKETIO_SERVER_HOST}:$${COGIP_SOCKETIO_SERVER_PORT}
-      cogip-copilot --serial-port /var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      cogip-copilot --can-channel vcan0 -b 500000 -B 1000000 &
       cogip-detector &
       sleep infinity
   depends_on:
@@ -107,7 +114,7 @@ x-robot: &robot
 
 services:
   beacon:
-    <<: [*build-console, *extra-hosts-common]
+    <<: [*build-gui, *extra-hosts-common]
     hostname: beacon
     ports:
       - "8080:8080"
@@ -168,17 +175,17 @@ services:
     profiles:
       - monitor
 
-  socat1:
-    << : *socat
-    hostname: socat1
+  socketcan1:
+    << : *socketcan
+    hostname: socketcan1
     environment:
       ROBOT_ID: 1
     profiles:
       - robot1
 
-  socat2:
-    << : *socat
-    hostname: socat2
+  socketcan2:
+    << : *socketcan
+    hostname: socketcan2
     environment:
       ROBOT_ID: 2
     profiles:
@@ -188,14 +195,18 @@ services:
     <<: *build-firmware
     environment:
       << : *env-firmware
-    working_dir: /simulation/submodules/mcu-firmware
+    working_dir: /cogip/mcu-firmware
     volumes:
-      - ".:/simulation"
+      - "..:/cogip"
     command:
       - /bin/sh
       - -x
       - -c
-      - make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
+      - |
+        git config --global user.email "cogip35@gmail.com"
+        git config --global user.name "COGIP Team"
+        git config --global --add safe.directory /cogip/RIOT
+        make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
 
   firmware1:
     << : *firmware
@@ -205,7 +216,7 @@ services:
       ROBOT_ID: 1
     depends_on:
       << : *depends-firmware
-      socat1:
+      socketcan1:
         condition: service_started
     profiles:
       - robot1
@@ -218,7 +229,7 @@ services:
       ROBOT_ID: 2
     depends_on:
       << : *depends-firmware
-      socat2:
+      socketcan2:
         condition: service_started
     profiles:
       - robot2
@@ -230,7 +241,7 @@ services:
       << : *env-robot
       ROBOT_ID: 1
     depends_on:
-      - socat1
+      - socketcan1
       - beacon
     profiles:
       - robot1
@@ -242,7 +253,7 @@ services:
       << : *env-robot
       ROBOT_ID: 2
     depends_on:
-      - socat2
+      - socketcan2
       - beacon
     profiles:
       - robot2
