@@ -1,4 +1,4 @@
-from enum import IntEnum
+from enum import IntEnum, auto
 
 
 class Strategy(IntEnum):
@@ -6,11 +6,13 @@ class Strategy(IntEnum):
     Enum for available strategies.
     """
 
-    Approval = 0
-    Game = 1
-    BackAndForth = 2
-    AngularSpeedTest = 3
-    LinearSpeedTest = 4
-    Training = 5
-    CameraCalibration = 6
-    SolarPanel = 7
+    Approval = auto()
+    Game = auto()
+    BackAndForth = auto()
+    AngularSpeedTest = auto()
+    LinearSpeedTest = auto()
+    AngularPositionTest = auto()
+    LinearPositionTest = auto()
+    Training = auto()
+    CameraCalibration = auto()
+    SolarPanel = auto()
