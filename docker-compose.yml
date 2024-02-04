@@ -195,13 +195,7 @@ services:
       - /bin/sh
       - -x
       - -c
-      - |
-        git config --global user.email "cogip35@gmail.com"
-        git config --global user.name "COGIP Team"
-        git config --global --add safe.directory /simulation/submodules/RIOT
-        make distclean-riot-patches
-        make riot-patches
-        make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
+      - make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
 
   firmware1:
     << : *firmware
