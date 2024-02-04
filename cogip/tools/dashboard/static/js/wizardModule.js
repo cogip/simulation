@@ -208,6 +208,7 @@ function formatWizardInput(showInput, typeInput, value, choices) {
         label.setAttribute("for", "choice");
         label.textContent = choice;
 
+        choiceZone.appendChild(document.createElement("br"));
         choiceZone.appendChild(button);
         choiceZone.appendChild(label);
       });
