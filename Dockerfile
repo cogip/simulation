@@ -4,6 +4,8 @@ ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && \
     apt-get install -y \
+        libgl1 \
+        libglib2.0-0 \
         python3 \
         python3-pip \
         python3-venv \
@@ -30,9 +32,7 @@ CMD ["sleep", "infinity"]
 FROM cogip-console as cogip-gui
 
 RUN apt-get install -y \
-        libgl1 \
         libegl1 \
-        libglib2.0-0 \
         libxkbcommon0 \
         libdbus-1-3 \
         libnss3 \
