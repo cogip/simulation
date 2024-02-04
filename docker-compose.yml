@@ -72,7 +72,7 @@ x-firmware: &firmware
     - -x
     - -c
     - |
-      make -C applications/$${FIRMWARE_APP} BOARD=$${FIRMWARE_BOARD} PORT="-c /tmp -c /var/run/cogip/ptySTM32-$${ROBOT_ID}" term
+      applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf -c /tmp -c /var/run/cogip/ptySTM32-$${ROBOT_ID}
   depends_on: &depends-firmware
       make-firmware:
         condition: service_completed_successfully
