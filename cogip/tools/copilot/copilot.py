@@ -1,5 +1,4 @@
 import asyncio
-import copy
 import time
 from pathlib import Path
 
@@ -7,9 +6,9 @@ import socketio
 from google.protobuf.json_format import MessageToDict
 
 from cogip import models
-from .messages import PB_ActuatorsState, PB_Menu, PB_Pids, PB_Pose, PB_State
+from .messages import PB_ActuatorsState, PB_Menu, PB_Pid, PB_PidEnum, PB_Pose, PB_State
 from .pbcom import PBCom, pb_exception_handler
-from .pid import Pid, Pids
+from .pid import Pid
 from .sio_events import SioEvents
 
 reset_uuid: int = 3351980141
@@ -55,7 +54,7 @@ class Copilot:
         self._id = id
         self._retry_connection = True
         self._shell_menu: models.ShellMenu | None = None
-        self._pb_pids = PB_Pids()
+        self._pb_pids: dict[PB_PidEnum, PB_Pid] = {}
 
         self._sio = socketio.AsyncClient(logger=False)
         self._sio_events = SioEvents(self)
@@ -210,40 +209,33 @@ class Copilot:
         """
         Send pids state received from the robot to connected dashboards.
         """
-        self._pb_pids = PB_Pids()
+        pb_pid = PB_Pid()
         if message:
-            await self._loop.run_in_executor(None, self._pb_pids.ParseFromString, message)
+            await self._loop.run_in_executor(None, pb_pid.ParseFromString, message)
 
-        pid_list: list[Pid] = []
-        for pb_pid in self._pb_pids.pids:
-            pid_list.append(
-                Pid(
-                    id=pb_pid.id,
-                    kp=pb_pid.kp,
-                    ki=pb_pid.ki,
-                    kd=pb_pid.kd,
-                    integral_term_limit=pb_pid.integral_term_limit,
-                )
-            )
-        pids = Pids(pids=pid_list)
+        self._pb_pids[pb_pid.id] = pb_pid
+        pid = Pid(
+            id=pb_pid.id,
+            kp=pb_pid.kp,
+            ki=pb_pid.ki,
+            kd=pb_pid.kd,
+            integral_term_limit=pb_pid.integral_term_limit,
+        )
 
         # Get JSON Schema
-        pids_schema = pids.model_json_schema()
+        pid_schema = pid.model_json_schema()
         # Add namespace in JSON Schema
-        pids_schema["namespace"] = "/copilot"
+        pid_schema["namespace"] = "/copilot"
         # Add current values in JSON Schema
-        values = []
-        for pid in pids.pids:
-            pid_schema = copy.deepcopy(pid.model_json_schema())
-            pid_schema["title"] = pid.id.name
-            for prop, value in pid.model_dump().items():
-                if prop == "id":
-                    continue
-                pid_schema["properties"][prop]["value"] = value
-            values.append(pid_schema)
-        pids_schema["properties"]["pids"]["value"] = values
+        pid_schema["title"] = pid.id.name
+        for prop, value in pid.model_dump().items():
+            if prop == "id":
+                continue
+            pid_schema["properties"][prop]["value"] = value
+            pid_schema["properties"][f"{pid.id}-{prop}"] = pid_schema["properties"][prop]
+            del pid_schema["properties"][prop]
         # Send config
-        await self._sio_events.emit("config", pids_schema)
+        await self._sio_events.emit("config", pid_schema)
 
     async def handle_pose_reached(self) -> None:
         """

@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 import PB_PidEnum_pb2 as PB__PidEnum__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cPB_Pid.proto\x1a\x10PB_PidEnum.proto\"\x91\x01\n\x06PB_Pid\x12\x17\n\x02id\x18\x01 \x01(\x0e\x32\x0b.PB_PidEnum\x12\n\n\x02kp\x18\x02 \x01(\x01\x12\n\n\x02ki\x18\x03 \x01(\x01\x12\n\n\x02kd\x18\x04 \x01(\x01\x12\x16\n\x0eprevious_error\x18\x05 \x01(\x01\x12\x15\n\rintegral_term\x18\x06 \x01(\x01\x12\x1b\n\x13integral_term_limit\x18\x07 \x01(\x01\" \n\x07PB_Pids\x12\x15\n\x04pids\x18\x01 \x03(\x0b\x32\x07.PB_Pidb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cPB_Pid.proto\x1a\x10PB_PidEnum.proto\"\x91\x01\n\x06PB_Pid\x12\x17\n\x02id\x18\x01 \x01(\x0e\x32\x0b.PB_PidEnum\x12\n\n\x02kp\x18\x02 \x01(\x01\x12\n\n\x02ki\x18\x03 \x01(\x01\x12\n\n\x02kd\x18\x04 \x01(\x01\x12\x16\n\x0eprevious_error\x18\x05 \x01(\x01\x12\x15\n\rintegral_term\x18\x06 \x01(\x01\x12\x1b\n\x13integral_term_limit\x18\x07 \x01(\x01\"$\n\tPB_Pid_Id\x12\x17\n\x02id\x18\x01 \x01(\x0e\x32\x0b.PB_PidEnumb\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'PB_Pid_pb2', globals())
@@ -23,6 +23,6 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
   _PB_PID._serialized_start=35
   _PB_PID._serialized_end=180
-  _PB_PIDS._serialized_start=182
-  _PB_PIDS._serialized_end=214
+  _PB_PID_ID._serialized_start=182
+  _PB_PID_ID._serialized_end=218
 # @@protoc_insertion_point(module_scope)
