@@ -19,7 +19,7 @@ class GameContext(metaclass=Singleton):
     def __init__(self):
         self.properties = Properties()
         self.camp = Camp()
-        self._strategy = Strategy.SolarPanel
+        self._strategy = Strategy.LinearPositionTest
         self._table = TableEnum.Training
         self._avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
         self.playing: bool = False

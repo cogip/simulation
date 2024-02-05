@@ -1,6 +1,7 @@
 import asyncio
 import queue
 import time
+import traceback
 from functools import partial
 from multiprocessing import Manager, Process
 from multiprocessing.managers import DictProxy
@@ -214,6 +215,7 @@ class Planner:
             raise
         except Exception as exc:  # noqa
             logger.warning(f"Robot {robot.robot_id}: Task SIO Emitter: Unknown exception {exc}")
+            traceback.print_exc()
             raise
 
     async def task_sio_receiver(self, robot_id: id, queue: asyncio.Queue):
@@ -228,6 +230,7 @@ class Planner:
             raise
         except Exception as exc:  # noqa
             logger.warning(f"Robot {robot_id}: Task SIO Receiver: Unknown exception {exc}")
+            traceback.print_exc()
             raise
 
     async def countdown_loop(self):
@@ -362,6 +365,7 @@ class Planner:
                 logger.info(f"Planner {robot_id}: Task SIO Emitter stopped")
             except Exception as exc:  # noqa
                 logger.warning(f"Planner {robot_id}: Unknown exception {exc}")
+                traceback.print_exc()
                 raise
             del self._sio_emitter_tasks[robot_id]
         if sio_emitter_queue := self._sio_emitter_queues.get(robot_id):
@@ -474,6 +478,7 @@ class Planner:
                     await robot.sio_receiver_queue.put(self.set_pose_reached(robot))
         except Exception as exc:  # noqa
             logger.warning(f"Planner {robot.robot_id}: Unknown exception {exc}")
+            traceback.print_exc()
             raise
 
     def get_action(self, robot: "Robot") -> actions.Action | None:

@@ -149,6 +149,8 @@ pre {
 
 .modal-body {
   align-self: center;
+  height: 80vh;
+  overflow-y: auto;
 }
 
 #wizardName{
@@ -170,13 +172,14 @@ pre {
 
 .form-check {
   padding-left: 0;
-  text-align: center;
+  text-align: left;
 }
 
 input[type="radio"],
 input[type="checkbox"]
 {
   margin: 0 10px 0 10px;
+  vertical-align: middle;
 }
 
 input[type='radio']:after {
