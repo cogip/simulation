@@ -13,7 +13,6 @@ from .PB_Menu_pb2 import PB_Menu  # noqa
 from .PB_Command_pb2 import PB_Command  # noqa
 from .PB_State_pb2 import PB_State  # noqa
 from .PB_PathPose_pb2 import PB_PathPose  # noqa
-from .PB_SpeedEnum_pb2 import PB_SpeedEnum  # noqa
 from .PB_Actuators_pb2 import PB_ServoCommand, PB_PumpCommand, PB_PositionalActuatorCommand  # noqa
 from .PB_Actuators_pb2 import PB_ActuatorCommand, PB_ActuatorsState  # noqa
 from .PB_Pid_pb2 import PB_Pid, PB_Pids  # noqa

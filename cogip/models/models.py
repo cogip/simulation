@@ -166,8 +166,8 @@ class PathPose(Pose):
         pb_path_pose.pose.x = int(self.x)
         pb_path_pose.pose.y = int(self.y)
         pb_path_pose.pose.O = int(self.O)  # noqa
-        pb_path_pose.max_speed_linear_enum = self.max_speed_linear
-        pb_path_pose.max_speed_angular_enum = self.max_speed_angular
+        pb_path_pose.max_speed_ratio_linear = self.max_speed_linear
+        pb_path_pose.max_speed_ratio_angular = self.max_speed_angular
         pb_path_pose.allow_reverse = self.allow_reverse
 
 
