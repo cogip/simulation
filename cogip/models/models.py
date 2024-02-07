@@ -8,7 +8,6 @@ an exception being raised if impossible.
 """
 
 import math
-import platform
 from enum import IntEnum
 
 import numpy as np
@@ -108,31 +107,23 @@ class Speed(BaseModel):
     angle: float = 0.0
 
 
-if platform.machine() == "x86_64":
+class SpeedEnum(IntEnum):
+    """
+    Speed levels.
+    In mcu-firmware, the speeds (linear and angular) are float-point values,
+    but they can take only 3 values: low, normal and max speed. These values
+    depend on the platform, so on the Raspberry side, we only need to define
+    the speed levels instead of the real values.
 
-    class SpeedEnum(IntEnum):
-        """
-        Speed levels.
-        In mcu-firmware, the speeds (linear and angular) are float-point values,
-        but they can take only 3 values: low, normal and max speed. These values
-        depend on the platform, so on the Raspberry side, we only need to define
-        the speed levels instead of the real values.
+    Attributes:
+        LOW:
+        NORMAL:
+        MAX:
+    """
 
-        Attributes:
-            LOW:
-            NORMAL:
-            MAX:
-        """
-
-        LOW = 33
-        NORMAL = 66
-        MAX = 100
-else:
-
-    class SpeedEnum(IntEnum):
-        LOW = 0
-        NORMAL = 1
-        MAX = 2
+    LOW = 33
+    NORMAL = 66
+    MAX = 100
 
 
 class PathPose(Pose):
