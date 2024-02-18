@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 
 from gpiozero import Button
 from gpiozero.pins.mock import MockFactory
-from gpiozero.pins.pigpio import PiGPIOFactory
 
 from cogip.models import models
 from cogip.tools.copilot.controller import ControllerEnum
@@ -57,7 +56,6 @@ class Robot:
                 pull_up=None,
                 bounce_time=None,
                 active_state=False,
-                pin_factory=PiGPIOFactory(host=f"robot{robot_id}"),
             )
 
         starter.when_pressed = partial(planner._sio_emitter_queues[robot_id].put, ("starter_changed", True))
