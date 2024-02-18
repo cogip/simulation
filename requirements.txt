@@ -1,4 +1,4 @@
-aiohttp==3.9.1
+aiohttp==3.9.2
 aioserial==1.3.1
 bidict==0.22.1
 devtools==0.12.2
