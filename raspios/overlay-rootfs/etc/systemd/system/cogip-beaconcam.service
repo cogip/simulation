@@ -8,7 +8,6 @@ Requires=cogip-server.service
 [Service]
 Type=simple
 Restart=on-failure
-User=root
 WorkingDirectory=/tmp
 ExecStart=/opt/venv/bin/python3 -m cogip.tools.beaconcam
 RestartSec=5
