@@ -1,23 +1,7 @@
 #!/bin/bash
-set -xe
-
-sudo -v
-
 SCRIPT=$(readlink -f $0)
 SCRIPT_DIR=`dirname $SCRIPT`
-CONFIG_FILE=${SCRIPT_DIR}/config.env
-
-# Load config.env file
-if [ -f ${CONFIG_FILE} ] ; then
-    source ${CONFIG_FILE}
-fi
-
-source ${SCRIPT_DIR}/utils.sh
-
-ROBOT_ID=$(get_robot_id $@)
-
-# Check variables
-check_vars SDCARD_DEV SDCARD_DEV_BOOT SDCARD_DEV_ROOTFS SDCARD_DEV_BOOT SDCARD_DEV_ROOTFS
+source ${SCRIPT_DIR}/common.sh
 
 # Variables depending on robot id
 case ${ROBOT_ID} in
@@ -36,7 +20,7 @@ case ${ROBOT_ID} in
 esac
 
 WORKING_DIR=${SCRIPT_DIR}/work
-RASPIOS_COGIP_IMG="${WORKING_DIR}/raspios-bullseye-arm64-${HOSTNAME}.img"
+RASPIOS_COGIP_IMG="${WORKING_DIR}/raspios-arm64-${HOSTNAME}.img"
 if [ ! -d "${WORKING_DIR}" ] ; then
     echo "Error: ${WORKING_DIR} not found"
     exit 1

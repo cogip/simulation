@@ -1,0 +1,12 @@
+[Match]
+Name=wlan0
+
+[Network]
+DNS=8.8.8.8
+
+[Address]
+Address=IP_ADDRESS/24
+
+[Route]
+Gateway=GATEWAY
+Metric=200
