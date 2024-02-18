@@ -1,3 +1,3 @@
 proc            /proc           proc    defaults          0       0
-ROOTDEV-01  /boot           vfat    defaults,flush    0       2
+ROOTDEV-01  /boot/firmware  vfat    defaults,flush    0       2
 ROOTDEV-02  /               ext4    defaults,noatime  0       1

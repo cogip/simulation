@@ -29,12 +29,59 @@ $ docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 
 ## Configuration
 
-Configuration is done by setting required variables in `config.env` file in working directory.
-This file defines all parameters to customize Raspberry Pi OS for beacon and robots.
+Two configuration profiles are provided:
+  - `cup`: a configuration for the cup, to setup robots and beacon
+  - `dev`: a configuration for development environment without beacon
+Select a profile by setting the `PROFILE` variable to either `cup` or `dev`.
 
-Variable `ROBOT_ID` can be set in the environment to specify the robot id.
-Id 0 specifies the beacon, 1-N the robots.
-This variable is required only for stages 2 and 3.
+The following variables must be set before running any script:
+  - ROBOT_ID
+  - PUBLIC_WLAN_SSID
+  - PUBLIC_WLAN_PSK
+Those variables are set to `NOT_SET` by default and will be checked will loading the config files.
+
+`ROBOT_ID` possible values:
+  - 0:   for the beacon
+  - 1-9: for the robots
+
+The PSK value can be generated from the WiFi password using the following command:
+```sh
+$ wpa_passphrase MYSSID passphrase
+network={
+        ssid="MYSSID"
+        #psk="passphrase"
+        psk=59e0d07fa4c7741797a4e394f38a5c321e3bed51d54ad5fcbd3f84bc7415d73d
+}
+```
+
+The micro SD card device can be customized using related environment variables
+Example for micro-SD card to SD card adapter on `/dev/mmcblk0` (default values):
+```sh
+SDCARD_DEV=/dev/mmcblk0
+SDCARD_DEV_BOOT=${SDCARD_DEV}p1
+SDCARD_DEV_ROOTFS=${SDCARD_DEV}p2
+```
+
+Example for micro-SD card to USB adapter on `/dev/sda`:
+```sh
+SDCARD_DEV=/dev/sda
+SDCARD_DEV_BOOT=${SDCARD_DEV}1
+SDCARD_DEV_ROOTFS=${SDCARD_DEV}2
+```
+
+Customized variables can be set in the environment or in a local, not-committed `.env` file
+in the `raspios` directory.
+
+Example of a complete `.env` file:
+```sh
+PROFILE=dev
+ROBOT_ID=1
+PUBLIC_WLAN_SSID=MYSSID
+PUBLIC_WLAN_PSK=59e0d07fa4c7741797a4e394f38a5c321e3bed51d54ad5fcbd3f84bc7415d73d
+SDCARD_DEV=/dev/sda
+SDCARD_DEV_BOOT=${SDCARD_DEV}1
+SDCARD_DEV_ROOTFS=${SDCARD_DEV}2
+```
 
 ## Stage 0
 

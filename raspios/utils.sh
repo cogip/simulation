@@ -5,9 +5,14 @@ check_vars()
     var_names=("$@")
     for var_name in "${var_names[@]}"; do
         if [ -z "${!var_name}" ] ; then
-            echo "Error: Variable ${var_name} not defined (in config.env file)"
+            echo "Error: Variable ${var_name} not defined)"
             exit 1
         fi
+        if [ "${!var_name}" = "NOT_SET" ]; then
+            echo "Error: Variable ${var_name} must be customized"
+            exit 1
+        fi
+        echo ${var_name}=${!var_name}
     done
     return 0
 }

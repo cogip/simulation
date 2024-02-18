@@ -8,9 +8,8 @@ Requires=cogip-server.service
 [Service]
 Type=simple
 Restart=on-failure
-User=root
 WorkingDirectory=/tmp
-ExecStart=/usr/local/bin/python3 -m cogip.tools.dashboard
+ExecStart=/opt/venv/bin/python3 -m cogip.tools.dashboard
 RestartSec=5
 EnvironmentFile=/etc/environment
 

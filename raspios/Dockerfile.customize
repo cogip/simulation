@@ -14,39 +14,12 @@ RUN apt-get install -y --no-install-recommends xserver-xorg-video-all \
         xserver-xorg-input-all xserver-xorg-core xinit x11-xserver-utils \
         chromium-browser unclutter
 
-# Install ntp
-RUN apt-get install -y --no-install-recommends ntp
+# Install required systemd services
+RUN apt-get install -y --no-install-recommends systemd-resolved systemd-timesyncd
 
 # Pre-install some Python requirements for COGIP tools
-RUN python3 -m pip install \
-    aiohttp==3.9.1 \
-    aioserial==1.3.1 \
-    bidict==0.22.1 \
-    devtools==0.10.0 \
-    fastapi==0.105.0 \
-    httpx==0.26.0 \
-    gpiozero==1.6.2 \
-    Jinja2==3.1.2 \
-    luma.oled==3.13.0 \
-    more_itertools==10.1.0 \
-    opencv-contrib-python==4.8.1.78 \
-    pigpio==1.78 \
-    polling2==0.5.0 \
-    protobuf==3.20.3 \
-    py-spy==0.3.14 \
-    pydantic==2.5.2 \
-    pydantic_settings==2.1.0 \
-    pyserial==3.5 \
-    python-dotenv==1.0.0 \
-    python-engineio==4.8.0 \
-    python-socketio==5.10.0 \
-    requests==2.31.0 \
-    typer[all]==0.9.0 \
-    uvicorn[standard]==0.24.0.post1 \
-    v4l2py==2.3.0 \
-    watchfiles==0.21.0 \
-    websocket-client==1.7.0 \
-    git+https://git@github.com/YDLIDAR/YDLidar-SDK.git@V1.1.3#egg=ydlidar
+ADD requirements.txt /root/requirements.txt
+RUN python3 -m pip install -r /root/requirements.txt && rm /root/requirements.txt
 
 # Configure locale, timezone and keyboard
 RUN rm -f /etc/localtime \
@@ -65,14 +38,6 @@ RUN rm -f /etc/init.d/resize2fs_once /etc/rc3.d/S01resize2fs_once
 # Enable WIFI interface
 RUN for filename in /var/lib/systemd/rfkill/*:wlan; do echo 0 > $filename; done
 
-# Disable dhcpcd to use static IP
-RUN systemctl disable dhcpcd.service
-
-# Install and configure pigpiod service
-RUN apt-get install -y --no-install-recommends pigpio && \
-    sed -i "s#ExecStart=/usr/bin/pigpiod -l#ExecStart=/usr/bin/pigpiod -g#" /lib/systemd/system/pigpiod.service && \
-    systemctl enable pigpiod
-
 # Install i2c packages
 RUN apt-get install -y --no-install-recommends i2c-tools libi2c-dev
 
@@ -84,21 +49,11 @@ ADD overlay-rootfs /
 
 # Auto console login
 RUN systemctl set-default multi-user.target \
- && mkdir -p /etc/systemd/system/getty.target.wants \
- && ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service \
- && systemctl enable getty@tty1.service
-
-# Configure pi account
-RUN chown -R pi /home/pi \
- && chmod 755 /home/pi \
- && echo "root:cogip" | chpasswd \
- && echo "pi:cogip" | chpasswd \
- && rm -f /etc/systemd/system/multi-user.target.wants/userconfig.service
+ && systemctl enable getty@tty1.service \
+ && systemctl enable serial-getty@ttyAMA0.service
 
 # Configure ssh server
-RUN chown pi:pi -R /home/pi/.ssh \
- && chmod 700 /home/pi/.ssh \
- && chmod 600 /home/pi/.ssh/* \
+RUN echo "root:cogip" | chpasswd \
  && chmod 600 /etc/ssh/ssh_host_* \
  && chmod 640 /etc/ssh/ssh_host_*.pub \
  && systemctl enable ssh
@@ -106,25 +61,42 @@ RUN chown pi:pi -R /home/pi/.ssh \
 # Configure Cockpit
 RUN chgrp cockpit-ws /etc/cockpit/cockpit.conf
 
-# Cleanup
-RUN apt-get clean
+# Use systemctl-networkd to manage network interfaces
+RUN systemctl disable networking
+RUN systemctl disable NetworkManager
+RUN systemctl disable NetworkManager-wait-online.service
+
+RUN systemctl enable systemd-networkd
+RUN systemctl enable systemd-resolved
+RUN systemctl enable systemd-timesyncd
+RUN systemctl enable wpa_supplicant@wlan0.service
+RUN systemctl disable systemd-networkd-wait-online.service
 
 # Disable useless services
+RUN systemctl disable userconfig
 RUN systemctl disable regenerate_ssh_host_keys
 RUN systemctl disable raspi-config
 RUN systemctl disable systemd-rfkill
 RUN systemctl disable apt-daily-upgrade
-# RUN systemctl disable console-setup
 RUN systemctl disable systemd-random-seed
-# RUN systemctl disable keyboard-setup
 RUN systemctl disable rpi-eeprom-update
-RUN systemctl disable systemd-timesyncd.service
+RUN systemctl disable ModemManager.service
+RUN systemctl disable e2scrub_reap.service
+RUN systemctl disable apparmor.service
+RUN systemctl disable systemd-binfmt.service
+RUN systemctl disable systemd-fsck@.service
+RUN systemctl disable dphys-swapfile.service
+RUN systemctl disable avahi-daemon
+RUN systemctl disable nfs-client.target
+RUN systemctl disable apt-daily.timer
+RUN systemctl disable apt-daily-upgrade.timer
+RUN systemctl disable dpkg-db-backup.timer
+RUN systemctl disable e2scrub_all.timer
+RUN systemctl disable fstrim.timer
+RUN systemctl disable man-db.timer
+RUN systemctl disable sshswitch.service
+RUN systemctl disable triggerhappy.service
 
-# # Activate NTP client
-# RUN timedatectl set-ntp true
-
-# USER pi
-# WORKDIR /home/pi
 
 ENTRYPOINT ["/usr/bin/bash"]
 
@@ -135,12 +107,6 @@ RUN python3 -m pip install /root/cogip-tools-*.tar.gz \
 
 
 FROM common as beacon
-
-# Enable COGIP services
-RUN systemctl enable cogip-server
-RUN systemctl enable cogip-dashboard
-RUN systemctl enable cogip-planner
-RUN systemctl enable cogip-beaconcam
 
 RUN apt-get install -y --no-install-recommends dnsmasq iptables
 COPY overlay-rootfs-beacon/ /
@@ -154,14 +120,11 @@ FROM common as robot
 RUN systemctl enable openocd
 
 # Enable COGIP services
+RUN systemctl enable cogip-server
+RUN systemctl enable cogip-dashboard
+RUN systemctl enable cogip-planner
 RUN systemctl enable cogip-copilot
 RUN systemctl enable cogip-detector
 RUN systemctl enable cogip-robotcam
 
 RUN apt-get install -y --no-install-recommends ifmetric
-
-
-FROM common as basket
-
-# Enable COGIP services
-RUN systemctl enable cogip-basket

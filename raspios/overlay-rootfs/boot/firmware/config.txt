@@ -1,0 +1,29 @@
+# For more options and information see
+# http://rpf.io/configtxt
+
+disable_splash=1
+boot_delay=0
+camera_auto_detect=0
+display_auto_detect=0
+max_framebuffers=2
+disable_overscan=1
+arm_64bit=1
+arm_boost=1
+initial_turbo=10
+arm_freq=1800
+
+dtoverlay=disable-bt
+dtoverlay=sdtweak,overclock_50=100
+dtoverlay=uart2
+dtoverlay=uart4
+dtoverlay=uart5
+dtparam=i2c_arm=on
+dtparam=i2c1=on
+dtoverlay=spi1-1cs,cs0_pin=16
+dtoverlay=mcp251xfd,spi1-0,oscillator=20000000,interrupt=4
+dtoverlay=VC4_V3D_DRIVER
+
+hdmi_drive=1
+hdmi_group=2
+hdmi_mode=87
+hdmi_cvt SCREEN_WIDTH SCREEN_HEIGHT 60 6 0 0 0

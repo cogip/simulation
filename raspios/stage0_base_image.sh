@@ -1,20 +1,7 @@
-set -xe
-sudo -v
-
+#!/bin/bash
 SCRIPT=$(readlink -f $0)
 SCRIPT_DIR=`dirname $SCRIPT`
-CONFIG_FILE=${SCRIPT_DIR}/config.env
-
-# Load config.env file
-if [ -f ${CONFIG_FILE} ] ; then
-    source ${CONFIG_FILE}
-fi
-
-# Check variables
-if [ -z "$RASPIOS_URL" ] ; then
-    RASPIOS_URL="https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2023-02-22/2023-02-21-raspios-bullseye-arm64-lite.img.xz"
-fi
-
+source ${SCRIPT_DIR}/common.sh
 
 WORKING_DIR=${SCRIPT_DIR}/work
 MOUNT_DIR=${WORKING_DIR}/mnt
@@ -40,9 +27,9 @@ fi
 losetup -a | grep "${RASPIOS_LITE_IMG}" | awk -F: '{ print $1 }' | xargs -r sudo losetup -d
 loop_dev=$(sudo losetup -fP --show ${RASPIOS_LITE_IMG})
 
-# Extract rootfs adn boot
+# Extract rootfs and boot
 sudo mount ${loop_dev}p2 ${MOUNT_DIR}
-sudo rm -rf "${MOUNT_DIR}/boot"
+sudo rm -rf "${MOUNT_DIR}/boot/"
 sudo mkdir -p "${MOUNT_DIR}/boot"
 sudo mount ${loop_dev}p1 ${MOUNT_DIR}/boot
 sudo tar cf ${ROOTFS} -C ${MOUNT_DIR} --numeric-owner .
@@ -54,6 +41,6 @@ sudo chown $(whoami) ${ROOTFS}
 sudo losetup -d ${loop_dev}
 
 # Create a Docker image from scratch using extracted rootfs
-DOCKER_BUILDKIT=1 docker build . -f Dockerfile.base -t cogip/raspios:base
+DOCKER_BUILDKIT=1 docker build --progress plain . -f Dockerfile.base -t cogip/raspios:base
 
 rm -rf ${ROOTFS}

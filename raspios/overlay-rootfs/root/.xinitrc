@@ -4,7 +4,7 @@ xset s off
 xset s noblank
 
 unclutter &
-chromium-browser http://beacon:8080/?robot_id=ROBOT_ID \
+chromium-browser http://localhost:808ROBOT_ID \
   --window-size=SCREEN_WIDTH,SCREEN_HEIGHT \
   --window-position=0,0 \
   --start-fullscreen \
@@ -12,6 +12,7 @@ chromium-browser http://beacon:8080/?robot_id=ROBOT_ID \
   --incognito \
   --noerrdialogs \
   --disable-translate \
+  --no-sandbox \
   --no-first-run \
   --fast \
   --fast-start \
