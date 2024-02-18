@@ -2,7 +2,7 @@ from enum import IntEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .messages import PB_Pid, PB_Pids
+from .messages import PB_Pid
 
 
 class PidEnum(IntEnum):
@@ -27,7 +27,7 @@ class Pid(BaseModel):
         ...,
         ge=0,
         le=100000,
-        multiple_of=0.001,
+        multiple_of=0.0001,
         title="KP",
         description="KP value",
     )
@@ -35,7 +35,7 @@ class Pid(BaseModel):
         ...,
         ge=0,
         le=100000,
-        multiple_of=0.001,
+        multiple_of=0.0001,
         title="KI",
         description="KI value",
     )
@@ -43,7 +43,7 @@ class Pid(BaseModel):
         ...,
         ge=0,
         le=100000,
-        multiple_of=0.001,
+        multiple_of=0.0001,
         title="KD",
         description="KD value",
     )
@@ -62,13 +62,3 @@ class Pid(BaseModel):
         message.ki = self.ki
         message.kd = self.kd
         message.integral_term_limit = self.integral_term_limit
-
-
-class Pids(BaseModel):
-    model_config = ConfigDict(title="PID List")
-
-    pids: list[Pid] = Field(..., title="PID List", description="List of PID properties")
-
-    def pb_copy(self, message: PB_Pids) -> None:
-        for pid in self.pids:
-            pid.pb_copy(message.add_pids())

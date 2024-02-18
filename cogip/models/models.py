@@ -8,7 +8,6 @@ an exception being raised if impossible.
 """
 
 import math
-import platform
 from enum import IntEnum
 
 import numpy as np
@@ -108,31 +107,23 @@ class Speed(BaseModel):
     angle: float = 0.0
 
 
-if platform.machine() == "x86_64":
+class SpeedEnum(IntEnum):
+    """
+    Speed levels.
+    In mcu-firmware, the speeds (linear and angular) are float-point values,
+    but they can take only 3 values: low, normal and max speed. These values
+    depend on the platform, so on the Raspberry side, we only need to define
+    the speed levels instead of the real values.
 
-    class SpeedEnum(IntEnum):
-        """
-        Speed levels.
-        In mcu-firmware, the speeds (linear and angular) are float-point values,
-        but they can take only 3 values: low, normal and max speed. These values
-        depend on the platform, so on the Raspberry side, we only need to define
-        the speed levels instead of the real values.
+    Attributes:
+        LOW:
+        NORMAL:
+        MAX:
+    """
 
-        Attributes:
-            LOW:
-            NORMAL:
-            MAX:
-        """
-
-        LOW = 33
-        NORMAL = 66
-        MAX = 100
-else:
-
-    class SpeedEnum(IntEnum):
-        LOW = 0
-        NORMAL = 1
-        MAX = 2
+    LOW = 33
+    NORMAL = 66
+    MAX = 100
 
 
 class PathPose(Pose):
@@ -166,8 +157,8 @@ class PathPose(Pose):
         pb_path_pose.pose.x = int(self.x)
         pb_path_pose.pose.y = int(self.y)
         pb_path_pose.pose.O = int(self.O)  # noqa
-        pb_path_pose.max_speed_linear_enum = self.max_speed_linear
-        pb_path_pose.max_speed_angular_enum = self.max_speed_angular
+        pb_path_pose.max_speed_ratio_linear = self.max_speed_linear
+        pb_path_pose.max_speed_ratio_angular = self.max_speed_angular
         pb_path_pose.allow_reverse = self.allow_reverse
 
 

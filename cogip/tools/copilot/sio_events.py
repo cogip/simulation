@@ -10,8 +10,7 @@ from cogip import models
 from cogip.models.actuators import ActuatorCommand, PositionalActuatorCommand, PumpCommand, ServoCommand
 from . import copilot, logger
 from .menu import menu
-from .messages import PB_ActuatorCommand, PB_Command, PB_Controller, PB_PathPose
-from .pid import PidEnum
+from .messages import PB_ActuatorCommand, PB_Command, PB_Controller, PB_PathPose, PB_Pid_Id, PB_PidEnum
 
 
 class SioEvents(socketio.AsyncClientNamespace):
@@ -62,13 +61,27 @@ class SioEvents(socketio.AsyncClientNamespace):
         Callback on tool command message.
         """
         cmd, _, _ = data.partition(" ")
+        pid_id = PB_Pid_Id()
         match cmd:
             case "actuators_control":
                 # Start thread emitting actuators status
                 await self._copilot.pbcom.send_serial_message(copilot.actuators_thread_start_uuid, None)
-            case "pid_config":
-                # Request pid state
-                await self._copilot.pbcom.send_serial_message(copilot.pid_request_uuid, None)
+            case "angular_speed_pid_config":
+                # Request angular speed pid state
+                pid_id.id = PB_PidEnum.ANGULAR_SPEED_PID
+                await self._copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
+            case "linear_speed_pid_config":
+                # Request linear_speed pid state
+                pid_id.id = PB_PidEnum.LINEAR_SPEED_PID
+                await self._copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
+            case "angular_position_pid_config":
+                # Request angular position pid state
+                pid_id.id = PB_PidEnum.ANGULAR_POSE_PID
+                await self._copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
+            case "linear_position_pid_config":
+                # Request linear position pid state
+                pid_id.id = PB_PidEnum.LINEAR_POSE_PID
+                await self._copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
             case _:
                 logger.warning(f"Unknown command: {cmd}")
 
@@ -134,10 +147,10 @@ class SioEvents(socketio.AsyncClientNamespace):
         Callback on config_updated from dashboard.
         Update pid PB message and send it back to firmware.
         """
-        parent, _, name = config["name"].partition("/")
-        if parent and name:
-            setattr(self._copilot._pb_pids.pids[PidEnum[parent]], name, config["value"])
-            await self._copilot.pbcom.send_serial_message(copilot.pid_uuid, self._copilot._pb_pids)
+        pid_id, _, name = config["name"].partition("-")
+        if pid_id and name:
+            setattr(self._copilot._pb_pids[int(pid_id)], name, config["value"])
+            await self._copilot.pbcom.send_serial_message(copilot.pid_uuid, self._copilot._pb_pids[int(pid_id)])
 
     async def on_set_controller(self, controller: int):
         """
