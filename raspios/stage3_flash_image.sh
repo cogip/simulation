@@ -9,10 +9,6 @@ case ${ROBOT_ID} in
         DOCKER_TAG=beacon
         HOSTNAME=beacon
         ;;
-    10) # Basket
-        DOCKER_TAG=basket
-        HOSTNAME=basket
-        ;;
     *) # Robots
         DOCKER_TAG=robot
         HOSTNAME=robot${ROBOT_ID}

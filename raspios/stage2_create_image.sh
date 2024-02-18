@@ -17,18 +17,6 @@ case ${ROBOT_ID} in
         SCREEN_WIDTH=${BEACON_SCREEN_WIDTH}
         SCREEN_HEIGHT=${BEACON_SCREEN_HEIGHT}
         ;;
-    10) # Basket
-        DOCKER_TAG=basket
-        HOSTNAME=basket
-        GATEWAY=${IP_ADDRESS_BEACON_ETH0}
-        IP_ADDRESS_WLAN0=${IP_ADDRESS_BASKET_WLAN0}
-        IP_ADDRESS_ETH0=${IP_ADDRESS_BASKET_ETH0}
-        WLAN_SSID=${BEACON_WLAN_SSID}
-        WLAN_PSK=${BEACON_WLAN_PSK}
-        VC4_V3D_DRIVER=${BASKET_VC4_V3D_DRIVER}
-        SCREEN_WIDTH=${BASKET_SCREEN_WIDTH}
-        SCREEN_HEIGHT=${BASKET_SCREEN_HEIGHT}
-        ;;
     *) # Robots
         DOCKER_TAG=robot
         HOSTNAME=robot${ROBOT_ID}
@@ -130,7 +118,6 @@ sudo sed -i "s/HOSTNAME/${HOSTNAME}/" ${MOUNT_DIR}/etc/ssh/sshd_config
 sudo sed -i "s/IP_ADDRESS_BEACON/${IP_ADDRESS_BEACON_ETH0}/" ${MOUNT_DIR}/etc/hosts
 sudo sed -i "s/IP_ADDRESS_ROBOT1/${IP_ADDRESS_ROBOT1_WLAN0}/" ${MOUNT_DIR}/etc/hosts
 sudo sed -i "s/IP_ADDRESS_ROBOT2/${IP_ADDRESS_ROBOT2_WLAN0}/" ${MOUNT_DIR}/etc/hosts
-sudo sed -i "s/IP_ADDRESS_BASKET/${IP_ADDRESS_BASKET_WLAN0}/" ${MOUNT_DIR}/etc/hosts
 sudo sed -i "s/ROBOT_ID/${ROBOT_ID}/" ${MOUNT_DIR}/root/.xinitrc
 sudo sed -i "s/SCREEN_WIDTH/${SCREEN_WIDTH}/" ${MOUNT_DIR}/root/.xinitrc
 sudo sed -i "s/SCREEN_HEIGHT/${SCREEN_HEIGHT}/" ${MOUNT_DIR}/root/.xinitrc
@@ -149,12 +136,6 @@ sudo rm -f ${MOUNT_DIR}/etc/sshd_config.d/rename_user.conf
 if ((${ROBOT_ID} == 0))
 then
     sudo sed -i "s/IP_ADDRESS/${IP_ADDRESS_ETH0}/" ${MOUNT_DIR}/etc/dnsmasq.conf
-fi
-
-if ((${ROBOT_ID} == 10))
-then
-    # Do not start X Server for the basket
-    sudo rm ${MOUNT_DIR}/home/pi/{.bash_profile,.xinitrc}
 fi
 
 sudo umount ${MOUNT_DIR}/boot/firmware

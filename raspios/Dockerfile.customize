@@ -128,9 +128,3 @@ RUN systemctl enable cogip-detector
 RUN systemctl enable cogip-robotcam
 
 RUN apt-get install -y --no-install-recommends ifmetric
-
-
-FROM common as basket
-
-# Enable COGIP services
-RUN systemctl enable cogip-basket
