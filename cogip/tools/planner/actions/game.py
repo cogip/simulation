@@ -37,7 +37,6 @@ class ParkingAction(Action):
     async def before_action(self):
         ParkingAction.nb_robots += 1
         await actuators.central_arm_up(self.robot.robot_id, self.planner)
-        await actuators.cherry_arm_up(self.robot.robot_id, self.planner)
         await actuators.left_arm_up(self.robot.robot_id, self.planner)
         await actuators.right_arm_up(self.robot.robot_id, self.planner)
 

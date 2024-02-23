@@ -161,7 +161,6 @@ class GameWizard:
         for robot_id in self.planner._robots.keys():
             await actuators.led_on(robot_id, self.planner)
             await actuators.central_arm_up(robot_id, self.planner)
-            await actuators.cherry_arm_up(robot_id, self.planner)
             await actuators.left_arm_up(robot_id, self.planner)
             await actuators.right_arm_up(robot_id, self.planner)
         await asyncio.sleep(1)

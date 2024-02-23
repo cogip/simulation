@@ -11,8 +11,6 @@ from .menu import (
     actuators_menu_1,
     actuators_menu_2,
     cameras_menu,
-    cherries_menu_1,
-    cherries_menu_2,
     menu,
     wizard_test_menu,
 )
@@ -48,8 +46,6 @@ class SioEvents(socketio.AsyncClientNamespace):
         await self.emit("register_menu", {"name": "wizard", "menu": wizard_test_menu.model_dump()})
         await self.emit("register_menu", {"name": "actuators1", "menu": actuators_menu_1.model_dump()})
         await self.emit("register_menu", {"name": "actuators2", "menu": actuators_menu_2.model_dump()})
-        await self.emit("register_menu", {"name": "cherries1", "menu": cherries_menu_1.model_dump()})
-        await self.emit("register_menu", {"name": "cherries2", "menu": cherries_menu_2.model_dump()})
         await self.emit("register_menu", {"name": "cameras", "menu": cameras_menu.model_dump()})
 
     async def on_disconnect(self):
