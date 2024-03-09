@@ -36,6 +36,7 @@ RUN apt-get install -y \
         libxkbcommon0 \
         libdbus-1-3 \
         libnss3 \
+        libxcb-cursor0 \
         libxcomposite1 \
         libxdamage1 \
         libxrender1 \

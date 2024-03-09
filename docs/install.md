@@ -200,13 +200,14 @@ Several profiles are defined to select which containers to run:
 
 - `robot1`: for robot 1 containers
 - `robot2`: for robot 2 containers
-- `monitor`: for `Monitor` container
+- `monitor1`: for `Monitor` container of robot 1
+- `monitor2`: for `Monitor` container of robot 2
 
-The beacon containers are always started.
+The beacon container is disabled because its services need to be redesigned first.
 
 Profiles are set in the `.env` file:
 
-`COMPOSE_PROFILES=robot1,robot2,monitor`
+`COMPOSE_PROFILES=robot1,monitor1`
 
 ### Build Images
 
