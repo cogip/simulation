@@ -77,8 +77,8 @@ solar_panels_positions = {
 
 solar_panels_tvecs = {n: np.array([v.x, v.y, v.z]) for n, v in solar_panels_positions.items()}
 
-robot_width = 225.0
-robot_length = 225.0
+robot_width = 295.0
+robot_length = 295.0
 
 
 def marker_to_table_axes(tvec: ArrayLike, angle: int) -> tuple[ArrayLike, float]:
