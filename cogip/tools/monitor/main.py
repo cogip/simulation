@@ -19,7 +19,7 @@ from .socketiocontroller import SocketioController
 
 def main_opt(
     url: str = typer.Argument(
-        "http://localhost:8090",
+        "http://localhost:8091",
         envvar="COGIP_SOCKETIO_SERVER_URL",
         help="Socket.IO Server URL",
     ),

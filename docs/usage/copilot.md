@@ -28,7 +28,7 @@ Usage: cogip-copilot [OPTIONS]
 Options:
   --server-url TEXT               Socket.IO Server URL
                                   env var: COGIP_SOCKETIO_SERVER_URL
-                                  default: http://localhost:8090
+                                  default: None
 
   -i, --id INTEGER RANGE          Robot ID.
                                   env var: ROBOT_ID, COPILOT_ID

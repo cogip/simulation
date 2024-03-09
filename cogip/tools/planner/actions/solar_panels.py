@@ -10,7 +10,6 @@ from .actions import Action, Actions
 
 if TYPE_CHECKING:
     from ..planner import Planner
-    from ..robot import Robot
 
 
 class SetRobotPositionAction(Action):
@@ -23,22 +22,23 @@ class SetRobotPositionAction(Action):
         self.after_action_func = self.get_position
 
     async def get_position(self):
-        await actuators.right_arm_folded(self.robot.robot_id, self.planner)
+        await actuators.right_arm_folded(self.planner)
 
-        pose = await get_robot_position(self.robot)
+        pose = await get_robot_position(self.planner)
         if not pose:
             logger.error("Cannot find table marker and current robot position")
             return
 
-        await actuators.led_on(self.robot.robot_id, self.planner)
+        await actuators.led_on(self.planner)
         await asyncio.sleep(0.2)
-        await actuators.led_off(self.robot.robot_id, self.planner)
+        await actuators.led_off(self.planner)
 
-        await self.robot.set_pose_start(pose)
+        await self.planner.set_pose_start(pose)
+        self.planner.pose_reached = False
 
         self.actions.append(DiscoverSolarPanelsAction(self.planner, self.actions))
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         return 1000000.0
 
 
@@ -62,7 +62,7 @@ class DiscoverSolarPanelsAction(Action):
 
     async def get_solar_panels(self):
         await asyncio.sleep(2)
-        solar_panels = await get_solar_panels(self.robot)
+        solar_panels = await get_solar_panels(self.planner)
         for panel_id, angle in solar_panels.items():
             # Angle are given for yellow camp only
             log_prefix = f"Solar panel {panel_id}: angle={angle}"
@@ -77,7 +77,7 @@ class DiscoverSolarPanelsAction(Action):
                 case _:
                     logger.info(f"{log_prefix}, cannot be activated")
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         return 900000.0
 
 
@@ -128,14 +128,14 @@ class SolarPanelAction(Action):
         )
 
     async def extend_arm(self):
-        await actuators.right_arm_mid(self.robot.robot_id, self.planner)
-        await actuators.led_on(self.robot.robot_id, self.planner)
+        await actuators.right_arm_mid(self.planner)
+        await actuators.led_on(self.planner)
 
     async def fold_arm(self):
-        await actuators.right_arm_folded(self.robot.robot_id, self.planner)
-        await actuators.led_off(self.robot.robot_id, self.planner)
+        await actuators.right_arm_folded(self.planner)
+        await actuators.led_off(self.planner)
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         return 800000.0 + self.panel_id
 
 
@@ -160,24 +160,22 @@ class ParkingAction(Action):
         )
         self.poses = [self.pose]
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         return 1
 
     async def before_action(self):
         ParkingAction.nb_robots += 1
-        await actuators.right_arm_up(self.robot.robot_id, self.planner)
-        await actuators.right_arm_folded(self.robot.robot_id, self.planner)
+        await actuators.right_arm_up(self.planner)
+        await actuators.right_arm_folded(self.planner)
 
-        if ParkingAction.nb_robots == len(self.planner._robots):
-            # Backup actions in the the action is recycled
-            self.actions_backup = self.actions[:]
+        # Backup actions if the action is recycled
+        self.actions_backup = self.actions[:]
 
-            # Clear remaining actions
-            self.actions.clear()
+        # Clear remaining actions
+        self.actions.clear()
 
     async def after_action(self):
-        self.robot.parked = True
-        await self.planner._sio_ns.emit("robot_end", self.robot.robot_id)
+        await self.planner.sio_ns.emit("robot_end")
 
     async def recycle(self):
         ParkingAction.nb_robots -= 1

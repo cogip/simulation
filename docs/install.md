@@ -132,13 +132,13 @@ cogip-detector
 cogip-robotcam
 ```
 
-And finally `Monitor` is launched using:
+And finally `Monitor` for robot 1 is launched using:
 
 ```bash
-cogip-monitor http://localhost:8090
+cogip-monitor http://localhost:8091
 ```
 
-The `Dashboard` is accessible using a web browser at `http://localhost:8080`.
+The `Dashboard` for robot 1 is accessible using a web browser at `http://localhost:8081`.
 
 ### Linting and Formatting
 

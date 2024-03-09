@@ -74,9 +74,6 @@ class CameraHandler:
         self.sio.connect(
             str(self.settings.socketio_server_url),
             namespaces=["/robotcam"],
-            auth={
-                "id": self.settings.id,
-            },
         )
         return True
 
@@ -262,7 +259,7 @@ class CameraHandler:
             """
             polling2.poll(lambda: self.sio.connected is True, step=0.2, poll_forever=True)
             logger.info("Camera handler: connected to server")
-            self.sio.emit("connected", self.settings.id, namespace="/robotcam")
+            self.sio.emit("connected", namespace="/robotcam")
 
         @self.sio.event(namespace="/robotcam")
         def connect_error(data):

@@ -7,7 +7,6 @@ from .actions import Action, Actions
 
 if TYPE_CHECKING:
     from ..planner import Planner
-    from ..robot import Robot
 
 
 class LinearPositionTestAction(Action):
@@ -42,13 +41,14 @@ class LinearPositionTestAction(Action):
         self.poses.append(self.pose_start)
 
     async def init_start_position(self):
-        await self.robot.set_pose_start(self.pose_init)
-        self.robot.action = self
+        await self.planner.set_pose_start(self.pose_init)
+        self.planner.pose_reached = False
+        self.planner.action = self
 
     async def append_pose(self, pose: Pose) -> None:
         self.poses.append(pose)
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         return 1000000.0
 
 
@@ -90,13 +90,14 @@ class AngularPositionTestAction(Action):
         self.poses.append(self.pose_start)
 
     async def init_start_position(self):
-        await self.robot.set_pose_start(self.pose_init)
-        self.robot.action = self
+        await self.planner.set_pose_start(self.pose_init)
+        self.planner.pose_reached = False
+        self.planner.action = self
 
     async def append_pose(self, pose: Pose) -> None:
         self.poses.append(pose)
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         return 1000000.0
 
 

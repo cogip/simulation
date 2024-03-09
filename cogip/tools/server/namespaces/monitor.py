@@ -1,6 +1,6 @@
 import socketio
 
-from .. import logger
+from .. import logger, server
 from ..context import Context
 
 
@@ -9,40 +9,40 @@ class MonitorNamespace(socketio.AsyncNamespace):
     Handle all SocketIO events related to monitor.
     """
 
-    def __init__(self):
+    def __init__(self, cogip_server: "server.Server"):
         super().__init__("/monitor")
-        self._connected = False
-        self._context = Context()
+        self.cogip_server = cogip_server
+        self.context = Context()
+        self.context.monitor_sid = None
 
     async def on_connect(self, sid, environ):
-        if self._connected:
-            logger.error("Monitor connection refused: a monitor is already connected")
-            raise ConnectionRefusedError("A monitor is already connected")
-        self._connected = True
+        if self.context.monitor_sid:
+            message = "A monitor is already connected"
+            logger.error(f"Monitor connection refused: {message}")
+            raise ConnectionRefusedError(message)
+        self.context.monitor_sid = sid
 
     async def on_connected(self, sid):
         logger.info("Monitor connected.")
-        for robot_id, mode in self._context.detector_modes.items():
-            if mode == "emulation":
-                await self.emit("start_lidar_emulation", robot_id, namespace="/monitor")
+        await self.emit("add_robot", (self.context.robot_id, self.context.virtual), namespace="/monitor")
+        if self.context.virtual:
+            await self.emit("start_lidar_emulation", self.context.robot_id, namespace="/monitor")
 
     def on_disconnect(self, sid):
-        self._connected = False
+        self.context.monitor_sid = None
         logger.info("Monitor disconnected.")
 
-    async def on_lidar_data(self, sid, robot_id: int, lidar_data: list[int]):
+    async def on_lidar_data(self, sid, lidar_data: list[int]):
         """
         Callback on lidar data.
 
         In emulation mode, receive Lidar data from the Monitor,
         and forward to the Detector in charge of computing dynamic obstacles.
         """
-        detector_sid = self._context.detector_sids.inverse.get(robot_id)
-        if detector_sid:
-            await self.emit("lidar_data", lidar_data, to=detector_sid, namespace="/detector")
+        await self.emit("lidar_data", lidar_data, namespace="/detector")
 
-    async def on_starter_changed(self, sid, robot_id: int, pushed: bool):
+    async def on_starter_changed(self, sid, pushed: bool):
         """
         Callback on starter_changed message.
         """
-        await self.emit("starter_changed", (robot_id, pushed), namespace="/planner")
+        await self.emit("starter_changed", pushed, namespace="/planner")

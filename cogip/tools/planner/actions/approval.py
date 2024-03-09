@@ -6,7 +6,6 @@ from .actions import Action, Actions
 
 if TYPE_CHECKING:
     from ..planner import Planner
-    from ..robot import Robot
 
 
 class ApprovalAction(Action):
@@ -43,7 +42,7 @@ class ApprovalAction(Action):
     def reset(self):
         self.poses = [pose.model_copy() for pose in self.default_poses]
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         return 1000000.0
 
 

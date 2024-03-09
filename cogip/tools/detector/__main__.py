@@ -20,8 +20,8 @@ def run(*args, **kwargs) -> None:
 
 
 def main_opt(
-    server_url: str = typer.Option(
-        "http://localhost:8090",
+    server_url: Optional[str] = typer.Option(  # noqa
+        None,
         help="Socket.IO Server URL",
         envvar="COGIP_SOCKETIO_SERVER_URL",
     ),
@@ -68,13 +68,6 @@ def main_opt(
         help="Interval between each update of the obstacle list (in seconds)",
         envvar="DETECTOR_REFRESH_INTERVAL",
     ),
-    emulation: bool = typer.Option(
-        False,
-        "-e",
-        "--emulation",
-        help="Force emulation mode.",
-        envvar=["DETECTOR_EMULATION"],
-    ),
     reload: bool = typer.Option(
         False,
         "-r",
@@ -93,15 +86,16 @@ def main_opt(
     if debug:
         logger.setLevel(logging.DEBUG)
 
+    if not server_url:
+        server_url = f"http://localhost:809{id}"
+
     args = (
         server_url,
-        id,
         lidar_port,
         min_distance,
         max_distance,
         beacon_radius,
         refresh_interval,
-        emulation,
     )
 
     if reload:

@@ -17,7 +17,7 @@ class MainWindow(QtWidgets.QWidget):
         self.margin = 400
         self.offset_y = 1000
         self.setStyleSheet("background-color:white;")
-        self.setWindowTitle(f"Avoidance - Robot {self.win.robot_id}")
+        self.setWindowTitle("Avoidance")
         self.setGeometry(QtCore.QRect(0, 500, 1500, 1000))
 
     def paintEvent(self, e):
@@ -107,8 +107,7 @@ class MainWindow(QtWidgets.QWidget):
 class DebugWindow:
     ui_thread: threading.Thread | None = None
 
-    def __init__(self, robot_id: int):
-        self.robot_id = robot_id
+    def __init__(self):
         self.app = None
         if DebugWindow.ui_thread is None:
             DebugWindow.ui_thread = threading.Thread(target=self.start_qapp)

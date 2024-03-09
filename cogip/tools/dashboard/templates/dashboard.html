@@ -75,8 +75,7 @@
           <pre><img src="{{ url_for('static', path='img/cross_red_circle.svg') }}" /></pre>
         </span>
         <span class="text-muted" style="float: right" id="state">
-          <pre id="state_robot_1"></pre>
-          <pre id="state_robot_2"></pre>
+          <pre id="state_robot"></pre>
         </span>
       </div>
     </footer>
@@ -200,20 +199,20 @@
             virtualKeyboard._actualize();
           })
           .on("pose_current", function (robot_id, msg) {
-            drawModule.updatePoseCurrent(robot_id, msg);
+            drawModule.updatePoseCurrent(msg);
           })
           .on("pose_order", function (robot_id, msg) {
-            drawModule.updatePoseOrder(robot_id, msg);
+            drawModule.updatePoseOrder(msg);
           })
           .on("obstacles", function (msg) {
             drawModule.updateObstacles(msg);
           })
           .on("state", function (robot_id, msg) {
-            drawModule.displayMsg(robot_id, msg); // uses message to display information in bottom page
+            drawModule.displayMsg(msg); // uses message to display information in bottom page
             drawModule.drawBoardElement(msg); // move robot
           })
           .on("path", function (robot_id, msg) {
-            drawModule.recordPath(robot_id, msg);
+            drawModule.recordPath(msg);
           })
           .on("wizard", function (msg) {
             wizardModule.openWizardModal(msg, this);

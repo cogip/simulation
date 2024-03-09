@@ -8,6 +8,7 @@ menu = models.ShellMenu(
         models.MenuEntry(cmd="choose_strategy", desc="Choose strategy"),
         models.MenuEntry(cmd="choose_avoidance", desc="Choose avoidance"),
         models.MenuEntry(cmd="choose_table", desc="Choose table"),
+        models.MenuEntry(cmd="choose_start_position", desc="Choose start position"),
         models.MenuEntry(cmd="play", desc="Play"),
         models.MenuEntry(cmd="stop", desc="Stop"),
         models.MenuEntry(cmd="next", desc="Next"),
@@ -39,9 +40,8 @@ wizard_test_menu = models.ShellMenu(
 cameras_menu = models.ShellMenu(
     name="Cameras",
     entries=[
-        models.MenuEntry(cmd="cam_beacon_snapshots", desc="Beacon Snapshot"),
-        models.MenuEntry(cmd="cam_robot1_camera_position", desc="Camera 1 Position"),
-        models.MenuEntry(cmd="cam_robot2_camera_position", desc="Camera 2 Position"),
+        models.MenuEntry(cmd="cam_snapshot", desc="Snapshot"),
+        models.MenuEntry(cmd="cam_camera_position", desc="Camera Position"),
     ],
 )
 
@@ -65,16 +65,7 @@ actuators_commands = [
     "right_arm_down",
 ]
 
-actuators_menu_1 = models.ShellMenu(
-    name="Actuators 1",
-    entries=[
-        models.MenuEntry(cmd=f"act_{cmd}_1", desc=f"{cmd.replace('_', ' ').title()}") for cmd in actuators_commands
-    ],
-)
-
-actuators_menu_2 = models.ShellMenu(
-    name="Actuators 2",
-    entries=[
-        models.MenuEntry(cmd=f"act_{cmd}_2", desc=f"{cmd.replace('_', ' ').title()}") for cmd in actuators_commands
-    ],
+actuators_menu = models.ShellMenu(
+    name="Actuators",
+    entries=[models.MenuEntry(cmd=f"act_{cmd}", desc=f"{cmd.replace('_', ' ').title()}") for cmd in actuators_commands],
 )

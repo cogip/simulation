@@ -16,10 +16,10 @@ def changes_callback(changes):
 
 def main_opt(
     id: int = typer.Option(
-        0,
+        1,
         "-i",
         "--id",
-        min=0,
+        min=1,
         max=9,
         help="Robot ID.",
         envvar=["ROBOT_ID", "SERVER_ID"],

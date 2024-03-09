@@ -7,7 +7,7 @@ from . import logger
 from .camp import Camp
 
 if TYPE_CHECKING:
-    from .robot import Robot
+    from .planner import Planner
 
 
 async def snapshot():
@@ -21,14 +21,14 @@ async def snapshot():
             logger.error(f"Request snapshot: HTTP Exception: {exc}")
 
 
-async def calibrate_camera(robot: "Robot") -> Vertex | None:
+async def calibrate_camera(planner: "Planner") -> Vertex | None:
     async with httpx.AsyncClient() as client:
         try:
-            port = 8100 + robot.robot_id
-            queries = f"x={robot.pose_current.x}"
-            queries += f"&y={robot.pose_current.y}"
-            queries += f"&angle={robot.pose_current.O}"
-            response = await client.get(f"http://robot{robot.robot_id}:{port}/camera_calibration?{queries}")
+            port = 8100 + planner.robot_id
+            queries = f"x={planner.pose_current.x}"
+            queries += f"&y={planner.pose_current.y}"
+            queries += f"&angle={planner.pose_current.O}"
+            response = await client.get(f"http://robot{planner.robot_id}:{port}/camera_calibration?{queries}")
             if response.status_code != 200:
                 logger.warning(f"Request camera_calibration: Failed: {response.status_code}: {response.text}")
                 return None
@@ -41,11 +41,11 @@ async def calibrate_camera(robot: "Robot") -> Vertex | None:
             return None
 
 
-async def get_robot_position(robot: "Robot") -> Pose | None:
+async def get_robot_position(planner: "Planner") -> Pose | None:
     async with httpx.AsyncClient() as client:
         try:
-            port = 8100 + robot.robot_id
-            response = await client.get(f"http://robot{robot.robot_id}:{port}/robot_position")
+            port = 8100 + planner.robot_id
+            response = await client.get(f"http://robot{planner.robot_id}:{port}/robot_position")
             if response.status_code != 200:
                 logger.warning(f"Request robot_position: Failed: {response.status_code}: {response.text}")
                 return None
@@ -58,14 +58,14 @@ async def get_robot_position(robot: "Robot") -> Pose | None:
             return None
 
 
-async def get_solar_panels(robot: "Robot") -> dict[int, float]:
+async def get_solar_panels(planner: "Planner") -> dict[int, float]:
     async with httpx.AsyncClient() as client:
         try:
-            port = 8100 + robot.robot_id
-            queries = f"x={robot.pose_current.x}"
-            queries += f"&y={robot.pose_current.y}"
-            queries += f"&angle={robot.pose_current.O}"
-            response = await client.get(f"http://robot{robot.robot_id}:{port}/solar_panels?{queries}")
+            port = 8100 + planner.robot_id
+            queries = f"x={planner.pose_current.x}"
+            queries += f"&y={planner.pose_current.y}"
+            queries += f"&angle={planner.pose_current.O}"
+            response = await client.get(f"http://robot{planner.robot_id}:{port}/solar_panels?{queries}")
             if response.status_code != 200:
                 logger.warning(f"Request solar_panels: Failed: {response.status_code}: {response.text}")
                 return {}

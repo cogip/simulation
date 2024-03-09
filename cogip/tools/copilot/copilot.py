@@ -50,15 +50,15 @@ class Copilot:
             serial_port: serial port connected to STM32 device
             serial_baud: baud rate
         """
-        self._server_url = server_url
-        self._id = id
-        self._retry_connection = True
-        self._shell_menu: models.ShellMenu | None = None
-        self._pb_pids: dict[PB_PidEnum, PB_Pid] = {}
+        self.server_url = server_url
+        self.id = id
+        self.retry_connection = True
+        self.shell_menu: models.ShellMenu | None = None
+        self.pb_pids: dict[PB_PidEnum, PB_Pid] = {}
 
-        self._sio = socketio.AsyncClient(logger=False)
-        self._sio_events = SioEvents(self)
-        self._sio.register_namespace(self._sio_events)
+        self.sio = socketio.AsyncClient(logger=False)
+        self.sio_events = SioEvents(self)
+        self.sio.register_namespace(self.sio_events)
 
         pb_message_handlers = {
             reset_uuid: self.handle_reset,
@@ -92,31 +92,11 @@ class Copilot:
         """
         while self.retry_connection:
             try:
-                await self._sio.connect(self._server_url, namespaces=["/copilot"], auth={"id": self._id})
+                await self.sio.connect(self.server_url, namespaces=["/copilot"])
             except socketio.exceptions.ConnectionError:
                 time.sleep(2)
                 continue
             break
-
-    @property
-    def try_reconnection(self) -> bool:
-        """
-        Return true if Copilot should continue to try to connect to the `Copilot`,
-        false otherwise.
-        """
-        return self._retry_connection
-
-    @try_reconnection.setter
-    def try_reconnection(self, new_value: bool) -> None:
-        self._retry_connection = new_value
-
-    @property
-    def id(self) -> int:
-        return self._id
-
-    @property
-    def shell_menu(self) -> models.ShellMenu | None:
-        return self._shell_menu
 
     @property
     def pbcom(self) -> PBCom:
@@ -129,7 +109,7 @@ class Copilot:
         Send a reset message to all connected clients.
         """
         await self._pbcom.send_serial_message(copilot_connected_uuid, None)
-        await self._sio_events.emit("reset")
+        await self.sio_events.emit("reset")
 
     @pb_exception_handler
     async def handle_message_menu(self, message: bytes | None = None) -> None:
@@ -142,9 +122,9 @@ class Copilot:
             await self._loop.run_in_executor(None, pb_menu.ParseFromString, message)
 
         menu = MessageToDict(pb_menu)
-        self._shell_menu = models.ShellMenu.model_validate(menu)
-        if self._sio.connected:
-            await self._sio_events.emit("menu", self._shell_menu.model_dump(exclude_defaults=True, exclude_unset=True))
+        self.shell_menu = models.ShellMenu.model_validate(menu)
+        if self.sio.connected:
+            await self.sio_events.emit("menu", self.shell_menu.model_dump(exclude_defaults=True, exclude_unset=True))
 
     @pb_exception_handler
     async def handle_message_pose(self, message: bytes | None = None) -> None:
@@ -162,8 +142,8 @@ class Copilot:
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
         )
-        if self._sio.connected:
-            await self._sio_events.emit("pose", pose)
+        if self.sio.connected:
+            await self.sio_events.emit("pose", pose)
 
     @pb_exception_handler
     async def handle_message_state(self, message: bytes | None = None) -> None:
@@ -181,8 +161,8 @@ class Copilot:
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
         )
-        if self._sio.connected:
-            await self._sio_events.emit("state", state)
+        if self.sio.connected:
+            await self.sio_events.emit("state", state)
 
     @pb_exception_handler
     async def handle_actuators_state(self, message: bytes | None = None) -> None:
@@ -200,9 +180,9 @@ class Copilot:
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
         )
-        if self._sio.connected:
-            actuators_state["robot_id"] = self._id
-            await self._sio_events.emit("actuators_state", actuators_state)
+        if self.sio.connected:
+            actuators_state["robot_id"] = self.id
+            await self.sio_events.emit("actuators_state", actuators_state)
 
     @pb_exception_handler
     async def handle_pid(self, message: bytes | None = None) -> None:
@@ -213,7 +193,7 @@ class Copilot:
         if message:
             await self._loop.run_in_executor(None, pb_pid.ParseFromString, message)
 
-        self._pb_pids[pb_pid.id] = pb_pid
+        self.pb_pids[pb_pid.id] = pb_pid
         pid = Pid(
             id=pb_pid.id,
             kp=pb_pid.kp,
@@ -235,7 +215,7 @@ class Copilot:
             pid_schema["properties"][f"{pid.id}-{prop}"] = pid_schema["properties"][prop]
             del pid_schema["properties"][prop]
         # Send config
-        await self._sio_events.emit("config", pid_schema)
+        await self.sio_events.emit("config", pid_schema)
 
     async def handle_pose_reached(self) -> None:
         """
@@ -243,5 +223,5 @@ class Copilot:
 
         Forward info to the planner.
         """
-        if self._sio.connected:
-            await self._sio_events.emit("pose_reached")
+        if self.sio.connected:
+            await self.sio_events.emit("pose_reached")

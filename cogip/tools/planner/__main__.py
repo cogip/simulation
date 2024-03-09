@@ -2,6 +2,7 @@
 import asyncio
 import logging
 from pathlib import Path
+from typing import Optional
 
 import typer
 from watchfiles import PythonFilter, run_process
@@ -20,8 +21,17 @@ def run(*args, **kwargs) -> None:
 
 
 def main_opt(
-    server_url: str = typer.Option(
-        "http://localhost:8090",
+    id: int = typer.Option(
+        ...,
+        "-i",
+        "--id",
+        min=1,
+        max=9,
+        help="Robot ID.",
+        envvar=["ROBOT_ID"],
+    ),
+    server_url: Optional[str] = typer.Option(  # noqa
+        None,
         help="Socket.IO Server URL",
         envvar="COGIP_SOCKETIO_SERVER_URL",
     ),
@@ -74,20 +84,6 @@ def main_opt(
         help="Interval between each update of robot paths (in seconds)",
         envvar="PLANNER_PATH_REFRESH_INTERVAL",
     ),
-    launcher_speed: int = typer.Option(
-        75,
-        min=0,
-        max=100,
-        help="Launcher speed",
-        envvar="PLANNER_LAUNCHER_SPEED",
-    ),
-    esc_speed: int = typer.Option(
-        3,
-        min=0,
-        max=5,
-        help="ESC speed",
-        envvar="PLANNER_ESC_SPEED",
-    ),
     plot: bool = typer.Option(
         False,
         "-p",
@@ -119,7 +115,11 @@ def main_opt(
         reload = False
         logger.warning("-r/--reload option currently not active")
 
+    if not server_url:
+        server_url = f"http://localhost:809{id}"
+
     args = (
+        id,
         server_url,
         robot_width,
         obstacle_radius,
@@ -128,8 +128,6 @@ def main_opt(
         max_distance,
         obstacle_sender_interval,
         path_refresh_interval,
-        launcher_speed,
-        esc_speed,
         plot,
         debug,
     )

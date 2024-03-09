@@ -131,7 +131,7 @@ class SocketioController(QtCore.QObject):
         """
         name, _, robot_id = menu_name.partition(" ")
         if name == "shell":
-            self.sio.emit("shell_cmd", (int(robot_id), command), namespace="/dashboard")
+            self.sio.emit("shell_cmd", command, namespace="/dashboard")
         else:
             self.sio.emit(f"{menu_name}_cmd", command, namespace="/dashboard")
         self.signal_new_console_text.emit(f"Send '{command}' to {menu_name}")
@@ -152,11 +152,7 @@ class SocketioController(QtCore.QObject):
             robot_id: related robot id
             command: actuator command to send
         """
-        self.sio.emit(
-            "actuator_command",
-            data={"robot_id": robot_id, "command": command.model_dump()},
-            namespace="/dashboard",
-        )
+        self.sio.emit("actuator_command", command.model_dump(), namespace="/dashboard")
 
     def actuators_closed(self, robot_id: str):
         """
@@ -165,11 +161,11 @@ class SocketioController(QtCore.QObject):
         Arguments:
             robot_id: related robot id
         """
-        self.sio.emit("actuators_stop", data=robot_id, namespace="/dashboard")
+        self.sio.emit("actuators_stop", namespace="/dashboard")
 
     @qtSlot(int, bool)
     def starter_changed(self, robot_id, pushed: bool):
-        self.sio.emit("starter_changed", (robot_id, pushed), namespace="/monitor")
+        self.sio.emit("starter_changed", pushed, namespace="/monitor")
 
     def on_menu(self, menu_name: str, data):
         menu = models.ShellMenu.model_validate(data)
@@ -306,14 +302,14 @@ class SocketioController(QtCore.QObject):
             obstacles = TypeAdapter(models.DynObstacleList).validate_python(data)
             self.signal_new_dyn_obstacles.emit(obstacles)
 
-        @self.sio.on("add_robot", namespace="/dashboard")
+        @self.sio.on("add_robot", namespace="/monitor")
         def on_add_robot(robot_id: int, virtual: bool) -> None:
             """
             Add a new robot.
             """
             self.signal_add_robot.emit(robot_id, virtual)
 
-        @self.sio.on("del_robot", namespace="/dashboard")
+        @self.sio.on("del_robot", namespace="/monitor")
         def on_del_robot(robot_id: int) -> None:
             """
             Remove a robot.
@@ -371,4 +367,4 @@ class SocketioController(QtCore.QObject):
             data: List of distances for each angle
         """
         if self.sio.connected:
-            self.sio.emit("lidar_data", (robot_id, data), namespace="/monitor")
+            self.sio.emit("lidar_data", data, namespace="/monitor")
