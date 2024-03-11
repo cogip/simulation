@@ -18,7 +18,7 @@ detects the serial port to use.
 
 ### Emulation Mode
 
-Ask the `Monitor` to emulate the Lidar wich sends its data through the SocketIO server.
+Ask the `Monitor` to emulate the Lidar which sends its data through the SocketIO server.
 The emulation mode is enabled if no Lidar is detected at startup.
 In case of a false detection, use the `--emulation` option.
 
@@ -43,13 +43,13 @@ Usage: cogip-detector [OPTIONS]
 Options:
   --server-url TEXT               Socket.IO Server URL
                                   env var: COGIP_SOCKETIO_SERVER_URL
-                                  default: http://localhost:8090
+                                  default: None
 
   -i, --id INTEGER RANGE          Robot ID.
-                                  env var: ROBOT_ID, COPILOT_ID
+                                  env var: ROBOT_ID, DETECTOR_ID
                                   default: 1; x>=1
 
-  -p, --uart-port PATH            Serial port connected to the Lidar
+  -p, --lidar-port PATH           Serial port connected to the Lidar
                                   env var: DETECTOR_LIDAR_PORT
                                   default: None (autodetect)
 
@@ -69,9 +69,6 @@ Options:
   --refresh-interval FLOAT        Interval between each update of the obstacle list (in seconds)
                                   env var: DETECTOR_REFRESH_INTERVAL
                                   default: 0.2
-
-  -e, --emulation                 Force emulation mode.
-                                  env var: DETECTOR_EMULATION
 
   -r, --reload                    Reload app on source file changes.
                                   env var: COGIP_RELOAD, DETECTOR_RELOAD

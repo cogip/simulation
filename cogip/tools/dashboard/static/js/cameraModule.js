@@ -1,7 +1,6 @@
 let cameraDom = document.getElementById("cameraModal");
 
 const urlParams = new URLSearchParams(window.location.search);
-const robotId = urlParams.get("robot_id");
 
 window.modalCamera = function () {
   const streaming = document.createElement("img");
@@ -11,14 +10,8 @@ window.modalCamera = function () {
 
   let hostname = null;
   let port = null;
-  if (robotId === null) {
-    hostname = window.location.hostname
-    port = parseInt(window.location.port) + 20;
-  }
-  else {
-    hostname = robotId === "0" ? "beacon" : "robot" + robotId;
-    port = port = 8100 + parseInt(robotId);
-  }
+  hostname = window.location.hostname
+  port = parseInt(window.location.port) + 20;
 
   streaming.setAttribute(
     "src",

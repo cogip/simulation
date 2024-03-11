@@ -24,13 +24,13 @@ Example of `.env` file with all default values:
 
 ```bash
 # Socket.IO Server URL
-COGIP_SOCKETIO_SERVER_URL="http://localhost:8090"
+COGIP_SOCKETIO_SERVER_URL="http://localhost:8091"
 
 # Robot ID
 ROBOTCAM_ID=1
 
-# Camera device
-ROBOTCAM_CAMERA_DEVICE="/dev/v4l/by-id/usb-HBV_HD_CAMERA_HBV_HD_CAMERA-video-index0"
+# Camera name
+ROBOTCAM_CAMERA_NAME="hbv"
 
 # Camera frame width
 ROBOTCAM_CAMERA_WIDTH=640
@@ -40,9 +40,6 @@ ROBOTCAM_CAMERA_HEIGHT=480
 
 # Camera video codec
 ROBOTCAM_CAMERA_CODEC="yuyv"
-
-# Camera intrinsics parameters
-ROBOTCAM_CAMERA_PARAMS="[...]/data/coefs-camera-hbv-640x480-yuyv.json"
 
 # Number of uvicorn workers (ignored if launched by gunicorn)
 ROBOTCAM_NB_WORKERS=1

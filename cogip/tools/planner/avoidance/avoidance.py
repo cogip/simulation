@@ -21,10 +21,9 @@ class AvoidanceStrategy(IntEnum):
 
 
 class Avoidance:
-    def __init__(self, robot_id: int, table: Table, shared_properties: DictProxy):
-        self.robot_id = robot_id
+    def __init__(self, table: Table, shared_properties: DictProxy):
         self.shared_properties = shared_properties
-        self.visibility_road_map = VisibilityRoadMapWrapper(robot_id, table, shared_properties)
+        self.visibility_road_map = VisibilityRoadMapWrapper(table, shared_properties)
         self.last_robot_width: int = -1
         self.last_expand: int = -1
 
@@ -49,9 +48,9 @@ class Avoidance:
 
 
 class VisibilityRoadMapWrapper:
-    def __init__(self, robot_id: int, table: Table, shared_properties: DictProxy):
+    def __init__(self, table: Table, shared_properties: DictProxy):
         if DebugWindow and shared_properties["plot"]:
-            self.win = DebugWindow(robot_id)
+            self.win = DebugWindow()
         else:
             self.win = None
         self.table = table

@@ -10,7 +10,7 @@ Bootstrap is a framework very powerful which comes with layout conception (grid 
 
 !!! note "The manipulation below needs to be done each time we add or remove a class in html, css or js files in server."
 
-This command line has to be executed in `simulation/cogip/tools/server`.
+This command line has to be executed in `simulation/cogip/tools/dashboard`.
 
 1. Install npm
    `sudo apt install npm`

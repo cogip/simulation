@@ -19,6 +19,9 @@ composed of a Raspberry Pi 4, a camera and a touchscreen.
 
 Tools running on the robot's Raspberry Pi 4 are:
 
+  - [`Server`](usage/server.md) connecting all components through a SocketIO server.
+  - [`Dashboard`](usage/dashboard.md) a web server providing a dashboard to control and monitor the robot.
+  - [`Planner`](usage/planner.md) in charge of the game strategy.
   - [`Copilot`](usage/copilot.md) driving the robot moves by communicating
     with `mcu-firmware` (on STM32) using Protobuf messages over a serial port.
   - [`Detector`](usage/detector.md) generating obstacles based on Lidar data.
@@ -26,14 +29,15 @@ Tools running on the robot's Raspberry Pi 4 are:
 
 Tools running on the central beacon's Raspberry Pi 4 are:
 
-  - [`Planner`](usage/planner.md) in charge of the game strategy.
-  - [`Beaconcam`](usage/beaconcam.md) reading and analyzing images of the game area from the camera.
-  - [`Server`](usage/server.md) connecting all components through a SocketIO server.
+  - [`Server`](usage/server.md) connecting all beacon components through a SocketIO server,
+  and connected to the SocketIO server of all robots.
     It also runs a web server providing a `Dashboard` to control and monitor the robot.
+  - [`Dashboard`](usage/dashboard.md), a web server providing a dashboard to control and monitor the beacon, and display the dashboard of all robots.
+  - [`Beaconcam`](usage/beaconcam.md) reading and analyzing images of the game area from the camera.
+
+!!! warning "Beacon services will be redesigned and are not yet available. Robots can run standalone."
 
 [`Monitor`](usage/monitor.md) is running on a PC connected to the SocketIO server.
-
-[`Dashboard`](usage/dashboard.md) is accessed through a web browser on the same network.
 
 [`Camera`](usage/camera.md) provides different commands to get information about cameras,
 calibrate them and detect Aruco tags.

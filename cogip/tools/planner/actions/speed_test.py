@@ -5,7 +5,6 @@ from .actions import Action, Actions
 
 if TYPE_CHECKING:
     from ..planner import Planner
-    from ..robot import Robot
 
 
 class SpeedTestAction(Action):
@@ -20,7 +19,7 @@ class SpeedTestAction(Action):
         self.pose.after_pose_func = self.after_pose
         self.poses = [self.pose]
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         return 1000000.0
 
     async def after_pose(self):

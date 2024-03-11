@@ -26,16 +26,16 @@ class Server:
             engineio_logger=False,
         )
         self.app = socketio.ASGIApp(self.sio)
-        self.sio.register_namespace(namespaces.DashboardNamespace())
-        self.sio.register_namespace(namespaces.MonitorNamespace())
+        self.sio.register_namespace(namespaces.DashboardNamespace(self))
+        self.sio.register_namespace(namespaces.MonitorNamespace(self))
         self.sio.register_namespace(namespaces.CopilotNamespace(self))
         self.sio.register_namespace(namespaces.DetectorNamespace(self))
         self.sio.register_namespace(namespaces.PlannerNamespace(self))
-        self.sio.register_namespace(namespaces.RobotcamNamespace())
-        self.sio.register_namespace(namespaces.BeaconcamNamespace())
+        self.sio.register_namespace(namespaces.RobotcamNamespace(self))
+        self.sio.register_namespace(namespaces.BeaconNamespace(self))
 
-        self.robot_id = os.environ.get("ROBOT_ID", 0)
         self.context = context.Context()
+        self.context.robot_id = os.environ["ROBOT_ID"]
         self.root_menu = models.ShellMenu(name="Root Menu", entries=[])
         self.context.tool_menus["root"] = self.root_menu
         self.context.current_tool_menu = "root"
@@ -50,12 +50,10 @@ class Server:
             logger.warning(f"A client tried to send data to namespace / (sid={sid}, event={event})")
 
     async def register_menu(self, namespace: str, data: dict[str, Any]) -> None:
-        name = data.get("name")
-        if not name:
+        if not (name := data.get("name")):
             logger.warning(f"register_menu: missing 'name' in data: {data}")
             return
-        menu_dict = data.get("menu")
-        if not menu_dict:
+        if not (menu_dict := data.get("menu")):
             logger.warning(f"register_menu: missing 'menu' in data: {data}")
             return
         try:

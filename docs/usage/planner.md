@@ -25,9 +25,13 @@ $ cogip-planner --help
 Usage: cogip-planner [OPTIONS]
 
 Options:
+  -i, --id INTEGER RANGE          Robot ID.
+                                  env var: ROBOT_ID
+                                  default: 1; x>=1
+
   --server-url TEXT               Socket.IO Server URL
                                   env var: COGIP_SOCKETIO_SERVER_URL
-                                  default: http://localhost:8090
+                                  default: None
 
   --obstacle-radius INTEGER       Radius of a dynamic obstacle
                                   env var: PLANNER_OBSTACLE_RADIUS

@@ -1,5 +1,4 @@
 import asyncio
-import platform
 from typing import Any
 
 import polling2
@@ -20,7 +19,7 @@ class SioEvents(socketio.AsyncClientNamespace):
 
     def __init__(self, copilot: "copilot.Copilot"):
         super().__init__("/copilot")
-        self._copilot = copilot
+        self.copilot = copilot
 
     async def on_connect(self):
         """
@@ -33,10 +32,10 @@ class SioEvents(socketio.AsyncClientNamespace):
             poll_forever=True,
         )
         logger.info("Connected to cogip-server")
-        await self.emit("connected", (self._copilot.id, (platform.machine() != "aarch64")))
+        await self.emit("connected")
 
-        if self._copilot.shell_menu:
-            await self.emit("menu", self._copilot.shell_menu.model_dump(exclude_defaults=True, exclude_unset=True))
+        if self.copilot.shell_menu:
+            await self.emit("menu", self.copilot.shell_menu.model_dump(exclude_defaults=True, exclude_unset=True))
         await self.emit("register_menu", {"name": "copilot", "menu": menu.model_dump()})
 
     def on_disconnect(self) -> None:
@@ -65,23 +64,23 @@ class SioEvents(socketio.AsyncClientNamespace):
         match cmd:
             case "actuators_control":
                 # Start thread emitting actuators status
-                await self._copilot.pbcom.send_serial_message(copilot.actuators_thread_start_uuid, None)
+                await self.copilot.pbcom.send_serial_message(copilot.actuators_thread_start_uuid, None)
             case "angular_speed_pid_config":
                 # Request angular speed pid state
                 pid_id.id = PB_PidEnum.ANGULAR_SPEED_PID
-                await self._copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
+                await self.copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
             case "linear_speed_pid_config":
                 # Request linear_speed pid state
                 pid_id.id = PB_PidEnum.LINEAR_SPEED_PID
-                await self._copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
+                await self.copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
             case "angular_position_pid_config":
                 # Request angular position pid state
                 pid_id.id = PB_PidEnum.ANGULAR_POSE_PID
-                await self._copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
+                await self.copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
             case "linear_position_pid_config":
                 # Request linear position pid state
                 pid_id.id = PB_PidEnum.LINEAR_POSE_PID
-                await self._copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
+                await self.copilot.pbcom.send_serial_message(copilot.pid_request_uuid, pid_id)
             case _:
                 logger.warning(f"Unknown command: {cmd}")
 
@@ -97,7 +96,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         response = PB_Command()
         response.cmd, _, response.desc = data.partition(" ")
-        await self._copilot.pbcom.send_serial_message(copilot.command_uuid, response)
+        await self.copilot.pbcom.send_serial_message(copilot.command_uuid, response)
 
     async def on_pose_start(self, data: dict[str, Any]):
         """
@@ -107,7 +106,7 @@ class SioEvents(socketio.AsyncClientNamespace):
         start_pose = models.PathPose.model_validate(data)
         pb_start_pose = PB_PathPose()
         start_pose.copy_pb(pb_start_pose)
-        await self._copilot.pbcom.send_serial_message(copilot.pose_start_uuid, pb_start_pose)
+        await self.copilot.pbcom.send_serial_message(copilot.pose_start_uuid, pb_start_pose)
 
     async def on_pose_order(self, data: dict[str, Any]):
         """
@@ -117,14 +116,14 @@ class SioEvents(socketio.AsyncClientNamespace):
         pose_order = models.PathPose.model_validate(data)
         pb_pose_order = PB_PathPose()
         pose_order.copy_pb(pb_pose_order)
-        await self._copilot.pbcom.send_serial_message(copilot.pose_order_uuid, pb_pose_order)
+        await self.copilot.pbcom.send_serial_message(copilot.pose_order_uuid, pb_pose_order)
 
     async def on_actuators_stop(self):
         """
         Callback on actuators_stop (from dashboard).
         Forward to mcu-firmware.
         """
-        await self._copilot.pbcom.send_serial_message(copilot.actuators_thread_stop_uuid, None)
+        await self.copilot.pbcom.send_serial_message(copilot.actuators_thread_stop_uuid, None)
 
     async def on_actuator_command(self, data: dict[str, Any]):
         """
@@ -140,7 +139,7 @@ class SioEvents(socketio.AsyncClientNamespace):
             command.pb_copy(pb_command.pump)
         elif isinstance(command, PositionalActuatorCommand):
             command.pb_copy(pb_command.positional_actuator)
-        await self._copilot.pbcom.send_serial_message(copilot.actuators_command_uuid, pb_command)
+        await self.copilot.pbcom.send_serial_message(copilot.actuators_command_uuid, pb_command)
 
     async def on_config_updated(self, config: dict[str, Any]) -> None:
         """
@@ -149,8 +148,8 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         pid_id, _, name = config["name"].partition("-")
         if pid_id and name:
-            setattr(self._copilot._pb_pids[int(pid_id)], name, config["value"])
-            await self._copilot.pbcom.send_serial_message(copilot.pid_uuid, self._copilot._pb_pids[int(pid_id)])
+            setattr(self.copilot.pb_pids[int(pid_id)], name, config["value"])
+            await self.copilot.pbcom.send_serial_message(copilot.pid_uuid, self.copilot.pb_pids[int(pid_id)])
 
     async def on_set_controller(self, controller: int):
         """
@@ -159,32 +158,32 @@ class SioEvents(socketio.AsyncClientNamespace):
         """
         pb_controller = PB_Controller()
         pb_controller.id = controller
-        await self._copilot.pbcom.send_serial_message(copilot.controller_uuid, pb_controller)
+        await self.copilot.pbcom.send_serial_message(copilot.controller_uuid, pb_controller)
 
     async def on_game_start(self):
         """
         Callback on game_start message.
         Forward to firmware.
         """
-        await self._copilot.pbcom.send_serial_message(copilot.game_start_uuid, None)
+        await self.copilot.pbcom.send_serial_message(copilot.game_start_uuid, None)
 
     async def on_game_end(self):
         """
         Callback on game_end message.
         Forward to firmware.
         """
-        await self._copilot.pbcom.send_serial_message(copilot.game_end_uuid, None)
+        await self.copilot.pbcom.send_serial_message(copilot.game_end_uuid, None)
 
     async def on_game_reset(self):
         """
         Callback on game_reset message.
         Forward to firmware.
         """
-        await self._copilot.pbcom.send_serial_message(copilot.game_reset_uuid, None)
+        await self.copilot.pbcom.send_serial_message(copilot.game_reset_uuid, None)
 
     async def on_brake(self):
         """
         Callback on brake message.
         Forward to firmware.
         """
-        await self._copilot.pbcom.send_serial_message(copilot.brake_uuid, None)
+        await self.copilot.pbcom.send_serial_message(copilot.brake_uuid, None)

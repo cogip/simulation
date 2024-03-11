@@ -9,7 +9,6 @@ from .actions import Action, Actions
 
 if TYPE_CHECKING:
     from ..planner import Planner
-    from ..robot import Robot
 
 
 class CameraCalibrationAction(Action):
@@ -113,7 +112,7 @@ class CameraCalibrationAction(Action):
 
     async def calibrate_camera(self):
         await asyncio.sleep(1)
-        if pose := await calibrate_camera(self.robot):
+        if pose := await calibrate_camera(self):
             self.camera_positions.append(pose)
         await asyncio.sleep(0.5)
 
@@ -133,7 +132,7 @@ class CameraCalibrationAction(Action):
         else:
             logger.warning("No camera position found")
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         return 1000000.0
 
 

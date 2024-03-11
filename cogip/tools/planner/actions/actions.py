@@ -8,7 +8,6 @@ from ..pose import Pose
 
 if TYPE_CHECKING:
     from ..planner import Planner
-    from ..robot import Robot
 
 
 class Action:
@@ -24,13 +23,12 @@ class Action:
         self.actions = actions
         self.interruptable = interruptable
         self.game_context = GameContext()
-        self.robot: "Robot" | None = None
         self.poses: list[Pose] = []
         self.before_action_func: Callable[[], Awaitable[None]] | None = None
         self.after_action_func: Callable[[], Awaitable[None]] | None = None
         self.recycled: bool = False
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         """
         Weight of the action.
         It can be used to choose the next action to select.
@@ -76,14 +74,14 @@ class WaitAction(Action):
         self.before_action_func = self.before_wait
         self.after_action_func = self.after_wait
 
-    def weight(self, robot: "Robot") -> float:
+    def weight(self) -> float:
         return 1
 
     async def before_wait(self):
-        logger.debug(f"Robot {self.robot.robot_id}: WaitAction: before action")
+        logger.debug(f"Robot {self.planner.robot_id}: WaitAction: before action")
 
     async def after_wait(self):
-        logger.debug(f"Robot {self.robot.robot_id}: WaitAction: after action")
+        logger.debug(f"Robot {self.planner.robot_id}: WaitAction: after action")
         await asyncio.sleep(2)
 
         for action in self.actions:

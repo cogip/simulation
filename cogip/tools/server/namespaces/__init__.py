@@ -4,4 +4,4 @@ from .detector import DetectorNamespace  # noqa
 from .monitor import MonitorNamespace  # noqa
 from .planner import PlannerNamespace  # noqa
 from .robotcam import RobotcamNamespace  # noqa
-from .beaconcam import BeaconcamNamespace  # noqa
+from .beacon import BeaconNamespace  # noqa

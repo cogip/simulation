@@ -23,7 +23,7 @@ class SioEvents(socketio.ClientNamespace):
         """
         polling2.poll(lambda: self.client.connected is True, step=0.2, poll_forever=True)
         logger.info("Connected to cogip-server")
-        self.emit("connected", self._detector.robot_id)
+        self.emit("connected")
         self.emit("register_menu", {"name": "detector", "menu": menu.model_dump()})
         self._detector.start()
 

@@ -21,7 +21,7 @@ class Detector:
     """
     Main detector class.
 
-    Read Lidar data from the Lidar in monitoring mode (TODO)
+    Read Lidar data from the Lidar in monitoring mode
     or fake data provided by `Monitor` in emulation Mode.
 
     Build obstacles and send the list to the server.
@@ -32,29 +32,24 @@ class Detector:
     def __init__(
         self,
         server_url: str,
-        robot_id: int,
         lidar_port: str | None,
         min_distance: int,
         max_distance: int,
         beacon_radius: int,
         refresh_interval: float,
-        emulation: bool,
     ):
         """
         Class constructor.
 
         Arguments:
             server_url: server URL
-            robot_id: robot id
             lidar_port: Serial port connected to the Lidar
             min_distance: Minimum distance to detect an obstacle
             max_distance: Maximum distance to detect an obstacle
             beacon_radius: Radius of the opponent beacon support (a cylinder of 70mm diameter to a cube of 100mm width)
             refresh_interval: Interval between each update of the obstacle list (in seconds)
-            emulation: force emulation mode
         """
         self._server_url = server_url
-        self._robot_id = robot_id
         self._lidar_port = lidar_port
         self._properties = Properties(
             min_distance=min_distance,
@@ -83,7 +78,7 @@ class Detector:
 
         self._laser: ydlidar.CYdLidar | None = None
         self._scan: ydlidar.LaserScan | None = None
-        if ydlidar and not emulation and not self._lidar_port:
+        if ydlidar and not self._lidar_port:
             for _, value in ydlidar.lidarPortList().items():
                 self._lidar_port = value
         if self._lidar_port:
@@ -139,20 +134,12 @@ class Detector:
                 self._sio.connect(
                     self._server_url,
                     namespaces=["/detector"],
-                    auth={
-                        "id": self._robot_id,
-                        "mode": "detection" if self._laser else "emulation",
-                    },
                 )
                 self._sio.wait()
             except socketio.exceptions.ConnectionError:
                 time.sleep(2)
                 continue
             break
-
-    @property
-    def robot_id(self) -> int:
-        return self._robot_id
 
     @property
     def properties(self) -> Properties:

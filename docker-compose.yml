@@ -13,11 +13,6 @@ x-build-firmware: &build-firmware
     context: .
     target: cogip-firmware
 
-x-env-common: &env-common
-  COGIP_SOCKETIO_SERVER_HOST: beacon
-  COGIP_SOCKETIO_SERVER_PORT: 8090
-  COGIP_SOCKETIO_SERVER_URL: http://beacon:8090
-
 x-vol-cogip: &vol-cogip
   "./cogip:/src/cogip"
 
@@ -72,7 +67,7 @@ x-firmware: &firmware
     - -x
     - -c
     - |
-      applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf -c /tmp -c /var/run/cogip/ptySTM32-$${ROBOT_ID}
+      applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf -c /dev/null -c /var/run/cogip/ptySTM32-$${ROBOT_ID}
   depends_on: &depends-firmware
       make-firmware:
         condition: service_completed_successfully
@@ -81,7 +76,16 @@ x-robot: &robot
   <<: [*build-console, *volumes-common, *extra-hosts-common]
   hostname: robot1
   environment: &env-robot
-    << : *env-common
+    SERVER_DEBUG:
+    SERVER_RELOAD:
+    PLANNER_DEBUG:
+    PLANNER_RELOAD:
+    PLANNER_ROBOT_WIDTH:
+    PLANNER_OBSTACLE_RADIUS:
+    PLANNER_OBSTACLE_BB_MARGIN:
+    PLANNER_OBSTACLE_BB_VERTICES:
+    PLANNER_OBSTACLE_SENDER_INTERVAL:
+    PLANNER_PATH_REFRESH_INTERVAL:
     COPILOT_RELOAD:
     COPILOT_DEBUG:
     DETECTOR_RELOAD:
@@ -98,12 +102,36 @@ x-robot: &robot
     - -x
     - -c
     - |
-      wait-for-it -t 0 $${COGIP_SOCKETIO_SERVER_HOST}:$${COGIP_SOCKETIO_SERVER_PORT}
+      cogip-server &
+      wait-for-it -t 0 localhost:809$${ROBOT_ID}
+      cogip-planner &
       cogip-copilot --serial-port /var/run/cogip/ptyRPI-$${ROBOT_ID} &
       cogip-detector &
+      cogip-dashboard &
       sleep infinity
-  depends_on:
-    - beacon
+
+x-monitor: &monitor
+  << : [*build-gui, *extra-hosts-common]
+  environment: &env-monitor
+    DISPLAY:
+    QTWEBENGINE_DISABLE_SANDBOX: 1
+    XDG_RUNTIME_DIR:
+  command:
+    - /bin/sh
+    - -x
+    - -c
+    - |
+      wait-for-it -t 0 $${COGIP_SOCKETIO_SERVER_HOST}:$${COGIP_SOCKETIO_SERVER_PORT}
+      cogip-monitor http://$${COGIP_SOCKETIO_SERVER_HOST}:$${COGIP_SOCKETIO_SERVER_PORT} &
+      sleep infinity
+  working_dir: /src
+  volumes:
+    - *vol-cogip
+    - *vol-vscode
+    - "./assets:/src/assets"
+    - "/tmp/.X11-unix/:/tmp/.X11-unix/"
+    - "/dev/dri/:/dev/dri/"
+    - "$XDG_RUNTIME_DIR:$XDG_RUNTIME_DIR"
 
 services:
   beacon:
@@ -113,18 +141,12 @@ services:
       - "8080:8080"
       - "8090:8090"
     environment:
-      << : *env-common
+      COGIP_SOCKETIO_SERVER_HOST: beacon
+      COGIP_SOCKETIO_SERVER_PORT: 8090
+      COGIP_SOCKETIO_SERVER_URL: http://beacon:8090
       ROBOT_ID: 0
       SERVER_DEBUG:
       SERVER_RELOAD:
-      PLANNER_DEBUG:
-      PLANNER_RELOAD:
-      PLANNER_ROBOT_WIDTH:
-      PLANNER_OBSTACLE_RADIUS:
-      PLANNER_OBSTACLE_BB_MARGIN:
-      PLANNER_OBSTACLE_BB_VERTICES:
-      PLANNER_OBSTACLE_SENDER_INTERVAL:
-      PLANNER_PATH_REFRESH_INTERVAL:
     volumes:
       - *vol-cogip
       - *vol-vscode
@@ -136,37 +158,9 @@ services:
       - |
         cogip-server &
         cogip-dashboard &
-        cogip-planner &
         sleep infinity
-
-  monitor:
-    << : [*build-gui, *extra-hosts-common]
-    hostname: monitor
-    environment:
-      << : *env-common
-      DISPLAY:
-      QTWEBENGINE_DISABLE_SANDBOX: 1
-      XDG_RUNTIME_DIR:
-    command:
-      - /bin/sh
-      - -x
-      - -c
-      - |
-        wait-for-it -t 0 $${COGIP_SOCKETIO_SERVER_HOST}:$${COGIP_SOCKETIO_SERVER_PORT}
-        cogip-monitor &
-        sleep infinity
-    working_dir: /src
-    depends_on:
-      - beacon
-    volumes:
-      - *vol-cogip
-      - *vol-vscode
-      - "./assets:/src/assets"
-      - "/tmp/.X11-unix/:/tmp/.X11-unix/"
-      - "/dev/dri/:/dev/dri/"
-      - "$XDG_RUNTIME_DIR:$XDG_RUNTIME_DIR"
     profiles:
-      - monitor
+      - beacon
 
   socat1:
     << : *socat
@@ -226,26 +220,56 @@ services:
   robot1:
     << : *robot
     hostname: robot1
+    ports:
+      - "8081:8081"
+      - "8091:8091"
     environment:
       << : *env-robot
       ROBOT_ID: 1
     depends_on:
       - socat1
-      - beacon
     profiles:
       - robot1
 
   robot2:
     << : *robot
     hostname: robot2
+    ports:
+      - "8082:8082"
+      - "8092:8092"
     environment:
       << : *env-robot
       ROBOT_ID: 2
     depends_on:
       - socat2
-      - beacon
     profiles:
       - robot2
+
+  monitor1:
+    << : *monitor
+    hostname: monitor1
+    environment:
+      << : *env-monitor
+      COGIP_SOCKETIO_SERVER_HOST: robot1
+      COGIP_SOCKETIO_SERVER_PORT: 8091
+      COGIP_SOCKETIO_SERVER_URL: http://robot1:8091
+    depends_on:
+      - robot1
+    profiles:
+      - monitor1
+
+  monitor2:
+    << : *monitor
+    hostname: monitor2
+    environment:
+      << : *env-monitor
+      COGIP_SOCKETIO_SERVER_HOST: robot2
+      COGIP_SOCKETIO_SERVER_PORT: 8092
+      COGIP_SOCKETIO_SERVER_URL: http://robot2:8092
+    depends_on:
+      - robot2
+    profiles:
+      - monitor2
 
 volumes:
   vscode:

@@ -19,7 +19,7 @@ The monitor provides a graphical interface, featuring:
 
   * save and load obstacles using JSON files
 
-  * visualization of ToF (red dots) and LIDAR (bleu dots) sensors detections
+  * visualization of ToF (red dots) and LIDAR (blue dots) sensors detections
 
   * visualization of obstacles detected using the Lidar (in transparent red)
 
@@ -27,7 +27,7 @@ The monitor provides a graphical interface, featuring:
 
   * dashboard window to visualize the `Dashboard`
 
-  * differents artifacts depending of current game rules
+  * different artifacts depending of current game rules
 
 ![GUI Overview](../img/cogip-monitor-gui.png)
 
@@ -42,14 +42,14 @@ The monitor provides a graphical interface, featuring:
 To connect the `Monitor` to the `Server` running on the same development PC, run:
 
 ```bash
-cogip-monitor http://localhost:8090
+cogip-monitor http://localhost:8091
 ```
 
 To connect the `Monitor` to the `Server` running on the Raspberry Pi
-in the central beacon, run:
+in the robot, run:
 
 ```bash
-cogip-monitor http://cogip-beacon:8090
+cogip-monitor http://robot1:8091
 ```
 
 !!! note "Adapt URL and port depending on `Server` configuration"
@@ -65,5 +65,5 @@ Usage: cogip-monitor [URL]
 Arguments:
   [URL]        Socket.IO Server URL
                env var: COGIP_SOCKETIO_SERVER_URL
-               default: http://localhost:8090
+               default: http://localhost:8091
 ```
