@@ -47,7 +47,7 @@ class RobotManualEntity(Qt3DCore.QEntity):
         self.parent_widget = parent_widget
 
         self.mesh = Qt3DRender.QMesh(self)
-        self.mesh.setSource(QtCore.QUrl("file:assets/robot2023.stl"))
+        self.mesh.setSource(QtCore.QUrl("file:assets/robot2024.stl"))
         self.addComponent(self.mesh)
 
         self.material = Qt3DExtras.QPhongMaterial(self)

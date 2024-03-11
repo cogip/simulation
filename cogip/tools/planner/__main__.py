@@ -26,7 +26,7 @@ def main_opt(
         envvar="COGIP_SOCKETIO_SERVER_URL",
     ),
     robot_width: int = typer.Option(
-        225,
+        295,
         min=100,
         max=1000,
         help="Width of the robot (in mm)",
