@@ -3,12 +3,14 @@ site_name: COGIP Tools
 repo_name: cogip/simulation
 repo_url: https://github.com/cogip/simulation
 
+extra_css:
+  - index.css
+
 theme:
   name: 'material'
   language: en
-  # palette:
-  #   scheme: slate
-  #   primary: blue grey
+  palette:
+    scheme: slate
 
 nav:
   - Overview: index.md
