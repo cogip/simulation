@@ -1,8 +1,6 @@
 import signal
 import time
 from datetime import datetime
-
-# import functools
 from multiprocessing.shared_memory import SharedMemory
 from pathlib import Path
 from threading import Thread
