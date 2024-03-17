@@ -121,6 +121,7 @@ def avoidance_process(
 
         if len(path) == 0:
             logger.debug("Avoidance: No path found")
+            shared_properties["last_avoidance_pose_current"] = None
             queue_sio.put(("blocked", None))
             continue
 
