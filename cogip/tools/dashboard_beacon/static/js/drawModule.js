@@ -115,12 +115,13 @@ function getFullHeight(className, includeMargin = true) {
 
 export function resizeCanvas() {
   const footerHeight = getFullHeight("footer", false);
+  const navHeight = getFullHeight("nav-tabs", true);
   const menuWidth = document.getElementById("menu").offsetWidth;
 
   let htmlCanvas = document.getElementById("board");
 
   htmlCanvas.height = Math.min(
-    window.innerHeight - footerHeight,
+    window.innerHeight - (footerHeight + navHeight),
     document.getElementById("menu").offsetHeight
   );
 
