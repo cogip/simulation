@@ -150,6 +150,15 @@ The `Dashboard` for robot 1 is accessible using a web browser at `http://localho
 cogip-server-beacon
 ```
 
+`Dashboard` is run using:
+
+```bash
+cogip-dashboard-beacon
+```
+
+The `Beacon Dashboard` is accessible using a web browser at `http://localhost:8080`.
+
+
 ### Linting and Formatting
 
 While installing the `dev` environment, `ruff` and `pre-commit` package have been installed.
