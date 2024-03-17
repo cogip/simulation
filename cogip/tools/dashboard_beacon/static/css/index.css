@@ -62,15 +62,6 @@ h1 {
   border-right: 1px solid var(--grey-color) !important;
 }
 
-#nav-tool-tab {
-  width: 100%;
-}
-
-#nav-tab {
-  border-bottom: 1px solid var(--grey-color);
-  margin-bottom: 10px;
-}
-
 .nav-link,
 .nav-link:focus,
 .nav-link:hover {
