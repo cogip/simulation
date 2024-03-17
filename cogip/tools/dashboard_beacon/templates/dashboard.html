@@ -119,6 +119,7 @@
             socketModule.onConnection(this);
           })
           .on("disconnect", function () {
+            drawModule.deleteTabs();
             socketModule.onDisconnect();
           })
           .on("tool_menu", function (menu) {
@@ -127,11 +128,11 @@
           })
           .on("add_robot", function (robot_id) {
             console.log(`Add robot ${robot_id} dashboard on http://robot${robot_id}:808${robot_id}`);
-            // TODO
+            drawModule.addNewTab(robot_id);
           })
           .on("del_robot", function (robot_id) {
             console.log(`Delete robot ${robot_id} dashboard`);
-            // TODO
+            drawModule.deleteTab(robot_id);
           })
           .on("pose_current", function (robot_id, msg) {
             drawModule.updatePoseCurrent(robot_id, msg);

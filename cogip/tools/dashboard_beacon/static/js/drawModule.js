@@ -334,3 +334,66 @@ function drawObstacles(color, obstacle, context) {
 
   context.restore();
 }
+
+export function addNewTab(robot_id) {
+  // Create new nav-tab element
+  var newNavTab = document.createElement('li');
+  newNavTab.className = 'nav-item';
+  newNavTab.innerHTML = `<button class="nav-link active" id="robot${robot_id}-tab" data-bs-toggle="tab" data-bs-target="#robot${robot_id}" type="button" role="tab" aria-controls="robot${robot_id}" aria-selected="true">Robot ${robot_id}</button>`;
+
+  // Create new tab-pane element
+  var newTabPane = document.createElement('div');
+  newTabPane.className = 'tab-pane fade';
+  newTabPane.id = `robot${robot_id}`;
+  newTabPane.innerHTML = `<h3>New Tab for Robot ${robot_id} </h3>`;
+
+  // Append new nav-tab to the nav-tabs container
+  var navTabsContainer = document.querySelector('.nav-tabs');
+  navTabsContainer.appendChild(newNavTab);
+
+  // Append new tab-pane to the tab-content container
+  var tabContentContainer = document.querySelector('.tab-content');
+  tabContentContainer.appendChild(newTabPane);
+}
+
+export function deleteTab(robot_id) {
+  // Select the new button element
+  var navButton = document.getElementById(`robot${robot_id}-tab`);
+
+  // Check if the tab to delete is active
+  const deletedTabIsActive = navButton.classList.contains('active');
+
+  // Select the new nav-item element
+  var navTab = navButton.parentElement;
+
+  // Select the new tab-pane element
+  var tabPane = document.getElementById(`robot${robot_id}`);
+
+  // Check if the elements exist before attempting to remove them
+  if (navTab && tabPane) {
+    // Remove the new nav-tab from the nav-tabs container
+    var navTabsContainer = document.querySelector('.nav-tabs');
+    navTabsContainer.removeChild(navTab);
+
+    // Remove the new tab-pane from the tab-content container
+    var tabContentContainer = document.querySelector('.tab-content');
+    tabContentContainer.removeChild(tabPane);
+
+    if (deletedTabIsActive) {
+      // Activate beacon tab if the deleted tab was active
+      var beaconButton = document.getElementById(`beacon-tab`);
+      beaconButton.classList.add('active');
+      var beaconPane = document.getElementById(`beacon`);
+      beaconPane.classList.add('active', "show");
+    }
+  }
+}
+
+export function deleteTabs() {
+  document.querySelectorAll('[id^="robot"][id$="-tab"]').forEach(function (x) {
+    const match = x.id.match(/robot(\d+)-tab/);
+    if (match) {
+      deleteTab(parseInt(match[1], 10));
+    }
+  })
+}
