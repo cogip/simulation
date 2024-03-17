@@ -74,7 +74,6 @@ x-firmware: &firmware
 
 x-robot: &robot
   <<: [*build-console, *volumes-common, *extra-hosts-common]
-  hostname: robot1
   environment: &env-robot
     SERVER_DEBUG:
     SERVER_RELOAD:
@@ -141,7 +140,7 @@ services:
       - "8080:8080"
       - "8090:8090"
     environment:
-      SERVER_BEACON_MAX_ROBOTS: 2
+      SERVER_BEACON_MAX_ROBOTS: 4
       SERVER_BEACON_RELOAD:
       SERVER_BEACON_DEBUG:
     volumes:
@@ -174,6 +173,22 @@ services:
       ROBOT_ID: 2
     profiles:
       - robot2
+
+  socat3:
+    << : *socat
+    hostname: socat3
+    environment:
+      ROBOT_ID: 3
+    profiles:
+      - robot3
+
+  socat4:
+    << : *socat
+    hostname: socat4
+    environment:
+      ROBOT_ID: 4
+    profiles:
+      - robot4
 
   make-firmware:
     <<: *build-firmware
@@ -214,6 +229,32 @@ services:
     profiles:
       - robot2
 
+  firmware3:
+    << : *firmware
+    hostname: firmware3
+    environment:
+      << : *env-firmware
+      ROBOT_ID: 3
+    depends_on:
+      << : *depends-firmware
+      socat2:
+        condition: service_started
+    profiles:
+      - robot3
+
+  firmware4:
+    << : *firmware
+    hostname: firmware4
+    environment:
+      << : *env-firmware
+      ROBOT_ID: 4
+    depends_on:
+      << : *depends-firmware
+      socat2:
+        condition: service_started
+    profiles:
+      - robot4
+
   robot1:
     << : *robot
     hostname: robot1
@@ -242,6 +283,34 @@ services:
     profiles:
       - robot2
 
+  robot3:
+    << : *robot
+    hostname: robot3
+    ports:
+      - "8083:8083"
+      - "8093:8093"
+    environment:
+      << : *env-robot
+      ROBOT_ID: 3
+    depends_on:
+      - socat3
+    profiles:
+      - robot3
+
+  robot4:
+    << : *robot
+    hostname: robot4
+    ports:
+      - "8084:8084"
+      - "8094:8094"
+    environment:
+      << : *env-robot
+      ROBOT_ID: 4
+    depends_on:
+      - socat4
+    profiles:
+      - robot4
+
   monitor1:
     << : *monitor
     hostname: monitor1
@@ -267,6 +336,32 @@ services:
       - robot2
     profiles:
       - monitor2
+
+  monitor3:
+    << : *monitor
+    hostname: monitor2
+    environment:
+      << : *env-monitor
+      COGIP_SOCKETIO_SERVER_HOST: robot3
+      COGIP_SOCKETIO_SERVER_PORT: 8093
+      COGIP_SOCKETIO_SERVER_URL: http://robot3:8093
+    depends_on:
+      - robot3
+    profiles:
+      - monitor3
+
+  monitor4:
+    << : *monitor
+    hostname: monitor4
+    environment:
+      << : *env-monitor
+      COGIP_SOCKETIO_SERVER_HOST: robot4
+      COGIP_SOCKETIO_SERVER_PORT: 8094
+      COGIP_SOCKETIO_SERVER_URL: http://robot4:8094
+    depends_on:
+      - robot4
+    profiles:
+      - monitor4
 
 volumes:
   vscode:
