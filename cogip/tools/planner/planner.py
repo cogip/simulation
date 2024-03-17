@@ -788,6 +788,14 @@ class Planner:
                     return
                 if self.game_context.camp == Camp.Colors.blue and new_table == TableEnum.Training:
                     logger.warning("Wizard: training table is not supported with blue camp")
+                    await self.sio_ns.emit(
+                        "wizard",
+                        {
+                            "name": "Error",
+                            "type": "message",
+                            "value": "Training table is not supported with blue camp",
+                        },
+                    )
                     return
                 self.game_context.table = new_table
                 self.shared_properties["table"] = new_table
