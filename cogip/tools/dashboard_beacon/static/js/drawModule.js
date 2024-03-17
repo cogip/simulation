@@ -97,9 +97,24 @@ let ratioY = null;
 let coordX = 0;
 let coordY = 0;
 
+function getFullHeight(className, includeMargin = true) {
+  const footer = document.getElementsByClassName(className)[0];
+  const footerStyles = window.getComputedStyle(footer);
+
+  const footerHeightWithPadding = footer.offsetHeight;
+  let footerMarginTop = 0;
+  let footerMarginBottom = 0;
+
+  if (includeMargin) {
+    footerMarginTop = parseFloat(footerStyles.marginTop);
+    footerMarginBottom = parseFloat(footerStyles.marginBottom);
+  }
+
+  return footerHeightWithPadding + footerMarginTop + footerMarginBottom;
+}
+
 export function resizeCanvas() {
-  const footerHeight =
-    document.getElementsByClassName("footer")[0].offsetHeight;
+  const footerHeight = getFullHeight("footer", false);
   const menuWidth = document.getElementById("menu").offsetWidth;
 
   let htmlCanvas = document.getElementById("board");
