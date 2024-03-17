@@ -22,6 +22,7 @@ from .avoidance.avoidance import AvoidanceStrategy
 from .avoidance.process import avoidance_process
 from .camp import Camp
 from .context import GameContext
+from .positions import StartPosition
 from .properties import Properties
 from .strategy import Strategy
 from .table import TableEnum
@@ -94,7 +95,6 @@ class Planner:
         self.sio_receiver_queue = asyncio.Queue()
         self.sio_emitter_queue = self.process_manager.Queue()
         self.action: actions.Action | None = None
-        self.start_position: int | None = None
         self.actions = action_classes.get(self.game_context.strategy, actions.Actions)(self)
         self.obstacles: models.DynObstacleList = []
         self.obstacles_sender_loop = AsyncLoop(
@@ -110,8 +110,10 @@ class Planner:
         self.blocked_counter: int = 0
         self.controller = self.game_context.default_controller
         self.game_wizard = GameWizard(self)
+        self.start_position: StartPosition | None = None
         available_start_poses = self.game_context.get_available_start_poses()
-        self.start_pose = available_start_poses[(self.robot_id - 1) % len(available_start_poses)]
+        if available_start_poses:
+            self.start_position = available_start_poses[(self.robot_id - 1) % len(available_start_poses)]
         self.sio_receiver_task: asyncio.Task | None = None
         self.sio_emitter_task: asyncio.Task | None = None
         self.countdown_task: asyncio.Task | None = None
@@ -186,7 +188,7 @@ class Planner:
         self.shared_properties["exiting"] = False
         self.game_context.reset()
         self.actions = action_classes.get(self.game_context.strategy, actions.Actions)(self)
-        await self.set_pose_start(self.game_context.get_start_pose(self.start_pose).pose)
+        await self.set_pose_start(self.game_context.get_start_pose(self.start_position).pose)
         await self.set_controller(self.game_context.default_controller, True)
         self.sio_receiver_task = asyncio.create_task(
             self.task_sio_receiver(),
@@ -709,15 +711,25 @@ class Planner:
         Choose start position command from the menu.
         Send start position wizard message.
         """
-        await self.sio_ns.emit(
-            "wizard",
-            {
-                "name": "Choose Start Position",
-                "type": "choice_integer",
-                "choices": self.game_context.get_available_start_poses(),
-                "value": self.start_position,
-            },
-        )
+        if self.start_position is None:
+            await self.sio_ns.emit(
+                "wizard",
+                {
+                    "name": "Error",
+                    "type": "message",
+                    "value": "No start position available with this Camp/Table",
+                },
+            )
+        else:
+            await self.sio_ns.emit(
+                "wizard",
+                {
+                    "name": "Choose Start Position",
+                    "type": "choice_integer",
+                    "choices": [p.name for p in self.game_context.get_available_start_poses()],
+                    "value": self.start_position.name,
+                },
+            )
 
     async def cmd_choose_table(self):
         """
@@ -766,8 +778,8 @@ class Planner:
                 self.game_context.avoidance_strategy = new_strategy
                 await self.reset()
                 logger.info(f"Wizard: New avoidance strategy: {self.game_context.avoidance_strategy.name}")
-            case chose_start_pose if chose_start_pose.startswith("Choose Start Position"):
-                start_position = int(value)
+            case "Choose Start Position":
+                start_position = StartPosition[value]
                 self.start_position = start_position
                 await self.set_pose_start(self.game_context.get_start_pose(start_position).pose)
             case "Choose Table":
