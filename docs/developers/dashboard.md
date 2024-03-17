@@ -10,7 +10,7 @@ Bootstrap is a framework very powerful which comes with layout conception (grid 
 
 !!! note "The manipulation below needs to be done each time we add or remove a class in html, css or js files in server."
 
-This command line has to be executed in `simulation/cogip/tools/dashboard`.
+This command line has to be executed in `simulation/cogip/tools/dashboard` or `simulation/cogip/tools/dashboard_beacon`.
 
 1. Install npm
    `sudo apt install npm`
@@ -19,7 +19,7 @@ This command line has to be executed in `simulation/cogip/tools/dashboard`.
    `npm i -g purgecss`
 
 3. Run command to purge Bootstrap file according to what we use in our html, js and css files
-   `purgecss -css static/css/external/bootstrap-5.3.0-alpha.min.css --content templates/index.html static/js/*.js --output static/css/purged`
+   `purgecss -css static/css/external/bootstrap-5.3.3.min.css --content templates/dashboard.html static/js/*.js --output static/css/purged`
 
 Useful documentation:
 
