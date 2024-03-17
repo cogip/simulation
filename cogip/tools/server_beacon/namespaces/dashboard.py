@@ -41,9 +41,7 @@ class DashboardNamespace(socketio.AsyncNamespace):
             case "choose_table":
                 await self.cogip_server.choose_table()
             case "reset":
-                for _, robot in self.cogip_server.robots.items():
-                    if robot.sio.connected:
-                        await robot.sio.emit("reset", namespace="/beacon")
+                await self.cogip_server.reset_robots()
             case "start":
                 for _, robot in self.cogip_server.robots.items():
                     if robot.sio.connected:
