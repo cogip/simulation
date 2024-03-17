@@ -29,7 +29,7 @@ Tools running on the robot's Raspberry Pi 4 are:
 
 Tools running on the central beacon's Raspberry Pi 4 are:
 
-  - [`Server`](usage/server.md) connecting all beacon components through a SocketIO server,
+  - [`Server Beacon`](usage/server_beacon.md) connecting all beacon components through a SocketIO server,
   and connected to the SocketIO server of all robots.
     It also runs a web server providing a `Dashboard` to control and monitor the robot.
   - [`Dashboard`](usage/dashboard.md), a web server providing a dashboard to control and monitor the beacon, and display the dashboard of all robots.

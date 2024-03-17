@@ -96,6 +96,8 @@ make -C submodules/mcu-firmware/applications/cup2023 BOARD=cogip-native PORT="-c
 
 !!! note "In RIOT, `-c` option specifies serial ports to use. First port being used for the shell, it is not configurable, so we just pass `/dev/null`."
 
+#### Robot Tools
+
 `Server` is run using:
 
 ```bash
@@ -139,6 +141,14 @@ cogip-monitor http://localhost:8091
 ```
 
 The `Dashboard` for robot 1 is accessible using a web browser at `http://localhost:8081`.
+
+#### Beacon Tools
+
+`Server` is run using:
+
+```bash
+cogip-server-beacon
+```
 
 ### Linting and Formatting
 

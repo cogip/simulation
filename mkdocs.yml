@@ -15,6 +15,7 @@ nav:
   - Setup: install.md
   - Tools:
     - usage/server.md
+    - usage/server_beacon.md
     - usage/planner.md
     - usage/copilot.md
     - usage/detector.md
