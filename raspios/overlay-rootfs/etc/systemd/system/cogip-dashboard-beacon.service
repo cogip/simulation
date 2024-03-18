@@ -1,0 +1,17 @@
+[Unit]
+Description=COGIP Beacon Dashboard
+
+Wants=network.target
+After=cogip-server-beacon.service
+Requires=cogip-server-beacon.service
+
+[Service]
+Type=simple
+Restart=on-failure
+WorkingDirectory=/tmp
+ExecStart=/opt/venv/bin/python3 -m cogip.tools.dashboard_beacon
+RestartSec=5
+EnvironmentFile=/etc/environment
+
+[Install]
+WantedBy=multi-user.target
