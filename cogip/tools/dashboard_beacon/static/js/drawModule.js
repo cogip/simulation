@@ -335,17 +335,30 @@ function drawObstacles(color, obstacle, context) {
   context.restore();
 }
 
+// Event handler for hiding tab
+function onHideTab(robot_id) {
+  var iframe = document.getElementById(`robot${robot_id}-iframe`);
+  iframe.removeAttribute('src');
+}
+
+// Event handler for showing tab
+function onShowTab(robot_id) {
+  var iframe = document.getElementById(`robot${robot_id}-iframe`);
+  iframe.src = `http://robot${robot_id}:808${robot_id}`;
+}
+
 export function addNewTab(robot_id) {
   // Create new nav-tab element
   var newNavTab = document.createElement('li');
   newNavTab.className = 'nav-item';
-  newNavTab.innerHTML = `<button class="nav-link active" id="robot${robot_id}-tab" data-bs-toggle="tab" data-bs-target="#robot${robot_id}" type="button" role="tab" aria-controls="robot${robot_id}" aria-selected="true">Robot ${robot_id}</button>`;
+  newNavTab.innerHTML = `<button class="nav-link" id="robot${robot_id}-tab" data-bs-toggle="tab" data-bs-target="#robot${robot_id}" type="button" role="tab" aria-controls="robot${robot_id}" aria-selected="true">Robot ${robot_id}</button>`;
 
   // Create new tab-pane element
   var newTabPane = document.createElement('div');
   newTabPane.className = 'tab-pane fade';
   newTabPane.id = `robot${robot_id}`;
-  newTabPane.innerHTML = `<h3>New Tab for Robot ${robot_id} </h3>`;
+  var navTabHeight = getFullHeight("nav-tabs", true);
+  newTabPane.innerHTML = `<iframe id="robot${robot_id}-iframe" style="position: absolute; top: ${navTabHeight}px; bottom: 0; left: 0; right: 0; width: 100%; height: ${window.innerHeight - navTabHeight}px;" frameborder="0"></iframe>`;
 
   // Append new nav-tab to the nav-tabs container
   var navTabsContainer = document.querySelector('.nav-tabs');
@@ -354,6 +367,18 @@ export function addNewTab(robot_id) {
   // Append new tab-pane to the tab-content container
   var tabContentContainer = document.querySelector('.tab-content');
   tabContentContainer.appendChild(newTabPane);
+
+  document.getElementById(`robot${robot_id}-tab`).addEventListener('shown.bs.tab', function (e) {
+    var robot_id = e.target.getAttribute('id').match(/robot(\d+)-tab/)[1];
+    onShowTab(robot_id);
+  });
+
+  // Add event listener to newly created tab to unload the iframe when user leaves the tab
+  document.getElementById(`robot${robot_id}-tab`).addEventListener('hide.bs.tab', function (e) {
+    // Get the ID of the unselected robot from the href attribute
+    var robotId = e.target.getAttribute('id').match(/robot(\d+)-tab/)[1];
+    onHideTab(robotId);
+  });
 }
 
 export function deleteTab(robot_id) {
@@ -371,6 +396,10 @@ export function deleteTab(robot_id) {
 
   // Check if the elements exist before attempting to remove them
   if (navTab && tabPane) {
+    // Remove the event listeners for the deleted tab
+    navTab.removeEventListener('hide.bs.tab', onHideTab);
+    navTab.removeEventListener('shown.bs.tab', onShowTab);
+
     // Remove the new nav-tab from the nav-tabs container
     var navTabsContainer = document.querySelector('.nav-tabs');
     navTabsContainer.removeChild(navTab);
