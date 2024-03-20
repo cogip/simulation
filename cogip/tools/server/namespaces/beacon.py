@@ -1,5 +1,3 @@
-from typing import Any
-
 import socketio
 
 from .. import logger, server
@@ -32,8 +30,14 @@ class BeaconNamespace(socketio.AsyncNamespace):
         self.context.beacon_sid = None
         logger.info("Beacon disconnected.")
 
-    async def on_register_menu(self, sid, data: dict[str, Any]):
+    async def on_reset(self, sid):
         """
-        Callback on register_menu.
+        Callback on reset message.
         """
-        await self.cogip_server.register_menu("beacon", data)
+        await self.emit("reset", namespace="/planner")
+
+    async def on_command(self, sid, cmd):
+        """
+        Callback on command.
+        """
+        await self.emit("command", cmd, namespace="/planner")

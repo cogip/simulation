@@ -141,12 +141,9 @@ services:
       - "8080:8080"
       - "8090:8090"
     environment:
-      COGIP_SOCKETIO_SERVER_HOST: beacon
-      COGIP_SOCKETIO_SERVER_PORT: 8090
-      COGIP_SOCKETIO_SERVER_URL: http://beacon:8090
-      ROBOT_ID: 0
-      SERVER_DEBUG:
-      SERVER_RELOAD:
+      SERVER_BEACON_MAX_ROBOTS: 2
+      SERVER_BEACON_RELOAD:
+      SERVER_BEACON_DEBUG:
     volumes:
       - *vol-cogip
       - *vol-vscode
@@ -156,8 +153,8 @@ services:
       - -x
       - -c
       - |
-        cogip-server &
-        cogip-dashboard &
+        cogip-server-beacon &
+        cogip-dashboard-beacon &
         sleep infinity
     profiles:
       - beacon

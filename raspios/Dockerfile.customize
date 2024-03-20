@@ -113,6 +113,9 @@ COPY overlay-rootfs-beacon/ /
 RUN sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf && \
     chmod +x /etc/rc.local
 
+RUN systemctl enable cogip-server-beacon
+RUN systemctl enable cogip-dashboard-beacon
+
 
 FROM common as robot
 

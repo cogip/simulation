@@ -160,6 +160,9 @@ export function drawBoardElement(msg) {
 
   // draw path
   let path_robot = path;
+  if (path_robot.length > 0 && pose_current !== undefined) {
+    drawPath(pose_current, path_robot[0], context);
+  }
   for (let i = 0; i < path_robot.length - 1; i++) {
     const startPoint = path_robot[i];
     const endPoint = path_robot[i + 1];
@@ -202,8 +205,8 @@ function drawRobot(x, y, O, context) {
 }
 
 function drawPath(startPoint, endPoint, context) {
-  const { newStartX, newStartY, newStartAngle } = adaptCoords(startPoint.x, startPoint.y, 0)
-  const { newEndX, newEndY, newEndAngle } = adaptCoords(endPoint.x, endPoint.y, 0)
+  const { newX: newStartX, newY: newStartY, newAngle: newStartAngle } = adaptCoords(startPoint.x, startPoint.y, 0)
+  const { newX: newEndX, newY: newEndY, newAngle: newEndAngle } = adaptCoords(endPoint.x, endPoint.y, 0)
 
   context.save();
   context.strokeStyle = "blue";

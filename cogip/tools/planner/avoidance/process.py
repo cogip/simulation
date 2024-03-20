@@ -71,8 +71,11 @@ def avoidance_process(
 
         pose_current = shared_properties["pose_current"]
         pose_order = shared_properties["pose_order"]
-        if not pose_current or not pose_order:
-            logger.debug("Avoidance: Skip path update (no pose current or no pose order)")
+        if not pose_current:
+            logger.debug("Avoidance: Skip path update (no pose current)")
+            continue
+        if not pose_order:
+            logger.debug("Avoidance: Skip path update (no pose order)")
             continue
         pose_current = models.PathPose.model_validate(pose_current)
         pose_order = models.PathPose.model_validate(pose_order)
@@ -121,6 +124,7 @@ def avoidance_process(
 
         if len(path) == 0:
             logger.debug("Avoidance: No path found")
+            shared_properties["last_avoidance_pose_current"] = None
             queue_sio.put(("blocked", None))
             continue
 

@@ -1,0 +1,16 @@
+[Unit]
+Description=COGIP Beacon Server
+
+Wants=network.target
+After=syslog.target network-online.target
+
+[Service]
+Type=simple
+Restart=on-failure
+WorkingDirectory=/tmp
+ExecStart=/opt/venv/bin/python3 -m cogip.tools.server_beacon
+RestartSec=5
+EnvironmentFile=/etc/environment
+
+[Install]
+WantedBy=multi-user.target

@@ -66,7 +66,7 @@ def rotate_2d(vector: cv2.typing.MatLike, angle: float) -> cv2.typing.MatLike:
     return rotated.squeeze()
 
 
-def wrap_to_pi(angle: float):
+def wrap_to_pi(angle: float) -> float:
     """Wrap angle to PI, return a angle value between `-PI` and `PI`
 
     Arguments:
