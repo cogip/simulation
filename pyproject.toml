@@ -47,6 +47,14 @@ include = ["cogip*"]
     "static/js/external/*",
     "templates/*"
 ]
+"cogip.tools.dashboard_beacon" = [
+    "static/css/*",
+    "static/css/purged/*",
+    "static/img/*",
+    "static/js/*",
+    "static/js/external/*",
+    "templates/*"
+]
 "cogip.tools.camera" = [
     "cameras/**/params.yaml"
 ]
