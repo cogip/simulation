@@ -46,10 +46,10 @@ class SocketioController(QtCore.QObject):
             Qt signal emitted to remove a robot
         signal_wizard_request:
             Qt signal emitted to forward wizard requests
-        signal_start_lidar_emulation:
-            Qt signal emitted to start Lidar emulation
-        signal_stop_lidar_emulation:
-            Qt signal emitted to stop Lidar emulation
+        signal_start_sensors_emulation:
+            Qt signal emitted to start sensors emulation
+        signal_stop_sensors_emulation:
+            Qt signal emitted to stop sensors emulation
         signal_config_request:
             Qt signal emitted to load a new shell/tool menu
         signal_planner_reset:
@@ -71,8 +71,8 @@ class SocketioController(QtCore.QObject):
     signal_del_robot: qtSignal = qtSignal(int)
     signal_wizard_request: qtSignal = qtSignal(dict)
     signal_close_wizard: qtSignal = qtSignal()
-    signal_start_lidar_emulation: qtSignal = qtSignal(int)
-    signal_stop_lidar_emulation: qtSignal = qtSignal(int)
+    signal_start_sensors_emulation: qtSignal = qtSignal(int)
+    signal_stop_sensors_emulation: qtSignal = qtSignal(int)
     signal_config_request: qtSignal = qtSignal(dict)
     signal_actuators_state: qtSignal = qtSignal(ActuatorsState)
     signal_planner_reset: qtSignal = qtSignal()
@@ -330,19 +330,19 @@ class SocketioController(QtCore.QObject):
             """
             self.signal_close_wizard.emit()
 
-        @self.sio.on("start_lidar_emulation", namespace="/monitor")
-        def on_start_lidar_emulation(robot_id: int) -> None:
+        @self.sio.on("start_sensors_emulation", namespace="/monitor")
+        def on_start_sensors_emulation(robot_id: int) -> None:
             """
-            Start Lidar emulation.
+            Start sensors emulation.
             """
-            self.signal_start_lidar_emulation.emit(robot_id)
+            self.signal_start_sensors_emulation.emit(robot_id)
 
-        @self.sio.on("stop_lidar_emulation", namespace="/monitor")
-        def on_stop_lidar_emulation(robot_id: int) -> None:
+        @self.sio.on("stop_sensors_emulation", namespace="/monitor")
+        def on_stop_sensors_emulation(robot_id: int) -> None:
             """
-            Stop Lidar emulation.
+            Stop sensors emulation.
             """
-            self.signal_stop_lidar_emulation.emit(robot_id)
+            self.signal_stop_sensors_emulation.emit(robot_id)
 
         @self.sio.on("cmd_reset", namespace="/monitor")
         def on_cmd_reset() -> None:
@@ -358,13 +358,13 @@ class SocketioController(QtCore.QObject):
             """
             self.signal_starter_changed.emit(robot_id, pushed)
 
-    def emit_lidar_data(self, robot_id: int, data: list[int]) -> None:
+    def emit_sensors_data(self, robot_id: int, data: list[int]) -> None:
         """
-        Send Lidar data to server.
+        Send sensors data to server.
 
         Arguments:
             robot_id: ID of the robot
             data: List of distances for each angle
         """
         if self.sio.connected:
-            self.sio.emit("lidar_data", data, namespace="/monitor")
+            self.sio.emit("sensors_data", data, namespace="/monitor")

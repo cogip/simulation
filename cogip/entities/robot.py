@@ -22,15 +22,15 @@ class RobotEntity(AssetEntity):
     Attributes:
         asset_path: Path of the asset file
         sensors_update_interval: Interval in milliseconds between each sensors update
-        lidar_emit_interval: Interval in milliseconds between each Lidar data emission
-        lidar_emit_data_signal: Qt Signal emitting Lidar data
+        sensors_emit_interval: Interval in milliseconds between each sensors data emission
+        sensors_emit_data_signal: Qt Signal emitting sensors data
         order_robot:: Entity that represents the robot next destination
     """
 
     asset_path: Path = Path("assets/robot2024.dae")
     sensors_update_interval: int = 5
-    lidar_emit_interval: int = 20
-    lidar_emit_data_signal: qtSignal = qtSignal(int, list)
+    sensors_emit_interval: int = 20
+    sensors_emit_data_signal: qtSignal = qtSignal(int, list)
     order_robot: RobotOrderEntity = None
 
     def __init__(self, robot_id: int, parent: Qt3DCore.QEntity | None = None):
@@ -41,7 +41,7 @@ class RobotEntity(AssetEntity):
         """
         super().__init__(self.asset_path, parent=parent)
         self.robot_id = robot_id
-        self.lidar_sensors = []
+        self.sensors = []
         self.rect_obstacles_pool = []
         self.round_obstacles_pool = []
 
@@ -65,8 +65,8 @@ class RobotEntity(AssetEntity):
         # Use a timer to trigger sensors update
         self.sensors_update_timer = QtCore.QTimer()
 
-        self.lidar_emit_timer = QtCore.QTimer()
-        self.lidar_emit_timer.timeout.connect(self.emit_lidar_data)
+        self.sensors_emit_timer = QtCore.QTimer()
+        self.sensors_emit_timer.timeout.connect(self.emit_sensors_data)
 
     def post_init(self):
         """
@@ -109,7 +109,7 @@ class RobotEntity(AssetEntity):
         for prop in sensors_properties:
             sensor = LidarSensor(asset_entity=self, **prop)
             self.sensors_update_timer.timeout.connect(sensor.update_hit)
-            self.lidar_sensors.append(sensor)
+            self.sensors.append(sensor)
 
     @qtSlot(Pose)
     def new_robot_pose_current(self, new_pose: Pose) -> None:
@@ -134,29 +134,29 @@ class RobotEntity(AssetEntity):
             self.order_robot.transform.setTranslation(QtGui.QVector3D(new_pose.x, new_pose.y, 0))
             self.order_robot.transform.setRotationZ(new_pose.O)
 
-    def start_lidar_emulation(self) -> None:
+    def start_sensors_emulation(self) -> None:
         """
         Start timers triggering sensors update and Lidar data emission.
         """
         self.sensors_update_timer.start(RobotEntity.sensors_update_interval)
-        self.lidar_emit_timer.start(RobotEntity.lidar_emit_interval)
+        self.sensors_emit_timer.start(RobotEntity.sensors_emit_interval)
 
-    def stop_lidar_emulation(self) -> None:
+    def stop_sensors_emulation(self) -> None:
         """
-        Stop timers triggering sensors update and Lidar data emission.
+        Stop timers triggering sensors update and sensors data emission.
         """
         self.sensors_update_timer.stop()
-        self.lidar_emit_timer.stop()
+        self.sensors_emit_timer.stop()
 
-    def lidar_data(self) -> list[int]:
+    def sensors_data(self) -> list[int]:
         """
-        Return a list of distances for each 360 Lidar angles.
+        Return a list of distances for each 360 Lidar angles or ToF distance.
         """
-        return [sensor.distance for sensor in self.lidar_sensors]
+        return [sensor.distance for sensor in self.sensors]
 
     @qtSlot()
-    def emit_lidar_data(self) -> None:
+    def emit_sensors_data(self) -> None:
         """
-        Qt Slot called to emit Lidar data.
+        Qt Slot called to emit sensors data.
         """
-        self.lidar_emit_data_signal.emit(self.robot_id, self.lidar_data())
+        self.sensors_emit_data_signal.emit(self.robot_id, self.sensors_data())

@@ -78,7 +78,7 @@ class SioEvents(socketio.ClientNamespace):
         """
         self._detector.robot_pose = models.Pose.model_validate(data)
 
-    def on_lidar_data(self, data: list[int]) -> None:
+    def on_sensors_data(self, data: list[int]) -> None:
         """
         Callback on Lidar data.
         """

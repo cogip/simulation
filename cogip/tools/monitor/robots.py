@@ -11,10 +11,10 @@ class RobotManager(QtCore.QObject):
     """
 
     Attributes:
-        lidar_emit_data_signal: Qt Signal emitting Lidar data
+        sensors_emit_data_signal: Qt Signal emitting sensors data
     """
 
-    lidar_emit_data_signal: qtSignal = qtSignal(int, list)
+    sensors_emit_data_signal: qtSignal = qtSignal(int, list)
 
     def __init__(self, game_view: GameView):
         """
@@ -29,7 +29,7 @@ class RobotManager(QtCore.QObject):
         self._available_robots: dict[int, RobotEntity] = dict()
         self._rect_obstacles_pool: list[DynRectObstacleEntity] = []
         self._round_obstacles_pool: list[DynCircleObstacleEntity] = []
-        self._lidar_emulation: dict[int, bool] = {}
+        self._sensors_emulation: dict[int, bool] = {}
 
     def add_robot(self, robot_id: int, virtual: bool = False) -> None:
         """
@@ -45,15 +45,15 @@ class RobotManager(QtCore.QObject):
         if self._available_robots.get(robot_id) is None:
             robot = RobotEntity(robot_id, self._game_view.scene_entity)
             self._game_view.add_asset(robot)
-            robot.lidar_emit_data_signal.connect(self.emit_lidar_data)
+            robot.sensors_emit_data_signal.connect(self.emit_sensors_data)
             robot.setEnabled(False)
             self._available_robots[robot_id] = robot
 
         robot = self._available_robots.pop(robot_id)
         robot.setEnabled(True)
         self._robots[robot_id] = robot
-        if self._lidar_emulation.get(robot_id, False):
-            robot.start_lidar_emulation()
+        if self._sensors_emulation.get(robot_id, False):
+            robot.start_sensors_emulation()
 
     def del_robot(self, robot_id: int) -> None:
         """
@@ -63,7 +63,7 @@ class RobotManager(QtCore.QObject):
             robot_id: ID of the robot to remove
         """
         robot = self._robots.pop(robot_id)
-        robot.stop_lidar_emulation()
+        robot.stop_sensors_emulation()
         robot.setEnabled(False)
         self._available_robots[robot_id] = robot
 
@@ -91,39 +91,39 @@ class RobotManager(QtCore.QObject):
         if robot:
             robot.new_robot_pose_order(new_pose)
 
-    def start_lidar_emulation(self, robot_id: int) -> None:
+    def start_sensors_emulation(self, robot_id: int) -> None:
         """
-        Start timers triggering sensors update and Lidar data emission.
+        Start timers triggering sensors update and sensors data emission.
 
         Arguments:
             robot_id: ID of the robot
         """
-        self._lidar_emulation[robot_id] = True
+        self._sensors_emulation[robot_id] = True
         robot = self._robots.get(robot_id)
         if robot:
-            robot.start_lidar_emulation()
+            robot.start_sensors_emulation()
 
-    def stop_lidar_emulation(self, robot_id: int) -> None:
+    def stop_sensors_emulation(self, robot_id: int) -> None:
         """
-        Stop timers triggering sensors update and Lidar data emission.
+        Stop timers triggering sensors update and sensors data emission.
 
         Arguments:
             robot_id: ID of the robot
         """
-        self._lidar_emulation[robot_id] = False
+        self._sensors_emulation[robot_id] = False
         robot = self._robots.get(robot_id)
         if robot:
-            robot.start_lidar_emulation()
+            robot.start_sensors_emulation()
 
-    def emit_lidar_data(self, robot_id: int, data: list[int]) -> None:
+    def emit_sensors_data(self, robot_id: int, data: list[int]) -> None:
         """
-        Send Lidar data to server.
+        Send sensors data to server.
 
         Arguments:
             robot_id: ID of the robot
             data: List of distances for each angle
         """
-        self.lidar_emit_data_signal.emit(robot_id, data)
+        self.sensors_emit_data_signal.emit(robot_id, data)
 
     def set_dyn_obstacles(self, dyn_obstacles: DynObstacleList) -> None:
         """
