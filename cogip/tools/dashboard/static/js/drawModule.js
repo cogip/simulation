@@ -2,12 +2,30 @@ let pose_current = undefined;
 let pose_order = undefined;
 let path = [];
 let obstacles = [];
+let robot = new Image();
+let order = new Image();
 
-export function updatePoseCurrent(new_pose) {
+export function updatePoseCurrent(robot_id, new_pose) {
+  if (robot.src === '') {
+    if (robot_id === 1) {
+      robot.src = "static/img/robot.png";
+    }
+    else {
+      robot.src = "static/img/pami.png";
+    }
+  }
   pose_current = new_pose;
 }
 
-export function updatePoseOrder(new_pose) {
+export function updatePoseOrder(robot_id, new_pose) {
+  if (order.src === '') {
+    if (robot_id === 1) {
+      order.src = "static/img/robot.png";
+    }
+    else {
+      order.src = "static/img/pami.png";
+    }
+  }
   pose_order = new_pose;
 }
 
@@ -117,12 +135,6 @@ export function displayMsg(msg) {
     )} / Ang:${pose_current_robot.O.toFixed(2)}`;
   }
 }
-
-let robot = new Image();
-robot.src = "static/img/robot.png";
-
-let order = new Image();
-order.src = "static/img/robot.png";
 
 export function drawBoardElement(msg) {
   // get board dom element
