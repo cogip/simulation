@@ -326,6 +326,9 @@ class GameView(QtWidgets.QWidget):
             self.robot_manual = RobotManualEntity(self.scene_entity, self.container)
             self.robot_manual.enable_controller.connect(self.enable_mouse)
             self.new_move_delta.connect(self.robot_manual.new_move_delta)
+            self.pami_manual = RobotManualEntity(self.scene_entity, self.container, robot_id=2, y=-1200)
+            self.pami_manual.enable_controller.connect(self.enable_mouse)
+            self.new_move_delta.connect(self.pami_manual.new_move_delta)
 
             print(f"Load time of assets: {timeit.default_timer() - self.start_time:0.3f}s")
 

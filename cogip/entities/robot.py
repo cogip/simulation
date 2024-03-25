@@ -20,14 +20,12 @@ class RobotEntity(AssetEntity):
     The robot entity displayed on the table.
 
     Attributes:
-        asset_path: Path of the asset file
         sensors_update_interval: Interval in milliseconds between each sensors update
         sensors_emit_interval: Interval in milliseconds between each sensors data emission
         sensors_emit_data_signal: Qt Signal emitting sensors data
         order_robot:: Entity that represents the robot next destination
     """
 
-    asset_path: Path = Path("assets/robot2024.dae")
     sensors_update_interval: int = 5
     sensors_emit_interval: int = 20
     sensors_emit_data_signal: qtSignal = qtSignal(int, list)
@@ -39,7 +37,8 @@ class RobotEntity(AssetEntity):
 
         Inherits [AssetEntity][cogip.entities.asset.AssetEntity].
         """
-        super().__init__(self.asset_path, parent=parent)
+        asset_path = Path(f"assets/{'robot' if robot_id == 1 else 'pami'}2024.dae")
+        super().__init__(asset_path, parent=parent)
         self.robot_id = robot_id
         self.sensors = []
         self.rect_obstacles_pool = []
@@ -77,7 +76,7 @@ class RobotEntity(AssetEntity):
         super().post_init()
 
         self.add_lidar_sensors()
-        self.order_robot = RobotOrderEntity(self.parent())
+        self.order_robot = RobotOrderEntity(self.parent(), self.robot_id)
 
         Sensor.add_obstacle(self.beacon_entity)
 

@@ -307,7 +307,7 @@ class SocketioController(QtCore.QObject):
             """
             Add a new robot.
             """
-            self.signal_add_robot.emit(robot_id, virtual)
+            self.signal_add_robot.emit(int(robot_id), virtual)
 
         @self.sio.on("del_robot", namespace="/monitor")
         def on_del_robot(robot_id: int) -> None:

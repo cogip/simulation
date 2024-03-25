@@ -28,6 +28,7 @@ class RobotManualEntity(Qt3DCore.QEntity):
         self,
         parent: Qt3DCore.QEntity,
         parent_widget: QtWidgets.QWidget,
+        robot_id: int = 1,
         x: int = 1200,
         y: int = 1200,
         rotation: int = 180,
@@ -47,7 +48,7 @@ class RobotManualEntity(Qt3DCore.QEntity):
         self.parent_widget = parent_widget
 
         self.mesh = Qt3DRender.QMesh(self)
-        self.mesh.setSource(QtCore.QUrl("file:assets/robot2024.stl"))
+        self.mesh.setSource(QtCore.QUrl(f"file:assets/{'robot' if robot_id == 1 else 'pami'}2024.stl"))
         self.addComponent(self.mesh)
 
         self.material = Qt3DExtras.QPhongMaterial(self)
