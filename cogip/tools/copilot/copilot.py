@@ -10,26 +10,31 @@ from .pbcom import PBCom, pb_exception_handler
 from .pid import Pid
 from .sio_events import SioEvents
 
-reset_uuid: int = 10
-command_uuid: int = 15
-menu_uuid: int = 20
-state_uuid: int = 25
-copilot_connected_uuid: int = 30
-copilot_disconnected_uuid: int = 35
-pose_order_uuid: int = 40
-pose_reached_uuid: int = 45
-pose_start_uuid: int = 50
-actuators_thread_start_uuid: int = 55
-actuators_thread_stop_uuid: int = 60
-actuators_state_uuid: int = 65
-actuators_command_uuid: int = 70
-pid_request_uuid: int = 75
-pid_uuid: int = 80
-controller_uuid: int = 85
-game_start_uuid: int = 90
-game_end_uuid: int = 95
-game_reset_uuid: int = 100
-brake_uuid: int = 105
+# Motion Control: 0x1000 - 0x1FFF
+state_uuid: int = 0x1001
+pose_order_uuid: int = 0x1002
+pose_reached_uuid: int = 0x1003
+pose_start_uuid: int = 0x1004
+pid_request_uuid: int = 0x1005
+pid_uuid: int = 0x1006
+brake_uuid: int = 0x1007
+controller_uuid: int = 0x1008
+# Actuators: 0x2000 - 0x2FFF
+actuators_thread_start_uuid: int = 0x2001
+actuators_thread_stop_uuid: int = 0x2002
+actuators_state_uuid: int = 0x2003
+actuators_command_uuid: int = 0x2004
+# Service: 0x3000 - 0x3FFF
+reset_uuid: int = 0x3001
+copilot_connected_uuid: int = 0x3002
+copilot_disconnected_uuid: int = 0x3003
+menu_uuid: int = 0x3004
+command_uuid: int = 0x3005
+# Game: 0x4000 - 0x4FFF
+game_start_uuid: int = 0x4001
+game_end_uuid: int = 0x4002
+game_reset_uuid: int = 0x4003
+# Board: 0xF000 - 0xFFFF
 
 
 class Copilot:
