@@ -39,6 +39,7 @@ class Planner:
         robot_id: int,
         server_url: str,
         robot_width: int,
+        robot_length: int,
         obstacle_radius: int,
         obstacle_bb_margin: float,
         obstacle_bb_vertices: int,
@@ -55,6 +56,7 @@ class Planner:
             robot_id: Robot ID
             server_url: Socket.IO Server URL
             robot_width: Width of the robot (in mm)
+            robot_length: Length of the robot (in mm)
             obstacle_radius: Radius of a dynamic obstacle (in mm)
             obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
             obstacle_bb_vertices: Number of obstacle bounding box vertices
@@ -76,6 +78,7 @@ class Planner:
         self.properties = Properties(
             robot_id=robot_id,
             robot_width=robot_width,
+            robot_length=robot_length,
             obstacle_radius=obstacle_radius,
             obstacle_bb_margin=obstacle_bb_margin,
             obstacle_bb_vertices=obstacle_bb_vertices,
@@ -553,7 +556,7 @@ class Planner:
         Store obstacles detected by a robot sent by Detector.
         Add bounding box and radius.
         """
-        bb_radius = self.properties.obstacle_radius + self.properties.robot_width / 2
+        bb_radius = self.properties.obstacle_radius + self.properties.robot_length / 2
 
         table = self.game_context.table
         self.obstacles = [
