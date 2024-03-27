@@ -41,9 +41,8 @@ class ActuatorBase(BaseModel):
 
 
 class ServoEnum(IntEnum):
-    LXSERVO_BALL_SWITCH = 1
-    LXSERVO_RIGHT_ARM = 2
-    LXSERVO_LEFT_ARM = 4
+    LXSERVO_LEFT_ARM = 0
+    LXSERVO_RIGHT_ARM = 1
 
 
 class ServoCommand(BaseModel):
@@ -80,8 +79,7 @@ class Servo(ActuatorBase, ServoCommand):
 
 
 class PumpEnum(IntEnum):
-    PUMP_RIGHT_ARM = 0
-    PUMP_LEFT_ARM = 1
+    NONE = 0
 
 
 class PumpCommand(BaseModel):
@@ -103,14 +101,12 @@ class Pump(ActuatorBase, PumpCommand):
 
 
 class PositionalActuatorEnum(IntEnum):
-    MOTOR_CENTRAL_LIFT = 0
-    MOTOR_CONVEYOR_LAUNCHER = 1
-    ONOFF_LED_PANELS = 2
-    ANALOGSERVO_CHERRY_ARM = 3
-    ANALOGSERVO_CHERRY_ESC = 4
-    ANALOGSERVO_CHERRY_RELEASE = 5
-    LXMOTOR_RIGHT_ARM_LIFT = 6
-    LXMOTOR_LEFT_ARM_LIFT = 7
+    MOTOR_BOTTOM_LIFT = 0
+    MOTOR_TOP_LIFT = 1
+    ANALOGSERVO_BOTTOM_ARM_LEFT = 2
+    ANALOGSERVO_BOTTOM_ARM_RIGHT = 3
+    ANALOGSERVO_TOP_ARM_LEFT = 4
+    ANALOGSERVO_TOP_ARM_RIGHT = 5
 
 
 class PositionalActuatorCommand(BaseModel):
