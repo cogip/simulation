@@ -556,14 +556,27 @@ class Planner:
         Store obstacles detected by a robot sent by Detector.
         Add bounding box and radius.
         """
-        bb_radius = self.properties.obstacle_radius + self.properties.robot_length / 2
-
         table = self.game_context.table
-        self.obstacles = [
-            self.create_dyn_obstacle(obstacle, bb_radius)
-            for obstacle in obstacles
-            if table.contains(obstacle, self.properties.obstacle_radius)
-        ]
+        if self.robot_id == 1:
+            bb_radius = self.properties.obstacle_radius + self.properties.robot_length / 2
+
+            self.obstacles = [
+                self.create_dyn_obstacle(obstacle, bb_radius)
+                for obstacle in obstacles
+                if table.contains(obstacle, self.properties.obstacle_radius)
+            ]
+        else:
+            # In case of PAMI, the detected obstacle is at the front the real obstacle
+            # instead of at its center.
+            # Since we use a specific avoidance strategy that only needs to know the path
+            # is intersecting the obstacle, the radius can be reduced to the minimum to create
+            # a bounding box.
+            self.obstacles = [
+                self.create_dyn_obstacle(obstacle, radius=10, bb_radius=10)
+                for obstacle in obstacles
+                if table.contains(obstacle)
+            ]
+
         self.shared_properties["obstacles"] = [
             obstacle.model_dump(exclude_defaults=True) for obstacle in self.obstacles
         ]
