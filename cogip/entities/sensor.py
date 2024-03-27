@@ -136,6 +136,17 @@ class Sensor(QtCore.QObject):
         # Activate if not already done
         self.ray_caster.trigger()
 
+    @property
+    def distance(self) -> int:
+        """
+        Last sensor hit distance if any.
+        """
+        dist = 65535
+        if self.hit:
+            dist = self.hit.distance()
+            dist += math.dist((0, 0), (self.origin_x, self.origin_y))
+        return int(dist)
+
 
 class ToFSensor(Sensor):
     """
@@ -245,14 +256,3 @@ class LidarSensor(Sensor):
 
         self.lidar_id = LidarSensor.nb_lidar_sensors
         LidarSensor.nb_lidar_sensors += 1
-
-    @property
-    def distance(self) -> int:
-        """
-        Last sensor hit distance if any.
-        """
-        dist = 65535
-        if self.hit:
-            dist = self.hit.distance()
-            dist += math.dist((0, 0), (self.origin_x, self.origin_y))
-        return int(dist)

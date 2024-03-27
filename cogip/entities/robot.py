@@ -12,7 +12,7 @@ from PySide6.QtCore import Slot as qtSlot
 from cogip.models import Pose
 from .asset import AssetEntity
 from .robot_order import RobotOrderEntity
-from .sensor import LidarSensor, Sensor
+from .sensor import LidarSensor, Sensor, ToFSensor
 
 
 class RobotEntity(AssetEntity):
@@ -43,23 +43,25 @@ class RobotEntity(AssetEntity):
         self.sensors = []
         self.rect_obstacles_pool = []
         self.round_obstacles_pool = []
+        self.beacon_entity: Qt3DCore.QEntity | None = None
 
-        self.beacon_entity = Qt3DCore.QEntity(self)
-        self.beacon_mesh = Qt3DExtras.QCylinderMesh(self.beacon_entity)
-        self.beacon_mesh.setLength(80)
-        self.beacon_mesh.setRadius(40)
-        self.beacon_entity.addComponent(self.beacon_mesh)
+        if robot_id == 1:
+            self.beacon_entity = Qt3DCore.QEntity(self)
+            self.beacon_mesh = Qt3DExtras.QCylinderMesh(self.beacon_entity)
+            self.beacon_mesh.setLength(80)
+            self.beacon_mesh.setRadius(40)
+            self.beacon_entity.addComponent(self.beacon_mesh)
 
-        self.beacon_transform = Qt3DCore.QTransform(self.beacon_entity)
-        self.beacon_transform.setTranslation(QtGui.QVector3D(0, 0, 350 + self.beacon_mesh.length() / 2))
-        self.beacon_transform.setRotationX(90)
-        self.beacon_entity.addComponent(self.beacon_transform)
+            self.beacon_transform = Qt3DCore.QTransform(self.beacon_entity)
+            self.beacon_transform.setTranslation(QtGui.QVector3D(0, 0, 350 + self.beacon_mesh.length() / 2))
+            self.beacon_transform.setRotationX(90)
+            self.beacon_entity.addComponent(self.beacon_transform)
 
-        # Create a layer used by sensors to activate detection on the beacon
-        self.beacon_entity.layer = Qt3DRender.QLayer(self.beacon_entity)
-        self.beacon_entity.layer.setRecursive(True)
-        self.beacon_entity.layer.setEnabled(True)
-        self.beacon_entity.addComponent(self.beacon_entity.layer)
+            # Create a layer used by sensors to activate detection on the beacon
+            self.beacon_entity.layer = Qt3DRender.QLayer(self.beacon_entity)
+            self.beacon_entity.layer.setRecursive(True)
+            self.beacon_entity.layer.setEnabled(True)
+            self.beacon_entity.addComponent(self.beacon_entity.layer)
 
         # Use a timer to trigger sensors update
         self.sensors_update_timer = QtCore.QTimer()
@@ -75,10 +77,15 @@ class RobotEntity(AssetEntity):
         """
         super().post_init()
 
-        self.add_lidar_sensors()
+        if self.robot_id == 1:
+            self.add_lidar_sensors()
+        else:
+            self.add_tof_sensor()
+
         self.order_robot = RobotOrderEntity(self.parent(), self.robot_id)
 
-        Sensor.add_obstacle(self.beacon_entity)
+        if self.beacon_entity:
+            Sensor.add_obstacle(self.beacon_entity)
 
     def add_lidar_sensors(self):
         """
@@ -109,6 +116,14 @@ class RobotEntity(AssetEntity):
             sensor = LidarSensor(asset_entity=self, **prop)
             self.sensors_update_timer.timeout.connect(sensor.update_hit)
             self.sensors.append(sensor)
+
+    def add_tof_sensor(self):
+        """
+        Add a ToF sensor in front of the robot entity.
+        """
+        sensor = ToFSensor(asset_entity=self, name="ToF", origin_x=106, origin_y=0)
+        self.sensors_update_timer.timeout.connect(sensor.update_hit)
+        self.sensors.append(sensor)
 
     @qtSlot(Pose)
     def new_robot_pose_current(self, new_pose: Pose) -> None:
