@@ -110,6 +110,42 @@ x-robot: &robot
       cogip-dashboard &
       sleep infinity
 
+x-pami: &pami
+  <<: [*build-console, *volumes-common, *extra-hosts-common]
+  environment: &env-pami
+    SERVER_DEBUG:
+    SERVER_RELOAD:
+    PLANNER_DEBUG:
+    PLANNER_RELOAD:
+    PLANNER_ROBOT_LENGTH: 212
+    PLANNER_ROBOT_WIDTH: 140
+    PLANNER_OBSTACLE_RADIUS:
+    PLANNER_OBSTACLE_BB_MARGIN:
+    PLANNER_OBSTACLE_BB_VERTICES: 4
+    PLANNER_OBSTACLE_SENDER_INTERVAL:
+    PLANNER_PATH_REFRESH_INTERVAL:
+    COPILOT_RELOAD:
+    COPILOT_DEBUG:
+    DETECTOR_PAMI_TOF_BUS:
+    DETECTOR_PAMI_TOF_ADDRESS:
+    DETECTOR_PAMI_MIN_DISTANCE:
+    DETECTOR_PAMI_MAX_DISTANCE:
+    DETECTOR_PAMI_REFRESH_INTERVAL:
+    DETECTOR_PAMI_RELOAD:
+    DETECTOR_PAMI_DEBUG:
+  command:
+    - /bin/sh
+    - -x
+    - -c
+    - |
+      cogip-server &
+      wait-for-it -t 0 localhost:809$${ROBOT_ID}
+      cogip-planner &
+      cogip-copilot --serial-port /var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      cogip-detector-pami &
+      cogip-dashboard &
+      sleep infinity
+
 x-monitor: &monitor
   << : [*build-gui, *extra-hosts-common]
   environment: &env-monitor
@@ -271,13 +307,13 @@ services:
       - robot1
 
   robot2:
-    << : *robot
+    << : *pami
     hostname: robot2
     ports:
       - "8082:8082"
       - "8092:8092"
     environment:
-      << : *env-robot
+      << : *env-pami
       ROBOT_ID: 2
     depends_on:
       - socat2
@@ -285,13 +321,13 @@ services:
       - robot2
 
   robot3:
-    << : *robot
+    << : *pami
     hostname: robot3
     ports:
       - "8083:8083"
       - "8093:8093"
     environment:
-      << : *env-robot
+      << : *env-pami
       ROBOT_ID: 3
     depends_on:
       - socat3
@@ -299,13 +335,13 @@ services:
       - robot3
 
   robot4:
-    << : *robot
+    << : *pami
     hostname: robot4
     ports:
       - "8084:8084"
       - "8094:8094"
     environment:
-      << : *env-robot
+      << : *env-pami
       ROBOT_ID: 4
     depends_on:
       - socat4
