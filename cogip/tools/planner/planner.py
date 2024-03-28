@@ -22,6 +22,7 @@ from .avoidance.avoidance import AvoidanceStrategy
 from .avoidance.process import avoidance_process
 from .camp import Camp
 from .context import GameContext
+from .positions import StartPosition
 from .properties import Properties
 from .strategy import Strategy
 from .table import TableEnum
@@ -38,6 +39,7 @@ class Planner:
         robot_id: int,
         server_url: str,
         robot_width: int,
+        robot_length: int,
         obstacle_radius: int,
         obstacle_bb_margin: float,
         obstacle_bb_vertices: int,
@@ -54,6 +56,7 @@ class Planner:
             robot_id: Robot ID
             server_url: Socket.IO Server URL
             robot_width: Width of the robot (in mm)
+            robot_length: Length of the robot (in mm)
             obstacle_radius: Radius of a dynamic obstacle (in mm)
             obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
             obstacle_bb_vertices: Number of obstacle bounding box vertices
@@ -75,6 +78,7 @@ class Planner:
         self.properties = Properties(
             robot_id=robot_id,
             robot_width=robot_width,
+            robot_length=robot_length,
             obstacle_radius=obstacle_radius,
             obstacle_bb_margin=obstacle_bb_margin,
             obstacle_bb_vertices=obstacle_bb_vertices,
@@ -94,7 +98,6 @@ class Planner:
         self.sio_receiver_queue = asyncio.Queue()
         self.sio_emitter_queue = self.process_manager.Queue()
         self.action: actions.Action | None = None
-        self.start_position: int | None = None
         self.actions = action_classes.get(self.game_context.strategy, actions.Actions)(self)
         self.obstacles: models.DynObstacleList = []
         self.obstacles_sender_loop = AsyncLoop(
@@ -110,8 +113,10 @@ class Planner:
         self.blocked_counter: int = 0
         self.controller = self.game_context.default_controller
         self.game_wizard = GameWizard(self)
+        self.start_position: StartPosition | None = None
         available_start_poses = self.game_context.get_available_start_poses()
-        self.start_pose = available_start_poses[(self.robot_id - 1) % len(available_start_poses)]
+        if available_start_poses:
+            self.start_position = available_start_poses[(self.robot_id - 1) % len(available_start_poses)]
         self.sio_receiver_task: asyncio.Task | None = None
         self.sio_emitter_task: asyncio.Task | None = None
         self.countdown_task: asyncio.Task | None = None
@@ -186,7 +191,7 @@ class Planner:
         self.shared_properties["exiting"] = False
         self.game_context.reset()
         self.actions = action_classes.get(self.game_context.strategy, actions.Actions)(self)
-        await self.set_pose_start(self.game_context.get_start_pose(self.start_pose).pose)
+        await self.set_pose_start(self.game_context.get_start_pose(self.start_position).pose)
         await self.set_controller(self.game_context.default_controller, True)
         self.sio_receiver_task = asyncio.create_task(
             self.task_sio_receiver(),
@@ -551,14 +556,27 @@ class Planner:
         Store obstacles detected by a robot sent by Detector.
         Add bounding box and radius.
         """
-        bb_radius = self.properties.obstacle_radius + self.properties.robot_width / 2
-
         table = self.game_context.table
-        self.obstacles = [
-            self.create_dyn_obstacle(obstacle, bb_radius)
-            for obstacle in obstacles
-            if table.contains(obstacle, self.properties.obstacle_radius)
-        ]
+        if self.robot_id == 1:
+            bb_radius = self.properties.obstacle_radius + self.properties.robot_length / 2
+
+            self.obstacles = [
+                self.create_dyn_obstacle(obstacle, bb_radius)
+                for obstacle in obstacles
+                if table.contains(obstacle, self.properties.obstacle_radius)
+            ]
+        else:
+            # In case of PAMI, the detected obstacle is at the front the real obstacle
+            # instead of at its center.
+            # Since we use a specific avoidance strategy that only needs to know the path
+            # is intersecting the obstacle, the radius can be reduced to the minimum to create
+            # a bounding box.
+            self.obstacles = [
+                self.create_dyn_obstacle(obstacle, radius=10, bb_radius=10)
+                for obstacle in obstacles
+                if table.contains(obstacle)
+            ]
+
         self.shared_properties["obstacles"] = [
             obstacle.model_dump(exclude_defaults=True) for obstacle in self.obstacles
         ]
@@ -709,15 +727,25 @@ class Planner:
         Choose start position command from the menu.
         Send start position wizard message.
         """
-        await self.sio_ns.emit(
-            "wizard",
-            {
-                "name": "Choose Start Position",
-                "type": "choice_integer",
-                "choices": self.game_context.get_available_start_poses(),
-                "value": self.start_position,
-            },
-        )
+        if self.start_position is None:
+            await self.sio_ns.emit(
+                "wizard",
+                {
+                    "name": "Error",
+                    "type": "message",
+                    "value": "No start position available with this Camp/Table",
+                },
+            )
+        else:
+            await self.sio_ns.emit(
+                "wizard",
+                {
+                    "name": "Choose Start Position",
+                    "type": "choice_integer",
+                    "choices": [p.name for p in self.game_context.get_available_start_poses()],
+                    "value": self.start_position.name,
+                },
+            )
 
     async def cmd_choose_table(self):
         """
@@ -766,8 +794,8 @@ class Planner:
                 self.game_context.avoidance_strategy = new_strategy
                 await self.reset()
                 logger.info(f"Wizard: New avoidance strategy: {self.game_context.avoidance_strategy.name}")
-            case chose_start_pose if chose_start_pose.startswith("Choose Start Position"):
-                start_position = int(value)
+            case "Choose Start Position":
+                start_position = StartPosition[value]
                 self.start_position = start_position
                 await self.set_pose_start(self.game_context.get_start_pose(start_position).pose)
             case "Choose Table":
@@ -776,6 +804,14 @@ class Planner:
                     return
                 if self.game_context.camp == Camp.Colors.blue and new_table == TableEnum.Training:
                     logger.warning("Wizard: training table is not supported with blue camp")
+                    await self.sio_ns.emit(
+                        "wizard",
+                        {
+                            "name": "Error",
+                            "type": "message",
+                            "value": "Training table is not supported with blue camp",
+                        },
+                    )
                     return
                 self.game_context.table = new_table
                 self.shared_properties["table"] = new_table

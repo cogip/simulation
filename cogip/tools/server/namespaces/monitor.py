@@ -26,20 +26,20 @@ class MonitorNamespace(socketio.AsyncNamespace):
         logger.info("Monitor connected.")
         await self.emit("add_robot", (self.context.robot_id, self.context.virtual), namespace="/monitor")
         if self.context.virtual:
-            await self.emit("start_lidar_emulation", self.context.robot_id, namespace="/monitor")
+            await self.emit("start_sensors_emulation", self.context.robot_id, namespace="/monitor")
 
     def on_disconnect(self, sid):
         self.context.monitor_sid = None
         logger.info("Monitor disconnected.")
 
-    async def on_lidar_data(self, sid, lidar_data: list[int]):
+    async def on_sensors_data(self, sid, sensors_data: list[int]):
         """
-        Callback on lidar data.
+        Callback on sensors data.
 
-        In emulation mode, receive Lidar data from the Monitor,
+        In emulation mode, receive sensors data from the Monitor,
         and forward to the Detector in charge of computing dynamic obstacles.
         """
-        await self.emit("lidar_data", lidar_data, namespace="/detector")
+        await self.emit("sensors_data", sensors_data, namespace="/detector")
 
     async def on_starter_changed(self, sid, pushed: bool):
         """

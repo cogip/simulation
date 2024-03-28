@@ -35,7 +35,7 @@ class Server:
         self.sio.register_namespace(namespaces.BeaconNamespace(self))
 
         self.context = context.Context()
-        self.context.robot_id = os.environ["ROBOT_ID"]
+        self.context.robot_id = int(os.environ["ROBOT_ID"])
         self.root_menu = models.ShellMenu(name="Root Menu", entries=[])
         self.context.tool_menus["root"] = self.root_menu
         self.context.current_tool_menu = "root"

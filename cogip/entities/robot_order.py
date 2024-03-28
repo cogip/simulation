@@ -14,14 +14,14 @@ class RobotOrderEntity(Qt3DCore.QEntity):
 
     color: QtGui.QColor = QtGui.QColor.fromRgb(10, 77, 18, 100)
 
-    def __init__(self, parent: Qt3DCore.QEntity):
+    def __init__(self, parent: Qt3DCore.QEntity, robot_id: int = 1):
         """
         Class constructor.
         """
         super().__init__(parent)
 
         mesh = Qt3DRender.QMesh(self)
-        mesh.setSource(QtCore.QUrl("file:assets/robot2024.stl"))
+        mesh.setSource(QtCore.QUrl(f"file:assets/{'robot' if robot_id == 1 else 'pami'}2024.stl"))
 
         self.transform = Qt3DCore.QTransform(self)
 

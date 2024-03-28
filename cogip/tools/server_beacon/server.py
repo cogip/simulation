@@ -5,6 +5,9 @@ import socketio
 from socketio.exceptions import ConnectionRefusedError
 from uvicorn.main import Server as UvicornServer
 
+from cogip.tools.planner.camp import Camp
+from cogip.tools.planner.positions import StartPosition
+from cogip.tools.planner.table import TableEnum
 from . import logger, namespaces
 from .robot import Robot
 
@@ -33,6 +36,9 @@ class Server:
         self.app = socketio.ASGIApp(self.sio)
         self.sio.register_namespace(namespaces.DashboardNamespace(self))
 
+        self.camp = Camp.Colors.yellow
+        self.table = TableEnum.Game
+
         for i in range(1, int(os.environ["SERVER_BEACON_MAX_ROBOTS"]) + 1):
             robot = Robot(self, i)
             task = asyncio.create_task(robot.run())
@@ -60,3 +66,57 @@ class Server:
             task.cancel()
 
         Server.original_uvicorn_exit_handler(*args, **kwargs)
+
+    async def choose_camp(self):
+        """
+        Choose camp command from the menu.
+        Send camp wizard message.
+        """
+        await self.sio.emit(
+            "wizard",
+            {
+                "name": "Choose Camp",
+                "type": "camp",
+                "value": self.camp.name,
+            },
+            namespace="/dashboard",
+        )
+
+    async def choose_table(self):
+        """
+        Choose table command from the menu.
+        Send table wizard message.
+        """
+        await self.sio.emit(
+            "wizard",
+            {
+                "name": "Choose Table",
+                "type": "choice_str",
+                "choices": [e.name for e in TableEnum],
+                "value": self.table.name,
+            },
+            namespace="/dashboard",
+        )
+
+    async def reset_robots(self):
+        for robot_id, robot in self.robots.items():
+            if robot.sio.connected:
+                position: StartPosition | None = None
+                match robot_id:
+                    case 1:
+                        position = StartPosition.Bottom
+                    case 2:
+                        position = StartPosition.PAMI1
+                    case 3:
+                        position = StartPosition.PAMI2
+                    case 4:
+                        position = StartPosition.PAMI3
+                if position:
+                    await robot.sio.emit(
+                        "wizard",
+                        {
+                            "name": "Choose Start Position",
+                            "value": position.name,
+                        },
+                        namespace="/beacon",
+                    )

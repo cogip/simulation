@@ -174,10 +174,10 @@
             virtualKeyboard._actualize();
           })
           .on("pose_current", function (robot_id, msg) {
-            drawModule.updatePoseCurrent(msg);
+            drawModule.updatePoseCurrent(robot_id, msg);
           })
           .on("pose_order", function (robot_id, msg) {
-            drawModule.updatePoseOrder(msg);
+            drawModule.updatePoseOrder(robot_id, msg);
           })
           .on("obstacles", function (msg) {
             drawModule.updateObstacles(msg);

@@ -26,6 +26,15 @@ class Properties(metaclass=Singleton):
             description="Width of the robot (mm)",
         ),
     ]
+    robot_length: Annotated[
+        int,
+        Field(
+            ge=100,
+            le=1000,
+            title="Robot Length",
+            description="Length of the robot (mm)",
+        ),
+    ]
     obstacle_radius: Annotated[
         int,
         Field(

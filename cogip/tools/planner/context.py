@@ -3,6 +3,7 @@ from cogip.utils.singleton import Singleton
 from .avoidance.avoidance import AvoidanceStrategy
 from .camp import Camp
 from .pose import AdaptedPose, Pose
+from .positions import StartPosition
 from .properties import Properties
 from .strategy import Strategy
 from .table import Table, TableEnum, tables
@@ -85,33 +86,52 @@ class GameContext(metaclass=Singleton):
         Default positions for blue camp.
         """
         match n:
-            case 1:  # Top left
+            case StartPosition.Top:
                 return AdaptedPose(
                     x=1000 - 450 + self.properties.robot_width / 2,
-                    y=1500 - 450 + self.properties.robot_width / 2,
+                    y=1500 - 450 + self.properties.robot_length / 2,
                     O=-90,
                 )
-            case 2:  # Bottom left
+            case StartPosition.Bottom:
                 return AdaptedPose(
                     x=-(1000 - 450 + self.properties.robot_width / 2),
-                    y=1500 - 450 + self.properties.robot_width / 2,
+                    y=1500 - 450 + self.properties.robot_length / 2,
                     O=-90,
                 )
-            case 3:  # Middle right
+            case StartPosition.Opposite:
                 return AdaptedPose(
-                    x=self.properties.robot_width / 2,
+                    x=-450 / 2 + self.properties.robot_width / 2,
                     y=-(1500 - 450 + self.properties.robot_width / 2),
                     O=90,
                 )
+            case StartPosition.PAMI1:
+                return AdaptedPose(
+                    x=1000 - 150 + self.properties.robot_length / 2,
+                    y=self.properties.robot_width / 2,
+                    O=180,
+                )
+            case StartPosition.PAMI2:
+                return AdaptedPose(
+                    x=1000 - 150 + self.properties.robot_length / 2,
+                    y=450 / 2,
+                    O=180,
+                )
+            case StartPosition.PAMI3:
+                return AdaptedPose(
+                    x=1000 - 150 + self.properties.robot_length / 2,
+                    y=450 - self.properties.robot_width / 2,
+                    O=180,
+                )
+            case _:
+                return AdaptedPose()
 
-    def get_available_start_poses(self) -> list[int]:
+    def get_available_start_poses(self) -> list[StartPosition]:
         """
         Get start poses available depending on camp and table.
         """
         start_pose_indices = []
-        for i in range(1, 4):
-            pose = self.get_start_pose(i)
+        for p in StartPosition:
+            pose = self.get_start_pose(p)
             if self.table.contains(pose):
-                start_pose_indices.append(i)
-
+                start_pose_indices.append(p)
         return start_pose_indices

@@ -41,3 +41,9 @@ class BeaconNamespace(socketio.AsyncNamespace):
         Callback on command.
         """
         await self.emit("command", cmd, namespace="/planner")
+
+    async def on_wizard(self, sid, message):
+        """
+        Callback on wizard message.
+        """
+        await self.emit("wizard", message, namespace="/planner")

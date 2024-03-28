@@ -80,8 +80,7 @@ class SioEvents(socketio.ClientNamespace):
 
     def on_sensors_data(self, data: list[int]) -> None:
         """
-        Callback on Lidar data.
+        Callback on sensors data.
         """
-        logger.debug("Received lidar data")
-        self._detector.properties.beacon_radius
-        self._detector.update_lidar_data([d + self._detector.properties.beacon_radius for d in data])
+        logger.debug("Received sensors data")
+        self._detector.update_sensors_data(data)

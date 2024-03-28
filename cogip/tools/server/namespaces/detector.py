@@ -29,11 +29,11 @@ class DetectorNamespace(socketio.AsyncNamespace):
     async def on_connected(self, sid):
         logger.info("Detector connected.")
         if self.context.virtual:
-            await self.emit("start_lidar_emulation", self.context.robot_id, namespace="/monitor")
+            await self.emit("start_sensors_emulation", self.context.robot_id, namespace="/monitor")
 
     async def on_disconnect(self, sid):
         if self.context.virtual:
-            await self.emit("stop_lidar_emulation", self.context.robot_id, namespace="/monitor")
+            await self.emit("stop_sensors_emulation", self.context.robot_id, namespace="/monitor")
         self.context.detector_sid = None
         logger.info("Detector disconnected.")
 
@@ -47,7 +47,7 @@ class DetectorNamespace(socketio.AsyncNamespace):
         """
         Callback on obstacles message.
 
-        Receive a list of obstacles, computed from Lidar data by the Detector.
+        Receive a list of obstacles, computed from sensors data by the Detector.
         These obstacles are sent to planner to compute avoidance path.
         """
         await self.emit("obstacles", obstacles, namespace="/planner")

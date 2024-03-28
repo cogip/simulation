@@ -28,6 +28,7 @@ cogip-lidarusb = "cogip.tools.lidarusb.main:main"
 cogip-camera = "cogip.tools.camera.__main__:main"
 cogip-server-beacon = "cogip.tools.server_beacon.__main__:main"
 cogip-dashboard-beacon = "cogip.tools.dashboard_beacon.__main__:main"
+cogip-detector-pami = "cogip.tools.detector_pami.__main__:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
@@ -40,6 +41,14 @@ include = ["cogip*"]
 
 [tool.setuptools.package-data]
 "cogip.tools.dashboard" = [
+    "static/css/*",
+    "static/css/purged/*",
+    "static/img/*",
+    "static/js/*",
+    "static/js/external/*",
+    "templates/*"
+]
+"cogip.tools.dashboard_beacon" = [
     "static/css/*",
     "static/css/purged/*",
     "static/img/*",

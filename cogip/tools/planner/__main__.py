@@ -42,6 +42,13 @@ def main_opt(
         help="Width of the robot (in mm)",
         envvar="PLANNER_ROBOT_WIDTH",
     ),
+    robot_length: int = typer.Option(
+        295,
+        min=100,
+        max=1000,
+        help="Length of the robot (in mm)",
+        envvar="PLANNER_ROBOT_LENGTH",
+    ),
     obstacle_radius: int = typer.Option(
         150,
         min=50,
@@ -122,6 +129,7 @@ def main_opt(
         id,
         server_url,
         robot_width,
+        robot_length,
         obstacle_radius,
         obstacle_bb_margin,
         obstacle_bb_vertices,
