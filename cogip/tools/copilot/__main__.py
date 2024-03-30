@@ -34,19 +34,26 @@ def main_opt(
         help="Robot ID.",
         envvar=["ROBOT_ID", "COPILOT_ID"],
     ),
-    serial_port: Path = typer.Option(
-        "/dev/ttyUSB0",
-        "-p",
-        "--serial-port",
-        help="Serial port connected to STM32 device",
-        envvar="COPILOT_SERIAL_PORT",
+    can_channel: str = typer.Option(
+        "vcan0",
+        "-c",
+        "--can-channel",
+        help="CAN channel connected to STM32 modules",
+        envvar="COPILOT_CAN_CHANNEL",
     ),
-    serial_baud: int = typer.Option(
-        230400,
+    can_bitrate: int = typer.Option(
+        500000,
         "-b",
-        "--serial-baudrate",
-        help="Baud rate",
-        envvar="COPILOT_BAUD_RATE",
+        "--can-bitrate",
+        help="CAN bitrate",
+        envvar="COPILOT_CAN_BITRATE",
+    ),
+    can_data_bitrate: int = typer.Option(
+        1000000,
+        "-B",
+        "--data-bitrate",
+        help="CAN FD data bitrate",
+        envvar="COPILOT_CANFD_DATA_BITRATE",
     ),
     reload: bool = typer.Option(
         False,
@@ -69,7 +76,7 @@ def main_opt(
     if not server_url:
         server_url = f"http://localhost:809{id}"
 
-    args = (server_url, id, serial_port, serial_baud)
+    args = (server_url, id, can_channel, can_data_bitrate, can_bitrate)
     if reload:
         watch_dir = Path(__file__).parent.parent.parent
         run_process(
