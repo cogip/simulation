@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from cogip.models import models
-from .. import actuators, table
+from .. import table
 from ..pose import Pose
 from .actions import Action, Actions, WaitAction
 
@@ -24,9 +24,6 @@ class FinalAction(Action):
         self.actions.clear()
 
         self.game_context.score += 15
-
-        await actuators.led_on(self.planner)
-        self.game_context.score += 5
 
         await self.planner.sio_ns.emit("score", self.game_context.score)
 

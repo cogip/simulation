@@ -3,15 +3,14 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-from cogip.protobuf import PB_PositionalActuatorCommand, PB_PumpCommand, PB_ServoCommand
+from cogip.protobuf import PB_PositionalActuatorCommand, PB_ServoCommand
 
 # Actuators common definitions
 
 
 class ActuatorsKindEnum(IntEnum):
     SERVO = 0
-    PUMP = 1
-    POSITIONAL = 2
+    POSITIONAL = 1
 
 
 class ActuatorsGroupEnum(IntEnum):
@@ -41,9 +40,9 @@ class ActuatorBase(BaseModel):
 
 
 class ServoEnum(IntEnum):
-    LXSERVO_BALL_SWITCH = 1
-    LXSERVO_RIGHT_ARM = 2
-    LXSERVO_LEFT_ARM = 4
+    LXSERVO_LEFT_CART = 0
+    LXSERVO_RIGHT_CART = 1
+    LXSERVO_ARM_PANEL = 2
 
 
 class ServoCommand(BaseModel):
@@ -76,41 +75,19 @@ class Servo(ActuatorBase, ServoCommand):
     )
 
 
-# Pump related definitions
-
-
-class PumpEnum(IntEnum):
-    PUMP_RIGHT_ARM = 0
-    PUMP_LEFT_ARM = 1
-
-
-class PumpCommand(BaseModel):
-    kind: Literal[ActuatorsKindEnum.PUMP] = ActuatorsKindEnum.PUMP
-    id: PumpEnum = Field(..., title="Id", description="Pump identifier")
-    command: bool = Field(False, title="Pump Command", description="Current pump command")
-
-    def pb_copy(self, message: PB_PumpCommand) -> None:
-        message.id = self.id
-        message.command = self.command
-
-
-class Pump(ActuatorBase, PumpCommand):
-    activated: bool = Field(False, title="Activated", description="Current pump state")
-    under_pressure: bool = Field(False, title="Under pressure", description="Is pump under pressure")
-
-
 # Positional Actuators related definitions
 
 
 class PositionalActuatorEnum(IntEnum):
-    MOTOR_CENTRAL_LIFT = 0
-    MOTOR_CONVEYOR_LAUNCHER = 1
-    ONOFF_LED_PANELS = 2
-    ANALOGSERVO_CHERRY_ARM = 3
-    ANALOGSERVO_CHERRY_ESC = 4
-    ANALOGSERVO_CHERRY_RELEASE = 5
-    LXMOTOR_RIGHT_ARM_LIFT = 6
-    LXMOTOR_LEFT_ARM_LIFT = 7
+    MOTOR_BOTTOM_LIFT = 0
+    MOTOR_TOP_LIFT = 1
+    ANALOGSERVO_BOTTOM_GRIP_LEFT = 2
+    ANALOGSERVO_BOTTOM_GRIP_RIGHT = 3
+    ANALOGSERVO_TOP_GRIP_LEFT = 4
+    ANALOGSERVO_TOP_GRIP_RIGHT = 5
+    CART_MAGNET_LEFT = 6
+    CART_MAGNET_RIGHT = 7
+    ANALOGSERVO_PAMI = 8
 
 
 class PositionalActuatorCommand(BaseModel):
@@ -135,9 +112,8 @@ class PositionalActuator(ActuatorBase, PositionalActuatorCommand):
 
 class ActuatorsState(BaseModel):
     servos: list[Servo] = []
-    pumps: list[Pump] = []
     positional_actuators: list[PositionalActuator] = []
     robot_id: int
 
 
-ActuatorCommand = ServoCommand | PumpCommand | PositionalActuatorCommand
+ActuatorCommand = ServoCommand | PositionalActuatorCommand

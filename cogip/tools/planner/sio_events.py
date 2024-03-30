@@ -8,9 +8,10 @@ from pydantic import TypeAdapter
 from cogip import models
 from . import context, logger
 from .menu import (
-    actuators_menu,
     cameras_menu,
     menu,
+    pami_actuators_menu,
+    robot_actuators_menu,
     wizard_test_menu,
 )
 
@@ -42,7 +43,10 @@ class SioEvents(socketio.AsyncClientNamespace):
         await self.emit("connected")
         await self.emit("register_menu", {"name": "planner", "menu": menu.model_dump()})
         await self.emit("register_menu", {"name": "wizard", "menu": wizard_test_menu.model_dump()})
-        await self.emit("register_menu", {"name": "actuators", "menu": actuators_menu.model_dump()})
+        if self.planner.robot_id == 1:
+            await self.emit("register_menu", {"name": "actuators", "menu": robot_actuators_menu.model_dump()})
+        else:
+            await self.emit("register_menu", {"name": "actuators", "menu": pami_actuators_menu.model_dump()})
         await self.emit("register_menu", {"name": "cameras", "menu": cameras_menu.model_dump()})
 
     async def on_disconnect(self):

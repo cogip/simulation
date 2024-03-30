@@ -45,27 +45,50 @@ cameras_menu = models.ShellMenu(
     ],
 )
 
-actuators_commands = [
-    "pump_left_on",
-    "pump_left_off",
-    "pump_right_on",
-    "pump_right_off",
-    "left_arm_folded",
-    "left_arm_extended",
-    "right_arm_folded",
-    "right_arm_extended",
-    "right_arm_mid",
-    "led_off",
-    "led_on",
-    "central_arm_up",
-    "central_arm_down",
-    "left_arm_up",
-    "left_arm_down",
-    "right_arm_up",
-    "right_arm_down",
+robot_actuators_commands = [
+    "bottom_grip_close",
+    "bottom_grip_open",
+    "top_grip_close",
+    "top_grip_open",
+    "bottom_lift_down",
+    "bottom_lift_up",
+    "top_lift_down",
+    "top_lift_up",
+    "cart_in",
+    "cart_out",
+    "cart_magnet_on",
+    "cart_magnet_off",
+    "arm_panel_open",
+    "arm_panel_close",
+    "bottom_grip_left_close",
+    "bottom_grip_left_open",
+    "bottom_grip_right_close",
+    "bottom_grip_right_open",
+    "top_grip_left_close",
+    "top_grip_left_open",
+    "top_grip_right_close",
+    "top_grip_right_open",
+    "cart_magnet_left_on",
+    "cart_magnet_left_off",
+    "cart_magnet_right_on",
+    "cart_magnet_right_off",
 ]
 
-actuators_menu = models.ShellMenu(
+robot_actuators_menu = models.ShellMenu(
     name="Actuators",
-    entries=[models.MenuEntry(cmd=f"act_{cmd}", desc=f"{cmd.replace('_', ' ').title()}") for cmd in actuators_commands],
+    entries=[
+        models.MenuEntry(cmd=f"act_{cmd}", desc=f"{cmd.replace('_', ' ').title()}") for cmd in robot_actuators_commands
+    ],
+)
+
+pami_actuators_commands = [
+    "pami_arm_close",
+    "pami_arm_open",
+]
+
+pami_actuators_menu = models.ShellMenu(
+    name="Actuators",
+    entries=[
+        models.MenuEntry(cmd=f"act_{cmd}", desc=f"{cmd.replace('_', ' ').title()}") for cmd in pami_actuators_commands
+    ],
 )

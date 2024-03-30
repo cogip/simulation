@@ -364,7 +364,6 @@ class Planner:
         if not self.game_context.playing:
             return
         self.game_context.playing = False
-        await actuators.led_on(self)
         await self.sio_ns.emit("game_end")
         self.game_context.score += 15
         await self.sio_ns.emit("score", self.game_context.score)

@@ -22,16 +22,12 @@ class SetRobotPositionAction(Action):
         self.after_action_func = self.get_position
 
     async def get_position(self):
-        await actuators.right_arm_folded(self.planner)
+        await actuators.arm_panel_close(self.planner)
 
         pose = await get_robot_position(self.planner)
         if not pose:
             logger.error("Cannot find table marker and current robot position")
             return
-
-        await actuators.led_on(self.planner)
-        await asyncio.sleep(0.2)
-        await actuators.led_off(self.planner)
 
         await self.planner.set_pose_start(pose)
         self.planner.pose_reached = False
@@ -128,12 +124,10 @@ class SolarPanelAction(Action):
         )
 
     async def extend_arm(self):
-        await actuators.right_arm_mid(self.planner)
-        await actuators.led_on(self.planner)
+        await actuators.arm_panel_open(self.planner)
 
     async def fold_arm(self):
-        await actuators.right_arm_folded(self.planner)
-        await actuators.led_off(self.planner)
+        await actuators.arm_panel_close(self.planner)
 
     def weight(self) -> float:
         return 800000.0 + self.panel_id
@@ -165,8 +159,7 @@ class ParkingAction(Action):
 
     async def before_action(self):
         ParkingAction.nb_robots += 1
-        await actuators.right_arm_up(self.planner)
-        await actuators.right_arm_folded(self.planner)
+        await actuators.arm_panel_close(self.planner)
 
         # Backup actions if the action is recycled
         self.actions_backup = self.actions[:]

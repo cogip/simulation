@@ -6,7 +6,7 @@ import socketio
 from pydantic import TypeAdapter
 
 from cogip import models
-from cogip.models.actuators import ActuatorCommand, PositionalActuatorCommand, PumpCommand, ServoCommand
+from cogip.models.actuators import ActuatorCommand, PositionalActuatorCommand, ServoCommand
 from cogip.protobuf import PB_ActuatorCommand, PB_Command, PB_Controller, PB_PathPose, PB_Pid_Id, PB_PidEnum
 from . import copilot, logger
 from .menu import menu
@@ -135,8 +135,6 @@ class SioEvents(socketio.AsyncClientNamespace):
         pb_command = PB_ActuatorCommand()
         if isinstance(command, ServoCommand):
             command.pb_copy(pb_command.servo)
-        elif isinstance(command, PumpCommand):
-            command.pb_copy(pb_command.pump)
         elif isinstance(command, PositionalActuatorCommand):
             command.pb_copy(pb_command.positional_actuator)
         await self.copilot.pbcom.send_can_message(copilot.actuators_command_uuid, pb_command)

@@ -2,7 +2,6 @@ import asyncio
 from typing import TYPE_CHECKING, Any
 
 from cogip.utils.asyncloop import AsyncLoop
-from . import actuators
 from .avoidance.avoidance import AvoidanceStrategy
 from .camp import Camp
 from .context import GameContext
@@ -138,12 +137,7 @@ class GameWizard:
         self.waiting_start_loop.start()
 
     async def request_wait(self):
-        await actuators.led_on(self.planner)
-        await actuators.central_arm_up(self.planner)
-        await actuators.left_arm_up(self.planner)
-        await actuators.right_arm_up(self.planner)
         await asyncio.sleep(1)
-        await actuators.led_off(self.planner)
 
         message = {
             "name": "Game Wizard: Waiting Start",
