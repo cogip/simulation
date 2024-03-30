@@ -4,6 +4,7 @@ SCRIPT_DIR=`dirname $SCRIPT`
 source ${SCRIPT_DIR}/common.sh
 
 # Variables depending on robot id
+## Beacon vs robots
 case ${ROBOT_ID} in
     0) # Beacon
         DOCKER_TAG=beacon
@@ -17,8 +18,7 @@ case ${ROBOT_ID} in
         SCREEN_WIDTH=${BEACON_SCREEN_WIDTH}
         SCREEN_HEIGHT=${BEACON_SCREEN_HEIGHT}
         ;;
-    *) # Robots
-        DOCKER_TAG=robot
+    *) # Robots common
         HOSTNAME=robot${ROBOT_ID}
         GATEWAY=${IP_ADDRESS_BEACON_ETH0}
         IP_ADDRESS_WLAN0_VAR=IP_ADDRESS_ROBOT${ROBOT_ID}_WLAN0
@@ -30,6 +30,19 @@ case ${ROBOT_ID} in
         VC4_V3D_DRIVER=${ROBOT_VC4_V3D_DRIVER}
         SCREEN_WIDTH=${ROBOT_SCREEN_WIDTH}
         SCREEN_HEIGHT=${ROBOT_SCREEN_HEIGHT}
+esac
+
+## Robot vs PAMIs
+case ${ROBOT_ID} in
+    1) # Robot
+        DOCKER_TAG=robot
+        ROBOT_WIDTH=${ROBOT_WIDTH}
+        ROBOT_LENTH=${ROBOT_LENTH}
+        ;;
+    [2-9]) # PAMIs
+        DOCKER_TAG=pami
+        ROBOT_WIDTH=${PAMI_WIDTH}
+        ROBOT_LENTH=${PAMI_LENTH}
         ;;
 esac
 
@@ -126,6 +139,8 @@ sudo sed -i "s/SCREEN_WIDTH/${SCREEN_WIDTH}/" ${MOUNT_DIR}/boot/firmware/config.
 sudo sed -i "s/SCREEN_HEIGHT/${SCREEN_HEIGHT}/" ${MOUNT_DIR}/boot/firmware/config.txt
 sudo sed -i "s/ROBOT_ID/${ROBOT_ID}/" ${MOUNT_DIR}/etc/environment
 sudo sed -i "s/HOSTNAME/${HOSTNAME}/" ${MOUNT_DIR}/etc/environment
+sudo sed -i "s/CUSTOM_ROBOT_WIDTH/${ROBOT_WIDTH}/" ${MOUNT_DIR}/etc/environment
+sudo sed -i "s/CUSTOM_ROBOT_LENGTH/${ROBOT_LENGTH}/" ${MOUNT_DIR}/etc/environment
 sudo echo "ROBOT_ID=${ROBOT_ID}" | sudo tee -a ${MOUNT_DIR}/etc/environment 1> /dev/null
 sudo chmod 600 ${MOUNT_DIR}/etc/sudoers.d/*
 sudo chmod 600 ${MOUNT_DIR}/etc/wpa_supplicant/wpa_supplicant-wlan0.conf
