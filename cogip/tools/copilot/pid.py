@@ -2,7 +2,7 @@ from enum import IntEnum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .messages import PB_Pid
+from cogip.protobuf import PB_Pid
 
 
 class PidEnum(IntEnum):

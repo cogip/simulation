@@ -14,7 +14,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from pydantic import BaseModel
 
-from cogip.tools.copilot.messages import PB_PathPose
+from cogip.protobuf import PB_PathPose
 
 
 class MenuEntry(BaseModel):

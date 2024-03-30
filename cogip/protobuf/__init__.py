@@ -1,5 +1,5 @@
-from pathlib import Path
 import sys
+from pathlib import Path
 
 # Generated Protobuf messages includes required messages
 # as if the current directory was the root of a package.

@@ -67,7 +67,7 @@ exclude = [
     "submodules",
     "tests",
     "doc",
-    "cogip/tools/copilot/messages",
+    "cogip/protobuf",
 ]
 select = [
     "E",  # pycodestyle errors

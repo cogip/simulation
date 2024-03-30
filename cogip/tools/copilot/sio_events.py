@@ -7,9 +7,9 @@ from pydantic import TypeAdapter
 
 from cogip import models
 from cogip.models.actuators import ActuatorCommand, PositionalActuatorCommand, PumpCommand, ServoCommand
+from cogip.protobuf import PB_ActuatorCommand, PB_Command, PB_Controller, PB_PathPose, PB_Pid_Id, PB_PidEnum
 from . import copilot, logger
 from .menu import menu
-from .messages import PB_ActuatorCommand, PB_Command, PB_Controller, PB_PathPose, PB_Pid_Id, PB_PidEnum
 
 
 class SioEvents(socketio.AsyncClientNamespace):
