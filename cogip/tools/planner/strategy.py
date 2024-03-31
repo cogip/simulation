@@ -17,3 +17,4 @@ class Strategy(IntEnum):
     CameraCalibration = auto()
     SolarPanel = auto()
     AlignTest = auto()
+    GripTest = auto()
