@@ -1,6 +1,9 @@
 import asyncio
+import math
 from typing import TYPE_CHECKING
 
+from cogip.models import artifacts
+from cogip.models.actuators import BoolSensorEnum
 from .. import actuators
 from ..avoidance.avoidance import AvoidanceStrategy
 from ..camp import Camp
@@ -132,4 +135,161 @@ class AlignAction(Action):
         self.poses.append(pose5)
 
     def weight(self) -> float:
+        return 1000000.0
+
+
+class GripAction(Action):
+    """
+    Action used to grip plants.
+    """
+
+    def __init__(self, planner: "Planner", actions: Actions, plant_supply_id: artifacts.PlantSupplyID):
+        super().__init__("Grip action", planner, actions)
+        self.before_action_func = self.before_action
+        self.plant_supply = self.game_context.plant_supplies[plant_supply_id]
+        self.stop_before_center_1 = 180
+
+    async def recycle(self):
+        self.plant_supply.enabled = True
+        self.recycled = True
+
+    async def before_action(self):
+        # Compute first pose to get plants using bottom grips
+        self.plant_supply.enabled = False
+        self.start_pose = self.planner.pose_current.model_copy()
+        dist_x = self.plant_supply.x - self.planner.pose_current.x
+        dist_y = self.plant_supply.y - self.planner.pose_current.y
+        dist = math.hypot(dist_x, dist_y)
+        pose = Pose(
+            x=self.plant_supply.x - dist_x / dist * self.stop_before_center_1,
+            y=self.plant_supply.y - dist_y / dist * self.stop_before_center_1,
+            O=0,
+            max_speed_linear=30,
+            max_speed_angular=30,
+            allow_reverse=False,
+            bypass_final_orientation=True,
+            before_pose_func=self.before_pose1,
+            intermediate_pose_func=self.intermediate_pose1,
+            after_pose_func=self.after_pose1,
+        )
+        self.poses.append(pose)
+
+    async def before_pose1(self):
+        await actuators.arm_panel_close(self.planner)
+        await actuators.bottom_lift_down(self.planner)
+        await asyncio.sleep(0.5)
+        await actuators.top_lift_down(self.planner)
+        await asyncio.sleep(0.5)
+        await asyncio.gather(
+            actuators.bottom_grip_open(self.planner),
+            actuators.top_grip_open(self.planner),
+        )
+
+    async def intermediate_pose1(self):
+        # Update first pose to take avoidance into account
+        dist_x = self.plant_supply.x - self.planner.pose_current.x
+        dist_y = self.plant_supply.y - self.planner.pose_current.y
+        dist = math.hypot(dist_x, dist_y)
+        self.planner.pose_order.x = self.plant_supply.x - dist_x / dist * self.stop_before_center_1
+        self.planner.pose_order.y = self.plant_supply.y - dist_y / dist * self.stop_before_center_1
+        self.planner.shared_properties["pose_order"] = self.planner.pose_order.path_pose.model_dump(exclude_unset=True)
+
+    async def after_pose1(self):
+        await actuators.top_grip_mid_open(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.top_grip_mid(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.top_grip_mid_close(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.top_grip_close(self.planner)
+        await asyncio.sleep(0.1)
+
+        if BoolSensorEnum.TOP_GRIP_LEFT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.TOP_GRIP_LEFT].state = True
+        if BoolSensorEnum.TOP_GRIP_RIGHT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.TOP_GRIP_RIGHT].state = True
+
+        # Step back
+        back_dist = 100
+        diff_x = back_dist * math.cos(math.radians(self.planner.pose_current.O))
+        diff_y = back_dist * math.sin(math.radians(self.planner.pose_current.O))
+
+        pose = Pose(
+            x=self.planner.pose_current.x - diff_x,
+            y=self.planner.pose_current.y - diff_y,
+            O=0,
+            max_speed_linear=66,
+            max_speed_angular=66,
+            allow_reverse=True,
+            bypass_final_orientation=True,
+            after_pose_func=self.after_pose2,
+        )
+        self.poses.append(pose)
+
+    async def after_pose2(self):
+        await actuators.top_lift_up(self.planner)
+        await asyncio.sleep(0.5)
+
+        # Compute pose to get plants using bottom grips
+        forward_dist = 220
+        diff_x = forward_dist * math.cos(math.radians(self.planner.pose_current.O))
+        diff_y = forward_dist * math.sin(math.radians(self.planner.pose_current.O))
+
+        pose = Pose(
+            x=self.planner.pose_current.x + diff_x,
+            y=self.planner.pose_current.y + diff_y,
+            O=0,
+            max_speed_linear=20,
+            max_speed_angular=20,
+            allow_reverse=False,
+            bypass_final_orientation=True,
+            after_pose_func=self.after_pose3,
+        )
+        self.poses.append(pose)
+
+    async def after_pose3(self):
+        await actuators.bottom_grip_mid_open(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.bottom_grip_mid(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.bottom_grip_mid_close(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.bottom_grip_close(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.bottom_lift_up(self.planner)
+        if BoolSensorEnum.BOTTOM_GRIP_LEFT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_LEFT].state = True
+        if BoolSensorEnum.BOTTOM_GRIP_RIGHT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_RIGHT].state = True
+
+        # Step back
+        back_dist = 250
+        diff_x = back_dist * math.cos(math.radians(self.planner.pose_current.O))
+        diff_y = back_dist * math.sin(math.radians(self.planner.pose_current.O))
+
+        pose = Pose(
+            x=self.planner.pose_current.x - diff_x,
+            y=self.planner.pose_current.y - diff_y,
+            O=0,
+            max_speed_linear=66,
+            max_speed_angular=66,
+            allow_reverse=True,
+            bypass_final_orientation=True,
+            after_pose_func=self.after_pose4,
+        )
+        self.poses.append(pose)
+
+    async def after_pose4(self):
+        self.plant_supply.enabled = True
+
+    def weight(self) -> float:
+        if (
+            self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_LEFT].state
+            or self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_RIGHT].state
+            or self.game_context.bool_sensor_states[BoolSensorEnum.TOP_GRIP_LEFT].state
+            or self.game_context.bool_sensor_states[BoolSensorEnum.TOP_GRIP_RIGHT].state
+            or self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_LEFT].state
+            or self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_RIGHT].state
+        ):
+            return 0
         return 1000000.0

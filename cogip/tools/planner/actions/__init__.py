@@ -8,6 +8,7 @@ from .position_test import AngularPositionTestActions, LinearPositionTestActions
 from .solar_panels import SolarPanelActions
 from .speed_test import SpeedTestActions
 from .test_align import TestAlignActions
+from .test_grip import TestGripActions
 from .training import TrainingActions
 
 action_classes: dict[Strategy, Actions] = {
@@ -22,4 +23,5 @@ action_classes: dict[Strategy, Actions] = {
     Strategy.CameraCalibration: CameraCalibrationActions,
     Strategy.SolarPanel: SolarPanelActions,
     Strategy.TestAlign: TestAlignActions,
+    Strategy.TestGrip: TestGripActions,
 }
