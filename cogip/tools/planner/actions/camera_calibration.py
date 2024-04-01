@@ -112,7 +112,7 @@ class CameraCalibrationAction(Action):
 
     async def calibrate_camera(self):
         await asyncio.sleep(1)
-        if pose := await calibrate_camera(self):
+        if pose := await calibrate_camera(self.planner):
             self.camera_positions.append(pose)
         await asyncio.sleep(0.5)
 
