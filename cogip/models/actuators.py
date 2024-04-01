@@ -1,7 +1,7 @@
 from enum import IntEnum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from cogip.protobuf import PB_PositionalActuatorCommand, PB_ServoCommand
 
@@ -60,6 +60,31 @@ class ServoCommand(BaseModel):
         description="Current servo position command",
     )
 
+    @field_validator("kind", mode="before")
+    @classmethod
+    def validate_kind(cls, v: str) -> ActuatorsKindEnum:
+        try:
+            value = ActuatorsKindEnum[v]
+        except KeyError:
+            try:
+                value = ActuatorsKindEnum(v)
+            except Exception:
+                raise ValueError("Not a ActuatorsKindEnum")
+        if value != ActuatorsKindEnum.SERVO:
+            raise ValueError("Not ActuatorsKindEnum.SERVO value")
+        return value
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def validate_id(cls, v: str) -> ServoEnum:
+        try:
+            return ServoEnum[v]
+        except KeyError:
+            try:
+                return ServoEnum(v)
+            except Exception:
+                raise ValueError("Not a ServoEnum")
+
     def pb_copy(self, message: PB_ServoCommand) -> None:
         message.id = self.id
         message.command = self.command
@@ -100,6 +125,31 @@ class PositionalActuatorCommand(BaseModel):
         title="Position Command",
         description="Current positional actuator position command",
     )
+
+    @field_validator("kind", mode="before")
+    @classmethod
+    def validate_kind(cls, v: str) -> ActuatorsKindEnum:
+        try:
+            value = ActuatorsKindEnum[v]
+        except KeyError:
+            try:
+                value = ActuatorsKindEnum(v)
+            except Exception:
+                raise ValueError("Not a ActuatorsKindEnum")
+        if value != ActuatorsKindEnum.POSITIONAL:
+            raise ValueError("Not ActuatorsKindEnum.POSITIONAL value")
+        return value
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def validate_id(cls, v: str) -> PositionalActuatorEnum:
+        try:
+            return PositionalActuatorEnum[v]
+        except KeyError:
+            try:
+                return PositionalActuatorEnum(v)
+            except Exception:
+                raise ValueError("Not a PositionalActuatorEnum")
 
     def pb_copy(self, message: PB_PositionalActuatorCommand) -> None:
         message.id = self.id
