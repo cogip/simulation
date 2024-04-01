@@ -9,15 +9,21 @@ from cogip.protobuf import PB_PositionalActuatorCommand, PB_ServoCommand
 
 
 class ActuatorsKindEnum(IntEnum):
+    """Enum defining actuators kind"""
+
     SERVO = 0
     POSITIONAL = 1
 
 
 class ActuatorsGroupEnum(IntEnum):
+    """Actuators groups used to group actuators by category"""
+
     NO_GROUP = 0
 
 
 class ActuatorBase(BaseModel):
+    """Base model for actuators"""
+
     group: ActuatorsGroupEnum = Field(
         ActuatorsGroupEnum.NO_GROUP,
         title="Group",
@@ -40,12 +46,16 @@ class ActuatorBase(BaseModel):
 
 
 class ServoEnum(IntEnum):
+    """Enum defining servo IDs"""
+
     LXSERVO_LEFT_CART = 0
     LXSERVO_RIGHT_CART = 1
     LXSERVO_ARM_PANEL = 2
 
 
 class ServoCommand(BaseModel):
+    """Model defining a command to send to servos"""
+
     kind: Literal[ActuatorsKindEnum.SERVO] = ActuatorsKindEnum.SERVO
     id: ServoEnum = Field(
         ...,
@@ -86,11 +96,14 @@ class ServoCommand(BaseModel):
                 raise ValueError("Not a ServoEnum")
 
     def pb_copy(self, message: PB_ServoCommand) -> None:
+        """Copy values to Protobuf message"""
         message.id = self.id
         message.command = self.command
 
 
 class Servo(ActuatorBase, ServoCommand):
+    "Full model for servos"
+
     position: int = Field(
         0,
         ge=0,
@@ -104,6 +117,8 @@ class Servo(ActuatorBase, ServoCommand):
 
 
 class PositionalActuatorEnum(IntEnum):
+    """Enum defining positional actuators IDs"""
+
     MOTOR_BOTTOM_LIFT = 0
     MOTOR_TOP_LIFT = 1
     ANALOGSERVO_BOTTOM_GRIP_LEFT = 2
@@ -116,6 +131,8 @@ class PositionalActuatorEnum(IntEnum):
 
 
 class PositionalActuatorCommand(BaseModel):
+    """Model defining a command to send to positional actuators"""
+
     kind: Literal[ActuatorsKindEnum.POSITIONAL] = ActuatorsKindEnum.POSITIONAL
     id: PositionalActuatorEnum = Field(..., title="Id", description="Positional Actuator identifier")
     command: int = Field(
@@ -152,11 +169,14 @@ class PositionalActuatorCommand(BaseModel):
                 raise ValueError("Not a PositionalActuatorEnum")
 
     def pb_copy(self, message: PB_PositionalActuatorCommand) -> None:
+        """Copy values to Protobuf message"""
         message.id = self.id
         message.command = self.command
 
 
 class PositionalActuator(ActuatorBase, PositionalActuatorCommand):
+    "Full model for positional actuators"
+
     pass
 
 
