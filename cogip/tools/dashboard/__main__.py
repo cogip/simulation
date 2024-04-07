@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 from pathlib import Path
+from typing import Annotated
 
 import typer
 import uvicorn
@@ -14,29 +15,35 @@ def changes_callback(changes):
 
 
 def main_opt(
-    id: int = typer.Option(
-        0,
-        "-i",
-        "--id",
-        min=0,
-        max=9,
-        help="Robot ID.",
-        envvar=["ROBOT_ID", "DASHBOARD_ID"],
-    ),
-    reload: bool = typer.Option(
-        False,
-        "-r",
-        "--reload",
-        help="Reload app on source file changes",
-        envvar=["COGIP_RELOAD", "DASHBOARD_RELOAD"],
-    ),
-    debug: bool = typer.Option(
-        False,
-        "-d",
-        "--debug",
-        help="Turn on debug messages",
-        envvar=["COGIP_DEBUG", "DASHBOARD_DEBUG"],
-    ),
+    id: Annotated[
+        int,
+        typer.Option(
+            "-i",
+            "--id",
+            min=0,
+            max=9,
+            help="Robot ID.",
+            envvar=["ROBOT_ID", "DASHBOARD_ID"],
+        ),
+    ] = 0,
+    reload: Annotated[
+        bool,
+        typer.Option(
+            "-r",
+            "--reload",
+            help="Reload app on source file changes",
+            envvar=["COGIP_RELOAD", "DASHBOARD_RELOAD"],
+        ),
+    ] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "-d",
+            "--debug",
+            help="Turn on debug messages",
+            envvar=["COGIP_DEBUG", "DASHBOARD_DEBUG"],
+        ),
+    ] = False,
 ):
     if debug:
         logger.setLevel(logging.DEBUG)

@@ -2,6 +2,7 @@
 import logging
 import os
 from pathlib import Path
+from typing import Annotated
 
 import typer
 import uvicorn
@@ -15,34 +16,42 @@ def changes_callback(changes):
 
 
 def main_opt(
-    id: int = typer.Option(
-        1,
-        "-i",
-        "--id",
-        min=1,
-        max=9,
-        help="Robot ID.",
-        envvar=["ROBOT_ID", "SERVER_ID"],
-    ),
-    record_dir: Path = typer.Option(
-        Path("/var/tmp/cogip"),
-        help="Directory where games will be recorded",
-        envvar="SERVER_RECORD_DIR",
-    ),
-    reload: bool = typer.Option(
-        False,
-        "-r",
-        "--reload",
-        help="Reload app on source file changes",
-        envvar=["COGIP_RELOAD", "SERVER_RELOAD"],
-    ),
-    debug: bool = typer.Option(
-        False,
-        "-d",
-        "--debug",
-        help="Turn on debug messages",
-        envvar=["COGIP_DEBUG", "SERVER_DEBUG"],
-    ),
+    id: Annotated[
+        int,
+        typer.Option(
+            "-i",
+            "--id",
+            min=1,
+            max=9,
+            help="Robot ID.",
+            envvar=["ROBOT_ID", "SERVER_ID"],
+        ),
+    ] = 1,
+    record_dir: Annotated[
+        Path,
+        typer.Option(
+            help="Directory where games will be recorded",
+            envvar="SERVER_RECORD_DIR",
+        ),
+    ] = Path("/var/tmp/cogip"),
+    reload: Annotated[
+        bool,
+        typer.Option(
+            "-r",
+            "--reload",
+            help="Reload app on source file changes",
+            envvar=["COGIP_RELOAD", "SERVER_RELOAD"],
+        ),
+    ] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "-d",
+            "--debug",
+            help="Turn on debug messages",
+            envvar=["COGIP_DEBUG", "SERVER_DEBUG"],
+        ),
+    ] = False,
 ):
     if debug:
         logger.setLevel(logging.DEBUG)

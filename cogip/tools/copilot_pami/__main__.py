@@ -2,7 +2,7 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Annotated, Optional
 
 import typer
 from watchfiles import PythonFilter, run_process
@@ -21,47 +21,59 @@ def run(*args, **kwargs) -> None:
 
 
 def main_opt(
-    server_url: Optional[str] = typer.Option(  # noqa
-        None,
-        help="Socket.IO Server URL",
-        envvar="COGIP_SOCKETIO_SERVER_URL",
-    ),
-    id: int = typer.Option(
-        1,
-        "-i",
-        "--id",
-        min=1,
-        help="Robot ID.",
-        envvar=["ROBOT_ID", "COPILOT_PAMI_ID"],
-    ),
-    serial_port: Path = typer.Option(
-        "/dev/ttyUSB0",
-        "-p",
-        "--serial-port",
-        help="Serial port connected to STM32 device",
-        envvar="COPILOT_PAMI_SERIAL_PORT",
-    ),
-    serial_baud: int = typer.Option(
-        230400,
-        "-b",
-        "--serial-baudrate",
-        help="Baud rate",
-        envvar="COPILOT_PAMI_BAUD_RATE",
-    ),
-    reload: bool = typer.Option(
-        False,
-        "-r",
-        "--reload",
-        help="Reload app on source file changes",
-        envvar=["COGIP_RELOAD", "COPILOT_PAMI_RELOAD"],
-    ),
-    debug: bool = typer.Option(
-        False,
-        "-d",
-        "--debug",
-        help="Turn on debug messages",
-        envvar=["COGIP_DEBUG", "COPILOT_PAMI_DEBUG"],
-    ),
+    server_url: Annotated[
+        Optional[str],  # noqa
+        typer.Option(
+            help="Socket.IO Server URL",
+            envvar="COGIP_SOCKETIO_SERVER_URL",
+        ),
+    ] = None,
+    id: Annotated[
+        int,
+        typer.Option(
+            "-i",
+            "--id",
+            min=1,
+            help="Robot ID.",
+            envvar=["ROBOT_ID", "COPILOT_PAMI_ID"],
+        ),
+    ] = 1,
+    serial_port: Annotated[
+        Path,
+        typer.Option(
+            "-p",
+            "--serial-port",
+            help="Serial port connected to STM32 device",
+            envvar="COPILOT_PAMI_SERIAL_PORT",
+        ),
+    ] = Path("/dev/ttyUSB0"),
+    serial_baud: Annotated[
+        int,
+        typer.Option(
+            "-b",
+            "--serial-baudrate",
+            help="Baud rate",
+            envvar="COPILOT_PAMI_BAUD_RATE",
+        ),
+    ] = 230400,
+    reload: Annotated[
+        bool,
+        typer.Option(
+            "-r",
+            "--reload",
+            help="Reload app on source file changes",
+            envvar=["COGIP_RELOAD", "COPILOT_PAMI_RELOAD"],
+        ),
+    ] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "-d",
+            "--debug",
+            help="Turn on debug messages",
+            envvar=["COGIP_DEBUG", "COPILOT_PAMI_DEBUG"],
+        ),
+    ] = False,
 ):
     if debug:
         logger.setLevel(logging.DEBUG)

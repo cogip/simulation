@@ -2,7 +2,7 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Annotated, Optional
 
 import typer
 from watchfiles import PythonFilter, run_process
@@ -21,97 +21,123 @@ def run(*args, **kwargs) -> None:
 
 
 def main_opt(
-    id: int = typer.Option(
-        ...,
-        "-i",
-        "--id",
-        min=1,
-        max=9,
-        help="Robot ID.",
-        envvar=["ROBOT_ID"],
-    ),
-    server_url: Optional[str] = typer.Option(  # noqa
-        None,
-        help="Socket.IO Server URL",
-        envvar="COGIP_SOCKETIO_SERVER_URL",
-    ),
-    robot_width: int = typer.Option(
-        295,
-        min=100,
-        max=1000,
-        help="Width of the robot (in mm)",
-        envvar="PLANNER_ROBOT_WIDTH",
-    ),
-    robot_length: int = typer.Option(
-        295,
-        min=100,
-        max=1000,
-        help="Length of the robot (in mm)",
-        envvar="PLANNER_ROBOT_LENGTH",
-    ),
-    obstacle_radius: int = typer.Option(
-        150,
-        min=50,
-        max=500,
-        help="Radius of a dynamic obstacle (in mm)",
-        envvar="PLANNER_OBSTACLE_RADIUS",
-    ),
-    obstacle_bb_margin: float = typer.Option(
-        0.2,
-        min=0,
-        max=1,
-        help="Obstacle bounding box margin in percent of the radius",
-        envvar="PLANNER_OBSTACLE_BB_MARGIN",
-    ),
-    obstacle_bb_vertices: int = typer.Option(
-        6,
-        min=3,
-        max=20,
-        help="Number of obstacle bounding box vertices",
-        envvar="PLANNER_OBSTACLE_BB_VERTICES",
-    ),
-    max_distance: int = typer.Option(
-        2500,
-        min=0,
-        max=4000,
-        help="Maximum distance to take avoidance points into account (mm)",
-        envvar=["COGIP_MAX_DISTANCE", "PLANNER_MAX_DISTANCE"],
-    ),
-    obstacle_sender_interval: float = typer.Option(
-        0.2,
-        min=0.1,
-        max=2.0,
-        help="Interval between each send of obstacles to dashboards (in seconds)",
-        envvar="PLANNER_OBSTACLE_SENDER_INTERVAL",
-    ),
-    path_refresh_interval: float = typer.Option(
-        0.2,
-        min=0.1,
-        max=2.0,
-        help="Interval between each update of robot paths (in seconds)",
-        envvar="PLANNER_PATH_REFRESH_INTERVAL",
-    ),
-    plot: bool = typer.Option(
-        False,
-        "-p",
-        "--plot",
-        help="Display avoidance graph in realtime",
-        envvar=["PLANNER_PLOT"],
-    ),
-    reload: bool = typer.Option(
-        False,
-        "-r",
-        "--reload",
-        help="Reload app on source file changes",
-        envvar=["COGIP_RELOAD", "PLANNER_RELOAD"],
-    ),
-    debug: bool = typer.Option(
-        False,
-        "-d",
-        "--debug",
-        help="Turn on debug messages",
-        envvar=["COGIP_DEBUG", "PLANNER_DEBUG"],
-    ),
+    id: Annotated[
+        int,
+        typer.Option(
+            "-i",
+            "--id",
+            min=1,
+            max=9,
+            help="Robot ID.",
+            envvar=["ROBOT_ID"],
+        ),
+    ],
+    server_url: Annotated[
+        Optional[str],  # noqa
+        typer.Option(
+            help="Socket.IO Server URL",
+            envvar="COGIP_SOCKETIO_SERVER_URL",
+        ),
+    ] = None,
+    robot_width: Annotated[
+        int,
+        typer.Option(
+            min=100,
+            max=1000,
+            help="Width of the robot (in mm)",
+            envvar="PLANNER_ROBOT_WIDTH",
+        ),
+    ] = 295,
+    robot_length: Annotated[
+        int,
+        typer.Option(
+            min=100,
+            max=1000,
+            help="Length of the robot (in mm)",
+            envvar="PLANNER_ROBOT_LENGTH",
+        ),
+    ] = 295,
+    obstacle_radius: Annotated[
+        int,
+        typer.Option(
+            min=50,
+            max=500,
+            help="Radius of a dynamic obstacle (in mm)",
+            envvar="PLANNER_OBSTACLE_RADIUS",
+        ),
+    ] = 150,
+    obstacle_bb_margin: Annotated[
+        float,
+        typer.Option(
+            min=0,
+            max=1,
+            help="Obstacle bounding box margin in percent of the radius",
+            envvar="PLANNER_OBSTACLE_BB_MARGIN",
+        ),
+    ] = 0.2,
+    obstacle_bb_vertices: Annotated[
+        int,
+        typer.Option(
+            min=3,
+            max=20,
+            help="Number of obstacle bounding box vertices",
+            envvar="PLANNER_OBSTACLE_BB_VERTICES",
+        ),
+    ] = 6,
+    max_distance: Annotated[
+        int,
+        typer.Option(
+            min=0,
+            max=4000,
+            help="Maximum distance to take avoidance points into account (mm)",
+            envvar=["COGIP_MAX_DISTANCE", "PLANNER_MAX_DISTANCE"],
+        ),
+    ] = 2500,
+    obstacle_sender_interval: Annotated[
+        float,
+        typer.Option(
+            min=0.1,
+            max=2.0,
+            help="Interval between each send of obstacles to dashboards (in seconds)",
+            envvar="PLANNER_OBSTACLE_SENDER_INTERVAL",
+        ),
+    ] = 0.2,
+    path_refresh_interval: Annotated[
+        float,
+        typer.Option(
+            min=0.1,
+            max=2.0,
+            help="Interval between each update of robot paths (in seconds)",
+            envvar="PLANNER_PATH_REFRESH_INTERVAL",
+        ),
+    ] = 0.2,
+    plot: Annotated[
+        bool,
+        typer.Option(
+            "-p",
+            "--plot",
+            help="Display avoidance graph in realtime",
+            envvar=["PLANNER_PLOT"],
+        ),
+    ] = False,
+    reload: Annotated[
+        bool,
+        typer.Option(
+            "-r",
+            "--reload",
+            help="Reload app on source file changes",
+            envvar=["COGIP_RELOAD", "PLANNER_RELOAD"],
+        ),
+    ] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "-d",
+            "--debug",
+            help="Turn on debug messages",
+            envvar=["COGIP_DEBUG", "PLANNER_DEBUG"],
+        ),
+    ] = False,
 ):
     if debug:
         logger.setLevel(logging.DEBUG)
