@@ -19,6 +19,7 @@ dtoverlay=uart4
 dtoverlay=uart5
 dtparam=i2c_arm=on
 dtparam=i2c1=on
+dtoverlay=i2c-gpio,bus=2,i2c_gpio_sda=23,i2c_gpio_scl=24
 dtoverlay=spi1-1cs,cs0_pin=16
 dtoverlay=mcp251xfd,spi1-0,oscillator=20000000,interrupt=4
 dtoverlay=VC4_V3D_DRIVER
