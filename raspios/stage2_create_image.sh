@@ -112,6 +112,7 @@ sudo cp ${OVERLAY_ROOTFS}/etc/hostname ${MOUNT_DIR}/etc/hostname
 sudo cp ${OVERLAY_ROOTFS}/etc/hosts ${MOUNT_DIR}/etc/hosts
 sudo chmod 600 ${MOUNT_DIR}/etc/ssh/ssh_host_*
 sudo chmod 644 ${MOUNT_DIR}/etc/ssh/ssh_host_*.pub
+sudo chmod 600 ${MOUNT_DIR}/root/.ssh/id_rsa
 
 # Fix boot and root devices
 IMGID="$(dd if="${RASPIOS_COGIP_IMG}" skip=440 bs=1 count=4 2>/dev/null | xxd -e | cut -f 2 -d' ')"
