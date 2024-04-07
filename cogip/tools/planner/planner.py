@@ -141,7 +141,7 @@ class Planner:
         )
         self.avoidance_process: Process | None = None
 
-        if self.virtual:
+        if self.virtual or robot_id != 1:
             self.starter = Button(
                 self.starter_pin,
                 pull_up=True,
