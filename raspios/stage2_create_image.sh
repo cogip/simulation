@@ -154,6 +154,11 @@ then
     sudo sed -i "s/IP_ADDRESS/${IP_ADDRESS_ETH0}/" ${MOUNT_DIR}/etc/dnsmasq.conf
 fi
 
+if ((${ROBOT_ID} == 1))
+then
+    sudo sed -i "s/# PLANNER_STARTER_PIN=/PLANNER_STARTER_PIN=${ROBOT_STARTER_PIN}/" ${MOUNT_DIR}/etc/environment
+fi
+
 sudo umount ${MOUNT_DIR}/boot/firmware
 sudo umount ${MOUNT_DIR}
 sudo zerofree "${ROOT_DEV}"

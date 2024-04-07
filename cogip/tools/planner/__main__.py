@@ -120,6 +120,13 @@ def main_opt(
             envvar=["PLANNER_PLOT"],
         ),
     ] = False,
+    starter_pin: Annotated[
+        Optional[int],  # noqa
+        typer.Option(
+            help="GPIO pin connected to the starter",
+            envvar="PLANNER_STARTER_PIN",
+        ),
+    ] = None,
     reload: Annotated[
         bool,
         typer.Option(
@@ -163,6 +170,7 @@ def main_opt(
         obstacle_sender_interval,
         path_refresh_interval,
         plot,
+        starter_pin,
         debug,
     )
 

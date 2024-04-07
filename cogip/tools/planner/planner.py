@@ -47,6 +47,7 @@ class Planner:
         obstacle_sender_interval: float,
         path_refresh_interval: float,
         plot: bool,
+        starter_pin: int | None,
         debug: bool,
     ):
         """
@@ -64,12 +65,12 @@ class Planner:
             obstacle_sender_interval: Interval between each send of obstacles to dashboards (in seconds)
             path_refresh_interval: Interval between each update of robot paths (in seconds)
             plot: Display avoidance graph in realtime
+            starter_pin: GPIO pin connected to the starter
             debug: enable debug messages
         """
         self.robot_id = robot_id
         self.server_url = server_url
         self.debug = debug
-        self.starter_pin = 17
 
         # We have to make sure the Planner is the first object calling the constructor
         # of the Properties singleton
@@ -141,19 +142,17 @@ class Planner:
         )
         self.avoidance_process: Process | None = None
 
-        if self.virtual or robot_id != 1:
+        if starter_pin:
             self.starter = Button(
-                self.starter_pin,
-                pull_up=True,
-                bounce_time=0.1,
-                pin_factory=MockFactory(),
+                starter_pin,
+                pull_up=False,
+                bounce_time=None,
             )
         else:
             self.starter = Button(
-                self.starter_pin,
-                pull_up=None,
-                bounce_time=None,
-                active_state=False,
+                17,
+                pull_up=True,
+                pin_factory=MockFactory(),
             )
 
         self.starter.when_pressed = partial(self.sio_emitter_queue.put, ("starter_changed", True))
