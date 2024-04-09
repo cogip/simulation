@@ -127,6 +127,25 @@ def main_opt(
             envvar="PLANNER_STARTER_PIN",
         ),
     ] = None,
+    oled_bus: Annotated[
+        Optional[int],  # noqa
+        typer.Option(
+            "-op",
+            "--oled-bus",
+            help="PAMI OLED display i2c bus (integer, ex: 3)",
+            envvar="PLANNER_OLED_BUS",
+        ),
+    ] = None,
+    oled_address: Annotated[
+        Optional[int],  # noqa
+        typer.Option(
+            "-oa",
+            "--oled-address",
+            parser=lambda value: int(value, 16),
+            help="PAMI OLED display i2c address (hex, ex: 0x3C)",
+            envvar="PLANNER_OLED_ADDRESS",
+        ),
+    ] = None,
     reload: Annotated[
         bool,
         typer.Option(
@@ -171,6 +190,8 @@ def main_opt(
         path_refresh_interval,
         plot,
         starter_pin,
+        oled_bus,
+        oled_address,
         debug,
     )
 

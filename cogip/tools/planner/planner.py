@@ -10,6 +10,10 @@ from typing import Any
 import socketio
 from gpiozero import Button
 from gpiozero.pins.mock import MockFactory
+from luma.core.interface.serial import i2c
+from luma.core.render import canvas
+from luma.oled.device import sh1106
+from PIL import ImageFont
 from pydantic import RootModel, TypeAdapter
 
 from cogip import models
@@ -48,6 +52,8 @@ class Planner:
         path_refresh_interval: float,
         plot: bool,
         starter_pin: int | None,
+        oled_bus: int | None,
+        oled_address: int | None,
         debug: bool,
     ):
         """
@@ -66,10 +72,14 @@ class Planner:
             path_refresh_interval: Interval between each update of robot paths (in seconds)
             plot: Display avoidance graph in realtime
             starter_pin: GPIO pin connected to the starter
+            oled_bus: PAMI OLED display i2c bus
+            oled_address: PAMI OLED display i2c address
             debug: enable debug messages
         """
         self.robot_id = robot_id
         self.server_url = server_url
+        self.oled_bus = oled_bus
+        self.oled_address = oled_address
         self.debug = debug
 
         # We have to make sure the Planner is the first object calling the constructor
@@ -157,6 +167,18 @@ class Planner:
         self.starter.when_pressed = partial(self.sio_emitter_queue.put, ("starter_changed", True))
         self.starter.when_released = partial(self.sio_emitter_queue.put, ("starter_changed", False))
 
+        if self.oled_bus and self.oled_address:
+            self.oled_serial = i2c(port=self.oled_bus, address=self.oled_address)
+            self.oled_device = sh1106(self.oled_serial)
+            self.oled_font = ImageFont.truetype("DejaVuSansMono.ttf", 9)
+            self.oled_image = canvas(self.oled_device)
+            self.oled_update_loop = AsyncLoop(
+                "OLED display update loop",
+                0.5,
+                self.update_oled_display,
+                logger=self.debug,
+            )
+
     async def connect(self):
         """
         Connect to SocketIO server.
@@ -203,6 +225,9 @@ class Planner:
         await self.sio_ns.emit("game_reset")
         await self.countdown_start()
         self.obstacles_sender_loop.start()
+        if self.oled_bus and self.oled_address:
+            self.oled_update_loop.start()
+
         self.avoidance_process = Process(
             target=avoidance_process,
             args=(
@@ -228,6 +253,8 @@ class Planner:
         await self.countdown_stop()
 
         await self.obstacles_sender_loop.stop()
+        if self.oled_bus and self.oled_address:
+            await self.oled_update_loop.stop()
 
         if self.sio_emitter_task:
             self.sio_emitter_task.cancel()
@@ -580,6 +607,28 @@ class Planner:
 
     async def send_obstacles(self):
         await self.sio_ns.emit("obstacles", [o.model_dump(exclude_defaults=True) for o in self.obstacles])
+
+    async def update_oled_display(self):
+        try:
+            text = (
+                f"{'Connected' if self.sio.connected else 'Not connected': <20}"
+                f"{'▶' if self.game_context.playing else '◼'}\n"
+                f"Camp: {self.game_context.camp.color.name}\n"
+                f"Strategy: {self.game_context.strategy.name}\n"
+                f"Pose: {self.pose_current.x},{self.pose_current.y},{self.pose_current.O}\n"
+                f"Countdown: {self.game_context.countdown:.2f}"
+            )
+            with self.oled_image as draw:
+                draw.rectangle([(0, 0), (128, 64)], fill="black", outline="black")
+                draw.multiline_text(
+                    (1, 0),
+                    text,
+                    fill="white",
+                    font=self.oled_font,
+                )
+        except Exception as exc:
+            logger.warning(f"Planner: OLED display update loop: Unknown exception {exc}")
+            traceback.print_exc()
 
     async def command(self, cmd: str):
         """
