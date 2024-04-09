@@ -93,7 +93,6 @@ class Planner:
         self.sio = socketio.AsyncClient(logger=False)
         self.sio_ns = sio_events.SioEvents(self)
         self.sio.register_namespace(self.sio_ns)
-        self.camp = Camp()
         self.game_context = GameContext()
         self.process_manager = Manager()
         self.sio_receiver_queue = asyncio.Queue()
@@ -686,7 +685,7 @@ class Planner:
             {
                 "name": "Choose Camp",
                 "type": "camp",
-                "value": self.camp.color.name,
+                "value": self.game_context.camp.color.name,
             },
         )
 
@@ -770,14 +769,14 @@ class Planner:
         match name := message.get("name"):
             case "Choose Camp":
                 new_camp = Camp.Colors[value]
-                if self.camp.color == new_camp:
+                if self.game_context.camp.color == new_camp:
                     return
                 if self.game_context._table == TableEnum.Training and new_camp == Camp.Colors.blue:
                     logger.warning("Wizard: only yellow camp is authorized on training table")
                     return
-                self.camp.color = new_camp
+                self.game_context.camp.color = new_camp
                 await self.reset()
-                logger.info(f"Wizard: New camp: {self.camp.color.name}")
+                logger.info(f"Wizard: New camp: {self.game_context.camp.color.name}")
             case "Choose Strategy":
                 new_strategy = Strategy[value]
                 if self.game_context.strategy == new_strategy:
@@ -800,7 +799,7 @@ class Planner:
                 new_table = TableEnum[value]
                 if self.game_context.table == new_table:
                     return
-                if self.game_context.camp == Camp.Colors.blue and new_table == TableEnum.Training:
+                if self.game_context.camp.color == Camp.Colors.blue and new_table == TableEnum.Training:
                     logger.warning("Wizard: training table is not supported with blue camp")
                     await self.sio_ns.emit(
                         "wizard",
