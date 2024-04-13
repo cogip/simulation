@@ -20,14 +20,14 @@ class ApprovalAction(Action):
         self.default_poses = [
             AdaptedPose(
                 x=self.game_context.table.x_min + 300,
-                y=(self.game_context.table.y_max + self.game_context.table.y_min) / 2 + 200,
+                y=-(self.game_context.table.y_max + self.game_context.table.y_min) / 2 - 200,
                 O=0,
                 max_speed_linear=SpeedEnum.NORMAL,
                 max_speed_angular=SpeedEnum.NORMAL,
             ),
             AdaptedPose(
                 x=self.game_context.table.x_max - 300,
-                y=(self.game_context.table.y_max + self.game_context.table.y_min) / 2 + 200,
+                y=-(self.game_context.table.y_max + self.game_context.table.y_min) / 2 - 200,
                 O=180,
                 max_speed_linear=SpeedEnum.NORMAL,
                 max_speed_angular=SpeedEnum.NORMAL,

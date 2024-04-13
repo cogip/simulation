@@ -59,43 +59,43 @@ class GameContext(metaclass=Singleton):
     def get_start_pose(self, n: int) -> Pose | None:
         """
         Define the possible start positions.
-        Default positions for blue camp.
+        Default positions for yellow camp.
         """
         match n:
             case StartPosition.Top:
                 return AdaptedPose(
                     x=1000 - 450 + self.properties.robot_width / 2,
-                    y=1500 - 450 + self.properties.robot_length / 2,
-                    O=-90,
+                    y=-(1500 - 450 + self.properties.robot_length / 2),
+                    O=90,
                 )
             case StartPosition.Bottom:
                 return AdaptedPose(
                     x=-(1000 - 450 + self.properties.robot_width / 2),
-                    y=1500 - 450 + self.properties.robot_length / 2,
-                    O=-90,
+                    y=-(1500 - 450 + self.properties.robot_length / 2),
+                    O=90,
                 )
             case StartPosition.Opposite:
                 return AdaptedPose(
                     x=-450 / 2 + self.properties.robot_width / 2,
-                    y=-(1500 - 450 + self.properties.robot_width / 2),
-                    O=90,
+                    y=1500 - 450 + self.properties.robot_width / 2,
+                    O=-90,
                 )
             case StartPosition.PAMI1:
                 return AdaptedPose(
                     x=1000 - 150 + self.properties.robot_length / 2,
-                    y=self.properties.robot_width / 2,
+                    y=-self.properties.robot_width / 2,
                     O=180,
                 )
             case StartPosition.PAMI2:
                 return AdaptedPose(
                     x=1000 - 150 + self.properties.robot_length / 2,
-                    y=450 / 2,
+                    y=-450 / 2,
                     O=180,
                 )
             case StartPosition.PAMI3:
                 return AdaptedPose(
                     x=1000 - 150 + self.properties.robot_length / 2,
-                    y=450 - self.properties.robot_width / 2,
+                    y=-(450 - self.properties.robot_width / 2),
                     O=180,
                 )
             case _:
