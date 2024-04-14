@@ -313,7 +313,14 @@ function drawObstacles(color, obstacle, context) {
   let obstacleY = newY * ratioY;
 
   context.save();
-  context.fillStyle = color;
+  if (obstacle.id) {
+    // Fixed obstacles: they have an id in case of artefact, or length_x in case of rectangle.
+    context.fillStyle = "purple";
+  }
+  else {
+    // Other obstacles are dynamic obstacles and of circle shape.
+    context.fillStyle = color;
+  }
   context.filter = "opacity(40%)";
 
   if (obstacle.radius) {

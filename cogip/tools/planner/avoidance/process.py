@@ -3,6 +3,8 @@ import time
 from multiprocessing import Queue
 from multiprocessing.managers import DictProxy
 
+from pydantic import TypeAdapter
+
 from cogip import models
 from .. import logger
 from ..strategy import Strategy
@@ -75,9 +77,7 @@ def avoidance_process(
             continue
 
         # Create dynamic obstacles
-        dyn_obstacles = [
-            models.DynRoundObstacle.model_validate(obstacle) for obstacle in shared_properties["obstacles"]
-        ]
+        dyn_obstacles = TypeAdapter(models.DynObstacleList).validate_python(shared_properties["obstacles"])
 
         if any([obstacle.contains(pose_current.pose) for obstacle in dyn_obstacles]):
             logger.debug("Avoidance: pose current in obstacle")
