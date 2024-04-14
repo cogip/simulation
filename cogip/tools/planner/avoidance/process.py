@@ -11,36 +11,6 @@ from ..table import Table
 from .avoidance import Avoidance, AvoidanceStrategy
 
 
-def create_dyn_obstacle(
-    center: models.Vertex,
-    shared_properties: DictProxy,
-    radius: float | None = None,
-    bb_radius: float | None = None,
-) -> models.DynRoundObstacle:
-    """
-    Create a dynamic obstacle.
-
-    Arguments:
-        center: center of the obstacle
-        radius: radius of the obstacle, use the value from global properties if not specified
-        bb_radius: radius of the bounding box
-    """
-    if radius is None:
-        radius = shared_properties["obstacle_radius"]
-
-    if bb_radius is None:
-        bb_radius = radius + shared_properties["robot_width"] / 2
-
-    obstacle = models.DynRoundObstacle(
-        x=center.x,
-        y=center.y,
-        radius=radius,
-    )
-    obstacle.create_bounding_box(bb_radius, shared_properties["obstacle_bb_vertices"])
-
-    return obstacle
-
-
 def avoidance_process(
     strategy: Strategy,
     avoidance_strategy: AvoidanceStrategy,
