@@ -72,6 +72,8 @@ x-firmware: &firmware
 x-robot: &robot
   <<: [*build-console, *volumes-common, *extra-hosts-common]
   network_mode: "host"
+  cap_add:
+    - SYS_PTRACE
   environment: &env-robot
     SERVER_DEBUG:
     SERVER_RELOAD:
@@ -111,6 +113,8 @@ x-robot: &robot
 x-pami: &pami
   <<: [*build-console, *volumes-common, *extra-hosts-common]
   network_mode: "host"
+  cap_add:
+    - SYS_PTRACE
   environment: &env-pami
     SERVER_DEBUG:
     SERVER_RELOAD:
