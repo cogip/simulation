@@ -182,6 +182,25 @@ class DynObstacleRect(BaseModel):
     length_y: float
     bb: list[Vertex] = []
 
+    def contains(self, point: Vertex) -> bool:
+        half_length_x = self.length_x / 2
+        half_length_y = self.length_y / 2
+
+        return (self.x - half_length_x <= point.x <= self.x + half_length_x) and (
+            self.y - half_length_y <= point.y <= self.y + half_length_y
+        )
+
+    def create_bounding_box(self, bb_radius: float, nb_vertices: int = 4):
+        half_length_x = self.length_x / 2
+        half_length_y = self.length_y / 2
+
+        self.bb = [
+            Vertex(x=self.x - half_length_x - bb_radius, y=self.y - half_length_y - bb_radius),
+            Vertex(x=self.x + half_length_x + bb_radius, y=self.y - half_length_y - bb_radius),
+            Vertex(x=self.x + half_length_x + bb_radius, y=self.y + half_length_y + bb_radius),
+            Vertex(x=self.x - half_length_x - bb_radius, y=self.y + half_length_y + bb_radius),
+        ]
+
     def __hash__(self):
         """
         Hash function to allow this class to be used as a key in a dict.
