@@ -607,6 +607,9 @@ class Planner:
                 for obstacle in obstacles
                 if table.contains(obstacle)
             ]
+        self.obstacles += [p for p in self.game_context.plant_supplies.values() if p.enabled and table.contains(p)]
+        self.obstacles += [p for p in self.game_context.pot_supplies.values() if p.enabled and table.contains(p)]
+        self.obstacles += [p for p in self.game_context.fixed_obstacles if table.contains(p)]
 
         self.shared_properties["obstacles"] = [
             obstacle.model_dump(exclude_defaults=True) for obstacle in self.obstacles
@@ -684,12 +687,10 @@ class Planner:
             self.shared_properties[name] = value
         match name:
             case "obstacle_sender_interval":
-                self.obstacles_sender_loop.interval = self.properties.path_refresh_interval
-            case "path_refresh_interval":
-                for thread in self._avoidance_path_updaters.values():
-                    thread.interval = self.properties.path_refresh_interval
+                self.obstacles_sender_loop.interval = self.properties.obstacle_sender_interval
             case "robot_width" | "obstacle_bb_vertices":
-                pass
+                self.game_context.create_artifacts()
+                self.game_context.create_fixed_obstacles()
 
     async def cmd_play(self):
         """

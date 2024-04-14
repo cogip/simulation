@@ -98,8 +98,6 @@ class VisibilityRoadMapWrapper:
         converted_obstacles = []
 
         for obstacle in obstacles:
-            if not isinstance(obstacle, models.DynRoundObstacle):
-                continue
             x_list, y_list = list(zip(*[(int(v.x), int(v.y)) for v in obstacle.bb]))
             x_list = list(x_list)
             y_list = list(y_list)

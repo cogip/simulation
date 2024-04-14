@@ -237,8 +237,15 @@ function drawObstacles(obstacle, context) {
   let obstacleY = newY * ratioY;
 
   context.save();
-  context.fillStyle = "red";
-  context.filter = "opacity(20%)";
+  if (obstacle.id || obstacle.length_x) {
+    // Fixed obstacles: they have an id in case of artefact, or length_x in case of rectangle.
+    context.fillStyle = "purple";
+  }
+  else {
+    // Other obstacles are dynamic obstacles and of circle shape.
+    context.fillStyle = "red";
+  }
+  context.filter = "opacity(40%)";
 
   if (obstacle.radius) {
     let radius = obstacle.radius * ratioX;
