@@ -135,6 +135,7 @@ class Planner:
             {
                 "robot_id": self.robot_id,
                 "exiting": False,
+                "avoidance_strategy": self.game_context.avoidance_strategy,
                 "pose_current": {},
                 "pose_order": {},
                 "last_avoidance_pose_current": {},
@@ -231,7 +232,6 @@ class Planner:
             target=avoidance_process,
             args=(
                 self.game_context.strategy,
-                self.game_context.avoidance_strategy,
                 self.game_context.table,
                 self.shared_properties,
                 self.sio_emitter_queue,
@@ -845,6 +845,7 @@ class Planner:
                 if self.game_context.avoidance_strategy == new_strategy:
                     return
                 self.game_context.avoidance_strategy = new_strategy
+                self.shared_properties["avoidance_strategy"] = new_strategy
                 await self.reset()
                 logger.info(f"Wizard: New avoidance strategy: {self.game_context.avoidance_strategy.name}")
             case "Choose Start Position":

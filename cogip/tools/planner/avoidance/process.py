@@ -7,12 +7,11 @@ from cogip import models
 from .. import logger
 from ..strategy import Strategy
 from ..table import Table
-from .avoidance import Avoidance, AvoidanceStrategy
+from .avoidance import Avoidance
 
 
 def avoidance_process(
     strategy: Strategy,
-    avoidance_strategy: AvoidanceStrategy,
     table: Table,
     shared_properties: DictProxy,
     queue_sio: Queue,
@@ -95,7 +94,7 @@ def avoidance_process(
                 logger.debug("Avoidance: rotation only")
                 path = [pose_current, pose_order]
             else:
-                path = avoidance.get_path(pose_current, pose_order, dyn_obstacles, avoidance_strategy)
+                path = avoidance.get_path(pose_current, pose_order, dyn_obstacles)
 
         if len(path) == 0:
             logger.debug("Avoidance: No path found")
