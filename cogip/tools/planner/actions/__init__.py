@@ -7,6 +7,7 @@ from .game import GameActions
 from .position_test import AngularPositionTestActions, LinearPositionTestActions
 from .solar_panels import SolarPanelActions
 from .speed_test import SpeedTestActions
+from .test_align import TestAlignActions
 from .training import TrainingActions
 
 action_classes: dict[Strategy, Actions] = {
@@ -20,4 +21,5 @@ action_classes: dict[Strategy, Actions] = {
     Strategy.Training: TrainingActions,
     Strategy.CameraCalibration: CameraCalibrationActions,
     Strategy.SolarPanel: SolarPanelActions,
+    Strategy.TestAlign: TestAlignActions,
 }
