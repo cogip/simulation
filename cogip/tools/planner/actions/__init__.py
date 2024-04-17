@@ -1,5 +1,6 @@
 from ..strategy import Strategy
 from .actions import Actions
+from .align_test import AlignTestActions
 from .approval import ApprovalActions
 from .back_and_forth import BackAndForthActions
 from .camera_calibration import CameraCalibrationActions
@@ -20,4 +21,5 @@ action_classes: dict[Strategy, Actions] = {
     Strategy.Training: TrainingActions,
     Strategy.CameraCalibration: CameraCalibrationActions,
     Strategy.SolarPanel: SolarPanelActions,
+    Strategy.AlignTest: AlignTestActions,
 }
