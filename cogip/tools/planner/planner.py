@@ -134,7 +134,6 @@ class Planner:
         self.shared_properties: DictProxy = self.process_manager.dict(
             {
                 "robot_id": self.robot_id,
-                "controller": None,
                 "exiting": False,
                 "pose_current": {},
                 "pose_order": {},
@@ -303,14 +302,23 @@ class Planner:
                             self.blocked_counter = 0
                             await self.blocked()
                     case "path":
+                        if len(value) == 1:
+                            # Final pose
+                            new_controller = ControllerEnum.QUADPID
+                        else:
+                            # Intermediate pose
+                            match self.game_context.avoidance_strategy:
+                                case AvoidanceStrategy.Disabled | AvoidanceStrategy.VisibilityRoadMapQuadPid:
+                                    new_controller = ControllerEnum.QUADPID
+                                case AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
+                                    new_controller = ControllerEnum.LINEAR_POSE_DISABLED
+                        await self.set_controller(new_controller)
                         if self.sio.connected:
                             await self.sio_ns.emit(name, value)
                     case "pose_order":
                         self.blocked_counter = 0
                         if self.sio.connected:
                             await self.sio_ns.emit(name, value)
-                    case "set_controller":
-                        await self.set_controller(ControllerEnum(value))
                     case "starter_changed":
                         await self.starter_changed(value)
                     case _:
@@ -403,7 +411,6 @@ class Planner:
         if self.controller == new_controller and not force:
             return
         self.controller = new_controller
-        self.shared_properties["controller"] = new_controller.value
         await self.sio_ns.emit("set_controller", self.controller.value)
 
     async def set_pose_start(self, pose_start: models.Pose):

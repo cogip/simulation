@@ -4,7 +4,6 @@ from multiprocessing import Queue
 from multiprocessing.managers import DictProxy
 
 from cogip import models
-from cogip.tools.copilot.controller import ControllerEnum
 from .. import logger
 from ..strategy import Strategy
 from ..table import Table
@@ -115,17 +114,10 @@ def avoidance_process(
 
         if len(path) == 2:
             # Final pose
-            new_controller = ControllerEnum.QUADPID
             if path[1].O is None:
                 path[1].O = path[0].O  # noqa
         else:
             # Intermediate pose
-            match avoidance_strategy:
-                case AvoidanceStrategy.Disabled | AvoidanceStrategy.VisibilityRoadMapQuadPid:
-                    new_controller = ControllerEnum.QUADPID
-                case AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
-                    new_controller = ControllerEnum.LINEAR_POSE_DISABLED
-
             if len(path) > 2 and last_emitted_pose_order:
                 dist = math.dist((last_emitted_pose_order.x, last_emitted_pose_order.y), (path[1].x, path[1].y))
                 if dist < 20:
@@ -147,11 +139,8 @@ def avoidance_process(
 
         last_emitted_pose_order = new_pose_order.model_copy()
 
-        if shared_properties["controller"] != new_controller:
-            queue_sio.put(("set_controller", new_controller.value))
-
         logger.debug("Avoidance: Update path")
-        queue_sio.put(("pose_order", new_pose_order.model_dump(exclude_defaults=True)))
         queue_sio.put(("path", [pose.pose.model_dump(exclude_defaults=True) for pose in avoidance_path]))
+        queue_sio.put(("pose_order", new_pose_order.model_dump(exclude_defaults=True)))
 
     logger.info("Avoidance: process exited")
