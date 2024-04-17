@@ -1,7 +1,6 @@
 from functools import partial
 from typing import TYPE_CHECKING
 
-from cogip.models.models import SpeedEnum
 from ..pose import Pose
 from .actions import Action, Actions
 
@@ -28,8 +27,8 @@ class BackAndForthAction(Action):
             x=x,
             y=y,
             O=angle,
-            max_speed_linear=SpeedEnum.NORMAL,
-            max_speed_angular=SpeedEnum.NORMAL,
+            max_speed_linear=66,
+            max_speed_angular=66,
         )
         pose2 = Pose(**self.planner.pose_current.model_dump())
         pose1.after_pose_func = partial(self.append_pose, pose1)

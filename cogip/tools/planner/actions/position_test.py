@@ -21,8 +21,8 @@ class LinearPositionTestAction(Action):
     def __init__(self, planner: "Planner", actions: Actions):
         super().__init__("LinearPositionTest action", planner, actions)
         self.distance = 750
-        self.linear_speed = models.SpeedEnum.NORMAL
-        self.angular_speed = models.SpeedEnum.NORMAL
+        self.linear_speed = 66
+        self.angular_speed = 66
         self.allow_reverse = True
         self.before_action_func = self.init_start_position
         self.pose_init = models.Pose(
@@ -70,8 +70,8 @@ class AngularPositionTestAction(Action):
     def __init__(self, planner: "Planner", actions: Actions):
         super().__init__("AngularPositionTest action", planner, actions)
         self.angular_distance = 180
-        self.linear_speed = models.SpeedEnum.NORMAL
-        self.angular_speed = models.SpeedEnum.NORMAL
+        self.linear_speed = 66
+        self.angular_speed = 66
         self.allow_reverse = True
         self.before_action_func = self.init_start_position
         self.pose_init = models.Pose(

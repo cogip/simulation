@@ -8,7 +8,6 @@ an exception being raised if impossible.
 """
 
 import math
-from enum import IntEnum
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -107,25 +106,6 @@ class Speed(BaseModel):
     angle: float = 0.0
 
 
-class SpeedEnum(IntEnum):
-    """
-    Speed levels.
-    In mcu-firmware, the speeds (linear and angular) are float-point values,
-    but they can take only 3 values: low, normal and max speed. These values
-    depend on the platform, so on the Raspberry side, we only need to define
-    the speed levels instead of the real values.
-
-    Attributes:
-        LOW:
-        NORMAL:
-        MAX:
-    """
-
-    LOW = 33
-    NORMAL = 66
-    MAX = 100
-
-
 class PathPose(Pose):
     """
     Class representing a position in a path.
@@ -134,13 +114,13 @@ class PathPose(Pose):
         x: X coordinate
         y: Y coordinate
         O: 0-orientation
-        max_speed_linear: max speed linear
-        max_speed_angular: max speed angular
+        max_speed_linear: max linear speed in percentage of the robot max linear speed
+        max_speed_angular: max angular speed in percentage of the robot max angular speed
         allow_reverse: reverse mode
     """
 
-    max_speed_linear: SpeedEnum = SpeedEnum.NORMAL
-    max_speed_angular: SpeedEnum = SpeedEnum.NORMAL
+    max_speed_linear: int = 66
+    max_speed_angular: int = 66
     allow_reverse: bool = True
 
     @property

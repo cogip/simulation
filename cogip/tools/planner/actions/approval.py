@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-from cogip.models.models import SpeedEnum
 from ..pose import AdaptedPose
 from .actions import Action, Actions
 
@@ -22,15 +21,15 @@ class ApprovalAction(Action):
                 x=self.game_context.table.x_min + 300,
                 y=-(self.game_context.table.y_max + self.game_context.table.y_min) / 2 - 200,
                 O=0,
-                max_speed_linear=SpeedEnum.NORMAL,
-                max_speed_angular=SpeedEnum.NORMAL,
+                max_speed_linear=66,
+                max_speed_angular=66,
             ),
             AdaptedPose(
                 x=self.game_context.table.x_max - 300,
                 y=-(self.game_context.table.y_max + self.game_context.table.y_min) / 2 - 200,
                 O=180,
-                max_speed_linear=SpeedEnum.NORMAL,
-                max_speed_angular=SpeedEnum.NORMAL,
+                max_speed_linear=66,
+                max_speed_angular=66,
                 after_pose_func=self.areset,
             ),
         ]

@@ -11,6 +11,5 @@ from .models import (  # noqa
     RobotState,
     SerialMessage,
     ShellMenu,
-    SpeedEnum,
     Vertex,
 )

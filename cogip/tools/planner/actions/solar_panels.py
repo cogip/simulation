@@ -50,8 +50,8 @@ class DiscoverSolarPanelsAction(Action):
                 x=-500,
                 y=-1000,
                 O=180,
-                max_speed_linear=models.SpeedEnum.LOW,
-                max_speed_angular=models.SpeedEnum.LOW,
+                max_speed_linear=33,
+                max_speed_angular=33,
                 after_pose_func=self.get_solar_panels,
             )
         )
@@ -95,8 +95,8 @@ class SolarPanelAction(Action):
                 x=-750,
                 y=robot_y,
                 O=180,
-                max_speed_linear=models.SpeedEnum.LOW,
-                max_speed_angular=models.SpeedEnum.LOW,
+                max_speed_linear=33,
+                max_speed_angular=33,
                 after_pose_func=self.extend_arm,
             )
         )
@@ -106,8 +106,8 @@ class SolarPanelAction(Action):
                 x=-1000 + self.game_context.properties.robot_width / 2 + 20,
                 y=robot_y,
                 O=180,
-                max_speed_linear=models.SpeedEnum.LOW,
-                max_speed_angular=models.SpeedEnum.LOW,
+                max_speed_linear=33,
+                max_speed_angular=33,
                 allow_reverse=False,
             )
         )
@@ -117,8 +117,8 @@ class SolarPanelAction(Action):
                 x=-750,
                 y=robot_y,
                 O=180,
-                max_speed_linear=models.SpeedEnum.LOW,
-                max_speed_angular=models.SpeedEnum.LOW,
+                max_speed_linear=33,
+                max_speed_angular=33,
                 after_pose_func=self.fold_arm,
             )
         )
@@ -149,8 +149,8 @@ class ParkingAction(Action):
 
         self.pose = Pose(
             **pose.model_dump(),
-            max_speed_linear=models.SpeedEnum.LOW,
-            max_speed_angular=models.SpeedEnum.LOW,
+            max_speed_linear=33,
+            max_speed_angular=33,
         )
         self.poses = [self.pose]
 
