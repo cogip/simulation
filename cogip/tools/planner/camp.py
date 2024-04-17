@@ -23,8 +23,10 @@ class Camp(metaclass=Singleton):
         """
         return dist if self.color == Camp.Colors.yellow else -dist
 
-    def adapt_angle(self, angle: float) -> float:
+    def adapt_angle(self, angle: float | None) -> float | None:
         """
         Adapt an angle depending on the actual camp.
         """
+        if angle is None:
+            return None
         return angle if self.color == Camp.Colors.yellow else -angle
