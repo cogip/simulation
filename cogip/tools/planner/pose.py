@@ -15,6 +15,7 @@ class Pose(PathPose):
     """
 
     before_pose_func: Callable[[socketio.ClientNamespace], Awaitable[None]] | None = None
+    intermediate_pose_func: Callable[[socketio.ClientNamespace], Awaitable[None]] | None = None
     after_pose_func: Callable[[socketio.ClientNamespace], Awaitable[None]] | None = None
 
     @final
@@ -24,6 +25,14 @@ class Pose(PathPose):
         """
         if self.before_pose_func:
             await self.before_pose_func()
+
+    @final
+    async def act_intermediate_pose(self):
+        """
+        Function executed once an intermediate pose is reached.
+        """
+        if self.intermediate_pose_func:
+            await self.intermediate_pose_func()
 
     @final
     async def act_after_pose(self):
