@@ -10,6 +10,10 @@ from typing import Any
 import socketio
 from gpiozero import Button
 from gpiozero.pins.mock import MockFactory
+from luma.core.interface.serial import i2c
+from luma.core.render import canvas
+from luma.oled.device import sh1106
+from PIL import ImageFont
 from pydantic import RootModel, TypeAdapter
 
 from cogip import models
@@ -47,6 +51,9 @@ class Planner:
         obstacle_sender_interval: float,
         path_refresh_interval: float,
         plot: bool,
+        starter_pin: int | None,
+        oled_bus: int | None,
+        oled_address: int | None,
         debug: bool,
     ):
         """
@@ -64,12 +71,16 @@ class Planner:
             obstacle_sender_interval: Interval between each send of obstacles to dashboards (in seconds)
             path_refresh_interval: Interval between each update of robot paths (in seconds)
             plot: Display avoidance graph in realtime
+            starter_pin: GPIO pin connected to the starter
+            oled_bus: PAMI OLED display i2c bus
+            oled_address: PAMI OLED display i2c address
             debug: enable debug messages
         """
         self.robot_id = robot_id
         self.server_url = server_url
+        self.oled_bus = oled_bus
+        self.oled_address = oled_address
         self.debug = debug
-        self.starter_pin = 17
 
         # We have to make sure the Planner is the first object calling the constructor
         # of the Properties singleton
@@ -92,7 +103,6 @@ class Planner:
         self.sio = socketio.AsyncClient(logger=False)
         self.sio_ns = sio_events.SioEvents(self)
         self.sio.register_namespace(self.sio_ns)
-        self.camp = Camp()
         self.game_context = GameContext()
         self.process_manager = Manager()
         self.sio_receiver_queue = asyncio.Queue()
@@ -124,8 +134,8 @@ class Planner:
         self.shared_properties: DictProxy = self.process_manager.dict(
             {
                 "robot_id": self.robot_id,
-                "controller": None,
                 "exiting": False,
+                "avoidance_strategy": self.game_context.avoidance_strategy,
                 "pose_current": {},
                 "pose_order": {},
                 "last_avoidance_pose_current": {},
@@ -141,23 +151,33 @@ class Planner:
         )
         self.avoidance_process: Process | None = None
 
-        if self.virtual:
+        if starter_pin:
             self.starter = Button(
-                self.starter_pin,
-                pull_up=True,
-                bounce_time=0.1,
-                pin_factory=MockFactory(),
+                starter_pin,
+                pull_up=False,
+                bounce_time=None,
             )
         else:
             self.starter = Button(
-                self.starter_pin,
-                pull_up=None,
-                bounce_time=None,
-                active_state=False,
+                17,
+                pull_up=True,
+                pin_factory=MockFactory(),
             )
 
         self.starter.when_pressed = partial(self.sio_emitter_queue.put, ("starter_changed", True))
         self.starter.when_released = partial(self.sio_emitter_queue.put, ("starter_changed", False))
+
+        if self.oled_bus and self.oled_address:
+            self.oled_serial = i2c(port=self.oled_bus, address=self.oled_address)
+            self.oled_device = sh1106(self.oled_serial)
+            self.oled_font = ImageFont.truetype("DejaVuSansMono.ttf", 9)
+            self.oled_image = canvas(self.oled_device)
+            self.oled_update_loop = AsyncLoop(
+                "OLED display update loop",
+                0.5,
+                self.update_oled_display,
+                logger=self.debug,
+            )
 
     async def connect(self):
         """
@@ -205,11 +225,13 @@ class Planner:
         await self.sio_ns.emit("game_reset")
         await self.countdown_start()
         self.obstacles_sender_loop.start()
+        if self.oled_bus and self.oled_address:
+            self.oled_update_loop.start()
+
         self.avoidance_process = Process(
             target=avoidance_process,
             args=(
                 self.game_context.strategy,
-                self.game_context.avoidance_strategy,
                 self.game_context.table,
                 self.shared_properties,
                 self.sio_emitter_queue,
@@ -230,6 +252,8 @@ class Planner:
         await self.countdown_stop()
 
         await self.obstacles_sender_loop.stop()
+        if self.oled_bus and self.oled_address:
+            await self.oled_update_loop.stop()
 
         if self.sio_emitter_task:
             self.sio_emitter_task.cancel()
@@ -278,14 +302,23 @@ class Planner:
                             self.blocked_counter = 0
                             await self.blocked()
                     case "path":
+                        if len(value) == 1:
+                            # Final pose
+                            new_controller = ControllerEnum.QUADPID
+                        else:
+                            # Intermediate pose
+                            match self.game_context.avoidance_strategy:
+                                case AvoidanceStrategy.Disabled | AvoidanceStrategy.VisibilityRoadMapQuadPid:
+                                    new_controller = ControllerEnum.QUADPID
+                                case AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
+                                    new_controller = ControllerEnum.LINEAR_POSE_DISABLED
+                        await self.set_controller(new_controller)
                         if self.sio.connected:
                             await self.sio_ns.emit(name, value)
                     case "pose_order":
                         self.blocked_counter = 0
                         if self.sio.connected:
                             await self.sio_ns.emit(name, value)
-                    case "set_controller":
-                        await self.set_controller(ControllerEnum(value))
                     case "starter_changed":
                         await self.starter_changed(value)
                     case _:
@@ -364,7 +397,6 @@ class Planner:
         if not self.game_context.playing:
             return
         self.game_context.playing = False
-        await actuators.led_on(self)
         await self.sio_ns.emit("game_end")
         self.game_context.score += 15
         await self.sio_ns.emit("score", self.game_context.score)
@@ -379,7 +411,6 @@ class Planner:
         if self.controller == new_controller and not force:
             return
         self.controller = new_controller
-        self.shared_properties["controller"] = new_controller.value
         await self.sio_ns.emit("set_controller", self.controller.value)
 
     async def set_pose_start(self, pose_start: models.Pose):
@@ -584,6 +615,28 @@ class Planner:
     async def send_obstacles(self):
         await self.sio_ns.emit("obstacles", [o.model_dump(exclude_defaults=True) for o in self.obstacles])
 
+    async def update_oled_display(self):
+        try:
+            text = (
+                f"{'Connected' if self.sio.connected else 'Not connected': <20}"
+                f"{'▶' if self.game_context.playing else '◼'}\n"
+                f"Camp: {self.game_context.camp.color.name}\n"
+                f"Strategy: {self.game_context.strategy.name}\n"
+                f"Pose: {self.pose_current.x},{self.pose_current.y},{self.pose_current.O}\n"
+                f"Countdown: {self.game_context.countdown:.2f}"
+            )
+            with self.oled_image as draw:
+                draw.rectangle([(0, 0), (128, 64)], fill="black", outline="black")
+                draw.multiline_text(
+                    (1, 0),
+                    text,
+                    fill="white",
+                    font=self.oled_font,
+                )
+        except Exception as exc:
+            logger.warning(f"Planner: OLED display update loop: Unknown exception {exc}")
+            traceback.print_exc()
+
     async def command(self, cmd: str):
         """
         Execute a command from the menu.
@@ -688,7 +741,7 @@ class Planner:
             {
                 "name": "Choose Camp",
                 "type": "camp",
-                "value": self.camp.color.name,
+                "value": self.game_context.camp.color.name,
             },
         )
 
@@ -772,14 +825,14 @@ class Planner:
         match name := message.get("name"):
             case "Choose Camp":
                 new_camp = Camp.Colors[value]
-                if self.camp.color == new_camp:
+                if self.game_context.camp.color == new_camp:
                     return
                 if self.game_context._table == TableEnum.Training and new_camp == Camp.Colors.blue:
                     logger.warning("Wizard: only yellow camp is authorized on training table")
                     return
-                self.camp.color = new_camp
+                self.game_context.camp.color = new_camp
                 await self.reset()
-                logger.info(f"Wizard: New camp: {self.camp.color.name}")
+                logger.info(f"Wizard: New camp: {self.game_context.camp.color.name}")
             case "Choose Strategy":
                 new_strategy = Strategy[value]
                 if self.game_context.strategy == new_strategy:
@@ -792,6 +845,7 @@ class Planner:
                 if self.game_context.avoidance_strategy == new_strategy:
                     return
                 self.game_context.avoidance_strategy = new_strategy
+                self.shared_properties["avoidance_strategy"] = new_strategy
                 await self.reset()
                 logger.info(f"Wizard: New avoidance strategy: {self.game_context.avoidance_strategy.name}")
             case "Choose Start Position":
@@ -802,7 +856,7 @@ class Planner:
                 new_table = TableEnum[value]
                 if self.game_context.table == new_table:
                     return
-                if self.game_context.camp == Camp.Colors.blue and new_table == TableEnum.Training:
+                if self.game_context.camp.color == Camp.Colors.blue and new_table == TableEnum.Training:
                     logger.warning("Wizard: training table is not supported with blue camp")
                     await self.sio_ns.emit(
                         "wizard",

@@ -29,11 +29,11 @@ loop_dev=$(sudo losetup -fP --show ${RASPIOS_LITE_IMG})
 
 # Extract rootfs and boot
 sudo mount ${loop_dev}p2 ${MOUNT_DIR}
-sudo rm -rf "${MOUNT_DIR}/boot/"
-sudo mkdir -p "${MOUNT_DIR}/boot"
-sudo mount ${loop_dev}p1 ${MOUNT_DIR}/boot
+sudo rm -rf "${MOUNT_DIR}/boot/firmware/"
+sudo mkdir -p "${MOUNT_DIR}/boot/firmware"
+sudo mount ${loop_dev}p1 ${MOUNT_DIR}/boot/firmware
 sudo tar cf ${ROOTFS} -C ${MOUNT_DIR} --numeric-owner .
-sudo umount ${MOUNT_DIR}/boot
+sudo umount ${MOUNT_DIR}/boot/firmware
 sudo umount ${MOUNT_DIR}
 sudo chown $(whoami) ${ROOTFS}
 

@@ -155,6 +155,9 @@ class Detector:
         """
         Update obstacles list from sensors data.
         """
+        if len(distances) == 0:
+            return []
+
         distance = distances[0]
         if distance < self.properties.min_distance or distance >= self.properties.max_distance:
             return []

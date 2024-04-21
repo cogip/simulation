@@ -51,8 +51,8 @@ x-socat: &socat
 
 x-firmware: &firmware
   <<: *build-firmware
+  network_mode: "host"
   environment: &env-firmware
-    FIRMWARE_APP: ${FIRMWARE_APP:-cup2023}
     FIRMWARE_BOARD: ${FIRMWARE_BOARD:-cogip-native}
   stdin_open: true
   tty: true
@@ -67,13 +67,13 @@ x-firmware: &firmware
     - -x
     - -c
     - |
-      applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf -c /dev/null -c /var/run/cogip/ptySTM32-$${ROBOT_ID}
-  depends_on: &depends-firmware
-      make-firmware:
-        condition: service_completed_successfully
+      applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf $${FIRMWARE_OPTIONS}
 
 x-robot: &robot
   <<: [*build-console, *volumes-common, *extra-hosts-common]
+  network_mode: "host"
+  cap_add:
+    - SYS_PTRACE
   environment: &env-robot
     SERVER_DEBUG:
     SERVER_RELOAD:
@@ -105,13 +105,16 @@ x-robot: &robot
       cogip-server &
       wait-for-it -t 0 localhost:809$${ROBOT_ID}
       cogip-planner &
-      cogip-copilot --serial-port /var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      cogip-copilot --can-channel vcan0 -b 500000 -B 1000000 &
       cogip-detector &
       cogip-dashboard &
       sleep infinity
 
 x-pami: &pami
   <<: [*build-console, *volumes-common, *extra-hosts-common]
+  network_mode: "host"
+  cap_add:
+    - SYS_PTRACE
   environment: &env-pami
     SERVER_DEBUG:
     SERVER_RELOAD:
@@ -121,11 +124,11 @@ x-pami: &pami
     PLANNER_ROBOT_WIDTH: 140
     PLANNER_OBSTACLE_RADIUS:
     PLANNER_OBSTACLE_BB_MARGIN:
-    PLANNER_OBSTACLE_BB_VERTICES: 4
+    PLANNER_OBSTACLE_BB_VERTICES: 6
     PLANNER_OBSTACLE_SENDER_INTERVAL:
     PLANNER_PATH_REFRESH_INTERVAL:
-    COPILOT_RELOAD:
-    COPILOT_DEBUG:
+    COPILOT_PAMI_RELOAD:
+    COPILOT_PAMI_DEBUG:
     DETECTOR_PAMI_TOF_BUS:
     DETECTOR_PAMI_TOF_ADDRESS:
     DETECTOR_PAMI_MIN_DISTANCE:
@@ -141,13 +144,14 @@ x-pami: &pami
       cogip-server &
       wait-for-it -t 0 localhost:809$${ROBOT_ID}
       cogip-planner &
-      cogip-copilot --serial-port /var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      cogip-copilot-pami --serial-port /var/run/cogip/ptyRPI-$${ROBOT_ID} &
       cogip-detector-pami &
       cogip-dashboard &
       sleep infinity
 
 x-monitor: &monitor
   << : [*build-gui, *extra-hosts-common]
+  network_mode: "host"
   environment: &env-monitor
     DISPLAY:
     QTWEBENGINE_DISABLE_SANDBOX: 1
@@ -173,6 +177,7 @@ services:
   beacon:
     <<: [*build-console, *extra-hosts-common]
     hostname: beacon
+    network_mode: "host"
     ports:
       - "8080:8080"
       - "8090:8090"
@@ -195,13 +200,6 @@ services:
     profiles:
       - beacon
 
-  socat1:
-    << : *socat
-    hostname: socat1
-    environment:
-      ROBOT_ID: 1
-    profiles:
-      - robot1
 
   socat2:
     << : *socat
@@ -229,8 +227,23 @@ services:
 
   make-firmware:
     <<: *build-firmware
-    environment:
+    environment: &env-firmware-robot
       << : *env-firmware
+      FIRMWARE_APP: cup2024-robot-motion-control
+    working_dir: /simulation/submodules/mcu-firmware
+    volumes:
+      - ".:/simulation"
+    command:
+      - /bin/sh
+      - -x
+      - -c
+      - make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
+
+  make-firmware-pami:
+    <<: *build-firmware
+    environment: &env-firmware-pami
+      << : *env-firmware
+      FIRMWARE_APP: cup2024-pami
     working_dir: /simulation/submodules/mcu-firmware
     volumes:
       - ".:/simulation"
@@ -244,12 +257,11 @@ services:
     << : *firmware
     hostname: firmware1
     environment:
-      << : *env-firmware
+      << : *env-firmware-robot
       ROBOT_ID: 1
     depends_on:
-      << : *depends-firmware
-      socat1:
-        condition: service_started
+      make-firmware:
+        condition: service_completed_successfully
     profiles:
       - robot1
 
@@ -257,10 +269,12 @@ services:
     << : *firmware
     hostname: firmware2
     environment:
-      << : *env-firmware
+      << : *env-firmware-pami
       ROBOT_ID: 2
+      FIRMWARE_OPTIONS: -c /dev/null -c /var/run/cogip/ptySTM32-2
     depends_on:
-      << : *depends-firmware
+      make-firmware-pami:
+        condition: service_completed_successfully
       socat2:
         condition: service_started
     profiles:
@@ -270,11 +284,13 @@ services:
     << : *firmware
     hostname: firmware3
     environment:
-      << : *env-firmware
+      << : *env-firmware-pami
       ROBOT_ID: 3
+      FIRMWARE_OPTIONS: -c /dev/null -c /var/run/cogip/ptySTM32-3
     depends_on:
-      << : *depends-firmware
-      socat2:
+      make-firmware-pami:
+        condition: service_completed_successfully
+      socat3:
         condition: service_started
     profiles:
       - robot3
@@ -283,11 +299,13 @@ services:
     << : *firmware
     hostname: firmware4
     environment:
-      << : *env-firmware
+      << : *env-firmware-pami
       ROBOT_ID: 4
+      FIRMWARE_OPTIONS: -c /dev/null -c /var/run/cogip/ptySTM32-4
     depends_on:
-      << : *depends-firmware
-      socat2:
+      make-firmware-pami:
+        condition: service_completed_successfully
+      socat4:
         condition: service_started
     profiles:
       - robot4
@@ -301,8 +319,6 @@ services:
     environment:
       << : *env-robot
       ROBOT_ID: 1
-    depends_on:
-      - socat1
     profiles:
       - robot1
 

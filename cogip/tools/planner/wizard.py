@@ -2,7 +2,6 @@ import asyncio
 from typing import TYPE_CHECKING, Any
 
 from cogip.utils.asyncloop import AsyncLoop
-from . import actuators
 from .avoidance.avoidance import AvoidanceStrategy
 from .camp import Camp
 from .context import GameContext
@@ -57,13 +56,13 @@ class GameWizard:
         message = {
             "name": "Game Wizard: Choose Camp",
             "type": "camp",
-            "value": self.planner.camp.color.name,
+            "value": self.planner.game_context.camp.color.name,
         }
         await self.planner.sio_ns.emit("wizard", message)
 
     async def response_camp(self, message: dict[str, Any]):
         value = message["value"]
-        self.planner.camp.color = Camp.Colors[value]
+        self.planner.game_context.camp.color = Camp.Colors[value]
         await self.planner.reset()
 
     async def request_start_pose(self):
@@ -138,12 +137,7 @@ class GameWizard:
         self.waiting_start_loop.start()
 
     async def request_wait(self):
-        await actuators.led_on(self.planner)
-        await actuators.central_arm_up(self.planner)
-        await actuators.left_arm_up(self.planner)
-        await actuators.right_arm_up(self.planner)
         await asyncio.sleep(1)
-        await actuators.led_off(self.planner)
 
         message = {
             "name": "Game Wizard: Waiting Start",

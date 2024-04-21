@@ -48,7 +48,7 @@ RUN apt-get install -y \
         libxcb-xkb1 libxcb-image0 libxcb-render-util0 libxcb-render0 libxcb-util1 \
         libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
 
-FROM ubuntu:20.04 as cogip-firmware
+FROM ubuntu:22.04 as cogip-firmware
 
 ENV DEBIAN_FRONTEND noninteractive
 

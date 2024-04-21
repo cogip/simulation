@@ -1,7 +1,7 @@
 import asyncio
 from typing import TYPE_CHECKING
 
-from cogip.models.models import SpeedEnum, Vertex
+from cogip.models.models import Vertex
 from .. import logger
 from ..cameras import calibrate_camera
 from ..pose import Pose
@@ -27,8 +27,8 @@ class CameraCalibrationAction(Action):
                 x=-220,
                 y=-(1500 - 450 + self.game_context.properties.robot_width / 2),
                 O=90,
-                max_speed_linear=SpeedEnum.NORMAL,
-                max_speed_angular=SpeedEnum.NORMAL,
+                max_speed_linear=66,
+                max_speed_angular=66,
                 after_pose_func=self.calibrate_camera,
             )
         )
@@ -38,8 +38,8 @@ class CameraCalibrationAction(Action):
                 x=-220,
                 y=-800,
                 O=160,
-                max_speed_linear=SpeedEnum.NORMAL,
-                max_speed_angular=SpeedEnum.NORMAL,
+                max_speed_linear=66,
+                max_speed_angular=66,
                 after_pose_func=self.calibrate_camera,
             )
         )
@@ -49,8 +49,8 @@ class CameraCalibrationAction(Action):
                 x=-220,
                 y=-540,
                 O=-160,
-                max_speed_linear=SpeedEnum.NORMAL,
-                max_speed_angular=SpeedEnum.NORMAL,
+                max_speed_linear=66,
+                max_speed_angular=66,
                 after_pose_func=self.calibrate_camera,
             )
         )
@@ -60,8 +60,8 @@ class CameraCalibrationAction(Action):
                 x=-260,
                 y=-320,
                 O=-130,
-                max_speed_linear=SpeedEnum.NORMAL,
-                max_speed_angular=SpeedEnum.NORMAL,
+                max_speed_linear=66,
+                max_speed_angular=66,
                 after_pose_func=self.calibrate_camera,
             )
         )
@@ -71,8 +71,8 @@ class CameraCalibrationAction(Action):
                 x=-500,
                 y=-320,
                 O=-90,
-                max_speed_linear=SpeedEnum.NORMAL,
-                max_speed_angular=SpeedEnum.NORMAL,
+                max_speed_linear=66,
+                max_speed_angular=66,
                 after_pose_func=self.calibrate_camera,
             )
         )
@@ -82,8 +82,8 @@ class CameraCalibrationAction(Action):
                 x=-710,
                 y=-460,
                 O=-70,
-                max_speed_linear=SpeedEnum.NORMAL,
-                max_speed_angular=SpeedEnum.NORMAL,
+                max_speed_linear=66,
+                max_speed_angular=66,
                 after_pose_func=self.calibrate_camera,
             )
         )
@@ -93,8 +93,8 @@ class CameraCalibrationAction(Action):
                 x=-810,
                 y=-760,
                 O=0,
-                max_speed_linear=SpeedEnum.NORMAL,
-                max_speed_angular=SpeedEnum.NORMAL,
+                max_speed_linear=66,
+                max_speed_angular=66,
                 after_pose_func=self.calibrate_camera,
             )
         )
@@ -104,15 +104,15 @@ class CameraCalibrationAction(Action):
                 x=-(1000 - 450 + self.game_context.properties.robot_width / 2),
                 y=-(1500 - 450 + self.game_context.properties.robot_width / 2),
                 O=90,
-                max_speed_linear=SpeedEnum.NORMAL,
-                max_speed_angular=SpeedEnum.NORMAL,
+                max_speed_linear=66,
+                max_speed_angular=66,
                 after_pose_func=self.calibrate_camera,
             )
         )
 
     async def calibrate_camera(self):
         await asyncio.sleep(1)
-        if pose := await calibrate_camera(self):
+        if pose := await calibrate_camera(self.planner):
             self.camera_positions.append(pose)
         await asyncio.sleep(0.5)
 

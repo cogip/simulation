@@ -2,7 +2,6 @@ import math
 from typing import TYPE_CHECKING
 
 from cogip.models import models
-from .. import actuators
 from ..camp import Camp
 from ..pose import Pose
 from .actions import Action, Actions, WaitAction
@@ -32,10 +31,6 @@ class ParkingAction(Action):
         return 100000 + dist
 
     async def before_action(self):
-        await actuators.central_arm_up(self.planner)
-        await actuators.left_arm_up(self.planner)
-        await actuators.right_arm_up(self.planner)
-
         # Backup actions if the action is recycled
         self.actions_backup = self.actions[:]
 

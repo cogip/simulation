@@ -20,19 +20,12 @@ class GameContext(metaclass=Singleton):
     def __init__(self):
         self.properties = Properties()
         self.camp = Camp()
-        self._strategy = Strategy.LinearPositionTest
+        self.strategy = Strategy.LinearPositionTest
         self._table = TableEnum.Training
-        self._avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
+        self.avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
         self.playing: bool = False
         self.score: int = self.minimum_score
         self.countdown: int = self.game_duration
-
-    @property
-    def strategy(self) -> Strategy:
-        """
-        Selected strategy.
-        """
-        return self._strategy
 
     @property
     def table(self) -> Table:
@@ -45,23 +38,6 @@ class GameContext(metaclass=Singleton):
     def table(self, new_table: TableEnum):
         self._table = new_table
 
-    @strategy.setter
-    def strategy(self, s: Strategy):
-        self._strategy = s
-        self.reset()
-
-    @property
-    def avoidance_strategy(self) -> AvoidanceStrategy:
-        """
-        Selected avoidance strategy.
-        """
-        return self._avoidance_strategy
-
-    @avoidance_strategy.setter
-    def avoidance_strategy(self, s: AvoidanceStrategy):
-        self._avoidance_strategy = s
-        self.reset()
-
     def reset(self):
         """
         Reset the context.
@@ -72,7 +48,7 @@ class GameContext(metaclass=Singleton):
 
     @property
     def default_controller(self) -> ControllerEnum:
-        match self._strategy:
+        match self.strategy:
             case Strategy.AngularSpeedTest:
                 return ControllerEnum.ANGULAR_SPEED_TEST
             case Strategy.LinearSpeedTest:
@@ -83,43 +59,43 @@ class GameContext(metaclass=Singleton):
     def get_start_pose(self, n: int) -> Pose | None:
         """
         Define the possible start positions.
-        Default positions for blue camp.
+        Default positions for yellow camp.
         """
         match n:
             case StartPosition.Top:
                 return AdaptedPose(
                     x=1000 - 450 + self.properties.robot_width / 2,
-                    y=1500 - 450 + self.properties.robot_length / 2,
-                    O=-90,
+                    y=-(1500 - 450 + self.properties.robot_length / 2),
+                    O=90,
                 )
             case StartPosition.Bottom:
                 return AdaptedPose(
                     x=-(1000 - 450 + self.properties.robot_width / 2),
-                    y=1500 - 450 + self.properties.robot_length / 2,
-                    O=-90,
+                    y=-(1500 - 450 + self.properties.robot_length / 2),
+                    O=90,
                 )
             case StartPosition.Opposite:
                 return AdaptedPose(
                     x=-450 / 2 + self.properties.robot_width / 2,
-                    y=-(1500 - 450 + self.properties.robot_width / 2),
-                    O=90,
+                    y=1500 - 450 + self.properties.robot_width / 2,
+                    O=-90,
                 )
             case StartPosition.PAMI1:
                 return AdaptedPose(
                     x=1000 - 150 + self.properties.robot_length / 2,
-                    y=self.properties.robot_width / 2,
+                    y=-self.properties.robot_width / 2,
                     O=180,
                 )
             case StartPosition.PAMI2:
                 return AdaptedPose(
                     x=1000 - 150 + self.properties.robot_length / 2,
-                    y=450 / 2,
+                    y=-450 / 2,
                     O=180,
                 )
             case StartPosition.PAMI3:
                 return AdaptedPose(
                     x=1000 - 150 + self.properties.robot_length / 2,
-                    y=450 - self.properties.robot_width / 2,
+                    y=-(450 - self.properties.robot_width / 2),
                     O=180,
                 )
             case _:

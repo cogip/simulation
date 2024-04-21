@@ -4,46 +4,14 @@ from multiprocessing import Queue
 from multiprocessing.managers import DictProxy
 
 from cogip import models
-from cogip.tools.copilot.controller import ControllerEnum
 from .. import logger
 from ..strategy import Strategy
 from ..table import Table
-from .avoidance import Avoidance, AvoidanceStrategy
-
-
-def create_dyn_obstacle(
-    center: models.Vertex,
-    shared_properties: DictProxy,
-    radius: float | None = None,
-    bb_radius: float | None = None,
-) -> models.DynRoundObstacle:
-    """
-    Create a dynamic obstacle.
-
-    Arguments:
-        center: center of the obstacle
-        radius: radius of the obstacle, use the value from global properties if not specified
-        bb_radius: radius of the bounding box
-    """
-    if radius is None:
-        radius = shared_properties["obstacle_radius"]
-
-    if bb_radius is None:
-        bb_radius = radius + shared_properties["robot_width"] / 2
-
-    obstacle = models.DynRoundObstacle(
-        x=center.x,
-        y=center.y,
-        radius=radius,
-    )
-    obstacle.create_bounding_box(bb_radius, shared_properties["obstacle_bb_vertices"])
-
-    return obstacle
+from .avoidance import Avoidance
 
 
 def avoidance_process(
     strategy: Strategy,
-    avoidance_strategy: AvoidanceStrategy,
     table: Table,
     shared_properties: DictProxy,
     queue_sio: Queue,
@@ -120,7 +88,13 @@ def avoidance_process(
         else:
             shared_properties["last_avoidance_pose_current"] = (pose_current.x, pose_current.y)
 
-            path = avoidance.get_path(pose_current, pose_order, dyn_obstacles, avoidance_strategy)
+            if pose_current.x == pose_order.x and pose_current.y == pose_order.y and pose_current.O != pose_order.O:
+                # If the pose order is just a rotation from the pose current, the avoidance will not find any path,
+                # so set the path manually
+                logger.debug("Avoidance: rotation only")
+                path = [pose_current, pose_order]
+            else:
+                path = avoidance.get_path(pose_current, pose_order, dyn_obstacles)
 
         if len(path) == 0:
             logger.debug("Avoidance: No path found")
@@ -139,17 +113,10 @@ def avoidance_process(
 
         if len(path) == 2:
             # Final pose
-            new_controller = ControllerEnum.QUADPID
             if path[1].O is None:
                 path[1].O = path[0].O  # noqa
         else:
             # Intermediate pose
-            match avoidance_strategy:
-                case AvoidanceStrategy.Disabled | AvoidanceStrategy.VisibilityRoadMapQuadPid:
-                    new_controller = ControllerEnum.QUADPID
-                case AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
-                    new_controller = ControllerEnum.LINEAR_POSE_DISABLED
-
             if len(path) > 2 and last_emitted_pose_order:
                 dist = math.dist((last_emitted_pose_order.x, last_emitted_pose_order.y), (path[1].x, path[1].y))
                 if dist < 20:
@@ -171,11 +138,8 @@ def avoidance_process(
 
         last_emitted_pose_order = new_pose_order.model_copy()
 
-        if shared_properties["controller"] != new_controller:
-            queue_sio.put(("set_controller", new_controller.value))
-
         logger.debug("Avoidance: Update path")
-        queue_sio.put(("pose_order", new_pose_order.model_dump(exclude_defaults=True)))
         queue_sio.put(("path", [pose.pose.model_dump(exclude_defaults=True) for pose in avoidance_path]))
+        queue_sio.put(("pose_order", new_pose_order.model_dump(exclude_defaults=True)))
 
     logger.info("Avoidance: process exited")

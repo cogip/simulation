@@ -25,6 +25,7 @@ nav:
     - usage/robotcam.md
     - usage/beaconcam.md
     - usage/camera.md
+    - usage/cansend.md
     - usage/replay.md
     - usage/lidarusb.md
   - Raspberry Pi OS: raspios.md

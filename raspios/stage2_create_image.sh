@@ -4,6 +4,7 @@ SCRIPT_DIR=`dirname $SCRIPT`
 source ${SCRIPT_DIR}/common.sh
 
 # Variables depending on robot id
+## Beacon vs robots
 case ${ROBOT_ID} in
     0) # Beacon
         DOCKER_TAG=beacon
@@ -17,8 +18,7 @@ case ${ROBOT_ID} in
         SCREEN_WIDTH=${BEACON_SCREEN_WIDTH}
         SCREEN_HEIGHT=${BEACON_SCREEN_HEIGHT}
         ;;
-    *) # Robots
-        DOCKER_TAG=robot
+    *) # Robots common
         HOSTNAME=robot${ROBOT_ID}
         GATEWAY=${IP_ADDRESS_BEACON_ETH0}
         IP_ADDRESS_WLAN0_VAR=IP_ADDRESS_ROBOT${ROBOT_ID}_WLAN0
@@ -30,6 +30,19 @@ case ${ROBOT_ID} in
         VC4_V3D_DRIVER=${ROBOT_VC4_V3D_DRIVER}
         SCREEN_WIDTH=${ROBOT_SCREEN_WIDTH}
         SCREEN_HEIGHT=${ROBOT_SCREEN_HEIGHT}
+esac
+
+## Robot vs PAMIs
+case ${ROBOT_ID} in
+    1) # Robot
+        DOCKER_TAG=robot
+        ROBOT_WIDTH=${ROBOT_WIDTH}
+        ROBOT_LENTH=${ROBOT_LENTH}
+        ;;
+    [2-9]) # PAMIs
+        DOCKER_TAG=pami
+        ROBOT_WIDTH=${PAMI_WIDTH}
+        ROBOT_LENTH=${PAMI_LENTH}
         ;;
 esac
 
@@ -99,6 +112,7 @@ sudo cp ${OVERLAY_ROOTFS}/etc/hostname ${MOUNT_DIR}/etc/hostname
 sudo cp ${OVERLAY_ROOTFS}/etc/hosts ${MOUNT_DIR}/etc/hosts
 sudo chmod 600 ${MOUNT_DIR}/etc/ssh/ssh_host_*
 sudo chmod 644 ${MOUNT_DIR}/etc/ssh/ssh_host_*.pub
+sudo chmod 600 ${MOUNT_DIR}/root/.ssh/id_rsa
 
 # Fix boot and root devices
 IMGID="$(dd if="${RASPIOS_COGIP_IMG}" skip=440 bs=1 count=4 2>/dev/null | xxd -e | cut -f 2 -d' ')"
@@ -126,6 +140,8 @@ sudo sed -i "s/SCREEN_WIDTH/${SCREEN_WIDTH}/" ${MOUNT_DIR}/boot/firmware/config.
 sudo sed -i "s/SCREEN_HEIGHT/${SCREEN_HEIGHT}/" ${MOUNT_DIR}/boot/firmware/config.txt
 sudo sed -i "s/ROBOT_ID/${ROBOT_ID}/" ${MOUNT_DIR}/etc/environment
 sudo sed -i "s/HOSTNAME/${HOSTNAME}/" ${MOUNT_DIR}/etc/environment
+sudo sed -i "s/CUSTOM_ROBOT_WIDTH/${ROBOT_WIDTH}/" ${MOUNT_DIR}/etc/environment
+sudo sed -i "s/CUSTOM_ROBOT_LENGTH/${ROBOT_LENGTH}/" ${MOUNT_DIR}/etc/environment
 sudo echo "ROBOT_ID=${ROBOT_ID}" | sudo tee -a ${MOUNT_DIR}/etc/environment 1> /dev/null
 sudo chmod 600 ${MOUNT_DIR}/etc/sudoers.d/*
 sudo chmod 600 ${MOUNT_DIR}/etc/wpa_supplicant/wpa_supplicant-wlan0.conf
@@ -133,10 +149,18 @@ sudo ln -sf /run/systemd/resolve/resolv.conf ${MOUNT_DIR}/etc/resolv.conf
 sudo rm -f ${MOUNT_DIR}/.dockerenv
 sudo rm -f ${MOUNT_DIR}/etc/sshd_config.d/rename_user.conf
 
-if ((${ROBOT_ID} == 0))
-then
-    sudo sed -i "s/IP_ADDRESS/${IP_ADDRESS_ETH0}/" ${MOUNT_DIR}/etc/dnsmasq.conf
-fi
+case ${ROBOT_ID} in
+    0) # Beacon
+        sudo sed -i "s/IP_ADDRESS/${IP_ADDRESS_ETH0}/" ${MOUNT_DIR}/etc/dnsmasq.conf
+        ;;
+    1) # Robot
+        sudo sed -i "s/# PLANNER_STARTER_PIN=/PLANNER_STARTER_PIN=${ROBOT_STARTER_PIN}/" ${MOUNT_DIR}/etc/environment
+        ;;
+    [2-9]) # PAMIs
+        sudo sed -i "s/# PLANNER_OLED_BUS=/PLANNER_OLED_BUS=${PAMI_OLED_BUS}/" ${MOUNT_DIR}/etc/environment
+        sudo sed -i "s/# PLANNER_OLED_ADDRESS=/PLANNER_OLED_ADDRESS=${PAMI_OLED_ADDRESS}/" ${MOUNT_DIR}/etc/environment
+        ;;
+esac
 
 sudo umount ${MOUNT_DIR}/boot/firmware
 sudo umount ${MOUNT_DIR}

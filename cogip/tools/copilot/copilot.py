@@ -1,36 +1,40 @@
 import asyncio
 import time
-from pathlib import Path
 
 import socketio
 from google.protobuf.json_format import MessageToDict
 
 from cogip import models
-from .messages import PB_ActuatorsState, PB_Menu, PB_Pid, PB_PidEnum, PB_Pose, PB_State
+from cogip.protobuf import PB_ActuatorsState, PB_Menu, PB_Pid, PB_PidEnum, PB_Pose, PB_State
 from .pbcom import PBCom, pb_exception_handler
 from .pid import Pid
 from .sio_events import SioEvents
 
-reset_uuid: int = 3351980141
-command_uuid: int = 2168120333
-menu_uuid: int = 1485239280
-state_uuid: int = 3422642571
-copilot_connected_uuid: int = 1132911482
-copilot_disconnected_uuid: int = 1412808668
-pose_order_uuid: int = 1534060156
-pose_reached_uuid: int = 2736246403
-pose_start_uuid: int = 2741980922
-actuators_thread_start_uuid: int = 1525532810
-actuators_thread_stop_uuid: int = 3781855956
-actuators_state_uuid: int = 1538397045
-actuators_command_uuid: int = 2552455996
-pid_request_uuid: int = 3438831927
-pid_uuid: int = 4159164681
-controller_uuid: int = 2750239003
-game_start_uuid: int = 3138845474
-game_end_uuid: int = 1532296089
-game_reset_uuid: int = 1549868731
-brake_uuid: int = 3239255374
+# Motion Control: 0x1000 - 0x1FFF
+state_uuid: int = 0x1001
+pose_order_uuid: int = 0x1002
+pose_reached_uuid: int = 0x1003
+pose_start_uuid: int = 0x1004
+pid_request_uuid: int = 0x1005
+pid_uuid: int = 0x1006
+brake_uuid: int = 0x1007
+controller_uuid: int = 0x1008
+# Actuators: 0x2000 - 0x2FFF
+actuators_thread_start_uuid: int = 0x2001
+actuators_thread_stop_uuid: int = 0x2002
+actuators_state_uuid: int = 0x2003
+actuators_command_uuid: int = 0x2004
+# Service: 0x3000 - 0x3FFF
+reset_uuid: int = 0x3001
+copilot_connected_uuid: int = 0x3002
+copilot_disconnected_uuid: int = 0x3003
+menu_uuid: int = 0x3004
+command_uuid: int = 0x3005
+# Game: 0x4000 - 0x4FFF
+game_start_uuid: int = 0x4001
+game_end_uuid: int = 0x4002
+game_reset_uuid: int = 0x4003
+# Board: 0xF000 - 0xFFFF
 
 
 class Copilot:
@@ -38,17 +42,18 @@ class Copilot:
     Main copilot class.
     """
 
-    _loop: asyncio.AbstractEventLoop = None  # Event loop to use for all coroutines
+    loop: asyncio.AbstractEventLoop = None  # Event loop to use for all coroutines
 
-    def __init__(self, server_url: str, id: int, serial_port: Path, serial_baud: int):
+    def __init__(self, server_url: str, id: int, can_channel: str, can_bitrate: int, canfd_data_bitrate: int):
         """
         Class constructor.
 
         Arguments:
             server_url: server URL
             id: robot id
-            serial_port: serial port connected to STM32 device
-            serial_baud: baud rate
+            can_channel: CAN channel connected to STM32 device
+            can_bitrate: CAN bitrate
+            canfd_data_bitrate: CAN data bitrate
         """
         self.server_url = server_url
         self.id = id
@@ -70,20 +75,20 @@ class Copilot:
             pid_uuid: self.handle_pid,
         }
 
-        self._pbcom = PBCom(serial_port, serial_baud, pb_message_handlers)
+        self.pbcom = PBCom(can_channel, can_bitrate, canfd_data_bitrate, pb_message_handlers)
 
     async def run(self):
         """
         Start copilot.
         """
-        self._loop = asyncio.get_running_loop()
+        self.loop = asyncio.get_running_loop()
 
         self.retry_connection = True
         await self.try_connect()
 
-        await self._pbcom.send_serial_message(copilot_connected_uuid, None)
+        await self.pbcom.send_can_message(copilot_connected_uuid, None)
 
-        await self._pbcom.run()
+        await self.pbcom.run()
 
     async def try_connect(self):
         """
@@ -98,17 +103,13 @@ class Copilot:
                 continue
             break
 
-    @property
-    def pbcom(self) -> PBCom:
-        return self._pbcom
-
     async def handle_reset(self) -> None:
         """
         Handle reset message. This means that the robot has just booted.
 
         Send a reset message to all connected clients.
         """
-        await self._pbcom.send_serial_message(copilot_connected_uuid, None)
+        await self.pbcom.send_can_message(copilot_connected_uuid, None)
         await self.sio_events.emit("reset")
 
     @pb_exception_handler
@@ -119,7 +120,7 @@ class Copilot:
         pb_menu = PB_Menu()
 
         if message:
-            await self._loop.run_in_executor(None, pb_menu.ParseFromString, message)
+            await self.loop.run_in_executor(None, pb_menu.ParseFromString, message)
 
         menu = MessageToDict(pb_menu)
         self.shell_menu = models.ShellMenu.model_validate(menu)
@@ -134,7 +135,7 @@ class Copilot:
         pb_pose = PB_Pose()
 
         if message:
-            await self._loop.run_in_executor(None, pb_pose.ParseFromString, message)
+            await self.loop.run_in_executor(None, pb_pose.ParseFromString, message)
 
         pose = MessageToDict(
             pb_pose,
@@ -153,7 +154,7 @@ class Copilot:
         pb_state = PB_State()
 
         if message:
-            await self._loop.run_in_executor(None, pb_state.ParseFromString, message)
+            await self.loop.run_in_executor(None, pb_state.ParseFromString, message)
 
         state = MessageToDict(
             pb_state,
@@ -172,7 +173,7 @@ class Copilot:
         pb_actuators_state = PB_ActuatorsState()
 
         if message:
-            await self._loop.run_in_executor(None, pb_actuators_state.ParseFromString, message)
+            await self.loop.run_in_executor(None, pb_actuators_state.ParseFromString, message)
 
         actuators_state = MessageToDict(
             pb_actuators_state,
@@ -191,7 +192,7 @@ class Copilot:
         """
         pb_pid = PB_Pid()
         if message:
-            await self._loop.run_in_executor(None, pb_pid.ParseFromString, message)
+            await self.loop.run_in_executor(None, pb_pid.ParseFromString, message)
 
         self.pb_pids[pb_pid.id] = pb_pid
         pid = Pid(

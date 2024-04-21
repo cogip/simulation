@@ -32,8 +32,8 @@ class Avoidance:
         pose_current: models.PathPose,
         goal: models.PathPose,
         obstacles: models.DynObstacleList,
-        strategy: AvoidanceStrategy = AvoidanceStrategy.Disabled,
     ) -> list[models.PathPose]:
+        strategy = AvoidanceStrategy(self.shared_properties["avoidance_strategy"])
         robot_width = self.shared_properties["robot_width"]
         match strategy:
             case AvoidanceStrategy.VisibilityRoadMapQuadPid | AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:

@@ -117,7 +117,7 @@ RUN systemctl enable cogip-server-beacon
 RUN systemctl enable cogip-dashboard-beacon
 
 
-FROM common as robot
+FROM common as robot-common
 
 # Enable OpenOCD service
 RUN systemctl enable openocd
@@ -126,8 +126,22 @@ RUN systemctl enable openocd
 RUN systemctl enable cogip-server
 RUN systemctl enable cogip-dashboard
 RUN systemctl enable cogip-planner
+
+RUN apt-get install -y --no-install-recommends ifmetric
+
+
+FROM robot-common as robot
+
+RUN apt-get install -y --no-install-recommends can-utils
+
+# Enable COGIP services
 RUN systemctl enable cogip-copilot
 RUN systemctl enable cogip-detector
 RUN systemctl enable cogip-robotcam
 
-RUN apt-get install -y --no-install-recommends ifmetric
+
+FROM robot-common as pami
+
+# Enable COGIP services
+RUN systemctl enable cogip-copilot-pami
+RUN systemctl enable cogip-detector-pami

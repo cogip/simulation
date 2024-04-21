@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import logging
 from pathlib import Path
-from typing import Optional
+from typing import Annotated, Optional
 
 import typer
 from watchfiles import PythonFilter, run_process
@@ -20,68 +20,86 @@ def run(*args, **kwargs) -> None:
 
 
 def main_opt(
-    server_url: Optional[str] = typer.Option(  # noqa
-        None,
-        help="Socket.IO Server URL",
-        envvar="COGIP_SOCKETIO_SERVER_URL",
-    ),
-    id: int = typer.Option(
-        1,
-        "-i",
-        "--id",
-        min=1,
-        help="Robot ID.",
-        envvar=["ROBOT_ID", "DETECTOR_ID"],
-    ),
-    lidar_port: Optional[Path] = typer.Option(  # noqa
-        None,
-        "-p",
-        "--lidar-port",
-        help="Serial port connected to the Lidar",
-        envvar="DETECTOR_LIDAR_PORT",
-    ),
-    min_distance: int = typer.Option(
-        150,
-        min=0,
-        max=1000,
-        help="Minimum distance to detect an obstacle (mm)",
-        envvar="DETECTOR_MIN_DISTANCE",
-    ),
-    max_distance: int = typer.Option(
-        2500,
-        min=0,
-        max=4000,
-        help="Maximum distance to detect an obstacle (mm)",
-        envvar=["COGIP_MAX_DISTANCE", "DETECTOR_MAX_DISTANCE"],
-    ),
-    beacon_radius: int = typer.Option(
-        35,
-        min=10,
-        max=150,
-        help="Radius of the opponent beacon support (a cylinder of 70mm diameter to a cube of 100mm width)",
-        envvar="DETECTOR_BEACON_RADIUS",
-    ),
-    refresh_interval: float = typer.Option(
-        0.2,
-        min=0.1,
-        max=2.0,
-        help="Interval between each update of the obstacle list (in seconds)",
-        envvar="DETECTOR_REFRESH_INTERVAL",
-    ),
-    reload: bool = typer.Option(
-        False,
-        "-r",
-        "--reload",
-        help="Reload app on source file changes.",
-        envvar=["COGIP_RELOAD", "DETECTOR_RELOAD"],
-    ),
-    debug: bool = typer.Option(
-        False,
-        "-d",
-        "--debug",
-        help="Turn on debug messages.",
-        envvar=["COGIP_DEBUG", "DETECTOR_DEBUG"],
-    ),
+    server_url: Annotated[
+        Optional[str],  # noqa
+        typer.Option(
+            help="Socket.IO Server URL",
+            envvar="COGIP_SOCKETIO_SERVER_URL",
+        ),
+    ] = None,
+    id: Annotated[
+        int,
+        typer.Option(
+            "-i",
+            "--id",
+            min=1,
+            help="Robot ID.",
+            envvar=["ROBOT_ID", "DETECTOR_ID"],
+        ),
+    ] = 1,
+    lidar_port: Annotated[
+        Optional[Path],  # noqa
+        typer.Option(
+            "-p",
+            "--lidar-port",
+            help="Serial port connected to the Lidar",
+            envvar="DETECTOR_LIDAR_PORT",
+        ),
+    ] = None,
+    min_distance: Annotated[
+        int,
+        typer.Option(
+            min=0,
+            max=1000,
+            help="Minimum distance to detect an obstacle (mm)",
+            envvar="DETECTOR_MIN_DISTANCE",
+        ),
+    ] = 150,
+    max_distance: Annotated[
+        int,
+        typer.Option(
+            min=0,
+            max=4000,
+            help="Maximum distance to detect an obstacle (mm)",
+            envvar=["COGIP_MAX_DISTANCE", "DETECTOR_MAX_DISTANCE"],
+        ),
+    ] = 2500,
+    beacon_radius: Annotated[
+        int,
+        typer.Option(
+            min=10,
+            max=150,
+            help="Radius of the opponent beacon support (a cylinder of 70mm diameter to a cube of 100mm width)",
+            envvar="DETECTOR_BEACON_RADIUS",
+        ),
+    ] = 35,
+    refresh_interval: Annotated[
+        float,
+        typer.Option(
+            min=0.1,
+            max=2.0,
+            help="Interval between each update of the obstacle list (in seconds)",
+            envvar="DETECTOR_REFRESH_INTERVAL",
+        ),
+    ] = 0.2,
+    reload: Annotated[
+        bool,
+        typer.Option(
+            "-r",
+            "--reload",
+            help="Reload app on source file changes.",
+            envvar=["COGIP_RELOAD", "DETECTOR_RELOAD"],
+        ),
+    ] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "-d",
+            "--debug",
+            help="Turn on debug messages.",
+            envvar=["COGIP_DEBUG", "DETECTOR_DEBUG"],
+        ),
+    ] = False,
 ):
     if debug:
         logger.setLevel(logging.DEBUG)

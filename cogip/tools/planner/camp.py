@@ -21,10 +21,12 @@ class Camp(metaclass=Singleton):
         Given the current table orientation and axes,
         only Y has to be adapted when the camp changes.
         """
-        return dist if self.color == Camp.Colors.blue else -dist
+        return dist if self.color == Camp.Colors.yellow else -dist
 
-    def adapt_angle(self, angle: float) -> float:
+    def adapt_angle(self, angle: float | None) -> float | None:
         """
         Adapt an angle depending on the actual camp.
         """
-        return angle if self.color == Camp.Colors.blue else -angle
+        if angle is None:
+            return None
+        return angle if self.color == Camp.Colors.yellow else -angle

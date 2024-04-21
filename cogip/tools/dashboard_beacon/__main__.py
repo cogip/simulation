@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import logging
 from pathlib import Path
+from typing import Annotated
 
 import typer
 import uvicorn
@@ -14,20 +15,24 @@ def changes_callback(changes):
 
 
 def main_opt(
-    reload: bool = typer.Option(
-        False,
-        "-r",
-        "--reload",
-        help="Reload app on source file changes",
-        envvar=["COGIP_RELOAD", "DASHBOARD_BEACON_RELOAD"],
-    ),
-    debug: bool = typer.Option(
-        False,
-        "-d",
-        "--debug",
-        help="Turn on debug messages",
-        envvar=["COGIP_DEBUG", "DASHBOARD_BEACON_DEBUG"],
-    ),
+    reload: Annotated[
+        bool,
+        typer.Option(
+            "-r",
+            "--reload",
+            help="Reload app on source file changes",
+            envvar=["COGIP_RELOAD", "DASHBOARD_BEACON_RELOAD"],
+        ),
+    ] = False,
+    debug: Annotated[
+        bool,
+        typer.Option(
+            "-d",
+            "--debug",
+            help="Turn on debug messages",
+            envvar=["COGIP_DEBUG", "DASHBOARD_BEACON_DEBUG"],
+        ),
+    ] = False,
 ):
     if debug:
         logger.setLevel(logging.DEBUG)

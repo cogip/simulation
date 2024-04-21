@@ -4,9 +4,6 @@ from PySide6.QtCore import Signal as qtSignal
 from cogip.models.actuators import (
     ActuatorCommand,
     ActuatorsState,
-    Pump,
-    PumpCommand,
-    PumpEnum,
     Servo,
     ServoCommand,
     ServoEnum,
@@ -75,53 +72,6 @@ class ServoControl(QtCore.QObject):
         self._position.setText(str(servo.position))
 
 
-class PumpControl(QtCore.QObject):
-    """
-    PumpControl class.
-
-    Build a widget to control a pump.
-    """
-
-    command_updated: qtSignal = qtSignal(PumpCommand)
-
-    def __init__(self, pump: Pump, layout: QtWidgets.QGridLayout):
-        """
-        Class constructor.
-
-        Arguments:
-            pump: pump to control
-            layout: The parent layout
-        """
-        super().__init__()
-        self._id = pump.id
-
-        row = layout.rowCount()
-
-        label = QtWidgets.QLabel(self._id.name)
-        layout.addWidget(label, row, 0)
-
-        kind = QtWidgets.QLabel("Pump")
-        layout.addWidget(kind, row, 1)
-
-        self._command = QtWidgets.QCheckBox()
-        self._command.setChecked(pump.activated)
-        self._command.toggled.connect(self.command_changed)
-        layout.addWidget(self._command, row, 2)
-
-        self._under_pressure = QtWidgets.QCheckBox()
-        self._under_pressure.setToolTip("Under pressure")
-        self._under_pressure.setChecked(pump.under_pressure)
-        self._under_pressure.setEnabled(False)
-        layout.addWidget(self._under_pressure, row, 4)
-
-    def command_changed(self, checked: bool):
-        command = PumpCommand(id=self._id, command=checked)
-        self.command_updated.emit(command)
-
-    def update_value(self, pump: Pump):
-        self._under_pressure.setChecked(pump.under_pressure)
-
-
 class ActuatorsDialog(QtWidgets.QDialog):
     """
     ActuatorsDialog class
@@ -147,7 +97,6 @@ class ActuatorsDialog(QtWidgets.QDialog):
         super().__init__(parent)
         self._robot_id: int = actuators_state.robot_id
         self._servos: dict[ServoEnum, ServoControl] = {}
-        self._pumps: dict[PumpEnum, PumpControl] = {}
         self.setWindowTitle(f"Actuators Control {self._robot_id}")
         self.setModal(False)
 
@@ -157,9 +106,6 @@ class ActuatorsDialog(QtWidgets.QDialog):
         for servo in actuators_state.servos:
             self._servos[servo.id] = ServoControl(servo, layout)
             self._servos[servo.id].command_updated.connect(self.command_updated)
-        for pump in actuators_state.pumps:
-            self._pumps[pump.id] = PumpControl(pump, layout)
-            self._pumps[pump.id].command_updated.connect(self.command_updated)
 
         self.readSettings()
 
@@ -173,9 +119,6 @@ class ActuatorsDialog(QtWidgets.QDialog):
         for servo in actuators_state.servos:
             if servo.id in self._servos:
                 self._servos[servo.id].update_value(servo)
-        for pump in actuators_state.pumps:
-            if pump.id in self._pumps:
-                self._pumps[pump.id].update_value(pump)
 
     def command_updated(self, command: ActuatorCommand):
         """

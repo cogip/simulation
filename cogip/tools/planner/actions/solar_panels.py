@@ -22,16 +22,12 @@ class SetRobotPositionAction(Action):
         self.after_action_func = self.get_position
 
     async def get_position(self):
-        await actuators.right_arm_folded(self.planner)
+        await actuators.arm_panel_close(self.planner)
 
         pose = await get_robot_position(self.planner)
         if not pose:
             logger.error("Cannot find table marker and current robot position")
             return
-
-        await actuators.led_on(self.planner)
-        await asyncio.sleep(0.2)
-        await actuators.led_off(self.planner)
 
         await self.planner.set_pose_start(pose)
         self.planner.pose_reached = False
@@ -54,8 +50,8 @@ class DiscoverSolarPanelsAction(Action):
                 x=-500,
                 y=-1000,
                 O=180,
-                max_speed_linear=models.SpeedEnum.LOW,
-                max_speed_angular=models.SpeedEnum.LOW,
+                max_speed_linear=33,
+                max_speed_angular=33,
                 after_pose_func=self.get_solar_panels,
             )
         )
@@ -99,8 +95,8 @@ class SolarPanelAction(Action):
                 x=-750,
                 y=robot_y,
                 O=180,
-                max_speed_linear=models.SpeedEnum.LOW,
-                max_speed_angular=models.SpeedEnum.LOW,
+                max_speed_linear=33,
+                max_speed_angular=33,
                 after_pose_func=self.extend_arm,
             )
         )
@@ -110,8 +106,8 @@ class SolarPanelAction(Action):
                 x=-1000 + self.game_context.properties.robot_width / 2 + 20,
                 y=robot_y,
                 O=180,
-                max_speed_linear=models.SpeedEnum.LOW,
-                max_speed_angular=models.SpeedEnum.LOW,
+                max_speed_linear=33,
+                max_speed_angular=33,
                 allow_reverse=False,
             )
         )
@@ -121,19 +117,17 @@ class SolarPanelAction(Action):
                 x=-750,
                 y=robot_y,
                 O=180,
-                max_speed_linear=models.SpeedEnum.LOW,
-                max_speed_angular=models.SpeedEnum.LOW,
+                max_speed_linear=33,
+                max_speed_angular=33,
                 after_pose_func=self.fold_arm,
             )
         )
 
     async def extend_arm(self):
-        await actuators.right_arm_mid(self.planner)
-        await actuators.led_on(self.planner)
+        await actuators.arm_panel_open(self.planner)
 
     async def fold_arm(self):
-        await actuators.right_arm_folded(self.planner)
-        await actuators.led_off(self.planner)
+        await actuators.arm_panel_close(self.planner)
 
     def weight(self) -> float:
         return 800000.0 + self.panel_id
@@ -155,8 +149,8 @@ class ParkingAction(Action):
 
         self.pose = Pose(
             **pose.model_dump(),
-            max_speed_linear=models.SpeedEnum.LOW,
-            max_speed_angular=models.SpeedEnum.LOW,
+            max_speed_linear=33,
+            max_speed_angular=33,
         )
         self.poses = [self.pose]
 
@@ -165,8 +159,7 @@ class ParkingAction(Action):
 
     async def before_action(self):
         ParkingAction.nb_robots += 1
-        await actuators.right_arm_up(self.planner)
-        await actuators.right_arm_folded(self.planner)
+        await actuators.arm_panel_close(self.planner)
 
         # Backup actions if the action is recycled
         self.actions_backup = self.actions[:]

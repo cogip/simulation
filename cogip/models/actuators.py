@@ -1,24 +1,29 @@
 from enum import IntEnum
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
-from ..tools.copilot.messages import PB_PositionalActuatorCommand, PB_PumpCommand, PB_ServoCommand
+from cogip.protobuf import PB_PositionalActuatorCommand, PB_ServoCommand
 
 # Actuators common definitions
 
 
 class ActuatorsKindEnum(IntEnum):
+    """Enum defining actuators kind"""
+
     SERVO = 0
-    PUMP = 1
-    POSITIONAL = 2
+    POSITIONAL = 1
 
 
 class ActuatorsGroupEnum(IntEnum):
+    """Actuators groups used to group actuators by category"""
+
     NO_GROUP = 0
 
 
 class ActuatorBase(BaseModel):
+    """Base model for actuators"""
+
     group: ActuatorsGroupEnum = Field(
         ActuatorsGroupEnum.NO_GROUP,
         title="Group",
@@ -41,12 +46,16 @@ class ActuatorBase(BaseModel):
 
 
 class ServoEnum(IntEnum):
-    LXSERVO_BALL_SWITCH = 1
-    LXSERVO_RIGHT_ARM = 2
-    LXSERVO_LEFT_ARM = 4
+    """Enum defining servo IDs"""
+
+    LXSERVO_LEFT_CART = 0
+    LXSERVO_RIGHT_CART = 1
+    LXSERVO_ARM_PANEL = 2
 
 
 class ServoCommand(BaseModel):
+    """Model defining a command to send to servos"""
+
     kind: Literal[ActuatorsKindEnum.SERVO] = ActuatorsKindEnum.SERVO
     id: ServoEnum = Field(
         ...,
@@ -61,12 +70,40 @@ class ServoCommand(BaseModel):
         description="Current servo position command",
     )
 
+    @field_validator("kind", mode="before")
+    @classmethod
+    def validate_kind(cls, v: str) -> ActuatorsKindEnum:
+        try:
+            value = ActuatorsKindEnum[v]
+        except KeyError:
+            try:
+                value = ActuatorsKindEnum(v)
+            except Exception:
+                raise ValueError("Not a ActuatorsKindEnum")
+        if value != ActuatorsKindEnum.SERVO:
+            raise ValueError("Not ActuatorsKindEnum.SERVO value")
+        return value
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def validate_id(cls, v: str) -> ServoEnum:
+        try:
+            return ServoEnum[v]
+        except KeyError:
+            try:
+                return ServoEnum(v)
+            except Exception:
+                raise ValueError("Not a ServoEnum")
+
     def pb_copy(self, message: PB_ServoCommand) -> None:
+        """Copy values to Protobuf message"""
         message.id = self.id
         message.command = self.command
 
 
 class Servo(ActuatorBase, ServoCommand):
+    "Full model for servos"
+
     position: int = Field(
         0,
         ge=0,
@@ -76,44 +113,26 @@ class Servo(ActuatorBase, ServoCommand):
     )
 
 
-# Pump related definitions
-
-
-class PumpEnum(IntEnum):
-    PUMP_RIGHT_ARM = 0
-    PUMP_LEFT_ARM = 1
-
-
-class PumpCommand(BaseModel):
-    kind: Literal[ActuatorsKindEnum.PUMP] = ActuatorsKindEnum.PUMP
-    id: PumpEnum = Field(..., title="Id", description="Pump identifier")
-    command: bool = Field(False, title="Pump Command", description="Current pump command")
-
-    def pb_copy(self, message: PB_PumpCommand) -> None:
-        message.id = self.id
-        message.command = self.command
-
-
-class Pump(ActuatorBase, PumpCommand):
-    activated: bool = Field(False, title="Activated", description="Current pump state")
-    under_pressure: bool = Field(False, title="Under pressure", description="Is pump under pressure")
-
-
 # Positional Actuators related definitions
 
 
 class PositionalActuatorEnum(IntEnum):
-    MOTOR_CENTRAL_LIFT = 0
-    MOTOR_CONVEYOR_LAUNCHER = 1
-    ONOFF_LED_PANELS = 2
-    ANALOGSERVO_CHERRY_ARM = 3
-    ANALOGSERVO_CHERRY_ESC = 4
-    ANALOGSERVO_CHERRY_RELEASE = 5
-    LXMOTOR_RIGHT_ARM_LIFT = 6
-    LXMOTOR_LEFT_ARM_LIFT = 7
+    """Enum defining positional actuators IDs"""
+
+    MOTOR_BOTTOM_LIFT = 0
+    MOTOR_TOP_LIFT = 1
+    ANALOGSERVO_BOTTOM_GRIP_LEFT = 2
+    ANALOGSERVO_BOTTOM_GRIP_RIGHT = 3
+    ANALOGSERVO_TOP_GRIP_LEFT = 4
+    ANALOGSERVO_TOP_GRIP_RIGHT = 5
+    CART_MAGNET_LEFT = 6
+    CART_MAGNET_RIGHT = 7
+    ANALOGSERVO_PAMI = 8
 
 
 class PositionalActuatorCommand(BaseModel):
+    """Model defining a command to send to positional actuators"""
+
     kind: Literal[ActuatorsKindEnum.POSITIONAL] = ActuatorsKindEnum.POSITIONAL
     id: PositionalActuatorEnum = Field(..., title="Id", description="Positional Actuator identifier")
     command: int = Field(
@@ -124,20 +143,47 @@ class PositionalActuatorCommand(BaseModel):
         description="Current positional actuator position command",
     )
 
+    @field_validator("kind", mode="before")
+    @classmethod
+    def validate_kind(cls, v: str) -> ActuatorsKindEnum:
+        try:
+            value = ActuatorsKindEnum[v]
+        except KeyError:
+            try:
+                value = ActuatorsKindEnum(v)
+            except Exception:
+                raise ValueError("Not a ActuatorsKindEnum")
+        if value != ActuatorsKindEnum.POSITIONAL:
+            raise ValueError("Not ActuatorsKindEnum.POSITIONAL value")
+        return value
+
+    @field_validator("id", mode="before")
+    @classmethod
+    def validate_id(cls, v: str) -> PositionalActuatorEnum:
+        try:
+            return PositionalActuatorEnum[v]
+        except KeyError:
+            try:
+                return PositionalActuatorEnum(v)
+            except Exception:
+                raise ValueError("Not a PositionalActuatorEnum")
+
     def pb_copy(self, message: PB_PositionalActuatorCommand) -> None:
+        """Copy values to Protobuf message"""
         message.id = self.id
         message.command = self.command
 
 
 class PositionalActuator(ActuatorBase, PositionalActuatorCommand):
+    "Full model for positional actuators"
+
     pass
 
 
 class ActuatorsState(BaseModel):
     servos: list[Servo] = []
-    pumps: list[Pump] = []
     positional_actuators: list[PositionalActuator] = []
     robot_id: int
 
 
-ActuatorCommand = ServoCommand | PumpCommand | PositionalActuatorCommand
+ActuatorCommand = ServoCommand | PositionalActuatorCommand

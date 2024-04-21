@@ -28,7 +28,9 @@ cogip-lidarusb = "cogip.tools.lidarusb.main:main"
 cogip-camera = "cogip.tools.camera.__main__:main"
 cogip-server-beacon = "cogip.tools.server_beacon.__main__:main"
 cogip-dashboard-beacon = "cogip.tools.dashboard_beacon.__main__:main"
+cogip-copilot-pami = "cogip.tools.copilot_pami.__main__:main"
 cogip-detector-pami = "cogip.tools.detector_pami.__main__:main"
+cogip-cansend = "cogip.tools.cansend.__main__:main"
 
 [tool.setuptools.dynamic]
 dependencies = {file = ["requirements.txt"]}
@@ -67,7 +69,7 @@ exclude = [
     "submodules",
     "tests",
     "doc",
-    "cogip/tools/copilot/messages",
+    "cogip/protobuf",
 ]
 select = [
     "E",  # pycodestyle errors
