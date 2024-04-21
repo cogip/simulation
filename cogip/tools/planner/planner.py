@@ -302,6 +302,7 @@ class Planner:
                             self.blocked_counter = 0
                             await self.blocked()
                     case "path":
+                        await self.pose_order.act_intermediate_pose()
                         if len(value) == 1:
                             # Final pose
                             new_controller = ControllerEnum.QUADPID
