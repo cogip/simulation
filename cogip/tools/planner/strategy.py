@@ -21,3 +21,4 @@ class Strategy(IntEnum):
     PotCaptureTest = auto()
     SolarPanelsTest = auto()
     DropoffTest = auto()
+    PlanterTest = auto()

@@ -7,6 +7,7 @@ from .camera_calibration import CameraCalibrationActions
 from .dropoff_test import DropoffTestActions
 from .game import GameActions
 from .grip_test import GripTestActions
+from .planters_test import PlanterTestActions
 from .position_test import AngularPositionTestActions, LinearPositionTestActions
 from .pot_capture_test import PotCaptureTestActions
 from .solar_panels import SolarPanelActions
@@ -30,4 +31,5 @@ action_classes: dict[Strategy, Actions] = {
     Strategy.PotCaptureTest: PotCaptureTestActions,
     Strategy.SolarPanelsTest: SolarPanelsTestActions,
     Strategy.DropoffTest: DropoffTestActions,
+    Strategy.PlanterTest: PlanterTestActions,
 }
