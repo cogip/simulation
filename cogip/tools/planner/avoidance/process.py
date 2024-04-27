@@ -115,14 +115,23 @@ def avoidance_process(
             # Final pose
             if path[1].O is None:
                 path[1].O = path[0].O  # noqa
-        else:
-            # Intermediate pose
-            if len(path) > 2 and last_emitted_pose_order:
-                dist = math.dist((last_emitted_pose_order.x, last_emitted_pose_order.y), (path[1].x, path[1].y))
-                if dist < 20:
-                    logger.debug(f"Avoidance: Skip path update (new intermediate pose too close: {dist:0.2f})")
+
+        if len(path) >= 2 and last_emitted_pose_order:
+            dist_xy = math.dist((last_emitted_pose_order.x, last_emitted_pose_order.y), (path[1].x, path[1].y))
+            dist_angle = abs(path[1].O - last_emitted_pose_order.O)
+            if not path[1].bypass_final_orientation:
+                if dist_xy < 20 and dist_angle < 5:
+                    logger.debug(
+                        f"Avoidance: Skip path update (new pose order too close: {dist_xy:0.2f}/{dist_angle:0.2f})"
+                    )
+                    continue
+            else:
+                if dist_xy < 20:
+                    logger.debug(f"Avoidance: Skip path update (new pose order too close: {dist_xy:0.2f})")
                     continue
 
+        if len(path) > 2:
+            # Intermediate pose
             next_delta_x = path[2].x - path[1].x
             next_delta_y = path[2].y - path[1].y
 
