@@ -41,12 +41,16 @@ def avoidance_process(
 
         pose_current = shared_properties["pose_current"]
         pose_order = shared_properties["pose_order"]
+        last_avoidance_pose_current = shared_properties["last_avoidance_pose_current"]
         if not pose_current:
             logger.debug("Avoidance: Skip path update (no pose current)")
             continue
         if not pose_order:
             logger.debug("Avoidance: Skip path update (no pose order)")
             continue
+        if not last_avoidance_pose_current:
+            last_emitted_pose_order = None
+
         pose_current = models.PathPose.model_validate(pose_current)
         pose_order = models.PathPose.model_validate(pose_order)
 
@@ -54,27 +58,30 @@ def avoidance_process(
             logger.debug("Avoidance: Skip path update (speed test)")
             continue
 
-        if pose_order.pose == pose_current:
-            logger.debug("Avoidance: Skip path update (pose_current = order_order)")
-            continue
-
-        # Check if robot has moved enough since the last avoidance path was computed
-        if (
-            (last_avoidance_pose_current := shared_properties["last_avoidance_pose_current"])
-            and last_avoidance_pose_current != (pose_current.x, pose_current.y)
-            and (
-                dist := math.dist(
-                    (pose_current.x, pose_current.y),
-                    (
-                        last_avoidance_pose_current[0],
-                        last_avoidance_pose_current[1],
-                    ),
+        if last_avoidance_pose_current:
+            # Check if pose order is far enough from current pose
+            dist_xy = math.dist((pose_current.x, pose_current.y), (pose_order.x, pose_order.y))
+            dist_angle = abs(pose_current.O - pose_order.O)
+            if dist_xy < 20 and dist_angle < 5:
+                logger.debug(
+                    "Avoidance: Skip path update "
+                    f"(pose current and order too close: {dist_xy:0.2f}mm {dist_angle:0.2f}°)"
                 )
-            )
-            < 20
-        ):
-            logger.debug(f"Avoidance: Skip path update (current pose too close: {dist:0.2f})")
-            continue
+                continue
+
+            # Check if robot has moved enough since the last avoidance path was computed
+            if (
+                last_avoidance_pose_current != (pose_current.x, pose_current.y)
+                and (
+                    dist := math.dist(
+                        (pose_current.x, pose_current.y),
+                        (last_avoidance_pose_current[0], last_avoidance_pose_current[1]),
+                    )
+                )
+                < 20
+            ):
+                logger.debug(f"Avoidance: Skip path update (current pose too close: {dist:0.2f}mm)")
+                continue
 
         # Create dynamic obstacles
         if shared_properties["avoidance_strategy"] == AvoidanceStrategy.Disabled:
@@ -91,7 +98,7 @@ def avoidance_process(
         else:
             shared_properties["last_avoidance_pose_current"] = (pose_current.x, pose_current.y)
 
-            if pose_current.x == pose_order.x and pose_current.y == pose_order.y and pose_current.O != pose_order.O:
+            if pose_current.x == pose_order.x and pose_current.y == pose_order.y:
                 # If the pose order is just a rotation from the pose current, the avoidance will not find any path,
                 # so set the path manually
                 logger.debug("Avoidance: rotation only")
@@ -102,6 +109,7 @@ def avoidance_process(
         if len(path) == 0:
             logger.debug("Avoidance: No path found")
             shared_properties["last_avoidance_pose_current"] = None
+            last_emitted_pose_order = None
             queue_sio.put(("blocked", None))
             continue
 
@@ -114,18 +122,22 @@ def avoidance_process(
             logger.debug("Avoidance: len(path) == 1")
             continue
 
-        if len(path) == 2:
-            # Final pose
-            if path[1].O is None:
-                path[1].O = path[0].O  # noqa
-        else:
-            # Intermediate pose
-            if len(path) > 2 and last_emitted_pose_order:
-                dist = math.dist((last_emitted_pose_order.x, last_emitted_pose_order.y), (path[1].x, path[1].y))
-                if dist < 20:
-                    logger.debug(f"Avoidance: Skip path update (new intermediate pose too close: {dist:0.2f})")
+        if len(path) >= 2 and last_emitted_pose_order:
+            dist_xy = math.dist((last_emitted_pose_order.x, last_emitted_pose_order.y), (path[1].x, path[1].y))
+            dist_angle = abs(path[1].O - last_emitted_pose_order.O)
+            if not path[1].bypass_final_orientation:
+                if dist_xy < 20 and dist_angle < 5:
+                    logger.debug(
+                        f"Avoidance: Skip path update (new pose order too close: {dist_xy:0.2f}/{dist_angle:0.2f})"
+                    )
+                    continue
+            else:
+                if dist_xy < 20:
+                    logger.debug(f"Avoidance: Skip path update (new pose order too close: {dist_xy:0.2f})")
                     continue
 
+        if len(path) > 2:
+            # Intermediate pose
             next_delta_x = path[2].x - path[1].x
             next_delta_y = path[2].y - path[1].y
 
