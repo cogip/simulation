@@ -11,8 +11,8 @@ from cogip.protobuf import PB_PositionalActuatorCommand, PB_ServoCommand
 class ActuatorsKindEnum(IntEnum):
     """Enum defining actuators kind"""
 
-    SERVO = 0
-    POSITIONAL = 1
+    servo = 0
+    positional_actuator = 1
 
 
 class ActuatorsGroupEnum(IntEnum):
@@ -56,7 +56,7 @@ class ServoEnum(IntEnum):
 class ServoCommand(BaseModel):
     """Model defining a command to send to servos"""
 
-    kind: Literal[ActuatorsKindEnum.SERVO] = ActuatorsKindEnum.SERVO
+    kind: Literal[ActuatorsKindEnum.servo] = ActuatorsKindEnum.servo
     id: ServoEnum = Field(
         ...,
         title="Id",
@@ -80,8 +80,8 @@ class ServoCommand(BaseModel):
                 value = ActuatorsKindEnum(v)
             except Exception:
                 raise ValueError("Not a ActuatorsKindEnum")
-        if value != ActuatorsKindEnum.SERVO:
-            raise ValueError("Not ActuatorsKindEnum.SERVO value")
+        if value != ActuatorsKindEnum.servo:
+            raise ValueError("Not ActuatorsKindEnum.servo value")
         return value
 
     @field_validator("id", mode="before")
@@ -133,7 +133,7 @@ class PositionalActuatorEnum(IntEnum):
 class PositionalActuatorCommand(BaseModel):
     """Model defining a command to send to positional actuators"""
 
-    kind: Literal[ActuatorsKindEnum.POSITIONAL] = ActuatorsKindEnum.POSITIONAL
+    kind: Literal[ActuatorsKindEnum.positional_actuator] = ActuatorsKindEnum.positional_actuator
     id: PositionalActuatorEnum = Field(..., title="Id", description="Positional Actuator identifier")
     command: int = Field(
         0,
@@ -153,8 +153,8 @@ class PositionalActuatorCommand(BaseModel):
                 value = ActuatorsKindEnum(v)
             except Exception:
                 raise ValueError("Not a ActuatorsKindEnum")
-        if value != ActuatorsKindEnum.POSITIONAL:
-            raise ValueError("Not ActuatorsKindEnum.POSITIONAL value")
+        if value != ActuatorsKindEnum.positional_actuator:
+            raise ValueError("Not ActuatorsKindEnum.positional_actuator value")
         return value
 
     @field_validator("id", mode="before")
