@@ -1,1 +1,1 @@
-protoc --python_out=. *.proto
+protoc --python_out=pyi_out:. *.proto
