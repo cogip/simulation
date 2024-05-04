@@ -17,6 +17,7 @@ from PIL import ImageFont
 from pydantic import RootModel, TypeAdapter
 
 from cogip import models
+from cogip.models.actuators import ActuatorState
 from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.asyncloop import AsyncLoop
 from cogip.utils.singleton import Singleton
@@ -996,3 +997,9 @@ class Planner:
             )
         else:
             logger.info("Planner: No table marker found")
+
+    async def update_actuator_state(self, actuator_state: ActuatorState):
+        actuators_states = getattr(self.game_context, f"{actuator_state.kind.name}_states")
+        actuators_states[actuator_state.id] = actuator_state
+        if not self.virtual and actuator_state.id in self.game_context.emulated_actuator_states:
+            self.game_context.emulated_actuator_states.remove(actuator_state.id)

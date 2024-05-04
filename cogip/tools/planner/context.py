@@ -1,3 +1,4 @@
+from cogip.models.actuators import PositionalActuator, PositionalActuatorEnum, Servo, ServoEnum
 from cogip.models.artifacts import (
     DropoffZone,
     DropoffZoneID,
@@ -41,6 +42,7 @@ class GameContext(metaclass=Singleton):
         self.countdown: int = self.game_duration
         self.create_artifacts()
         self.create_fixed_obstacles()
+        self.create_actuators_states()
 
     @property
     def table(self) -> Table:
@@ -62,6 +64,7 @@ class GameContext(metaclass=Singleton):
         self.countdown = self.game_duration
         self.create_artifacts()
         self.create_fixed_obstacles()
+        self.create_actuators_states()
 
     @property
     def default_controller(self) -> ControllerEnum:
@@ -220,3 +223,21 @@ class GameContext(metaclass=Singleton):
 
         for obstacle in self.fixed_obstacles:
             obstacle.create_bounding_box(self.properties.robot_width / 2)
+
+    def create_actuators_states(self):
+        self.servos_states: dict[ServoEnum, Servo] = {}
+        self.positional_actuators_states: dict[PositionalActuatorEnum, PositionalActuator] = {}
+        self.emulated_actuator_states: set[ServoEnum | PositionalActuatorEnum] = {
+            ServoEnum.LXSERVO_LEFT_CART,
+            ServoEnum.LXSERVO_RIGHT_CART,
+            ServoEnum.LXSERVO_ARM_PANEL,
+            PositionalActuatorEnum.MOTOR_BOTTOM_LIFT,
+            PositionalActuatorEnum.MOTOR_TOP_LIFT,
+            PositionalActuatorEnum.ANALOGSERVO_BOTTOM_GRIP_LEFT,
+            PositionalActuatorEnum.ANALOGSERVO_BOTTOM_GRIP_RIGHT,
+            PositionalActuatorEnum.ANALOGSERVO_TOP_GRIP_LEFT,
+            PositionalActuatorEnum.ANALOGSERVO_TOP_GRIP_RIGHT,
+            PositionalActuatorEnum.CART_MAGNET_LEFT,
+            PositionalActuatorEnum.CART_MAGNET_RIGHT,
+            PositionalActuatorEnum.ANALOGSERVO_PAMI,
+        }
