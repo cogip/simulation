@@ -12,7 +12,7 @@ from cogip.models.actuators import (
 )
 from cogip.protobuf import PB_ActuatorCommand
 from cogip.tools.copilot.copilot import (
-    actuators_command_uuid,
+    actuator_command_uuid,
 )
 from cogip.tools.copilot.pbcom import PBCom
 
@@ -30,7 +30,7 @@ async def main_async(pbcom: PBCom, commands: list[ActuatorCommand]):
     pbcom_task = asyncio.create_task(pbcom.run())
 
     for command in commands:
-        await actuator_command(pbcom, actuators_command_uuid, command)
+        await actuator_command(pbcom, actuator_command_uuid, command)
         await pbcom.messages_to_send.join()
 
     try:

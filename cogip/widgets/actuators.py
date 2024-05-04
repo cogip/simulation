@@ -1,9 +1,14 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal as qtSignal
 
+from cogip import logger
 from cogip.models.actuators import (
     ActuatorCommand,
-    ActuatorsState,
+    ActuatorsKindEnum,
+    ActuatorState,
+    PositionalActuator,
+    PositionalActuatorCommand,
+    PositionalActuatorEnum,
     Servo,
     ServoCommand,
     ServoEnum,
@@ -17,114 +22,228 @@ class ServoControl(QtCore.QObject):
     Build a widget to control a servo.
     """
 
-    command_updated: qtSignal = qtSignal(ServoCommand)
+    command_updated: qtSignal = qtSignal(object)
 
-    def __init__(self, servo: Servo, layout: QtWidgets.QGridLayout):
+    def __init__(self, id: ServoEnum, layout: QtWidgets.QGridLayout):
         """
         Class constructor.
 
         Arguments:
-            servo: servo to control
+            id: ID of servo to control
             layout: The parent layout
         """
         super().__init__()
-        position_schema = servo.model_json_schema()["properties"]["position"]
-        self._id = servo.id
+        self.enabled = False
+        position_schema = Servo.model_json_schema()["properties"]["position"]
+        self.id = id
 
         row = layout.rowCount()
         minimum = position_schema.get("minimum")
         maximum = position_schema.get("maximum")
 
-        label = QtWidgets.QLabel(self._id.name)
-        layout.addWidget(label, row, 0)
+        self.label = QtWidgets.QLabel(self.id.name)
+        layout.addWidget(self.label, row, 0)
 
-        kind = QtWidgets.QLabel("Servo")
-        layout.addWidget(kind, row, 1)
+        self.kind = QtWidgets.QLabel("Servo")
+        layout.addWidget(self.kind, row, 1)
 
-        self._command = QtWidgets.QSpinBox()
-        self._command.setToolTip("Position command")
-        self._command.setMinimum(minimum)
-        self._command.setMaximum(maximum)
-        self._command.setSingleStep(1)
-        self._command.setValue(servo.position)
-        self._command.valueChanged.connect(self.command_changed)
-        layout.addWidget(self._command, row, 2)
+        self.command = QtWidgets.QSpinBox()
+        self.command.setToolTip("Position command")
+        self.command.setMinimum(minimum)
+        self.command.setMaximum(maximum)
+        self.command.setSingleStep(1)
+        self.command.valueChanged.connect(self.command_changed)
+        layout.addWidget(self.command, row, 2)
 
-        self._slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
-        self._slider.setToolTip("Position command")
-        self._slider.setMinimum(minimum)
-        self._slider.setMaximum(maximum)
-        self._slider.setSingleStep(1)
-        self._slider.setValue(servo.position)
-        self._slider.valueChanged.connect(self._command.setValue)
-        layout.addWidget(self._slider, row, 3)
+        self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider.setToolTip("Position command")
+        self.slider.setMinimum(minimum)
+        self.slider.setMaximum(maximum)
+        self.slider.setSingleStep(1)
+        self.slider.valueChanged.connect(self.command.setValue)
+        layout.addWidget(self.slider, row, 3)
 
-        self._position = QtWidgets.QLabel(str(servo.position))
-        self._position.setToolTip("Current position")
-        layout.addWidget(self._position, row, 4)
+        self.position = QtWidgets.QLabel()
+        self.position.setToolTip("Current position")
+        layout.addWidget(self.position, row, 4)
+
+        self.label.setEnabled(False)
+        self.kind.setEnabled(False)
+        self.command.setEnabled(False)
+        self.slider.setEnabled(False)
+        self.position.setEnabled(False)
 
     def command_changed(self, value):
-        self._slider.setValue(value)
-        command = ServoCommand(id=self._id, command=value)
+        self.slider.setValue(value)
+        command = ServoCommand(id=self.id, command=value)
         self.command_updated.emit(command)
 
-    def update_value(self, servo: Servo):
-        self._position.setText(str(servo.position))
+    def update_value(self, actuator: Servo):
+        if not self.enabled:
+            self.enabled = True
+            self.label.setEnabled(True)
+            self.kind.setEnabled(True)
+            self.command.setEnabled(True)
+            self.slider.setEnabled(True)
+            self.position.setEnabled(True)
+
+        self.command.blockSignals(True)
+        self.command.setValue(actuator.position)
+        self.command.blockSignals(True)
+        self.slider.blockSignals(False)
+        self.slider.setValue(actuator.command)
+        self.slider.blockSignals(False)
+        self.position.setText(str(actuator.position))
+
+
+class PositionalActuatorControl(QtCore.QObject):
+    """
+    PositionalControl class.
+
+    Build a widget to control a positional actuator.
+    """
+
+    command_updated: qtSignal = qtSignal(object)
+
+    def __init__(self, id: PositionalActuatorEnum, layout: QtWidgets.QGridLayout):
+        """
+        Class constructor.
+
+        Arguments:
+            id: ID of positional actuator to control
+            layout: The parent layout
+        """
+        super().__init__()
+        self.enabled = False
+        command_schema = Servo.model_json_schema()["properties"]["command"]
+        self.id = id
+
+        row = layout.rowCount()
+        minimum = command_schema.get("minimum")
+        maximum = command_schema.get("maximum")
+
+        self.label = QtWidgets.QLabel(self.id.name)
+        layout.addWidget(self.label, row, 0)
+
+        self.kind = QtWidgets.QLabel("Positional")
+        layout.addWidget(self.kind, row, 1)
+
+        self.command = QtWidgets.QSpinBox()
+        self.command.setToolTip("Position command")
+        self.command.setMinimum(minimum)
+        self.command.setMaximum(maximum)
+        self.command.setSingleStep(1)
+        self.command.valueChanged.connect(self.command_changed)
+        layout.addWidget(self.command, row, 2)
+
+        self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.slider.setToolTip("Position command")
+        self.slider.setMinimum(minimum)
+        self.slider.setMaximum(maximum)
+        self.slider.setSingleStep(1)
+        self.slider.valueChanged.connect(self.command.setValue)
+        layout.addWidget(self.slider, row, 3)
+
+        self.position = QtWidgets.QLabel()
+        self.position.setToolTip("Current command")
+        layout.addWidget(self.position, row, 4)
+
+        self.label.setEnabled(False)
+        self.kind.setEnabled(False)
+        self.command.setEnabled(False)
+        self.slider.setEnabled(False)
+        self.position.setEnabled(False)
+
+    def command_changed(self, value):
+        self.slider.setValue(value)
+        command = PositionalActuatorCommand(id=self.id, command=value)
+        self.command_updated.emit(command)
+
+    def update_value(self, actuator: PositionalActuator):
+        if not self.enabled:
+            self.enabled = True
+            self.label.setEnabled(True)
+            self.kind.setEnabled(True)
+            self.command.setEnabled(True)
+            self.slider.setEnabled(True)
+            self.position.setEnabled(True)
+
+        self.command.blockSignals(True)
+        self.command.setValue(actuator.command)
+        self.command.blockSignals(False)
+        self.slider.blockSignals(True)
+        self.slider.setValue(actuator.command)
+        self.slider.blockSignals(False)
+        self.position.setText(str(actuator.command))
 
 
 class ActuatorsDialog(QtWidgets.QDialog):
     """
     ActuatorsDialog class
 
-    Build a modal for actuators remote control.
+    Build a modal for actuators remote control and monitoring.
 
     Attributes:
         new_actuator_command: Qt signal emitted when a actuator command is updated
         closed: Qt signal emitted when the window is hidden
     """
 
-    new_actuator_command: qtSignal = qtSignal(int, object)
-    closed: qtSignal = qtSignal(int)
+    closed: qtSignal = qtSignal()
+    new_actuator_command: qtSignal = qtSignal(object)
 
-    def __init__(self, actuators_state: ActuatorsState, parent: QtWidgets.QWidget = None):
+    def __init__(self, parent: QtWidgets.QWidget = None):
         """
         Class constructor.
 
         Arguments:
-            actuators_state: initial state of actuators
             parent: The parent widget
         """
         super().__init__(parent)
-        self._robot_id: int = actuators_state.robot_id
-        self._servos: dict[ServoEnum, ServoControl] = {}
-        self.setWindowTitle(f"Actuators Control {self._robot_id}")
+        self.servos: dict[ServoEnum, ServoControl] = {}
+        self.positional_actuators: dict[PositionalActuatorEnum, PositionalActuatorControl] = {}
+        self.setWindowTitle("Actuators Control")
         self.setModal(False)
 
         layout = QtWidgets.QGridLayout()
         self.setLayout(layout)
 
-        for servo in actuators_state.servos:
-            self._servos[servo.id] = ServoControl(servo, layout)
-            self._servos[servo.id].command_updated.connect(self.command_updated)
+        for id in ServoEnum:
+            self.servos[id] = ServoControl(id, layout)
+            self.servos[id].command_updated.connect(self.command_updated)
+
+        for id in PositionalActuatorEnum:
+            self.positional_actuators[id] = PositionalActuatorControl(id, layout)
+            self.positional_actuators[id].command_updated.connect(self.command_updated)
 
         self.readSettings()
 
-    def update_actuators(self, actuators_state: ActuatorsState):
+    def update_actuator(self, actuator_state: ActuatorState):
         """
-        Update actuators with new values.
+        Update an actuator with new values.
 
         Arguments:
-            actuators_state: current state of actuators
+            actuator_state: current state of an actuator
         """
-        for servo in actuators_state.servos:
-            if servo.id in self._servos:
-                self._servos[servo.id].update_value(servo)
+
+        match actuator_state.kind:
+            case ActuatorsKindEnum.servo:
+                actuator = self.servos.get(actuator_state.id)
+                if actuator is None:
+                    logger.warning(f"Unknown servo ID: {actuator_state.id}")
+                    return
+                actuator.update_value(actuator_state)
+            case ActuatorsKindEnum.positional_actuator:
+                actuator = self.positional_actuators.get(actuator_state.id)
+                if actuator is None:
+                    logger.warning(f"Unknown positional actuator ID: {actuator_state.id}")
+                    return
+                actuator.update_value(actuator_state)
 
     def command_updated(self, command: ActuatorCommand):
         """
         Emit updated values with namespace, name and value.
         """
-        self.new_actuator_command.emit(self._robot_id, command)
+        self.new_actuator_command.emit(command)
 
     def closeEvent(self, event: QtGui.QCloseEvent):
         """
@@ -134,12 +253,12 @@ class ActuatorsDialog(QtWidgets.QDialog):
             event: The close event (unused)
         """
         settings = QtCore.QSettings("COGIP", "monitor")
-        settings.setValue(f"properties/actuators/{self._robot_id}", self.saveGeometry())
+        settings.setValue("properties/actuators", self.saveGeometry())
 
-        self.closed.emit(self._robot_id)
+        self.closed.emit()
         event.accept()
         super().closeEvent(event)
 
     def readSettings(self):
         settings = QtCore.QSettings("COGIP", "monitor")
-        self.restoreGeometry(settings.value(f"properties/actuators/{self._robot_id}"))
+        self.restoreGeometry(settings.value("properties/actuators"))
