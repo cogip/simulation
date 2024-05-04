@@ -15,26 +15,9 @@ class ActuatorsKindEnum(IntEnum):
     positional_actuator = 1
 
 
-class ActuatorsGroupEnum(IntEnum):
-    """Actuators groups used to group actuators by category"""
-
-    NO_GROUP = 0
-
-
 class ActuatorBase(BaseModel):
     """Base model for actuators"""
 
-    group: ActuatorsGroupEnum = Field(
-        ActuatorsGroupEnum.NO_GROUP,
-        title="Group",
-        description="Actuators group",
-    )
-    order: int = Field(
-        0,
-        ge=0,
-        title="Order",
-        description="Order in group",
-    )
     enabled: bool = Field(
         False,
         title="Enabled",
@@ -180,10 +163,5 @@ class PositionalActuator(ActuatorBase, PositionalActuatorCommand):
     pass
 
 
-class ActuatorsState(BaseModel):
-    servos: list[Servo] = []
-    positional_actuators: list[PositionalActuator] = []
-    robot_id: int
-
-
+ActuatorState = Servo | PositionalActuator
 ActuatorCommand = ServoCommand | PositionalActuatorCommand

@@ -13,7 +13,7 @@ from .PB_Command_pb2 import PB_Command  # noqa
 from .PB_State_pb2 import PB_State  # noqa
 from .PB_PathPose_pb2 import PB_PathPose  # noqa
 from .PB_Actuators_pb2 import PB_ServoCommand, PB_PositionalActuatorCommand  # noqa
-from .PB_Actuators_pb2 import PB_ActuatorCommand, PB_ActuatorsState  # noqa
+from .PB_Actuators_pb2 import PB_ActuatorCommand, PB_ActuatorState  # noqa
 from .PB_Pid_pb2 import PB_Pid, PB_Pid_Id  # noqa
 from .PB_PidEnum_pb2 import PB_PidEnum  # noqa
 from .PB_Controller_pb2 import PB_ControllerEnum, PB_Controller  # noqa

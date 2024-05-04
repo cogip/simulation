@@ -72,6 +72,12 @@ class DashboardNamespace(socketio.AsyncNamespace):
         namespace = config.pop("namespace")
         await self.emit("config_updated", config, namespace=namespace)
 
+    async def on_actuators_start(self, sid):
+        """
+        Callback on actuators_start message.
+        """
+        await self.emit("actuators_start", namespace="/copilot")
+
     async def on_actuators_stop(self, sid):
         """
         Callback on actuators_stop message.
