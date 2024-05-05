@@ -14,6 +14,7 @@ from cogip.models.actuators import (
     Servo,
     ServoCommand,
     ServoEnum,
+    actuator_limits,
 )
 
 
@@ -40,8 +41,7 @@ class ServoControl(QtCore.QObject):
         self.id = id
 
         row = layout.rowCount()
-        minimum = position_schema.get("minimum")
-        maximum = position_schema.get("maximum")
+        minimum, maximum = actuator_limits.get(id, (position_schema.get("minimum"), position_schema.get("maximum")))
 
         self.label = QtWidgets.QLabel(self.id.name)
         layout.addWidget(self.label, row, 0)
@@ -121,8 +121,7 @@ class PositionalActuatorControl(QtCore.QObject):
         self.id = id
 
         row = layout.rowCount()
-        minimum = command_schema.get("minimum")
-        maximum = command_schema.get("maximum")
+        minimum, maximum = actuator_limits.get(id, (command_schema.get("minimum"), command_schema.get("maximum")))
 
         self.label = QtWidgets.QLabel(self.id.name)
         layout.addWidget(self.label, row, 0)
