@@ -6,6 +6,8 @@ from cogip.models.actuators import (
     ActuatorCommand,
     ActuatorsKindEnum,
     ActuatorState,
+    BoolSensor,
+    BoolSensorEnum,
     PositionalActuator,
     PositionalActuatorCommand,
     PositionalActuatorEnum,
@@ -177,6 +179,54 @@ class PositionalActuatorControl(QtCore.QObject):
         self.position.setText(str(actuator.command))
 
 
+class BoolSensorControl(QtCore.QObject):
+    """
+    BoolSensorControl class.
+
+    Build a widget to show the state of a bool  sensor.
+    """
+
+    def __init__(self, id: BoolSensorEnum, layout: QtWidgets.QGridLayout):
+        """
+        Class constructor.
+
+        Arguments:
+            id: ID of bool sensor to display
+            layout: The parent layout
+        """
+        super().__init__()
+        self.enabled = False
+        self.id = id
+
+        row = layout.rowCount()
+
+        self.label = QtWidgets.QLabel(self.id.name)
+        layout.addWidget(self.label, row, 0)
+
+        self.kind = QtWidgets.QLabel("Bool Sensor")
+        layout.addWidget(self.kind, row, 1)
+
+        self.state = QtWidgets.QCheckBox()
+        self.state.setToolTip("State")
+        self.state.setAttribute(QtCore.Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self.state.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.state.setChecked(False)
+        layout.addWidget(self.state, row, 2)
+
+        self.label.setEnabled(False)
+        self.kind.setEnabled(False)
+        self.state.setEnabled(False)
+
+    def update_value(self, actuator: BoolSensor):
+        if not self.enabled:
+            self.enabled = True
+            self.label.setEnabled(True)
+            self.kind.setEnabled(True)
+            self.state.setEnabled(True)
+
+        self.state.setChecked(actuator.state)
+
+
 class ActuatorsDialog(QtWidgets.QDialog):
     """
     ActuatorsDialog class
@@ -201,6 +251,7 @@ class ActuatorsDialog(QtWidgets.QDialog):
         super().__init__(parent)
         self.servos: dict[ServoEnum, ServoControl] = {}
         self.positional_actuators: dict[PositionalActuatorEnum, PositionalActuatorControl] = {}
+        self.bool_sensors: dict[BoolSensorEnum, BoolSensorControl] = {}
         self.setWindowTitle("Actuators Control")
         self.setModal(False)
 
@@ -214,6 +265,9 @@ class ActuatorsDialog(QtWidgets.QDialog):
         for id in PositionalActuatorEnum:
             self.positional_actuators[id] = PositionalActuatorControl(id, layout)
             self.positional_actuators[id].command_updated.connect(self.command_updated)
+
+        for id in BoolSensorEnum:
+            self.bool_sensors[id] = BoolSensorControl(id, layout)
 
         self.readSettings()
 
@@ -236,6 +290,12 @@ class ActuatorsDialog(QtWidgets.QDialog):
                 actuator = self.positional_actuators.get(actuator_state.id)
                 if actuator is None:
                     logger.warning(f"Unknown positional actuator ID: {actuator_state.id}")
+                    return
+                actuator.update_value(actuator_state)
+            case ActuatorsKindEnum.bool_sensor:
+                actuator = self.bool_sensors.get(actuator_state.id)
+                if actuator is None:
+                    logger.warning(f"Unknown bool sensor ID: {actuator_state.id}")
                     return
                 actuator.update_value(actuator_state)
 
