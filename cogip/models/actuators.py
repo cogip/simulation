@@ -200,3 +200,20 @@ class BoolSensor(BaseModel):
 
 ActuatorState = Servo | PositionalActuator | BoolSensor
 ActuatorCommand = ServoCommand | PositionalActuatorCommand
+
+
+# Actuator limits
+actuator_limits: dict[IntEnum, tuple[int, int]] = {
+    ServoEnum.LXSERVO_LEFT_CART: (400, 950),
+    ServoEnum.LXSERVO_RIGHT_CART: (50, 600),
+    ServoEnum.LXSERVO_ARM_PANEL: (300, 950),
+    PositionalActuatorEnum.MOTOR_BOTTOM_LIFT: (0, 100),
+    PositionalActuatorEnum.MOTOR_TOP_LIFT: (0, 180),
+    PositionalActuatorEnum.ANALOGSERVO_BOTTOM_GRIP_LEFT: (50, 250),
+    PositionalActuatorEnum.ANALOGSERVO_BOTTOM_GRIP_RIGHT: (50, 250),
+    PositionalActuatorEnum.ANALOGSERVO_TOP_GRIP_LEFT: (50, 250),
+    PositionalActuatorEnum.ANALOGSERVO_TOP_GRIP_RIGHT: (50, 250),
+    PositionalActuatorEnum.CART_MAGNET_LEFT: (0, 1),
+    PositionalActuatorEnum.CART_MAGNET_RIGHT: (0, 1),
+    PositionalActuatorEnum.ANALOGSERVO_PAMI: (0, 999),
+}
