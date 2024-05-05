@@ -71,7 +71,7 @@ x-firmware: &firmware
     - /bin/sh
     - -x
     - -c
-    - applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf
+    - applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf $${FIRMWARE_OPTIONS}
 
 x-robot: &robot
   <<: [*build-console, *volumes-common, *extra-hosts-common]
