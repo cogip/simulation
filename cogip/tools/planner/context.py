@@ -1,4 +1,11 @@
-from cogip.models.actuators import PositionalActuator, PositionalActuatorEnum, Servo, ServoEnum
+from cogip.models.actuators import (
+    BoolSensor,
+    BoolSensorEnum,
+    PositionalActuator,
+    PositionalActuatorEnum,
+    Servo,
+    ServoEnum,
+)
 from cogip.models.artifacts import (
     DropoffZone,
     DropoffZoneID,
@@ -34,7 +41,7 @@ class GameContext(metaclass=Singleton):
     def __init__(self):
         self.properties = Properties()
         self.camp = Camp()
-        self.strategy = Strategy.LinearPositionTest
+        self.strategy = Strategy.SolarPanelsTest
         self._table = TableEnum.Training
         self.avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
         self.playing: bool = False
@@ -225,8 +232,9 @@ class GameContext(metaclass=Singleton):
             obstacle.create_bounding_box(self.properties.robot_width / 2)
 
     def create_actuators_states(self):
-        self.servos_states: dict[ServoEnum, Servo] = {}
-        self.positional_actuators_states: dict[PositionalActuatorEnum, PositionalActuator] = {}
+        self.servo_states: dict[ServoEnum, Servo] = {}
+        self.positional_actuator_states: dict[PositionalActuatorEnum, PositionalActuator] = {}
+        self.bool_sensor_states: dict[BoolSensorEnum, BoolSensor] = {id: BoolSensor(id=id) for id in BoolSensorEnum}
         self.emulated_actuator_states: set[ServoEnum | PositionalActuatorEnum] = {
             ServoEnum.LXSERVO_LEFT_CART,
             ServoEnum.LXSERVO_RIGHT_CART,
@@ -240,4 +248,10 @@ class GameContext(metaclass=Singleton):
             PositionalActuatorEnum.CART_MAGNET_LEFT,
             PositionalActuatorEnum.CART_MAGNET_RIGHT,
             PositionalActuatorEnum.ANALOGSERVO_PAMI,
+            BoolSensorEnum.BOTTOM_GRIP_LEFT,
+            BoolSensorEnum.BOTTOM_GRIP_RIGHT,
+            BoolSensorEnum.TOP_GRIP_LEFT,
+            BoolSensorEnum.TOP_GRIP_RIGHT,
+            BoolSensorEnum.MAGNET_LEFT,
+            BoolSensorEnum.MAGNET_RIGHT,
         }
