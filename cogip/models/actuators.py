@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -13,6 +13,7 @@ class ActuatorsKindEnum(IntEnum):
 
     servo = 0
     positional_actuator = 1
+    bool_sensor = 2
 
 
 class ActuatorBase(BaseModel):
@@ -163,5 +164,39 @@ class PositionalActuator(ActuatorBase, PositionalActuatorCommand):
     pass
 
 
-ActuatorState = Servo | PositionalActuator
+# Bool sensor related definitions
+
+
+class BoolSensorEnum(IntEnum):
+    """Enum defining bool sensors IDs"""
+
+    BOTTOM_GRIP_LEFT = 0
+    BOTTOM_GRIP_RIGHT = 1
+    TOP_GRIP_LEFT = 2
+    TOP_GRIP_RIGHT = 3
+    MAGNET_LEFT = 4
+    MAGNET_RIGHT = 5
+
+
+class BoolSensor(BaseModel):
+    """Model defining bool sensor state"""
+
+    kind: Literal[ActuatorsKindEnum.bool_sensor] = ActuatorsKindEnum.bool_sensor
+    id: Annotated[
+        BoolSensorEnum,
+        Field(
+            title="Id",
+            description="Bool sensor identifier",
+        ),
+    ]
+    state: Annotated[
+        bool,
+        Field(
+            title="State",
+            description="Bool sensor state",
+        ),
+    ] = False
+
+
+ActuatorState = Servo | PositionalActuator | BoolSensor
 ActuatorCommand = ServoCommand | PositionalActuatorCommand

@@ -13,29 +13,33 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12PB_Actuators.proto\"\\\n\x08PB_Servo\x12\x12\n\nis_blocked\x18\x01 \x01(\x08\x12\x19\n\x02id\x18\x02 \x01(\x0e\x32\r.PB_ServoEnum\x12\x10\n\x08position\x18\x03 \x01(\r\x12\x0f\n\x07\x63ommand\x18\x04 \x01(\r\"d\n\x15PB_PositionalActuator\x12\x12\n\nis_blocked\x18\x01 \x01(\x08\x12&\n\x02id\x18\x02 \x01(\x0e\x32\x1a.PB_PositionalActuatorEnum\x12\x0f\n\x07\x63ommand\x18\x03 \x01(\x05\"m\n\x10PB_ActuatorState\x12\x1a\n\x05servo\x18\x01 \x01(\x0b\x32\t.PB_ServoH\x00\x12\x35\n\x13positional_actuator\x18\x02 \x01(\x0b\x32\x16.PB_PositionalActuatorH\x00\x42\x06\n\x04type\"K\n\x0fPB_ServoCommand\x12\x19\n\x02id\x18\x01 \x01(\x0e\x32\r.PB_ServoEnum\x12\x0f\n\x07\x63ommand\x18\x02 \x01(\r\x12\x0c\n\x04time\x18\x03 \x01(\r\"W\n\x1cPB_PositionalActuatorCommand\x12&\n\x02id\x18\x01 \x01(\x0e\x32\x1a.PB_PositionalActuatorEnum\x12\x0f\n\x07\x63ommand\x18\x02 \x01(\x05\"\x80\x01\n\x12PB_ActuatorCommand\x12!\n\x05servo\x18\x01 \x01(\x0b\x32\x10.PB_ServoCommandH\x00\x12<\n\x13positional_actuator\x18\x02 \x01(\x0b\x32\x1d.PB_PositionalActuatorCommandH\x00\x42\t\n\x07\x63ommand*1\n\x14PB_ActuatorsTypeEnum\x12\t\n\x05SERVO\x10\x00\x12\x0e\n\nPOSITIONAL\x10\x01*T\n\x0cPB_ServoEnum\x12\x15\n\x11LXSERVO_LEFT_CART\x10\x00\x12\x16\n\x12LXSERVO_RIGHT_CART\x10\x01\x12\x15\n\x11LXSERVO_ARM_PANEL\x10\x02*\x8d\x02\n\x19PB_PositionalActuatorEnum\x12\x15\n\x11MOTOR_BOTTOM_LIFT\x10\x00\x12\x12\n\x0eMOTOR_TOP_LIFT\x10\x01\x12 \n\x1c\x41NALOGSERVO_BOTTOM_GRIP_LEFT\x10\x02\x12!\n\x1d\x41NALOGSERVO_BOTTOM_GRIP_RIGHT\x10\x03\x12\x1d\n\x19\x41NALOGSERVO_TOP_GRIP_LEFT\x10\x04\x12\x1e\n\x1a\x41NALOGSERVO_TOP_GRIP_RIGHT\x10\x05\x12\x14\n\x10\x43\x41RT_MAGNET_LEFT\x10\x06\x12\x15\n\x11\x43\x41RT_MAGNET_RIGHT\x10\x07\x12\x14\n\x10\x41NALOGSERVO_PAMI\x10\x08\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x12PB_Actuators.proto\"\\\n\x08PB_Servo\x12\x12\n\nis_blocked\x18\x01 \x01(\x08\x12\x19\n\x02id\x18\x02 \x01(\x0e\x32\r.PB_ServoEnum\x12\x10\n\x08position\x18\x03 \x01(\r\x12\x0f\n\x07\x63ommand\x18\x04 \x01(\r\"d\n\x15PB_PositionalActuator\x12\x12\n\nis_blocked\x18\x01 \x01(\x08\x12&\n\x02id\x18\x02 \x01(\x0e\x32\x1a.PB_PositionalActuatorEnum\x12\x0f\n\x07\x63ommand\x18\x03 \x01(\x05\"\x1e\n\rPB_BoolSensor\x12\r\n\x05state\x18\x01 \x01(\x08\"\x94\x01\n\x10PB_ActuatorState\x12\x1a\n\x05servo\x18\x01 \x01(\x0b\x32\t.PB_ServoH\x00\x12\x35\n\x13positional_actuator\x18\x02 \x01(\x0b\x32\x16.PB_PositionalActuatorH\x00\x12%\n\x0b\x62ool_sensor\x18\x03 \x01(\x0b\x32\x0e.PB_BoolSensorH\x00\x42\x06\n\x04type\"K\n\x0fPB_ServoCommand\x12\x19\n\x02id\x18\x01 \x01(\x0e\x32\r.PB_ServoEnum\x12\x0f\n\x07\x63ommand\x18\x02 \x01(\r\x12\x0c\n\x04time\x18\x03 \x01(\r\"W\n\x1cPB_PositionalActuatorCommand\x12&\n\x02id\x18\x01 \x01(\x0e\x32\x1a.PB_PositionalActuatorEnum\x12\x0f\n\x07\x63ommand\x18\x02 \x01(\x05\"\x80\x01\n\x12PB_ActuatorCommand\x12!\n\x05servo\x18\x01 \x01(\x0b\x32\x10.PB_ServoCommandH\x00\x12<\n\x13positional_actuator\x18\x02 \x01(\x0b\x32\x1d.PB_PositionalActuatorCommandH\x00\x42\t\n\x07\x63ommand*B\n\x14PB_ActuatorsTypeEnum\x12\t\n\x05SERVO\x10\x00\x12\x0e\n\nPOSITIONAL\x10\x01\x12\x0f\n\x0b\x42OOL_SENSOR\x10\x02*T\n\x0cPB_ServoEnum\x12\x15\n\x11LXSERVO_LEFT_CART\x10\x00\x12\x16\n\x12LXSERVO_RIGHT_CART\x10\x01\x12\x15\n\x11LXSERVO_ARM_PANEL\x10\x02*\x8d\x02\n\x19PB_PositionalActuatorEnum\x12\x15\n\x11MOTOR_BOTTOM_LIFT\x10\x00\x12\x12\n\x0eMOTOR_TOP_LIFT\x10\x01\x12 \n\x1c\x41NALOGSERVO_BOTTOM_GRIP_LEFT\x10\x02\x12!\n\x1d\x41NALOGSERVO_BOTTOM_GRIP_RIGHT\x10\x03\x12\x1d\n\x19\x41NALOGSERVO_TOP_GRIP_LEFT\x10\x04\x12\x1e\n\x1a\x41NALOGSERVO_TOP_GRIP_RIGHT\x10\x05\x12\x14\n\x10\x43\x41RT_MAGNET_LEFT\x10\x06\x12\x15\n\x11\x43\x41RT_MAGNET_RIGHT\x10\x07\x12\x14\n\x10\x41NALOGSERVO_PAMI\x10\x08*\x8a\x01\n\x11PB_BoolSensorEnum\x12\x14\n\x10\x42OTTOM_GRIP_LEFT\x10\x00\x12\x15\n\x11\x42OTTOM_GRIP_RIGHT\x10\x01\x12\x11\n\rTOP_GRIP_LEFT\x10\x02\x12\x12\n\x0eTOP_GRIP_RIGHT\x10\x03\x12\x0f\n\x0bMAGNET_LEFT\x10\x04\x12\x10\n\x0cMAGNET_RIGHT\x10\x05\x62\x06proto3')
 
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, globals())
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'PB_Actuators_pb2', globals())
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  _PB_ACTUATORSTYPEENUM._serialized_start=626
-  _PB_ACTUATORSTYPEENUM._serialized_end=675
-  _PB_SERVOENUM._serialized_start=677
-  _PB_SERVOENUM._serialized_end=761
-  _PB_POSITIONALACTUATORENUM._serialized_start=764
-  _PB_POSITIONALACTUATORENUM._serialized_end=1033
+  _PB_ACTUATORSTYPEENUM._serialized_start=698
+  _PB_ACTUATORSTYPEENUM._serialized_end=764
+  _PB_SERVOENUM._serialized_start=766
+  _PB_SERVOENUM._serialized_end=850
+  _PB_POSITIONALACTUATORENUM._serialized_start=853
+  _PB_POSITIONALACTUATORENUM._serialized_end=1122
+  _PB_BOOLSENSORENUM._serialized_start=1125
+  _PB_BOOLSENSORENUM._serialized_end=1263
   _PB_SERVO._serialized_start=22
   _PB_SERVO._serialized_end=114
   _PB_POSITIONALACTUATOR._serialized_start=116
   _PB_POSITIONALACTUATOR._serialized_end=216
-  _PB_ACTUATORSTATE._serialized_start=218
-  _PB_ACTUATORSTATE._serialized_end=327
-  _PB_SERVOCOMMAND._serialized_start=329
-  _PB_SERVOCOMMAND._serialized_end=404
-  _PB_POSITIONALACTUATORCOMMAND._serialized_start=406
-  _PB_POSITIONALACTUATORCOMMAND._serialized_end=493
-  _PB_ACTUATORCOMMAND._serialized_start=496
-  _PB_ACTUATORCOMMAND._serialized_end=624
+  _PB_BOOLSENSOR._serialized_start=218
+  _PB_BOOLSENSOR._serialized_end=248
+  _PB_ACTUATORSTATE._serialized_start=251
+  _PB_ACTUATORSTATE._serialized_end=399
+  _PB_SERVOCOMMAND._serialized_start=401
+  _PB_SERVOCOMMAND._serialized_end=476
+  _PB_POSITIONALACTUATORCOMMAND._serialized_start=478
+  _PB_POSITIONALACTUATORCOMMAND._serialized_end=565
+  _PB_ACTUATORCOMMAND._serialized_start=568
+  _PB_ACTUATORCOMMAND._serialized_end=696
 # @@protoc_insertion_point(module_scope)

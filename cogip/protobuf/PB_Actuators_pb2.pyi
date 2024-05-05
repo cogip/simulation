@@ -8,16 +8,23 @@ ANALOGSERVO_BOTTOM_GRIP_RIGHT: PB_PositionalActuatorEnum
 ANALOGSERVO_PAMI: PB_PositionalActuatorEnum
 ANALOGSERVO_TOP_GRIP_LEFT: PB_PositionalActuatorEnum
 ANALOGSERVO_TOP_GRIP_RIGHT: PB_PositionalActuatorEnum
+BOOL_SENSOR: PB_ActuatorsTypeEnum
+BOTTOM_GRIP_LEFT: PB_BoolSensorEnum
+BOTTOM_GRIP_RIGHT: PB_BoolSensorEnum
 CART_MAGNET_LEFT: PB_PositionalActuatorEnum
 CART_MAGNET_RIGHT: PB_PositionalActuatorEnum
 DESCRIPTOR: _descriptor.FileDescriptor
 LXSERVO_ARM_PANEL: PB_ServoEnum
 LXSERVO_LEFT_CART: PB_ServoEnum
 LXSERVO_RIGHT_CART: PB_ServoEnum
+MAGNET_LEFT: PB_BoolSensorEnum
+MAGNET_RIGHT: PB_BoolSensorEnum
 MOTOR_BOTTOM_LIFT: PB_PositionalActuatorEnum
 MOTOR_TOP_LIFT: PB_PositionalActuatorEnum
 POSITIONAL: PB_ActuatorsTypeEnum
 SERVO: PB_ActuatorsTypeEnum
+TOP_GRIP_LEFT: PB_BoolSensorEnum
+TOP_GRIP_RIGHT: PB_BoolSensorEnum
 
 class PB_ActuatorCommand(_message.Message):
     __slots__ = ["positional_actuator", "servo"]
@@ -28,12 +35,20 @@ class PB_ActuatorCommand(_message.Message):
     def __init__(self, servo: _Optional[_Union[PB_ServoCommand, _Mapping]] = ..., positional_actuator: _Optional[_Union[PB_PositionalActuatorCommand, _Mapping]] = ...) -> None: ...
 
 class PB_ActuatorState(_message.Message):
-    __slots__ = ["positional_actuator", "servo"]
+    __slots__ = ["bool_sensor", "positional_actuator", "servo"]
+    BOOL_SENSOR_FIELD_NUMBER: _ClassVar[int]
     POSITIONAL_ACTUATOR_FIELD_NUMBER: _ClassVar[int]
     SERVO_FIELD_NUMBER: _ClassVar[int]
+    bool_sensor: PB_BoolSensor
     positional_actuator: PB_PositionalActuator
     servo: PB_Servo
-    def __init__(self, servo: _Optional[_Union[PB_Servo, _Mapping]] = ..., positional_actuator: _Optional[_Union[PB_PositionalActuator, _Mapping]] = ...) -> None: ...
+    def __init__(self, servo: _Optional[_Union[PB_Servo, _Mapping]] = ..., positional_actuator: _Optional[_Union[PB_PositionalActuator, _Mapping]] = ..., bool_sensor: _Optional[_Union[PB_BoolSensor, _Mapping]] = ...) -> None: ...
+
+class PB_BoolSensor(_message.Message):
+    __slots__ = ["state"]
+    STATE_FIELD_NUMBER: _ClassVar[int]
+    state: bool
+    def __init__(self, state: bool = ...) -> None: ...
 
 class PB_PositionalActuator(_message.Message):
     __slots__ = ["command", "id", "is_blocked"]
@@ -82,4 +97,7 @@ class PB_ServoEnum(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = []
 
 class PB_PositionalActuatorEnum(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
+    __slots__ = []
+
+class PB_BoolSensorEnum(int, metaclass=_enum_type_wrapper.EnumTypeWrapper):
     __slots__ = []
