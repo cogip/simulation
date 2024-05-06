@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from cogip.models import artifacts
 from cogip.models.actuators import BoolSensorEnum
-from .. import actuators
+from .. import actuators, logger
 from ..avoidance.avoidance import AvoidanceStrategy
 from ..camp import Camp
 from ..pose import AdaptedPose, Pose
@@ -491,3 +491,70 @@ class SolarPanelsAction(Action):
 
     def weight(self) -> float:
         return 2000000.0
+
+
+class PushPotAction(Action):
+    """
+    push pot in front of a planter.
+    """
+
+    def __init__(self, planner: "Planner", actions: Actions, pot_supply_id: artifacts.PotSupplyID):
+        super().__init__("PushPot action", planner, actions)
+        self.pot_supply = self.game_context.pot_supplies[pot_supply_id]
+        self.after_action_func = self.after_action
+        self.half_robot_length = self.game_context.properties.robot_length / 2
+        margin_x = 160
+        margin_y = 50
+
+        match pot_supply_id:
+            case artifacts.PotSupplyID.LocalMiddle:
+                approach_x = self.pot_supply.x - margin_x - self.half_robot_length
+                approach_y = push_y = -1500 + margin_y + self.half_robot_length
+                approach_angle = push_angle = 180
+                push_x = approach_x + margin_x * 2 + 30
+            case artifacts.PotSupplyID.LocalTop:
+                approach_x = self.pot_supply.x + margin_x + self.half_robot_length
+                approach_y = push_y = -1500 + margin_y + self.half_robot_length
+                approach_angle = push_angle = 0
+                push_x = approach_x - margin_x * 2 - 30
+            case _:
+                logger.warning(f"PushPot not available for pot supply {pot_supply_id}")
+                return
+
+        self.poses.append(
+            AdaptedPose(
+                x=approach_x,
+                y=approach_y,
+                O=approach_angle,
+                max_speed_linear=66,
+                max_speed_angular=66,
+                allow_reverse=True,
+            )
+        )
+
+        self.poses.append(
+            AdaptedPose(
+                x=push_x,
+                y=push_y,
+                O=push_angle,
+                max_speed_linear=10,
+                max_speed_angular=10,
+                allow_reverse=True,
+                bypass_final_orientation=True,
+                before_pose_func=self.before_pose2,
+            )
+        )
+
+    async def before_pose2(self):
+        self.pot_supply.enabled = False
+
+    async def after_action(self):
+        self.pot_supply.count = 0
+
+    async def recycle(self):
+        if self.game_context.countdown > 15:
+            self.pot_supply.enabled = True
+        self.recycled = True
+
+    def weight(self) -> float:
+        return 9000000.0
