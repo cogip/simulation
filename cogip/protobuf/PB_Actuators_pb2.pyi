@@ -45,10 +45,12 @@ class PB_ActuatorState(_message.Message):
     def __init__(self, servo: _Optional[_Union[PB_Servo, _Mapping]] = ..., positional_actuator: _Optional[_Union[PB_PositionalActuator, _Mapping]] = ..., bool_sensor: _Optional[_Union[PB_BoolSensor, _Mapping]] = ...) -> None: ...
 
 class PB_BoolSensor(_message.Message):
-    __slots__ = ["state"]
+    __slots__ = ["id", "state"]
+    ID_FIELD_NUMBER: _ClassVar[int]
     STATE_FIELD_NUMBER: _ClassVar[int]
+    id: PB_BoolSensorEnum
     state: bool
-    def __init__(self, state: bool = ...) -> None: ...
+    def __init__(self, id: _Optional[_Union[PB_BoolSensorEnum, str]] = ..., state: bool = ...) -> None: ...
 
 class PB_PositionalActuator(_message.Message):
     __slots__ = ["command", "id", "is_blocked"]

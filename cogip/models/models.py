@@ -119,6 +119,7 @@ class PathPose(Pose):
         allow_reverse: reverse mode
         bypass_anti_blocking: send pose_reached if robot is blocked
         timeout_ms: max time is milliseconds to reach the pose, the robot stops if timeout is reached, 0 for no timeout
+        bypass_final_orientation: do not set orientation pose order
     """
 
     max_speed_linear: int = 66
@@ -126,6 +127,7 @@ class PathPose(Pose):
     allow_reverse: bool = True
     bypass_anti_blocking: bool = False
     timeout_ms: int = 0
+    bypass_final_orientation: bool = False
 
     @property
     def pose(self) -> Pose:
@@ -146,6 +148,7 @@ class PathPose(Pose):
         pb_path_pose.allow_reverse = self.allow_reverse
         pb_path_pose.bypass_anti_blocking = self.bypass_anti_blocking
         pb_path_pose.timeout_ms = self.timeout_ms
+        pb_path_pose.bypass_final_orientation = self.bypass_final_orientation
 
 
 class DynObstacleRect(BaseModel):
