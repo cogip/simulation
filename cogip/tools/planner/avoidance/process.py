@@ -112,11 +112,6 @@ def avoidance_process(
             logger.debug("Avoidance: len(path) == 1")
             continue
 
-        if len(path) == 2:
-            # Final pose
-            if path[1].O is None:
-                path[1].O = path[0].O  # noqa
-
         if len(path) >= 2 and last_emitted_pose_order:
             dist_xy = math.dist((last_emitted_pose_order.x, last_emitted_pose_order.y), (path[1].x, path[1].y))
             dist_angle = abs(path[1].O - last_emitted_pose_order.O)
