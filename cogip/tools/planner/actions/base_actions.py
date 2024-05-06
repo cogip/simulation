@@ -2,6 +2,7 @@ import asyncio
 import math
 from typing import TYPE_CHECKING
 
+from cogip import models
 from cogip.models import artifacts
 from cogip.models.actuators import BoolSensorEnum
 from cogip.tools.planner.table import TableEnum
@@ -846,3 +847,52 @@ class DropInPlanterAction(Action):
                     return 0
 
         return 1000000.0
+
+
+class ParkingAction(Action):
+    def __init__(self, planner: "Planner", actions: Actions, pose: models.Pose):
+        super().__init__(f"Parking action at ({int(pose.x)}, {int(pose.y)})", planner, actions, interruptable=False)
+        self.before_action_func = self.before_action
+        self.after_action_func = self.after_action
+        self.actions_backup: Actions = []
+        self.interruptable = False
+
+        self.pose = AdaptedPose(
+            **pose.model_dump(),
+            allow_reverse=False,
+        )
+        self.poses = [self.pose]
+
+    def weight(self) -> float:
+        if self.game_context.countdown > 15:
+            return 0
+
+        return 9999000.0
+
+    async def before_action(self):
+        await actuators.bottom_grip_close(self.planner)
+        await actuators.top_grip_close(self.planner)
+
+        await actuators.cart_in(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.bottom_lift_down(self.planner)
+        await actuators.top_lift_down(self.planner)
+        await asyncio.sleep(0.5)
+
+        for _, plant_supply in self.game_context.plant_supplies.items():
+            plant_supply.enabled = False
+        for _, pot_supply in self.game_context.pot_supplies.items():
+            pot_supply.enabled = False
+
+    async def after_action(self):
+        self.game_context.score += 10
+
+        await actuators.top_grip_open(self.planner)
+        await asyncio.sleep(0.5)
+        await actuators.bottom_grip_mid_open(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.bottom_grip_open(self.planner)
+
+        await self.planner.sio_ns.emit("score", self.game_context.score)
+        await self.planner.sio_ns.emit("robot_end")
+        self.actions.clear()
