@@ -2,6 +2,7 @@ import asyncio
 import math
 from typing import TYPE_CHECKING
 
+from cogip import models
 from cogip.models import artifacts
 from cogip.models.actuators import BoolSensorEnum
 from cogip.tools.planner.table import TableEnum
@@ -769,3 +770,43 @@ class DropInPlanterAction(Action):
         ):
             return 0
         return 1000000.0
+
+
+class ParkingAction(Action):
+    def __init__(self, planner: "Planner", actions: Actions, pose: models.Pose):
+        super().__init__(f"Parking action at ({int(pose.x)}, {int(pose.y)})", planner, actions, interruptable=False)
+        self.before_action_func = self.before_action
+        self.after_action_func = self.after_action
+        self.actions_backup: Actions = []
+
+        self.pose = AdaptedPose(**pose.model_dump())
+        self.poses = [self.pose]
+
+    def weight(self) -> float:
+        if self.game_context.countdown > 15:
+            return 0
+
+        dist = math.dist((self.pose.x, self.pose.y), (self.planner.pose_current.x, self.planner.pose_current.y))
+        # Max distance is 3600, calculate the ratio between 0 and 1000
+        dist = (3600 - dist) / 3600 * 1000
+
+        return 100000 + dist
+
+    async def before_action(self):
+        # Backup actions if the action is recycled
+        self.actions_backup = self.actions[:]
+
+        # Clear remaining actions
+        self.actions.clear()
+
+    async def after_action(self):
+        self.game_context.score += 10
+        await self.planner.sio_ns.emit("score", self.game_context.score)
+        await self.planner.sio_ns.emit("robot_end")
+        self.actions.clear()
+
+    async def recycle(self):
+        if self.actions_backup:
+            self.actions = self.actions_backup[:]
+            self.actions_backup.clear()
+        self.recycled = True
