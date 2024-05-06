@@ -36,7 +36,7 @@ class GameContext(metaclass=Singleton):
     """
 
     game_duration: int = 100
-    minimum_score: int = 1 + 5
+    minimum_score: int = 0
 
     def __init__(self):
         self.properties = Properties()

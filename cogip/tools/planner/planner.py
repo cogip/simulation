@@ -401,7 +401,6 @@ class Planner:
             return
         self.game_context.playing = False
         await self.sio_ns.emit("game_end")
-        self.game_context.score += 15
         await self.sio_ns.emit("score", self.game_context.score)
 
     async def starter_changed(self, pushed: bool):
