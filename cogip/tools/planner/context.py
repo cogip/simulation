@@ -35,21 +35,15 @@ class GameContext(metaclass=Singleton):
     A class recording the current game context.
     """
 
-    game_duration: int = 100
-    minimum_score: int = 0
-
     def __init__(self):
         self.properties = Properties()
+        self.game_duration: int = 90 if self.properties.robot_id == 1 else 100
+        self.minimum_score: int = 0
         self.camp = Camp()
         self.strategy = Strategy.SolarPanelsTest
         self._table = TableEnum.Training
         self.avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
-        self.playing: bool = False
-        self.score: int = self.minimum_score
-        self.countdown: int = self.game_duration
-        self.create_artifacts()
-        self.create_fixed_obstacles()
-        self.create_actuators_states()
+        self.reset()
 
     @property
     def table(self) -> Table:

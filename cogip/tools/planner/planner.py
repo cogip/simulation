@@ -210,8 +210,7 @@ class Planner:
         """
         logger.info("Planner: start")
         self.shared_properties["exiting"] = False
-        self.game_context.reset()
-        self.actions = action_classes.get(self.game_context.strategy, actions.Actions)(self)
+        await self.soft_reset()
         await self.set_pose_start(self.game_context.get_start_pose(self.start_position).pose)
         await self.set_controller(self.game_context.default_controller, True)
         self.sio_receiver_task = asyncio.create_task(
@@ -286,6 +285,14 @@ class Planner:
         """
         await self.stop()
         await self.start()
+
+    async def soft_reset(self):
+        """
+        Only reset context and actions.
+        """
+        self.game_context.reset()
+        self.actions = action_classes.get(self.game_context.strategy, actions.Actions)(self)
+        await self.set_pose_start(self.game_context.get_start_pose(self.start_position).pose)
 
     async def task_sio_emitter(self):
         logger.info("Planner: Task SIO Emitter started")
@@ -406,8 +413,6 @@ class Planner:
     async def starter_changed(self, pushed: bool):
         if not self.virtual:
             await self.sio_ns.emit("starter_changed", pushed)
-        if pushed:
-            await self.sio_ns.emit("game_reset")
 
     async def set_controller(self, new_controller: ControllerEnum, force: bool = False):
         if self.controller == new_controller and not force:
@@ -834,14 +839,14 @@ class Planner:
                     logger.warning("Wizard: only yellow camp is authorized on training table")
                     return
                 self.game_context.camp.color = new_camp
-                await self.reset()
+                await self.soft_reset()
                 logger.info(f"Wizard: New camp: {self.game_context.camp.color.name}")
             case "Choose Strategy":
                 new_strategy = Strategy[value]
                 if self.game_context.strategy == new_strategy:
                     return
                 self.game_context.strategy = new_strategy
-                await self.reset()
+                await self.soft_reset()
                 logger.info(f"Wizard: New strategy: {self.game_context.strategy.name}")
             case "Choose Avoidance":
                 new_strategy = AvoidanceStrategy[value]
@@ -849,12 +854,11 @@ class Planner:
                     return
                 self.game_context.avoidance_strategy = new_strategy
                 self.shared_properties["avoidance_strategy"] = new_strategy
-                await self.reset()
                 logger.info(f"Wizard: New avoidance strategy: {self.game_context.avoidance_strategy.name}")
             case "Choose Start Position":
                 start_position = StartPosition[value]
                 self.start_position = start_position
-                await self.set_pose_start(self.game_context.get_start_pose(start_position).pose)
+                await self.soft_reset()
             case "Choose Table":
                 new_table = TableEnum[value]
                 if self.game_context.table == new_table:
@@ -872,7 +876,7 @@ class Planner:
                     return
                 self.game_context.table = new_table
                 self.shared_properties["table"] = new_table
-                await self.reset()
+                await self.soft_reset()
                 logger.info(f"Wizard: New table: {self.game_context._table.name}")
             case game_wizard_response if game_wizard_response.startswith("Game Wizard"):
                 await self.game_wizard.response(message)
