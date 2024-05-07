@@ -5,6 +5,7 @@ import socketio
 from google.protobuf.json_format import MessageToDict
 
 from cogip import models
+from cogip.models.actuators import ActuatorsKindEnum
 from cogip.protobuf import PB_ActuatorState, PB_Menu, PB_Pid, PB_PidEnum, PB_Pose, PB_State
 from .pbcom import PBCom, pb_exception_handler
 from .pid import Pid
@@ -182,7 +183,7 @@ class Copilot:
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
         )
-        actuator_state["kind"] = kind
+        actuator_state["kind"] = ActuatorsKindEnum[kind]
         if self.sio.connected:
             await self.sio_events.emit("actuator_state", actuator_state)
 
