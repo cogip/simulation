@@ -128,6 +128,7 @@ class PBCom:
         try:
             while True:
                 uuid, pb_message = await self.messages_to_send.get()
+                logger.info(f"Send 0x{uuid:4x}:\n{pb_message}")
                 if pb_message:
                     response_serialized = await self.loop.run_in_executor(None, pb_message.SerializeToString)
                     response_base64 = await self.loop.run_in_executor(None, base64.encodebytes, response_serialized)
