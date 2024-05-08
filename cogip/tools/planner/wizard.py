@@ -54,6 +54,7 @@ class GameWizard:
         await self.waiting_calibration_loop.stop()
         await self.waiting_start_loop.stop()
         await self.planner.sio_ns.emit("game_reset")
+        await self.planner.sio_ns.emit("pami_reset")
         await self.next()
 
     async def next(self):
@@ -82,6 +83,7 @@ class GameWizard:
         self.game_context.table = new_table
         self.planner.shared_properties["table"] = new_table
         await self.planner.soft_reset()
+        await self.planner.sio_ns.emit("pami_table", value)
 
     async def request_camp(self):
         message = {
@@ -95,6 +97,7 @@ class GameWizard:
         value = message["value"]
         self.game_context.camp.color = Camp.Colors[value]
         await self.planner.soft_reset()
+        await self.planner.sio_ns.emit("pami_camp", value)
 
     async def request_start_pose(self):
         available_start_poses = self.game_context.get_available_start_poses()
@@ -222,4 +225,5 @@ class GameWizard:
         self.game_context.playing = False
         await self.planner.soft_reset()
         await self.planner.sio_ns.emit("game_start")
+        await self.planner.sio_ns.emit("pami_play")
         await self.planner.cmd_play()

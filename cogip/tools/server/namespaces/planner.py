@@ -166,3 +166,27 @@ class PlannerNamespace(socketio.AsyncNamespace):
         Callback on brake message.
         """
         await self.emit("brake", namespace="/copilot")
+
+    async def on_pami_reset(self, sid):
+        """
+        Callback on pami_reset message.
+        """
+        await self.emit("pami_reset", namespace="/beacon")
+
+    async def on_pami_camp(self, sid, data):
+        """
+        Callback on pami_camp message.
+        """
+        await self.emit("pami_camp", data, namespace="/beacon")
+
+    async def on_pami_table(self, sid, data):
+        """
+        Callback on pami_table message.
+        """
+        await self.emit("pami_table", data, namespace="/beacon")
+
+    async def on_pami_play(self, sid):
+        """
+        Callback on pami_play message.
+        """
+        await self.emit("pami_play", namespace="/beacon")
