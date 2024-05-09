@@ -81,7 +81,52 @@ def avoidance_process(
 
         if any([obstacle.contains(pose_current.pose) for obstacle in dyn_obstacles]):
             logger.debug("Avoidance: pose current in obstacle")
-            path = []
+            vertex_list: list[models.Vertex] = []
+            possible_vertex_list: list[models.Vertex] = []
+            # For all obstacles find the obstacles where the robot is inside the obstacles
+            for obstacle in dyn_obstacles:
+                # If the robot is inside this obstacle, add its bounding box to the list
+                if obstacle.contains(pose_current.pose):
+                    vertex_list.extend(obstacle.bb)
+            # Filter out all points out of the table and all points inside an obstacle
+            robot_width = shared_properties["robot_width"]
+            frontiers: Table = Table(
+                x_min = table.x_min + robot_width,
+                x_max = table.x_max - robot_width,
+                y_min = table.y_min + robot_width,
+                y_max = table.y_max - robot_width
+            )
+            for vertex in vertex_list:
+                if not frontiers.contains(vertex):
+                    continue
+                for obstacle in dyn_obstacles:
+                    if obstacle.contains(vertex):
+                        break
+                possible_vertex_list.append(vertex)
+
+            # In this point list, get the nearest point
+            min_distance = 3600
+            nearest_vertex: models.Vertex = None
+            for vertex in possible_vertex_list:
+                distance =  math.dist([pose_current.x, pose_current.y], [vertex.x, vertex.y])
+                if distance < min_distance:
+                    min_distance = distance
+                    nearest_vertex = vertex
+
+            if nearest_vertex:
+                logger.debug("can escape")
+                logger.debug("use escape pose X=" + str(nearest_vertex.x)
+                + "Y=" + str(nearest_vertex.y))
+                nearest_pose = models.PathPose()
+                nearest_pose.x = nearest_vertex.x
+                nearest_pose.y = nearest_vertex.y
+                nearest_pose.bypass_final_orientation = True
+                path = avoidance.get_path(nearest_pose, pose_order, dyn_obstacles)
+                path.insert(0, nearest_pose)
+            else:
+                logger.debug ("No escape point found")
+                path = []
+
         elif any([obstacle.contains(pose_order.pose) for obstacle in dyn_obstacles]):
             logger.debug("Avoidance: pose order in obstacle")
             path = []
