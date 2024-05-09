@@ -175,10 +175,10 @@ class DynObstacleRect(BaseModel):
         half_length_y = self.length_y / 2
 
         self.bb = [
-            Vertex(x=self.x - half_length_x - bb_radius, y=self.y - half_length_y - bb_radius),
-            Vertex(x=self.x + half_length_x + bb_radius, y=self.y - half_length_y - bb_radius),
-            Vertex(x=self.x + half_length_x + bb_radius, y=self.y + half_length_y + bb_radius),
             Vertex(x=self.x - half_length_x - bb_radius, y=self.y + half_length_y + bb_radius),
+            Vertex(x=self.x + half_length_x + bb_radius, y=self.y + half_length_y + bb_radius),
+            Vertex(x=self.x + half_length_x + bb_radius, y=self.y - half_length_y - bb_radius),
+            Vertex(x=self.x - half_length_x - bb_radius, y=self.y - half_length_y - bb_radius),
         ]
 
     def __hash__(self):
