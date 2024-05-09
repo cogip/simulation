@@ -87,7 +87,8 @@ def avoidance_process(
             for obstacle in dyn_obstacles:
                 # If the robot is inside this obstacle, add its bounding box to the list
                 if obstacle.contains(pose_current.pose):
-                    vertex_list.extend(obstacle.bb)
+                    tmp_obstacle = create_dyn_obstacle(Vertex(x=obstacle.x, y=obstacle.y), obstacle.radius, obstacle.bb_radius*1.2)
+                    vertex_list.extend(tmp_obstacle.bb)
             # Filter out all points out of the table and all points inside an obstacle
             robot_width = shared_properties["robot_width"]
             frontiers: Table = Table(
