@@ -91,8 +91,8 @@ class GameContext(metaclass=Singleton):
                 )
             case StartPosition.Bottom:
                 return AdaptedPose(
-                    x=-(1000 - 450 + self.properties.robot_width / 2),
-                    y=-(1500 - 450 + self.properties.robot_length / 2),
+                    x=-775,
+                    y=-1285 - 25,
                     O=90,
                 )
             case StartPosition.Opposite:

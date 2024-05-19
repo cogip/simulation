@@ -413,3 +413,81 @@ class PotCaptureAction(Action):
             return 0
 
         return 2000000.0
+
+
+class SolarPanelsAction(Action):
+    """
+    Activate a solar panel group.
+    """
+
+    def __init__(self, planner: "Planner", actions: Actions, solar_panels_id: artifacts.SolarPanelsID):
+        super().__init__("SolarPanels action", planner, actions)
+        self.solar_panels = self.game_context.solar_panels[solar_panels_id]
+        self.before_action_func = self.before_action
+        self.shift_x = -215
+        self.shift_y = 285
+
+    async def recycle(self):
+        await actuators.arm_panel_close(self.planner)
+        self.recycled = True
+
+    async def before_action(self):
+        self.start_pose = self.planner.pose_current.model_copy()
+        if self.game_context.camp.color == Camp.Colors.blue:
+            self.shift_y = -self.shift_y
+
+        if self.solar_panels.id == artifacts.SolarPanelsID.Shared:
+            self.game_context.pot_supplies[artifacts.PotSupplyID.LocalBottom].enabled = False
+            self.game_context.pot_supplies[artifacts.PotSupplyID.LocalBottom].count = 0
+            await asyncio.sleep(0.5)
+
+        # Start pose
+        self.pose1 = Pose(
+            x=self.solar_panels.x - self.shift_x,
+            y=self.solar_panels.y - self.shift_y,
+            O=90,
+            max_speed_linear=66,
+            max_speed_angular=66,
+            allow_reverse=True,
+            after_pose_func=self.after_pose1,
+        )
+
+        self.poses.append(self.pose1)
+
+        # End pose
+        self.poses.append(
+            Pose(
+                x=self.solar_panels.x - self.shift_x,
+                y=self.solar_panels.y + self.shift_y,
+                O=90,
+                max_speed_linear=66,
+                max_speed_angular=66,
+                allow_reverse=True,
+                after_pose_func=self.after_pose2,
+            )
+        )
+
+        if self.solar_panels.id == artifacts.SolarPanelsID.Shared:
+            # Go back to pose1
+            self.poses.append(
+                Pose(
+                    x=self.pose1.x,
+                    y=self.pose1.y,
+                    O=self.pose1.O,
+                    max_speed_linear=66,
+                    max_speed_angular=66,
+                    allow_reverse=True,
+                )
+            )
+
+    async def after_pose1(self):
+        await actuators.arm_panel_open(self.planner)
+        await asyncio.sleep(1)
+
+    async def after_pose2(self):
+        await actuators.arm_panel_close(self.planner)
+        await asyncio.sleep(0.5)
+        self.game_context.score += 15
+
+    def weight(self) -> float:
+        return 2000000.0
