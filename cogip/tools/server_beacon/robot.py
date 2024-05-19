@@ -120,6 +120,15 @@ class Robot:
                             namespace="/beacon",
                         )
 
+                    await robot.sio.emit(
+                        "wizard",
+                        {
+                            "name": "Choose Avoidance",
+                            "value": "Disabled",
+                        },
+                        namespace="/beacon",
+                    )
+
         @self.sio.event(namespace="/beacon")
         async def pami_table(table):
             for robot_id, robot in self.server.robots.items():
