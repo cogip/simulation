@@ -77,7 +77,7 @@ class GameContext(metaclass=Singleton):
             case _:
                 return ControllerEnum.QUADPID
 
-    def get_start_pose(self, n: int) -> Pose | None:
+    def get_start_pose(self, n: StartPosition) -> Pose:
         """
         Define the possible start positions.
         Default positions for yellow camp.
@@ -104,23 +104,41 @@ class GameContext(metaclass=Singleton):
                     y=1500 - 450 + self.properties.robot_width / 2,
                     O=-90,
                 )
-            case StartPosition.PAMI1:
+            case StartPosition.PAMI2:
                 return AdaptedPose(
                     x=1000 - 150 + self.properties.robot_length / 2,
                     y=-self.properties.robot_width / 2,
                     O=180,
                 )
-            case StartPosition.PAMI2:
+            case StartPosition.PAMI3:
                 return AdaptedPose(
-                    x=1000 - 150 + self.properties.robot_length / 2,
+                    x=1000 - 150 + self.properties.robot_width / 2,
+                    y=-33,
+                    O=-90,
+                )
+            case StartPosition.PAMI4:
+                return AdaptedPose(
+                    x=1000 - 150 + self.properties.robot_width / 2,
+                    y=-(450 - self.properties.robot_length / 2),
+                    O=-90,
+                )
+            case StartPosition.PAMI2_TRAINING:
+                return AdaptedPose(
+                    x=1000 - 150 + self.properties.robot_length / 2 - 1000,
+                    y=-self.properties.robot_width / 2,
+                    O=180,
+                )
+            case StartPosition.PAMI3_TRAINING:
+                return AdaptedPose(
+                    x=1000 - 150 + self.properties.robot_length / 2 - 1000,
                     y=-450 / 2,
                     O=180,
                 )
-            case StartPosition.PAMI3:
+            case StartPosition.PAMI4_TRAINING:
                 return AdaptedPose(
-                    x=1000 - 150 + self.properties.robot_length / 2,
-                    y=-(450 - self.properties.robot_width / 2),
-                    O=180,
+                    x=1000 - 150 + self.properties.robot_width / 2 - 1000,
+                    y=-(450 - self.properties.robot_length / 2),
+                    O=-90,
                 )
             case _:
                 return AdaptedPose()

@@ -21,3 +21,6 @@ class Strategy(IntEnum):
     TestSolarPanels = auto()
     TestDropoff = auto()
     TestPlanter = auto()
+    PAMI2 = auto()
+    PAMI3 = auto()
+    PAMI4 = auto()

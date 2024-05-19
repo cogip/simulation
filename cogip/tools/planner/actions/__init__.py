@@ -4,6 +4,7 @@ from .back_and_forth import BackAndForthActions
 from .camera_calibration import CameraCalibrationActions
 from .game_grip_first import GameGripFirstActions
 from .game_solar_first import GameSolarFirstActions
+from .pami import Pami2Actions, Pami3Actions, Pami4Actions
 from .position_test import AngularPositionTestActions, LinearPositionTestActions
 from .solar_panels import SolarPanelActions
 from .speed_test import SpeedTestActions
@@ -30,4 +31,7 @@ action_classes: dict[Strategy, Actions] = {
     Strategy.TestSolarPanels: TestSolarPanelsActions,
     Strategy.TestDropoff: TestDropoffActions,
     Strategy.TestPlanter: TestPlanterActions,
+    Strategy.PAMI2: Pami2Actions,
+    Strategy.PAMI3: Pami3Actions,
+    Strategy.PAMI4: Pami4Actions,
 }
