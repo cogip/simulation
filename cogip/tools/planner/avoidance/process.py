@@ -9,7 +9,7 @@ from cogip import models
 from .. import logger
 from ..strategy import Strategy
 from ..table import Table
-from .avoidance import Avoidance
+from .avoidance import Avoidance, AvoidanceStrategy
 
 
 def avoidance_process(
@@ -77,7 +77,10 @@ def avoidance_process(
             continue
 
         # Create dynamic obstacles
-        dyn_obstacles = TypeAdapter(models.DynObstacleList).validate_python(shared_properties["obstacles"])
+        if shared_properties["avoidance_strategy"] == AvoidanceStrategy.Disabled:
+            dyn_obstacles = []
+        else:
+            dyn_obstacles = TypeAdapter(models.DynObstacleList).validate_python(shared_properties["obstacles"])
 
         if any([obstacle.contains(pose_current.pose) for obstacle in dyn_obstacles]):
             logger.debug("Avoidance: pose current in obstacle")
