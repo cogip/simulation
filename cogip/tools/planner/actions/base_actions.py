@@ -293,3 +293,123 @@ class GripAction(Action):
         ):
             return 0
         return 1000000.0
+
+
+class PotCaptureAction(Action):
+    """
+    Action used to capture pots using magnets.
+    """
+
+    def __init__(self, planner: "Planner", actions: Actions, pot_supply_id: artifacts.PotSupplyID):
+        super().__init__("PotCapture action", planner, actions)
+        self.before_action_func = self.before_action
+        self.pot_supply = self.game_context.pot_supplies[pot_supply_id]
+        self.shift_approach = 335
+        self.shift_forward = 160
+
+        match self.pot_supply.angle:
+            case -90:
+                self.approach_x = self.pot_supply.x
+                self.approach_y = -1500 + self.shift_approach
+                self.capture_x = self.approach_x
+                self.capture_y = self.approach_y - self.shift_forward
+            case 90:
+                self.approach_x = self.pot_supply.x
+                self.approach_y = 1500 - self.shift_approach
+                self.capture_x = self.approach_x
+                self.capture_y = self.approach_y + self.shift_forward
+            case 180:
+                self.approach_x = -1000 + self.shift_approach
+                self.approach_y = self.pot_supply.y
+                self.capture_x = self.approach_x - self.shift_forward
+                self.capture_y = self.approach_y
+
+    async def recycle(self):
+        await actuators.cart_magnet_off(self.planner)
+        await actuators.cart_in(self.planner)
+        self.pot_supply.enabled = True
+        self.recycled = True
+
+    async def before_action(self):
+        self.start_pose = self.planner.pose_current.model_copy()
+
+        pose = Pose(
+            x=self.approach_x,
+            y=self.approach_y,
+            O=self.pot_supply.angle,
+            max_speed_linear=66,
+            max_speed_angular=66,
+            allow_reverse=False,
+            before_pose_func=self.before_pose1,
+            after_pose_func=self.after_pose1,
+        )
+        self.poses.append(pose)
+
+        # Capture
+        pose = Pose(
+            x=self.capture_x,
+            y=self.capture_y,
+            O=self.pot_supply.angle,
+            max_speed_linear=5,
+            max_speed_angular=5,
+            allow_reverse=False,
+            bypass_anti_blocking=True,
+            timeout_ms=3000,
+            after_pose_func=self.after_pose2,
+        )
+        self.poses.append(pose)
+
+        # Step-back
+        pose = Pose(
+            x=self.approach_x,
+            y=self.approach_y,
+            O=self.pot_supply.angle,
+            max_speed_linear=10,
+            max_speed_angular=10,
+            allow_reverse=True,
+            after_pose_func=self.after_pose3,
+        )
+        self.poses.append(pose)
+
+    async def before_pose1(self):
+        await asyncio.gather(
+            actuators.bottom_grip_close(self.planner),
+            actuators.top_grip_close(self.planner),
+        )
+        await asyncio.gather(
+            actuators.top_lift_up(self.planner),
+            actuators.bottom_lift_up(self.planner),
+        )
+
+    async def after_pose1(self):
+        await actuators.cart_out(self.planner)
+        await actuators.cart_magnet_on(self.planner)
+
+        self.pot_supply.enabled = False
+
+    async def after_pose2(self):
+        await asyncio.sleep(1)
+
+    async def after_pose3(self):
+        self.pot_supply.enabled = True
+        self.pot_supply.count -= 2
+        if BoolSensorEnum.MAGNET_LEFT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_LEFT].state = True
+        if BoolSensorEnum.MAGNET_RIGHT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_RIGHT].state = True
+
+    def weight(self) -> float:
+        if self.pot_supply.count < 5:
+            return 0
+        if not (
+            self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_LEFT].state
+            and self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_RIGHT].state
+        ):
+            return 0
+        if (
+            self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_LEFT].state
+            or self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_RIGHT].state
+        ):
+            return 0
+
+        return 2000000.0
