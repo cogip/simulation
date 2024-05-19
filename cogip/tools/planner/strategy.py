@@ -6,14 +6,13 @@ class Strategy(IntEnum):
     Enum for available strategies.
     """
 
-    Approval = auto()
-    Game = auto()
+    GameGripFirst = auto()
+    GameSolarFirst = auto()
     BackAndForth = auto()
     AngularSpeedTest = auto()
     LinearSpeedTest = auto()
     AngularPositionTest = auto()
     LinearPositionTest = auto()
-    Training = auto()
     CameraCalibration = auto()
     SolarPanel = auto()
     TestAlign = auto()

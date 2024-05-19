@@ -40,8 +40,8 @@ class GameContext(metaclass=Singleton):
         self.game_duration: int = 90 if self.properties.robot_id == 1 else 100
         self.minimum_score: int = 0
         self.camp = Camp()
-        self.strategy = Strategy.SolarPanelsTest
-        self._table = TableEnum.Training
+        self.strategy = Strategy.GameSolarFirst
+        self._table = TableEnum.Game
         self.avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
         self.reset()
 
@@ -90,11 +90,14 @@ class GameContext(metaclass=Singleton):
                     O=90,
                 )
             case StartPosition.Bottom:
-                return AdaptedPose(
-                    x=-775,
-                    y=-1285 - 25,
+                pose = AdaptedPose(
+                    x=-785,
+                    y=-1285,
                     O=90,
                 )
+                if self.camp.color == Camp.Colors.blue and self.strategy == Strategy.GameSolarFirst:
+                    pose.O = 90
+                return pose
             case StartPosition.Opposite:
                 return AdaptedPose(
                     x=-450 / 2 + self.properties.robot_width / 2,
