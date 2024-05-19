@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from cogip.models import artifacts
 from cogip.models.actuators import BoolSensorEnum
+from cogip.tools.planner.table import TableEnum
 from .. import actuators, logger
 from ..avoidance.avoidance import AvoidanceStrategy
 from ..camp import Camp
@@ -558,3 +559,119 @@ class PushPotAction(Action):
 
     def weight(self) -> float:
         return 9000000.0
+
+
+class DropInDropoffZoneAction(Action):
+    """
+    Drop plants from the lower grips in a dropoff zone.
+    """
+
+    def __init__(self, planner: "Planner", actions: Actions, dropoff_zone_id: artifacts.DropoffZoneID, slot: int):
+        super().__init__("DropInDropoffZone action", planner, actions)
+        self.dropoff_zone = self.game_context.dropoff_zones[dropoff_zone_id]
+        self.slot = slot
+        self.push_pot: PushPotAction | None = None
+        self.after_action_func = self.after_action
+
+        match dropoff_zone_id:
+            case artifacts.DropoffZoneID.Top:
+                x = self.dropoff_zone.x + (self.slot - 1) * 125 - self.game_context.properties.robot_length / 2
+                y = -1180
+                if self.slot == 2:
+                    # Prepare PushPot action
+                    self.push_pot = PushPotAction(self.planner, self.actions, artifacts.PotSupplyID.LocalTop)
+                    x2 = self.push_pot.poses[0].x
+                    y2 = self.push_pot.poses[0].y
+                else:
+                    x2 = x - 150
+                    y2 = y
+                angle = 0
+            case artifacts.DropoffZoneID.Bottom:
+                x = self.dropoff_zone.x - (self.slot - 1) * 125 + self.game_context.properties.robot_length / 2
+                y = -1180
+                if self.slot == 2 and self.game_context._table == TableEnum.Training:
+                    # Prepare PushPot action
+                    self.push_pot = PushPotAction(self.planner, self.actions, artifacts.PotSupplyID.LocalMiddle)
+                    x2 = self.push_pot.poses[0].x
+                    y2 = self.push_pot.poses[0].y
+                else:
+                    x2 = x + 150
+                    y2 = y
+                angle = 180
+            case artifacts.DropoffZoneID.Opposite:
+                x = x2 = self.dropoff_zone.x
+                y = self.dropoff_zone.y + (self.slot - 1) * 125 - self.game_context.properties.robot_length / 2
+                y2 = y - 150
+                angle = 90
+
+        self.poses.append(
+            AdaptedPose(
+                x=x,
+                y=y,
+                O=angle,
+                max_speed_linear=66,
+                max_speed_angular=66,
+                allow_reverse=False,
+                after_pose_func=self.after_pose1,
+            )
+        )
+
+        self.poses.append(
+            AdaptedPose(
+                x=x2,
+                y=y2,
+                O=angle,
+                max_speed_linear=66,
+                max_speed_angular=66,
+                allow_reverse=True,
+                after_pose_func=self.after_pose2,
+            )
+        )
+
+    async def after_pose1(self):
+        if (
+            self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_LEFT].state
+            and self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_LEFT].state
+        ):
+            # Do not count plant without pot because we do not know its color
+            self.game_context.score += 3  # Plant valid
+            self.game_context.score += 1  # Plant in pot
+
+        if (
+            self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_RIGHT].state
+            and self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_RIGHT].state
+        ):
+            # Do not count plant without pot because we do not know its color
+            self.game_context.score += 3  # Plant valid
+            self.game_context.score += 1  # Plant in pot
+
+        await actuators.bottom_grip_open(self.planner)
+        await actuators.cart_magnet_off(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.cart_in(self.planner)
+
+    async def after_pose2(self):
+        self.dropoff_zone.free_slots -= 1
+        if BoolSensorEnum.BOTTOM_GRIP_LEFT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_LEFT].state = False
+        if BoolSensorEnum.MAGNET_RIGHT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_RIGHT].state = False
+        if BoolSensorEnum.MAGNET_LEFT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_LEFT].state = False
+        if BoolSensorEnum.BOTTOM_GRIP_RIGHT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_RIGHT].state = False
+
+    async def after_action(self):
+        if self.push_pot:
+            self.actions.append(self.push_pot)
+
+    def weight(self) -> float:
+        if not (
+            self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_LEFT].state
+            and self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_RIGHT].state
+        ):
+            return 0
+
+        if self.slot + 1 == self.dropoff_zone.free_slots:
+            return 1000000.0
+        return 0

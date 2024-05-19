@@ -8,6 +8,7 @@ from .position_test import AngularPositionTestActions, LinearPositionTestActions
 from .solar_panels import SolarPanelActions
 from .speed_test import SpeedTestActions
 from .test_align import TestAlignActions
+from .test_dropoff import TestDropoffActions
 from .test_grip import TestGripActions
 from .test_pot_capture import TestPotCaptureActions
 from .test_solar_panels import TestSolarPanelsActions
@@ -28,4 +29,5 @@ action_classes: dict[Strategy, Actions] = {
     Strategy.TestGrip: TestGripActions,
     Strategy.TestPotCapture: TestPotCaptureActions,
     Strategy.TestSolarPanels: TestSolarPanelsActions,
+    Strategy.TestDropoff: TestDropoffActions,
 }

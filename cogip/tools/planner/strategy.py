@@ -20,3 +20,4 @@ class Strategy(IntEnum):
     TestGrip = auto()
     TestPotCapture = auto()
     TestSolarPanels = auto()
+    TestDropoff = auto()
