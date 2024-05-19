@@ -10,6 +10,7 @@ from .speed_test import SpeedTestActions
 from .test_align import TestAlignActions
 from .test_dropoff import TestDropoffActions
 from .test_grip import TestGripActions
+from .test_planters import TestPlanterActions
 from .test_pot_capture import TestPotCaptureActions
 from .test_solar_panels import TestSolarPanelsActions
 from .training import TrainingActions
@@ -30,4 +31,5 @@ action_classes: dict[Strategy, Actions] = {
     Strategy.TestPotCapture: TestPotCaptureActions,
     Strategy.TestSolarPanels: TestSolarPanelsActions,
     Strategy.TestDropoff: TestDropoffActions,
+    Strategy.TestPlanter: TestPlanterActions,
 }

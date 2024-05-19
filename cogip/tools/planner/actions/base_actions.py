@@ -675,3 +675,174 @@ class DropInDropoffZoneAction(Action):
         if self.slot + 1 == self.dropoff_zone.free_slots:
             return 1000000.0
         return 0
+
+
+class DropInPlanterAction(Action):
+    """
+    Drop plants from the upper grips in a planter.
+    """
+
+    def __init__(self, planner: "Planner", actions: Actions, planter_id: artifacts.PlanterID):
+        super().__init__("DropInPlanter action", planner, actions)
+        self.planter = self.game_context.planters[planter_id]
+        self.blocking_extra_move = 20
+        self.front_excess = 85
+        self.approach_delta = 50
+        self.half_robot_length = self.game_context.properties.robot_length / 2
+
+        if self.game_context.camp.color == Camp.Colors.yellow:
+            match planter_id:
+                case artifacts.PlanterID.Top:
+                    drop_x = self.planter.x + self.front_excess + self.blocking_extra_move - self.half_robot_length
+                    approach_x = self.planter.x - self.approach_delta - self.half_robot_length
+                    approach_y = drop_y = self.planter.y
+                case artifacts.PlanterID.LocalSide | artifacts.PlanterID.Test:
+                    approach_x = drop_x = self.planter.x
+                    drop_y = self.planter.y - self.front_excess - self.blocking_extra_move + self.half_robot_length
+                    approach_y = self.planter.y + self.approach_delta + self.half_robot_length
+                case artifacts.PlanterID.OppositeSide:
+                    approach_x = drop_x = self.planter.x
+                    drop_y = self.planter.y + self.front_excess + self.blocking_extra_move - self.half_robot_length
+                    approach_y = self.planter.y - self.approach_delta - self.half_robot_length
+        else:
+            match planter_id:
+                case artifacts.PlanterID.Top:
+                    drop_x = self.planter.x + self.front_excess + self.blocking_extra_move - self.half_robot_length
+                    approach_x = self.planter.x - self.approach_delta - self.half_robot_length
+                    approach_y = drop_y = self.planter.y
+                case artifacts.PlanterID.LocalSide | artifacts.PlanterID.Test:
+                    approach_x = drop_x = self.planter.x
+                    drop_y = self.planter.y + self.front_excess + self.blocking_extra_move - self.half_robot_length
+                    approach_y = self.planter.y - self.approach_delta - self.half_robot_length
+                case artifacts.PlanterID.OppositeSide:
+                    approach_x = drop_x = self.planter.x
+                    drop_y = self.planter.y - self.front_excess - self.blocking_extra_move + self.half_robot_length
+                    approach_y = self.planter.y + self.approach_delta + self.half_robot_length
+
+        self.poses.append(
+            Pose(
+                x=approach_x,
+                y=approach_y,
+                O=self.planter.O,
+                max_speed_linear=66,
+                max_speed_angular=66,
+                allow_reverse=False,
+                before_pose_func=self.before_pose1,
+            )
+        )
+
+        self.poses.append(
+            Pose(
+                x=drop_x,
+                y=drop_y,
+                O=self.planter.O,
+                max_speed_linear=5,
+                max_speed_angular=5,
+                allow_reverse=False,
+                bypass_anti_blocking=True,
+                timeout_ms=0,  # TODO
+                before_pose_func=self.before_pose2,
+                after_pose_func=self.after_pose2,
+            )
+        )
+
+        self.poses.append(
+            Pose(
+                x=approach_x,
+                y=approach_y,
+                O=self.planter.O,
+                max_speed_linear=66,
+                max_speed_angular=66,
+                allow_reverse=True,
+            )
+        )
+
+    def set_avoidance(self, new_strategy: AvoidanceStrategy):
+        self.game_context.avoidance_strategy = new_strategy
+        self.planner.shared_properties["avoidance_strategy"] = new_strategy
+
+    async def before_pose1(self):
+        self.start_pose = self.planner.pose_current.model_copy()
+        self.start_avoidance = self.game_context.avoidance_strategy
+        match self.planter.id:
+            case artifacts.PlanterID.LocalSide:
+                self.game_context.pot_supplies[artifacts.PotSupplyID.LocalTop].enabled = False
+            case artifacts.PlanterID.Test:
+                self.game_context.pot_supplies[artifacts.PotSupplyID.LocalMiddle].enabled = False
+            case artifacts.PlanterID.OppositeSide:
+                self.game_context.pot_supplies[artifacts.PotSupplyID.OppositeMiddle].enabled = False
+
+    async def before_pose2(self):
+        self.set_avoidance(AvoidanceStrategy.Disabled)
+        await actuators.bottom_grip_mid_close(self.planner)
+
+    async def after_pose2(self):
+        self.set_avoidance(self.start_avoidance)
+
+        if self.game_context.bool_sensor_states[BoolSensorEnum.TOP_GRIP_LEFT].state:
+            self.game_context.score += 3  # Plant valid
+            self.game_context.score += 1  # Plant in planter
+        if self.game_context.bool_sensor_states[BoolSensorEnum.TOP_GRIP_RIGHT].state:
+            self.game_context.score += 3  # Plant valid
+            self.game_context.score += 1  # Plant in planter
+
+        await actuators.top_lift_mid(self.planner)
+        await asyncio.sleep(0.7)
+        await actuators.top_grip_open(self.planner)
+        await asyncio.sleep(0.5)
+        await actuators.bottom_grip_mid_open(self.planner)
+        await asyncio.sleep(0.1)
+        await actuators.bottom_grip_open(self.planner)
+
+        if self.planner.virtual:
+            current_pose = self.planner.pose_current.model_copy()
+            if self.game_context.camp.color == Camp.Colors.yellow:
+                match self.planter.id:
+                    case artifacts.PlanterID.Top:
+                        current_pose.x = self.planter.x - self.half_robot_length
+                    case artifacts.PlanterID.LocalSide | artifacts.PlanterID.Test:
+                        current_pose.y = self.planter.y + self.half_robot_length
+                    case artifacts.PlanterID.OppositeSide:
+                        current_pose.y = self.planter.y - self.half_robot_length
+            else:
+                match self.planter.id:
+                    case artifacts.PlanterID.Top:
+                        current_pose.x = self.planter.x - self.half_robot_length
+                    case artifacts.PlanterID.LocalSide | artifacts.PlanterID.Test:
+                        current_pose.y = self.planter.y - self.half_robot_length
+                    case artifacts.PlanterID.OppositeSide:
+                        current_pose.y = self.planter.y + self.half_robot_length
+
+            current_pose.O = self.planter.O
+            await self.planner.sio_ns.emit("pose_start", current_pose.model_dump())
+
+        if BoolSensorEnum.TOP_GRIP_LEFT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.TOP_GRIP_LEFT].state = False
+        if BoolSensorEnum.TOP_GRIP_RIGHT in self.game_context.emulated_actuator_states:
+            self.game_context.bool_sensor_states[BoolSensorEnum.TOP_GRIP_RIGHT].state = False
+
+    def weight(self) -> float:
+        if (
+            self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_LEFT].state
+            or self.game_context.bool_sensor_states[BoolSensorEnum.BOTTOM_GRIP_RIGHT].state
+        ):
+            return 0
+        if not (
+            self.game_context.bool_sensor_states[BoolSensorEnum.TOP_GRIP_LEFT].state
+            and self.game_context.bool_sensor_states[BoolSensorEnum.TOP_GRIP_RIGHT].state
+        ):
+            return 0
+        if (
+            self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_LEFT].state
+            or self.game_context.bool_sensor_states[BoolSensorEnum.MAGNET_RIGHT].state
+        ):
+            return 0
+        match self.planter.id:
+            case artifacts.PlanterID.LocalSide:
+                if self.game_context.pot_supplies[artifacts.PotSupplyID.LocalTop].count > 0:
+                    return 0
+            case artifacts.PlanterID.OppositeSide:
+                if self.game_context.pot_supplies[artifacts.PotSupplyID.OppositeMiddle].count > 0:
+                    return 0
+
+        return 1000000.0
