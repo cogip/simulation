@@ -1,3 +1,4 @@
+--extra-index-url https://github.com/cogip/YDLidar-SDK/releases/expanded_assets/V1.1.3
 aiohttp==3.9.1
 aioserial==1.3.1
 devtools==0.12.2
@@ -26,5 +27,4 @@ v4l2py==2.3.0
 VL53L1X==0.0.5
 watchfiles==0.21.0
 websocket-client==1.7.0
-ydlidar @ https://github.com/cogip/YDLidar-SDK/releases/download/V1.1.3/ydlidar-1.1.3-cp311-cp311-linux_x86_64.whl ; platform_machine == 'x86_64'
-ydlidar @ https://github.com/cogip/YDLidar-SDK/releases/download/V1.1.3/ydlidar-1.1.3-cp311-cp311-linux_aarch64.whl ; platform_machine == 'aarch64'
+ydlidar==1.1.3
