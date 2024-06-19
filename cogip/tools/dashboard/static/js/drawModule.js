@@ -46,7 +46,7 @@ let coordY = 0;
 
 export function resizeCanvas() {
   const footerHeight =
-    document.getElementsByClassName("footer")[0].offsetHeight;
+    document.getElementsByTagName("footer")[0].offsetHeight;
   const menuWidth = document.getElementById("menu").offsetWidth;
 
   let htmlCanvas = document.getElementById("board");
@@ -99,13 +99,12 @@ function setButtonPosition(htmlCanvas) {
   const rightPx = Math.max(
     window.innerWidth -
       document.getElementById("menu").offsetWidth -
-      10 -
       htmlCanvas.width,
     0
   );
 
   document.getElementById("buttonRefresh").style.right = rightPx + "px";
-  buttonCameraModal.style.right = rightPx - 49 + "px"; // 49 is width of refresh image
+  buttonCameraModal.style.right = rightPx - 59 + "px"; // 49 is width of refresh image
 }
 
 function getMousePos(canvas, evt) {
@@ -119,7 +118,7 @@ function getMousePos(canvas, evt) {
 }
 
 export function displayMsg(msg) {
-  let stateHTML = document.getElementById(`state_robot`);
+  let stateHTML = document.getElementById("state_robot");
 
   let pose_current_robot = pose_current;
 
@@ -237,8 +236,15 @@ function drawObstacles(obstacle, context) {
   let obstacleY = newY * ratioY;
 
   context.save();
-  context.fillStyle = "red";
-  context.filter = "opacity(20%)";
+  if (obstacle.id || obstacle.length_x) {
+    // Fixed obstacles: they have an id in case of artefact, or length_x in case of rectangle.
+    context.fillStyle = "purple";
+  }
+  else {
+    // Other obstacles are dynamic obstacles and of circle shape.
+    context.fillStyle = "red";
+  }
+  context.filter = "opacity(40%)";
 
   if (obstacle.radius) {
     let radius = obstacle.radius * ratioX;

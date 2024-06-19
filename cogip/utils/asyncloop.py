@@ -92,4 +92,3 @@ class AsyncLoop:
             self._logger.info("Task cancelled")
 
         self._task = None
-        self.exit = False

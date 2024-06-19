@@ -6,7 +6,7 @@ export function openWizardModal(msg, send_socket) {
   message = msg;
 
   let wizardName = document.getElementById("wizardName");
-  wizardName.style.display = "inline"; // show
+  wizardName.classList.add("inline");
   wizardName.textContent = msg.name;
 
   let checkFocus = document.getElementById("checkFocus");
@@ -14,8 +14,7 @@ export function openWizardModal(msg, send_socket) {
     checkFocus.parentNode.removeChild(checkFocus);
   }
 
-  let wizardModalTitle = document.getElementById("wizardModalTitle");
-  wizardModalTitle.textContent = msg.name;
+  document.getElementById("wizardModalTitle").textContent = msg.name;
 
   let msgImg = document.getElementById("msg-img");
   if (msgImg) {
@@ -25,38 +24,31 @@ export function openWizardModal(msg, send_socket) {
   switch (msg.type) {
     case "boolean":
       displayHeaderModal();
-      parentClassWizardName("form-check");
-      classWizardName("form-check-label");
       textButtonWizard();
       formatWizardInput(true, "checkbox", msg.value);
       break;
     case "integer":
     case "floating":
       displayHeaderModal();
-      parentClassWizardName();
-      classWizardName();
       textButtonWizard();
       formatWizardInput(true, "number", msg.value);
       break;
     case "str":
       displayHeaderModal();
-      parentClassWizardName();
-      classWizardName();
       textButtonWizard();
       formatWizardInput(true, "text", msg.value);
       break;
     case "message":
       displayHeaderModal(true, msg.name);
-      parentClassWizardName();
-      classWizardName();
       wizardName.textContent = msg.value;
 
       const img = document.createElement("img");
       img.setAttribute("src", "static/img/message.svg");
+      img.setAttribute("class", "inline");
       img.setAttribute("id", "msg-img");
 
       wizardModalTitle.parentElement.insertBefore(img, wizardModalTitle);
-      wizardModalTitle.setAttribute("style", "display: inline;");
+      wizardModalTitle.classList.add("inline");
 
       textButtonWizard("Ok");
       formatWizardInput(false);
@@ -65,8 +57,6 @@ export function openWizardModal(msg, send_socket) {
     case "choice_floating":
     case "choice_str":
       displayHeaderModal();
-      parentClassWizardName("form-check");
-      classWizardName("form-check-label");
       formatWizardInput(true, "radio", msg.value, msg.choices);
       textButtonWizard();
       break;
@@ -74,23 +64,17 @@ export function openWizardModal(msg, send_socket) {
     case "select_floating":
     case "select_str":
       displayHeaderModal();
-      parentClassWizardName("form-check");
-      classWizardName("form-check-label");
       formatWizardInput(true, "select", msg.value, msg.choices);
       textButtonWizard();
       break;
     case "camp":
       displayHeaderModal(true, msg.name);
-      parentClassWizardName("form-check");
-      classWizardName("form-check-label");
       wizardName.style.display = "none"; // hide
       textButtonWizard();
       formatWizardInput(true, "camp", msg.value);
       break;
     case "camera":
       displayHeaderModal(true, msg.name);
-      parentClassWizardName();
-      classWizardName();
       wizardName.style.display = "none"; // hide
 
       const streaming = document.createElement("img");
@@ -101,26 +85,26 @@ export function openWizardModal(msg, send_socket) {
       checkFocus.setAttribute("id", "checkFocus");
       checkFocus.appendChild(streaming);
 
-      document.getElementsByClassName("input-group")[0].appendChild(checkFocus);
+      document.getElementById("modalBody").appendChild(checkFocus);
 
       textButtonWizard("Ok");
       formatWizardInput(false);
       break;
   }
 
-  let wizardModal = document.getElementById("wizardModal");
-  wizardModal.style.display = "block"; // show
+  document.getElementById('wizardModal').classList.remove('hidden');
+  document.getElementById('wizardModal').style.display = 'flex';
 }
 
 document
-  .getElementById("btn-send-wizard")
+  .getElementById("btnSendWizard")
   .addEventListener("click", function () {
     let submittedValue = "";
 
     let wizardName = document.getElementById("wizardName");
     if (wizardName.textContent.toLowerCase().includes("camp")) {
       submittedValue = document
-        .getElementsByClassName("btn active")[0]
+        .getElementsByClassName("active")[0]
         .getAttribute("value");
     } else if (wizardName.textContent.toLowerCase().includes("choose")) {
       submittedValue = document.querySelector(
@@ -144,14 +128,15 @@ document
     message.value = submittedValue;
     socket.emit("wizard", message);
 
-    document.getElementById("wizardModal").style.display = "none"; // hide
+    document.getElementById("wizardModal").classList.add("hidden");
+    document.getElementById("wizardModal").style.display = "none";
   });
 
 function displayHeaderModal(show = false, headerText = "") {
-  let modalHeader = document.getElementsByClassName("modal-header")[0];
+  let modalHeader = document.getElementById("modalHeader");
 
   if (show) {
-    modalHeader.style.display = "inline"; // show
+    modalHeader.style.display = "block"; // show
     document.getElementById("wizardModalTitle").textContent =
       headerText.charAt(0).toUpperCase() + headerText.slice(1);
   } else {
@@ -159,18 +144,8 @@ function displayHeaderModal(show = false, headerText = "") {
   }
 }
 
-function parentClassWizardName(parentClass = "input-group") {
-  document
-    .getElementById("wizardName")
-    .parentElement.setAttribute("class", parentClass);
-}
-
-function classWizardName(parentClass = "input-group-text") {
-  document.getElementById("wizardName").setAttribute("class", parentClass);
-}
-
 function textButtonWizard(text = "Send") {
-  document.getElementById("btn-send-wizard").textContent = text;
+  document.getElementById("btnSendWizard").textContent = text;
 }
 
 function formatWizardInput(showInput, typeInput, value, choices) {
@@ -182,9 +157,9 @@ function formatWizardInput(showInput, typeInput, value, choices) {
   wizardInput.setAttribute("type", typeInput);
   if (showInput) {
     if (typeInput === "checkbox") {
-      wizardInput.setAttribute("class", "form-check-input");
+      wizardInput.setAttribute("class", "checked:accent-red-cogip checked:border-red-cogip");
       wizardInput.checked = value;
-      wizardInput.style.display = "inline"; // show
+      // wizardInput.style.display = "inline"; // show
     } else if (typeInput === "radio" || typeInput === "select") {
       wizardInput.style.display = "none"; // none
 
@@ -200,11 +175,12 @@ function formatWizardInput(showInput, typeInput, value, choices) {
         const button = document.createElement("input");
         button.setAttribute("type", typeButton);
         button.setAttribute("name", "choice");
+        button.setAttribute("class", "w-[15px] h-[15px] rounded-md inline-block bg-white checked:accent-red-cogip")
         button.checked = isChecked;
         button.value = choice;
 
         const label = document.createElement("label");
-        label.setAttribute("class", "form-check-label");
+        label.setAttribute("class", "text-grey-color");
         label.setAttribute("for", "choice");
         label.textContent = choice;
 
@@ -212,7 +188,7 @@ function formatWizardInput(showInput, typeInput, value, choices) {
         choiceZone.appendChild(button);
         choiceZone.appendChild(label);
       });
-      document.getElementsByClassName("form-check")[0].appendChild(choiceZone);
+      document.getElementById("modalBody").appendChild(choiceZone);
     } else if (typeInput === "camp") {
       wizardInput.setAttribute("type", "hidden");
 
@@ -222,26 +198,27 @@ function formatWizardInput(showInput, typeInput, value, choices) {
       const listCamp = ["blue", "yellow"];
 
       listCamp.forEach((camp) => {
-        const active = camp === value ? "active" : "";
+        const active = camp === value ? "active shadow-lg shadow-black outline-none" : "";
+        const cssColor = "camp-" + (camp === "blue" ? "1" : "2")
 
         const button = document.createElement("button");
         button.setAttribute("type", "button");
-        button.setAttribute("class", `btn ${active} btn-${camp}`);
+        button.setAttribute("class", `h-[30px] w-[100px] mr-[15px] bg-${cssColor} border-${cssColor} rounded-md ${active}`);
         button.value = camp;
 
         button.addEventListener("click", function () {
           [...this.parentElement.children].forEach((sib) =>
-            sib.classList.remove("active")
+            sib.classList.remove("active", "shadow-lg", "shadow-black", "outline-none")
           );
-          this.classList.add("active");
+          this.classList.add("active", "shadow-lg", "shadow-black", "outline-none");
         });
 
         campZone.appendChild(button);
       });
 
-      document.getElementsByClassName("form-check")[0].appendChild(campZone);
+      document.getElementById("modalBody").appendChild(campZone);
     } else {
-      wizardInput.setAttribute("class", "form-control use-keyboard-input");
+      wizardInput.setAttribute("class", "text-grey-color bg-black rounded-md border border-slate-950 use-keyboard-input focus:outline-none focus:caret-red-cogip focus:ring-2 focus:ring-red-cogip");
       wizardInput.value = value;
       wizardInput.style.display = "inline"; // show
     }

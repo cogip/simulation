@@ -84,7 +84,7 @@ class Detector:
     def init_sensor(self):
         if self.tof_bus and self.tof_address:
             self.sensor = VL53L1X(i2c_bus=self.tof_bus, i2c_address=self.tof_address)
-            self.sensor.open()
+            self.sensor.open(reset=True)
 
     def start(self):
         """
@@ -188,8 +188,8 @@ class Detector:
         Start sensors.
         """
         if self.sensor:
-            # self.sensor.set_timing(self, timing_budget, inter_measurement_period)
-            self.sensor.start_ranging(VL53L1xDistanceMode.SHORT)
+            self.sensor.start_ranging(mode=VL53L1xDistanceMode.LONG)
+            self.sensor.set_timing(150, 200)
 
     def read_sensors(self):
         """

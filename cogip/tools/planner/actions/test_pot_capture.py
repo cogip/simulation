@@ -1,0 +1,39 @@
+from typing import TYPE_CHECKING
+
+from cogip.models.artifacts import PotSupplyID
+from .. import actuators
+from ..pose import Pose
+from . import base_actions
+from .actions import Actions
+
+if TYPE_CHECKING:
+    from ..planner import Planner
+
+
+class PotCaptureAction(base_actions.PotCaptureAction):
+    def weight(self) -> float:
+        return 1000000.0
+
+    async def after_pose3(self):
+        await super().after_pose3()
+        self.poses.append(
+            Pose(
+                x=self.start_pose.x,
+                y=self.start_pose.y,
+                O=self.start_pose.O,
+                max_speed_linear=50,
+                max_speed_angular=20,
+                allow_reverse=False,
+                after_pose_func=self.after_pose4,
+            )
+        )
+
+    async def after_pose4(self):
+        await actuators.cart_magnet_off(self.planner)
+        await actuators.cart_in(self.planner)
+
+
+class TestPotCaptureActions(Actions):
+    def __init__(self, planner: "Planner"):
+        super().__init__(planner)
+        self.append(PotCaptureAction(planner, self, PotSupplyID.LocalBottom))

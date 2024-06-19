@@ -18,6 +18,7 @@ class AvoidanceStrategy(IntEnum):
     Disabled = 0
     VisibilityRoadMapQuadPid = 1
     VisibilityRoadMapLinearPoseDisabled = 2
+    StopAndGo = 3
 
 
 class Avoidance:
@@ -36,15 +37,18 @@ class Avoidance:
         strategy = AvoidanceStrategy(self.shared_properties["avoidance_strategy"])
         robot_width = self.shared_properties["robot_width"]
         match strategy:
-            case AvoidanceStrategy.VisibilityRoadMapQuadPid | AvoidanceStrategy.VisibilityRoadMapLinearPoseDisabled:
+            case AvoidanceStrategy.Disabled:
+                path = [models.PathPose(**pose_current.model_dump()), goal.model_copy()]
+            case _:
                 expand = int(robot_width * self.shared_properties["obstacle_bb_margin"])
                 if self.last_robot_width != robot_width or self.last_expand != expand:
                     self.visibility_road_map.set_properties(robot_width, expand)
                     self.last_robot_width = robot_width
                     self.last_expand = expand
-                return self.visibility_road_map.get_path(pose_current, goal, obstacles)
-            case _:
-                return [models.PathPose(**pose_current.model_dump()), goal.copy()]
+                path = self.visibility_road_map.get_path(pose_current, goal, obstacles)
+                if strategy == AvoidanceStrategy.StopAndGo and len(path) > 2:
+                    path = []
+        return path
 
 
 class VisibilityRoadMapWrapper:
@@ -98,8 +102,6 @@ class VisibilityRoadMapWrapper:
         converted_obstacles = []
 
         for obstacle in obstacles:
-            if not isinstance(obstacle, models.DynRoundObstacle):
-                continue
             x_list, y_list = list(zip(*[(int(v.x), int(v.y)) for v in obstacle.bb]))
             x_list = list(x_list)
             y_list = list(y_list)

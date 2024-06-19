@@ -62,9 +62,6 @@ class SioEvents(socketio.AsyncClientNamespace):
         cmd, _, _ = data.partition(" ")
         pid_id = PB_Pid_Id()
         match cmd:
-            case "actuators_control":
-                # Start thread emitting actuators status
-                await self.copilot.pbcom.send_can_message(copilot.actuators_thread_start_uuid, None)
             case "angular_speed_pid_config":
                 # Request angular speed pid state
                 pid_id.id = PB_PidEnum.ANGULAR_SPEED_PID
@@ -118,6 +115,13 @@ class SioEvents(socketio.AsyncClientNamespace):
         pose_order.copy_pb(pb_pose_order)
         await self.copilot.pbcom.send_can_message(copilot.pose_order_uuid, pb_pose_order)
 
+    async def on_actuators_start(self):
+        """
+        Callback on actuators_start (from dashboard).
+        Forward to mcu-firmware.
+        """
+        await self.copilot.pbcom.send_can_message(copilot.actuators_thread_start_uuid, None)
+
     async def on_actuators_stop(self):
         """
         Callback on actuators_stop (from dashboard).
@@ -137,7 +141,7 @@ class SioEvents(socketio.AsyncClientNamespace):
             command.pb_copy(pb_command.servo)
         elif isinstance(command, PositionalActuatorCommand):
             command.pb_copy(pb_command.positional_actuator)
-        await self.copilot.pbcom.send_can_message(copilot.actuators_command_uuid, pb_command)
+        await self.copilot.pbcom.send_can_message(copilot.actuator_command_uuid, pb_command)
 
     async def on_config_updated(self, config: dict[str, Any]) -> None:
         """

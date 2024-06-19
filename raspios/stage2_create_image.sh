@@ -124,6 +124,7 @@ sudo sed -i "s/ROOTDEV/PARTUUID=${IMGID}/" ${MOUNT_DIR}/boot/firmware/cmdline.tx
 sudo sed -i "s/IP_ADDRESS/${IP_ADDRESS_WLAN0}/" ${MOUNT_DIR}/etc/systemd/network/00-wlan0.network
 sudo sed -i "s/IP_ADDRESS/${IP_ADDRESS_ETH0}/" ${MOUNT_DIR}/etc/systemd/network/00-eth0.network
 sudo sed -i "s/GATEWAY/${GATEWAY}/" ${MOUNT_DIR}/etc/systemd/network/00-wlan0.network
+sudo sed -i "s/GATEWAY/${GATEWAY}/" ${MOUNT_DIR}/etc/systemd/network/00-eth0.network
 sudo sed -i "s/WLAN_SSID/${WLAN_SSID}/" ${MOUNT_DIR}/etc/wpa_supplicant/wpa_supplicant-wlan0.conf
 sudo sed -i "s/WLAN_PSK/${WLAN_PSK}/" ${MOUNT_DIR}/etc/wpa_supplicant/wpa_supplicant-wlan0.conf
 sudo sed -i "s/HOSTNAME/${HOSTNAME}/" ${MOUNT_DIR}/etc/hostname

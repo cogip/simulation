@@ -4,14 +4,14 @@ from typing import Any
 
 import polling2
 import socketio
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 
 from cogip import logger
 from cogip.models import models
-from cogip.models.actuators import ActuatorCommand, ActuatorsState
+from cogip.models.actuators import ActuatorCommand, ActuatorState
 
 
 class SocketioController(QtCore.QObject):
@@ -74,7 +74,7 @@ class SocketioController(QtCore.QObject):
     signal_start_sensors_emulation: qtSignal = qtSignal(int)
     signal_stop_sensors_emulation: qtSignal = qtSignal(int)
     signal_config_request: qtSignal = qtSignal(dict)
-    signal_actuators_state: qtSignal = qtSignal(ActuatorsState)
+    signal_actuator_state: qtSignal = qtSignal(object)
     signal_planner_reset: qtSignal = qtSignal()
     signal_starter_changed: qtSignal = qtSignal(int, bool)
 
@@ -144,22 +144,24 @@ class SocketioController(QtCore.QObject):
     def wizard_response(self, response: dict[str, Any]):
         self.sio.emit("wizard", response, namespace="/dashboard")
 
-    def new_actuator_command(self, robot_id: int, command: ActuatorCommand):
+    def new_actuator_command(self, command: ActuatorCommand):
         """
         Send an actuator command to the robot.
 
         Arguments:
-            robot_id: related robot id
             command: actuator command to send
         """
-        self.sio.emit("actuator_command", command.model_dump(), namespace="/dashboard")
+        self.sio.emit("actuator_command", command.model_dump(mode="json"), namespace="/dashboard")
 
-    def actuators_closed(self, robot_id: str):
+    def actuators_started(self):
+        """
+        Request to start emitting actuators state from the robot.
+        """
+        self.sio.emit("actuators_start", namespace="/dashboard")
+
+    def actuators_closed(self):
         """
         Request to stop emitting actuators state from the robot.
-
-        Arguments:
-            robot_id: related robot id
         """
         self.sio.emit("actuators_stop", namespace="/dashboard")
 
@@ -254,13 +256,16 @@ class SocketioController(QtCore.QObject):
             """
             self.signal_config_request.emit(config)
 
-        @self.sio.on("actuators_state", namespace="/dashboard")
-        def on_actuators_state(actuators_state):
+        @self.sio.on("actuator_state", namespace="/dashboard")
+        def on_actuator_state(actuator_state):
             """
-            Callback on actuators_state message.
+            Callback on actuator_state message.
             """
-            state = ActuatorsState.model_validate(actuators_state)
-            self.signal_actuators_state.emit(state)
+            try:
+                state = TypeAdapter(ActuatorState).validate_python(actuator_state)
+                self.signal_actuator_state.emit(state)
+            except ValidationError as exc:
+                logger.warning(f"Failed to decode ActuatorState: {exc}")
 
         @self.sio.on("pose_current", namespace="/dashboard")
         def on_pose_current(robot_id: int, data: dict[str, Any]) -> None:

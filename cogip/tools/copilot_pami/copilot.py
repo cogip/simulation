@@ -6,7 +6,8 @@ import socketio
 from google.protobuf.json_format import MessageToDict
 
 from cogip import models
-from cogip.protobuf import PB_ActuatorsState, PB_Menu, PB_Pid, PB_PidEnum, PB_Pose, PB_State
+from cogip.models.actuators import ActuatorsKindEnum
+from cogip.protobuf import PB_ActuatorState, PB_Menu, PB_Pid, PB_PidEnum, PB_Pose, PB_State
 from .pbcom import PBCom, pb_exception_handler
 from .pid import Pid
 from .sio_events import SioEvents
@@ -22,8 +23,8 @@ pose_reached_uuid: int = 2736246403
 pose_start_uuid: int = 2741980922
 actuators_thread_start_uuid: int = 1525532810
 actuators_thread_stop_uuid: int = 3781855956
-actuators_state_uuid: int = 1538397045
-actuators_command_uuid: int = 2552455996
+actuator_state_uuid: int = 1538397045
+actuator_command_uuid: int = 2552455996
 pid_request_uuid: int = 3438831927
 pid_uuid: int = 4159164681
 controller_uuid: int = 2750239003
@@ -66,7 +67,7 @@ class Copilot:
             pose_order_uuid: self.handle_message_pose,
             state_uuid: self.handle_message_state,
             pose_reached_uuid: self.handle_pose_reached,
-            actuators_state_uuid: self.handle_actuators_state,
+            actuator_state_uuid: self.handle_actuator_state,
             pid_uuid: self.handle_pid,
         }
 
@@ -165,24 +166,25 @@ class Copilot:
             await self.sio_events.emit("state", state)
 
     @pb_exception_handler
-    async def handle_actuators_state(self, message: bytes | None = None) -> None:
+    async def handle_actuator_state(self, message: bytes | None = None) -> None:
         """
-        Send actuators state received from the robot to connected monitors.
+        Send actuator state received from the robot.
         """
-        pb_actuators_state = PB_ActuatorsState()
+        pb_actuator_state = PB_ActuatorState()
 
         if message:
-            await self._loop.run_in_executor(None, pb_actuators_state.ParseFromString, message)
+            await self._loop.run_in_executor(None, pb_actuator_state.ParseFromString, message)
 
-        actuators_state = MessageToDict(
-            pb_actuators_state,
+        kind = pb_actuator_state.WhichOneof("type")
+        actuator_state = MessageToDict(
+            getattr(pb_actuator_state, kind),
             including_default_value_fields=True,
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
         )
+        actuator_state["kind"] = ActuatorsKindEnum[kind]
         if self.sio.connected:
-            actuators_state["robot_id"] = self.id
-            await self.sio_events.emit("actuators_state", actuators_state)
+            await self.sio_events.emit("actuator_state", actuator_state)
 
     @pb_exception_handler
     async def handle_pid(self, message: bytes | None = None) -> None:

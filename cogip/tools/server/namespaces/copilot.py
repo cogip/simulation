@@ -80,11 +80,12 @@ class CopilotNamespace(socketio.AsyncNamespace):
         await self.emit("state", (self.context.robot_id, state), namespace="/dashboard")
         await self.recorder.async_record({"state": state})
 
-    async def on_actuators_state(self, sid, actuators_state: dict[str, Any]):
+    async def on_actuator_state(self, sid, actuator_state: dict[str, Any]):
         """
-        Callback on actuators_state message.
+        Callback on actuator_state message.
         """
-        await self.emit("actuators_state", actuators_state, namespace="/dashboard")
+        await self.emit("actuator_state", actuator_state, namespace="/planner")
+        await self.emit("actuator_state", actuator_state, namespace="/dashboard")
 
     async def on_pid(self, sid, pid: dict[str, Any]):
         """

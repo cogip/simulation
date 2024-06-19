@@ -5,6 +5,9 @@ import socketio
 import socketio.exceptions
 
 from cogip import logger
+from cogip.tools.planner.positions import StartPosition
+from cogip.tools.planner.strategy import Strategy
+from cogip.tools.planner.table import TableEnum
 
 if TYPE_CHECKING:
     from .server import Server
@@ -74,9 +77,9 @@ class Robot:
             logger.info(f"Beacon handler: disconnected from robot {self.robot_id}")
             await self.server.sio.emit("del_robot", self.robot_id, namespace="/dashboard")
 
-        @self.sio.event(namespace="/dashboard")
-        async def state(robot_id: int, state: dict[str, Any]):
-            await self.server.sio.emit("state", (robot_id, state), namespace="/dashboard")
+        # @self.sio.event(namespace="/dashboard")
+        # async def state(robot_id: int, state: dict[str, Any]):
+        #     await self.server.sio.emit("state", (robot_id, state), namespace="/dashboard")
 
         @self.sio.event(namespace="/dashboard")
         async def pose_current(robot_id: int, pose: dict[str, Any]):
@@ -86,10 +89,109 @@ class Robot:
         async def pose_order(robot_id: int, pose: dict[str, Any]):
             await self.server.sio.emit("pose_order", (robot_id, pose), namespace="/dashboard")
 
-        @self.sio.event(namespace="/dashboard")
-        async def obstacles(obstacles: list[dict[str, Any]]):
-            await self.server.sio.emit("obstacles", (self.robot_id, obstacles), namespace="/dashboard")
+        # @self.sio.event(namespace="/dashboard")
+        # async def obstacles(obstacles: list[dict[str, Any]]):
+        #     await self.server.sio.emit("obstacles", (self.robot_id, obstacles), namespace="/dashboard")
 
-        @self.sio.event(namespace="/dashboard")
-        async def path(robot_id: int, path: list[dict[str, Any]]):
-            await self.server.sio.emit("path", (robot_id, path), namespace="/dashboard")
+        # @self.sio.event(namespace="/dashboard")
+        # async def path(robot_id: int, path: list[dict[str, Any]]):
+        #     await self.server.sio.emit("path", (robot_id, path), namespace="/dashboard")
+
+        @self.sio.event(namespace="/beacon")
+        async def pami_reset():
+            for robot_id, robot in self.server.robots.items():
+                if robot.sio.connected:
+                    strategy: Strategy | None = None
+                    match robot_id:
+                        case 2:
+                            strategy = Strategy.PAMI2
+                        case 3:
+                            strategy = Strategy.PAMI3
+                        case 4:
+                            strategy = Strategy.PAMI4
+
+                    if strategy:
+                        await robot.sio.emit(
+                            "wizard",
+                            {
+                                "name": "Choose Strategy",
+                                "value": strategy.name,
+                            },
+                            namespace="/beacon",
+                        )
+
+                    await robot.sio.emit(
+                        "wizard",
+                        {
+                            "name": "Choose Avoidance",
+                            "value": "Disabled",
+                        },
+                        namespace="/beacon",
+                    )
+
+        @self.sio.event(namespace="/beacon")
+        async def pami_table(table):
+            for robot_id, robot in self.server.robots.items():
+                if robot_id == 1:
+                    continue
+                if robot.sio.connected:
+                    await robot.sio.emit(
+                        "wizard",
+                        {
+                            "name": "Choose Table",
+                            "type": "choice_str",
+                            "value": table,
+                        },
+                        namespace="/beacon",
+                    )
+                    position: StartPosition | None = None
+                    if TableEnum[table] == TableEnum.Game:
+                        match robot_id:
+                            case 2:
+                                position = StartPosition.PAMI2
+                            case 3:
+                                position = StartPosition.PAMI3
+                            case 4:
+                                position = StartPosition.PAMI4
+                    else:
+                        match robot_id:
+                            case 2:
+                                position = StartPosition.PAMI2_TRAINING
+                            case 3:
+                                position = StartPosition.PAMI3_TRAINING
+                            case 4:
+                                position = StartPosition.PAMI4_TRAINING
+
+                    if position:
+                        await robot.sio.emit(
+                            "wizard",
+                            {
+                                "name": "Choose Start Position",
+                                "value": position.name,
+                            },
+                            namespace="/beacon",
+                        )
+
+        @self.sio.event(namespace="/beacon")
+        async def pami_camp(camp):
+            for robot_id, robot in self.server.robots.items():
+                if robot_id == 1:
+                    continue
+                if robot.sio.connected:
+                    await robot.sio.emit(
+                        "wizard",
+                        {
+                            "name": "Choose Camp",
+                            "type": "camp",
+                            "value": camp,
+                        },
+                        namespace="/beacon",
+                    )
+
+        @self.sio.event(namespace="/beacon")
+        async def pami_play():
+            for robot_id, robot in self.server.robots.items():
+                if robot_id == 1:
+                    continue
+                if robot.sio.connected:
+                    await robot.sio.emit("command", "play", namespace="/beacon")

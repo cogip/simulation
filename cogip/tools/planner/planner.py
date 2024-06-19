@@ -17,6 +17,7 @@ from PIL import ImageFont
 from pydantic import RootModel, TypeAdapter
 
 from cogip import models
+from cogip.models.actuators import ActuatorState
 from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.asyncloop import AsyncLoop
 from cogip.utils.singleton import Singleton
@@ -209,8 +210,7 @@ class Planner:
         """
         logger.info("Planner: start")
         self.shared_properties["exiting"] = False
-        self.game_context.reset()
-        self.actions = action_classes.get(self.game_context.strategy, actions.Actions)(self)
+        await self.soft_reset()
         await self.set_pose_start(self.game_context.get_start_pose(self.start_position).pose)
         await self.set_controller(self.game_context.default_controller, True)
         self.sio_receiver_task = asyncio.create_task(
@@ -286,6 +286,14 @@ class Planner:
         await self.stop()
         await self.start()
 
+    async def soft_reset(self):
+        """
+        Only reset context and actions.
+        """
+        self.game_context.reset()
+        self.actions = action_classes.get(self.game_context.strategy, actions.Actions)(self)
+        await self.set_pose_start(self.game_context.get_start_pose(self.start_position).pose)
+
     async def task_sio_emitter(self):
         logger.info("Planner: Task SIO Emitter started")
         try:
@@ -302,6 +310,8 @@ class Planner:
                             self.blocked_counter = 0
                             await self.blocked()
                     case "path":
+                        if self.pose_order:
+                            await self.pose_order.act_intermediate_pose()
                         if len(value) == 1:
                             # Final pose
                             new_controller = ControllerEnum.QUADPID
@@ -398,14 +408,11 @@ class Planner:
             return
         self.game_context.playing = False
         await self.sio_ns.emit("game_end")
-        self.game_context.score += 15
         await self.sio_ns.emit("score", self.game_context.score)
 
     async def starter_changed(self, pushed: bool):
         if not self.virtual:
             await self.sio_ns.emit("starter_changed", pushed)
-        if pushed:
-            await self.sio_ns.emit("game_reset")
 
     async def set_controller(self, new_controller: ControllerEnum, force: bool = False):
         if self.controller == new_controller and not force:
@@ -607,6 +614,9 @@ class Planner:
                 for obstacle in obstacles
                 if table.contains(obstacle)
             ]
+        self.obstacles += [p for p in self.game_context.plant_supplies.values() if p.enabled and table.contains(p)]
+        self.obstacles += [p for p in self.game_context.pot_supplies.values() if p.enabled and table.contains(p)]
+        self.obstacles += [p for p in self.game_context.fixed_obstacles if table.contains(p)]
 
         self.shared_properties["obstacles"] = [
             obstacle.model_dump(exclude_defaults=True) for obstacle in self.obstacles
@@ -684,12 +694,10 @@ class Planner:
             self.shared_properties[name] = value
         match name:
             case "obstacle_sender_interval":
-                self.obstacles_sender_loop.interval = self.properties.path_refresh_interval
-            case "path_refresh_interval":
-                for thread in self._avoidance_path_updaters.values():
-                    thread.interval = self.properties.path_refresh_interval
+                self.obstacles_sender_loop.interval = self.properties.obstacle_sender_interval
             case "robot_width" | "obstacle_bb_vertices":
-                pass
+                self.game_context.create_artifacts()
+                self.game_context.create_fixed_obstacles()
 
     async def cmd_play(self):
         """
@@ -831,14 +839,14 @@ class Planner:
                     logger.warning("Wizard: only yellow camp is authorized on training table")
                     return
                 self.game_context.camp.color = new_camp
-                await self.reset()
+                await self.soft_reset()
                 logger.info(f"Wizard: New camp: {self.game_context.camp.color.name}")
             case "Choose Strategy":
                 new_strategy = Strategy[value]
                 if self.game_context.strategy == new_strategy:
                     return
                 self.game_context.strategy = new_strategy
-                await self.reset()
+                await self.soft_reset()
                 logger.info(f"Wizard: New strategy: {self.game_context.strategy.name}")
             case "Choose Avoidance":
                 new_strategy = AvoidanceStrategy[value]
@@ -846,12 +854,11 @@ class Planner:
                     return
                 self.game_context.avoidance_strategy = new_strategy
                 self.shared_properties["avoidance_strategy"] = new_strategy
-                await self.reset()
                 logger.info(f"Wizard: New avoidance strategy: {self.game_context.avoidance_strategy.name}")
             case "Choose Start Position":
                 start_position = StartPosition[value]
                 self.start_position = start_position
-                await self.set_pose_start(self.game_context.get_start_pose(start_position).pose)
+                await self.soft_reset()
             case "Choose Table":
                 new_table = TableEnum[value]
                 if self.game_context.table == new_table:
@@ -869,7 +876,7 @@ class Planner:
                     return
                 self.game_context.table = new_table
                 self.shared_properties["table"] = new_table
-                await self.reset()
+                await self.soft_reset()
                 logger.info(f"Wizard: New table: {self.game_context._table.name}")
             case game_wizard_response if game_wizard_response.startswith("Game Wizard"):
                 await self.game_wizard.response(message)
@@ -993,3 +1000,10 @@ class Planner:
             )
         else:
             logger.info("Planner: No table marker found")
+
+    async def update_actuator_state(self, actuator_state: ActuatorState):
+        # actuators_states = getattr(self.game_context, f"{actuator_state.kind.name}_states")
+        # actuators_states[actuator_state.id] = actuator_state
+        # if not self.virtual and actuator_state.id in self.game_context.emulated_actuator_states:
+        #     self.game_context.emulated_actuator_states.remove(actuator_state.id)
+        pass

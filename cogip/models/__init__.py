@@ -1,5 +1,6 @@
 from .models import (  # noqa
     CameraExtrinsicParameters,
+    DynObstacle,
     DynObstacleList,
     DynObstacleRect,
     DynRoundObstacle,

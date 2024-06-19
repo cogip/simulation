@@ -117,11 +117,17 @@ class PathPose(Pose):
         max_speed_linear: max linear speed in percentage of the robot max linear speed
         max_speed_angular: max angular speed in percentage of the robot max angular speed
         allow_reverse: reverse mode
+        bypass_anti_blocking: send pose_reached if robot is blocked
+        timeout_ms: max time is milliseconds to reach the pose, the robot stops if timeout is reached, 0 for no timeout
+        bypass_final_orientation: do not set orientation pose order
     """
 
     max_speed_linear: int = 66
     max_speed_angular: int = 66
     allow_reverse: bool = True
+    bypass_anti_blocking: bool = False
+    timeout_ms: int = 0
+    bypass_final_orientation: bool = False
 
     @property
     def pose(self) -> Pose:
@@ -140,6 +146,9 @@ class PathPose(Pose):
         pb_path_pose.max_speed_ratio_linear = self.max_speed_linear
         pb_path_pose.max_speed_ratio_angular = self.max_speed_angular
         pb_path_pose.allow_reverse = self.allow_reverse
+        pb_path_pose.bypass_anti_blocking = self.bypass_anti_blocking
+        pb_path_pose.timeout_ms = self.timeout_ms
+        pb_path_pose.bypass_final_orientation = self.bypass_final_orientation
 
 
 class DynObstacleRect(BaseModel):
@@ -175,10 +184,10 @@ class DynObstacleRect(BaseModel):
         half_length_y = self.length_y / 2
 
         self.bb = [
-            Vertex(x=self.x - half_length_x - bb_radius, y=self.y - half_length_y - bb_radius),
-            Vertex(x=self.x + half_length_x + bb_radius, y=self.y - half_length_y - bb_radius),
-            Vertex(x=self.x + half_length_x + bb_radius, y=self.y + half_length_y + bb_radius),
             Vertex(x=self.x - half_length_x - bb_radius, y=self.y + half_length_y + bb_radius),
+            Vertex(x=self.x + half_length_x + bb_radius, y=self.y + half_length_y + bb_radius),
+            Vertex(x=self.x + half_length_x + bb_radius, y=self.y - half_length_y - bb_radius),
+            Vertex(x=self.x - half_length_x - bb_radius, y=self.y - half_length_y - bb_radius),
         ]
 
     def __hash__(self):
