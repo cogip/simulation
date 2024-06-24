@@ -10,6 +10,7 @@ os.environ["QT_LOGGING_RULES"] = "*.debug=false;qt.webenginecontext.info=false"
 
 import typer
 from PySide6 import QtGui, QtWidgets
+import qdarktheme
 
 from cogip.entities.table import TableEntity
 from .mainwindow import MainWindow
@@ -34,6 +35,7 @@ def main_opt(
 
     # Create QApplication
     app = QtWidgets.QApplication(sys.argv)
+    qdarktheme.setup_theme(custom_colors={"primary": "#d01b1e"})
 
     # Create UI
     win = MainWindow(url)
