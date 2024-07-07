@@ -120,6 +120,52 @@ pip install cogip-tools-1.0.0.tar.gz
 
 See [Docker installation instructions](https://docs.docker.com/engine/install/).
 
+### Virtual CAN Interface Setup
+
+`Firmware` communicates with `Copilot` using a CAN interface. In emulation mode, a virtual CAN interface (`vcan0`)
+must be configured on host before running the Compose stack.
+
+Configure `vcan0` using the two following files:
+
+- `/etc/systemd/network/80-vcan.network`
+
+```ini
+[Match]
+Name=vcan0
+
+[CAN]
+BitRate=500000
+DataBitRate=1000000
+SamplePoint=87.5%
+FDMode=yes
+```
+
+- `/etc/systemd/network/vcan0.netdev`
+
+```ini
+[NetDev]
+Name=vcan0
+Kind=vcan
+MTUBytes=72
+Description=Virtual CAN0 network interface
+```
+
+Restart systemd-networkd service to setup:
+```bash
+sudo systemctl restart systemd-networkd
+```
+
+Check `vcan0` is up:
+
+```bash
+$ networkctl | grep vcan0
+  3 vcan0           can      carrier     configured```
+
+$ ip address show dev vcan0
+3: vcan0: <NOARP,UP,LOWER_UP> mtu 72 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/can
+```
+
 ### X Server
 
 The `Monitor` is working with X11 but does not behave correctly with Wayland.
