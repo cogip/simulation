@@ -57,7 +57,7 @@ x-socat: &socat
     - -x
     - -c
     - |
-      socat -d -d pty,raw,echo=0,link=/var/run/cogip/ptySTM32-$${ROBOT_ID} pty,raw,echo=0,link=/var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      socat -d pty,raw,echo=0,link=/var/run/cogip/ptySTM32-$${ROBOT_ID} pty,raw,echo=0,link=/var/run/cogip/ptyRPI-$${ROBOT_ID} &
       sleep infinity
 
 x-firmware: &firmware
