@@ -41,10 +41,11 @@ async def main_async(pbcom: PBCom, commands: list[ActuatorCommand]):
 
 
 def main_opt(
+    *,
     can_channel: Annotated[
         str,
         typer.Option(
-            "-c",
+            "-cc",
             "--can-channel",
             help="CAN channel connected to STM32 modules",
             envvar="CANSEND_CAN_CHANNEL",
@@ -76,7 +77,7 @@ def main_opt(
             help="YAML file containing ",
             envvar="CANSEND_COMMANDS",
         ),
-    ] = 1000000,
+    ],
 ):
     commands_list = yaml.safe_load(commands)
     actuators_commands = TypeAdapter(list[ActuatorCommand]).validate_python(commands_list)
