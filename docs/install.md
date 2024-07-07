@@ -15,7 +15,7 @@ To prepare SDCards for Raspberry Pi SDCards for robots and beacon, refer to the 
 
 Linux only.
 
-Tested on Ubuntu 23.04 (with Xorg instead of Wayland for proper display of the Monitor).
+Tested on Ubuntu 24.04 (with Xorg instead of Wayland for proper display of the Monitor).
 
 ### Debian packages
 
