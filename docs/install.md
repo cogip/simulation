@@ -81,84 +81,6 @@ pip install -e .[dev]
 
 !!! note "The `dev` optional dependencies include packages used to run Monitor and emulate COGIP tools on the development platform."
 
-`mcu-firmware` and all Python tools can be run on the development PC.
-In this case, we have to create virtual serial ports to simulation the serial link between STM32 and Raspberry Pi:
-
-```bash
-socat pty,raw,echo=0,link=/tmp/ttySTM32 pty,raw,echo=0,link=/tmp/ttyRPI
-```
-
-Native firmware is then run using:
-
-```bash
-make -C submodules/mcu-firmware/applications/cup2023 BOARD=cogip-native PORT="-c /dev/null -c /tmp/ttySTM32" term
-```
-
-!!! note "In RIOT, `-c` option specifies serial ports to use. First port being used for the shell, it is not configurable, so we just pass `/dev/null`."
-
-#### Robot Tools
-
-`Server` is run using:
-
-```bash
-cogip-server
-```
-
-`Dashboard` is run using:
-
-```bash
-cogip-dashboard
-```
-
-`Planner` is run using:
-
-```bash
-cogip-planner
-```
-
-`Copilot` is run using:
-
-```bash
-cogip-copilot -p /tmp/ttyRPI
-```
-
-`Detector` is run using:
-
-```bash
-cogip-detector
-```
-
-`RobotCam` is run using:
-
-```bash
-cogip-robotcam
-```
-
-And finally `Monitor` for robot 1 is launched using:
-
-```bash
-cogip-monitor http://localhost:8091
-```
-
-The `Dashboard` for robot 1 is accessible using a web browser at `http://localhost:8081`.
-
-#### Beacon Tools
-
-`Server` is run using:
-
-```bash
-cogip-server-beacon
-```
-
-`Dashboard` is run using:
-
-```bash
-cogip-dashboard-beacon
-```
-
-The `Beacon Dashboard` is accessible using a web browser at `http://localhost:8080`.
-
-
 ### Linting and Formatting
 
 While installing the `dev` environment, `ruff` and `pre-commit` package have been installed.
@@ -217,16 +139,13 @@ All variables supported by the tools are forwarded inside Docker containers.
 
 Several profiles are defined to select which containers to run:
 
-- `robot1`: for robot 1 containers
-- `robot2`: for robot 2 containers
-- `monitor1`: for `Monitor` container of robot 1
-- `monitor2`: for `Monitor` container of robot 2
-
-The beacon container is disabled because its services need to be redesigned first.
+- `beacon`: for the beacon container
+- `robotX`: for robot X containers (1 <= X <= 4)
+- `monitorX`: for `Monitor` container of robot X (1 <= X <= 4)
 
 Profiles are set in the `.env` file:
 
-`COMPOSE_PROFILES=robot1,monitor1`
+`COMPOSE_PROFILES=beacon,robot1,robot2`
 
 ### Build Images
 
@@ -239,3 +158,17 @@ Build Docker images:
 Start the Compose stack:
 
 `docker compose up`
+
+### Dashboards Access
+
+The `Beacon Dashboard` (if enabled in `.env`) is accessible using a web browser at `http://localhost:8080`.
+
+The `Dashboard` for robot X (if enabled in `.env`) is accessible using a web browser at `http://localhost:808X`.
+
+### Running Monitor
+
+Instead of running `Monitor` from the Compose stack, it can be launched for robot X (if enabled in `.env`) with:
+
+```bash
+cogip-monitor http://localhost:809X
+```
