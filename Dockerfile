@@ -76,7 +76,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 
 RUN python -m pip install -U pip setuptools wheel
 
-ADD submodules/mcu-firmware/requirements.txt /tmp/
+ADD requirements.txt /tmp/
 RUN python -m pip install -r /tmp/requirements.txt
 
 CMD ["sleep", "infinity"]
