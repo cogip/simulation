@@ -9,7 +9,7 @@ from PySide6.QtCore import Signal as qtSignal
 from PySide6.QtCore import Slot as qtSlot
 
 from cogip.models import Pose, RobotState, ShellMenu
-from cogip.models.actuators import ActuatorCommand, ActuatorsState
+from cogip.models.actuators import ActuatorCommand, ActuatorState
 from cogip.widgets.actuators import ActuatorsDialog
 from cogip.widgets.chartsview import ChartsView
 from cogip.widgets.gameview import GameView
@@ -39,6 +39,7 @@ class MainWindow(QtWidgets.QMainWindow):
         signal_load_obstacles: Qt signal to load obstacles
         signal_save_obstacles: Qt signal to save obstacles
         signal_new_actuator_command: Qt signal to send actuator command to server
+        signal_actuators_opened: Qt signal to start actuators state request
         signal_actuators_closed: Qt signal to stop actuators state request
         signal_starter_changed: Qt signal emitted the starter state has changed
     """
@@ -49,8 +50,9 @@ class MainWindow(QtWidgets.QMainWindow):
     signal_add_obstacle: qtSignal = qtSignal()
     signal_load_obstacles: qtSignal = qtSignal(Path)
     signal_save_obstacles: qtSignal = qtSignal(Path)
-    signal_new_actuator_command: qtSignal = qtSignal(int, object)
-    signal_actuators_closed: qtSignal = qtSignal(int)
+    signal_actuators_opened: qtSignal = qtSignal()
+    signal_actuators_closed: qtSignal = qtSignal()
+    signal_new_actuator_command: qtSignal = qtSignal(object)
     signal_starter_changed: qtSignal = qtSignal(int, bool)
 
     def __init__(self, url: str, *args, **kwargs):
@@ -87,6 +89,8 @@ class MainWindow(QtWidgets.QMainWindow):
         file_toolbar.setObjectName("File Toolbar")
         obstacles_toolbar = self.addToolBar("Obstacles")
         obstacles_toolbar.setObjectName("Obstacles Toolbar")
+        actuators_toolbar = self.addToolBar("Obstacles")
+        actuators_toolbar.setObjectName("Actuators Toolbar")
 
         # Status bar
         status_bar = self.statusBar()
@@ -150,6 +154,12 @@ class MainWindow(QtWidgets.QMainWindow):
         obstacles_menu.addAction(self.save_obstacles_action)
         obstacles_toolbar.addAction(self.save_obstacles_action)
 
+        # Actuators control action
+        self.actuators_control_action = QtGui.QAction(QtGui.QIcon.fromTheme("emblem-system"), "Actuators control", self)
+        self.actuators_control_action.setStatusTip("Actuators control")
+        self.actuators_control_action.triggered.connect(self.open_actuators_control)
+        actuators_toolbar.addAction(self.actuators_control_action)
+
         # Console
         dock = QtWidgets.QDockWidget("Console")
         dock.setObjectName("Console")
@@ -177,7 +187,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.properties = {}
 
         # Actuators control windows
-        self.actuators_dialogs: dict[int, ActuatorsDialog] = {}
+        self.actuators_dialog = ActuatorsDialog()
+        self.actuators_dialog.new_actuator_command.connect(self.new_actuator_command)
+        self.actuators_dialog.closed.connect(self.actuators_closed)
 
         # Add help action
         self.help_camera_control_action = QtGui.QAction("Camera control", self)
@@ -505,6 +517,18 @@ class MainWindow(QtWidgets.QMainWindow):
         if filename:
             self.signal_save_obstacles.emit(Path(filename))
 
+    @qtSlot()
+    def open_actuators_control(self):
+        """
+        Qt Slot
+
+        Open the actuators control dialog.
+        """
+        self.signal_actuators_opened.emit()
+        self.actuators_dialog.show()
+        self.actuators_dialog.raise_()
+        self.actuators_dialog.activateWindow()
+
     def display_help_camera_control(self):
         """
         Qt Slot
@@ -564,46 +588,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.signal_wizard_response.emit(response)
         self.wizard = None
 
-    def actuators_state(self, actuators_state: ActuatorsState):
+    def actuator_state(self, actuator_state: ActuatorState):
         """
-        Receive current state of actuators.
-        Create the dialog window the first state, update it for subsequent states.
+        Receive current state of an actuator.
 
         Arguments:
-            actuators_state: current actuators state
+            actuator_state: current actuator state
         """
-        actuators_dialog = self.actuators_dialogs.get(actuators_state.robot_id)
-        if not actuators_dialog:
-            actuators_dialog = ActuatorsDialog(actuators_state, self)
-            self.actuators_dialogs[actuators_state.robot_id] = actuators_dialog
-            actuators_dialog.closed.connect(self.actuators_closed)
-            actuators_dialog.new_actuator_command.connect(self.new_actuator_command)
-        else:
-            actuators_dialog.update_actuators(actuators_state)
-        actuators_dialog.show()
-        actuators_dialog.raise_()
-        actuators_dialog.activateWindow()
+        self.actuators_dialog.update_actuator(actuator_state)
 
-    def new_actuator_command(self, robot_id: int, command: ActuatorCommand):
+    def new_actuator_command(self, command: ActuatorCommand):
         """
         Function called when an actuator control is modified in the actuators dialog.
         Forward the command to server.
 
         Arguments:
-            robot_id: related robot id
             command: actuator command to send
         """
-        self.signal_new_actuator_command.emit(robot_id, command)
+        self.signal_new_actuator_command.emit(command)
 
-    def actuators_closed(self, robot_id: int):
+    def actuators_closed(self):
         """
         Function called when the actuators dialog is closed.
         Forward information to server, to stop emitting actuators state from the robot.
-
-        Arguments:
-            robot_id: related robot id
         """
-        self.signal_actuators_closed.emit(robot_id)
+        self.signal_actuators_closed.emit()
 
     def planner_reset(self):
         """

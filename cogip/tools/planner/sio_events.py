@@ -3,9 +3,10 @@ from typing import TYPE_CHECKING, Any
 
 import polling2
 import socketio
-from pydantic import TypeAdapter
+from pydantic import TypeAdapter, ValidationError
 
 from cogip import models
+from cogip.models.actuators import ActuatorState
 from . import context, logger
 from .menu import (
     cameras_menu,
@@ -143,3 +144,15 @@ class SioEvents(socketio.AsyncClientNamespace):
         Callback on game end message.
         """
         await self.planner.game_end()
+
+    async def on_actuator_state(self, actuator_state: dict[str, Any]):
+        """
+        Callback on actuator_state message.
+        """
+        try:
+            state = TypeAdapter(ActuatorState).validate_python(actuator_state)
+        except ValidationError as exc:
+            logger.warning(f"Failed to decode ActuatorState: {exc}")
+            return
+
+        await self.planner.update_actuator_state(state)

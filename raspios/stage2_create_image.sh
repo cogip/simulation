@@ -124,6 +124,7 @@ sudo sed -i "s/ROOTDEV/PARTUUID=${IMGID}/" ${MOUNT_DIR}/boot/firmware/cmdline.tx
 sudo sed -i "s/IP_ADDRESS/${IP_ADDRESS_WLAN0}/" ${MOUNT_DIR}/etc/systemd/network/00-wlan0.network
 sudo sed -i "s/IP_ADDRESS/${IP_ADDRESS_ETH0}/" ${MOUNT_DIR}/etc/systemd/network/00-eth0.network
 sudo sed -i "s/GATEWAY/${GATEWAY}/" ${MOUNT_DIR}/etc/systemd/network/00-wlan0.network
+sudo sed -i "s/GATEWAY/${GATEWAY}/" ${MOUNT_DIR}/etc/systemd/network/00-eth0.network
 sudo sed -i "s/WLAN_SSID/${WLAN_SSID}/" ${MOUNT_DIR}/etc/wpa_supplicant/wpa_supplicant-wlan0.conf
 sudo sed -i "s/WLAN_PSK/${WLAN_PSK}/" ${MOUNT_DIR}/etc/wpa_supplicant/wpa_supplicant-wlan0.conf
 sudo sed -i "s/HOSTNAME/${HOSTNAME}/" ${MOUNT_DIR}/etc/hostname
@@ -142,6 +143,7 @@ sudo sed -i "s/ROBOT_ID/${ROBOT_ID}/" ${MOUNT_DIR}/etc/environment
 sudo sed -i "s/HOSTNAME/${HOSTNAME}/" ${MOUNT_DIR}/etc/environment
 sudo sed -i "s/CUSTOM_ROBOT_WIDTH/${ROBOT_WIDTH}/" ${MOUNT_DIR}/etc/environment
 sudo sed -i "s/CUSTOM_ROBOT_LENGTH/${ROBOT_LENGTH}/" ${MOUNT_DIR}/etc/environment
+sudo cp -f ${MOUNT_DIR}/etc/pip-${PROFILE}.conf ${MOUNT_DIR}/etc/pip.conf
 sudo echo "ROBOT_ID=${ROBOT_ID}" | sudo tee -a ${MOUNT_DIR}/etc/environment 1> /dev/null
 sudo chmod 600 ${MOUNT_DIR}/etc/sudoers.d/*
 sudo chmod 600 ${MOUNT_DIR}/etc/wpa_supplicant/wpa_supplicant-wlan0.conf

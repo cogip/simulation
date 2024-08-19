@@ -19,6 +19,7 @@ RUN apt-get install -y --no-install-recommends systemd-resolved systemd-timesync
 
 # Pre-install some Python requirements for COGIP tools
 ADD requirements.txt /root/requirements.txt
+RUN pip config --global set global.extra-index-url "https://www.piwheels.org/simple https://github.com/cogip/YDLidar-SDK/releases/expanded_assets/V1.1.3"
 RUN python3 -m pip install -r /root/requirements.txt && rm /root/requirements.txt
 
 # Configure locale, timezone and keyboard
@@ -101,9 +102,9 @@ RUN systemctl disable triggerhappy.service
 ENTRYPOINT ["/usr/bin/bash"]
 
 # Install COGIP tools
-COPY cogip-tools-*.tar.gz /root/
-RUN python3 -m pip install /root/cogip-tools-*.tar.gz \
- && rm /root/cogip-tools-*.tar.gz
+COPY cogip_tools-*.tar.gz /root/
+RUN python3 -m pip install /root/cogip_tools-*.tar.gz \
+ && rm /root/cogip_tools-*.tar.gz
 
 
 FROM common as beacon
@@ -116,11 +117,28 @@ RUN sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf &&
 RUN systemctl enable cogip-server-beacon
 RUN systemctl enable cogip-dashboard-beacon
 
+# Install and configure devpi-server
+RUN apt-get install -y --no-install-recommends wait-for-it
+RUN pip install devpi-server==6.11 devpi-client==7.0 devpi-web==4.2
+
+RUN devpi-init && \
+    nohup bash -c "/opt/venv/bin/devpi-server --host 0.0.0.0 &" && \
+    wait-for-it localhost:3141 && \
+    devpi use http://localhost:3141/ && \
+    devpi login root --password '' && \
+    devpi user -m root password=cogip && \
+    devpi user -c cogip password=cogip && \
+    devpi login cogip --password cogip && \
+    devpi index -c piwheels type=mirror mirror_url=https://www.piwheels.org/simple && \
+    devpi index -c ydlidar type=mirror mirror_url=https://github.com/cogip/YDLidar-SDK/releases/expanded_assets/V1.1.3 && \
+    devpi index ydlidar mirror_no_project_list=True && \
+    devpi index -c pypi bases=/cogip/ydlidar,/cogip/piwheels,/root/pypi volatile=False && \
+    devpi index pypi "title=COGIP Pypi Cache Index" "description=Pypi server caching packages used by COGIP tools"
+
+RUN systemctl enable devpi
+
 
 FROM common as robot-common
-
-# Enable OpenOCD service
-RUN systemctl enable openocd
 
 # Enable COGIP services
 RUN systemctl enable cogip-server
@@ -135,12 +153,17 @@ FROM robot-common as robot
 RUN apt-get install -y --no-install-recommends can-utils
 
 # Enable COGIP services
+
+RUN systemctl enable openocd
+
 RUN systemctl enable cogip-copilot
 RUN systemctl enable cogip-detector
 RUN systemctl enable cogip-robotcam
 
 
 FROM robot-common as pami
+
+RUN systemctl enable openocd-pami
 
 # Enable COGIP services
 RUN systemctl enable cogip-copilot-pami

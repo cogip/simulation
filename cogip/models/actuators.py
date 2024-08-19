@@ -1,5 +1,5 @@
 from enum import IntEnum
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -11,30 +11,14 @@ from cogip.protobuf import PB_PositionalActuatorCommand, PB_ServoCommand
 class ActuatorsKindEnum(IntEnum):
     """Enum defining actuators kind"""
 
-    SERVO = 0
-    POSITIONAL = 1
-
-
-class ActuatorsGroupEnum(IntEnum):
-    """Actuators groups used to group actuators by category"""
-
-    NO_GROUP = 0
+    servo = 0
+    positional_actuator = 1
+    bool_sensor = 2
 
 
 class ActuatorBase(BaseModel):
     """Base model for actuators"""
 
-    group: ActuatorsGroupEnum = Field(
-        ActuatorsGroupEnum.NO_GROUP,
-        title="Group",
-        description="Actuators group",
-    )
-    order: int = Field(
-        0,
-        ge=0,
-        title="Order",
-        description="Order in group",
-    )
     enabled: bool = Field(
         False,
         title="Enabled",
@@ -56,7 +40,7 @@ class ServoEnum(IntEnum):
 class ServoCommand(BaseModel):
     """Model defining a command to send to servos"""
 
-    kind: Literal[ActuatorsKindEnum.SERVO] = ActuatorsKindEnum.SERVO
+    kind: Literal[ActuatorsKindEnum.servo] = ActuatorsKindEnum.servo
     id: ServoEnum = Field(
         ...,
         title="Id",
@@ -80,8 +64,8 @@ class ServoCommand(BaseModel):
                 value = ActuatorsKindEnum(v)
             except Exception:
                 raise ValueError("Not a ActuatorsKindEnum")
-        if value != ActuatorsKindEnum.SERVO:
-            raise ValueError("Not ActuatorsKindEnum.SERVO value")
+        if value != ActuatorsKindEnum.servo:
+            raise ValueError("Not ActuatorsKindEnum.servo value")
         return value
 
     @field_validator("id", mode="before")
@@ -133,7 +117,7 @@ class PositionalActuatorEnum(IntEnum):
 class PositionalActuatorCommand(BaseModel):
     """Model defining a command to send to positional actuators"""
 
-    kind: Literal[ActuatorsKindEnum.POSITIONAL] = ActuatorsKindEnum.POSITIONAL
+    kind: Literal[ActuatorsKindEnum.positional_actuator] = ActuatorsKindEnum.positional_actuator
     id: PositionalActuatorEnum = Field(..., title="Id", description="Positional Actuator identifier")
     command: int = Field(
         0,
@@ -153,8 +137,8 @@ class PositionalActuatorCommand(BaseModel):
                 value = ActuatorsKindEnum(v)
             except Exception:
                 raise ValueError("Not a ActuatorsKindEnum")
-        if value != ActuatorsKindEnum.POSITIONAL:
-            raise ValueError("Not ActuatorsKindEnum.POSITIONAL value")
+        if value != ActuatorsKindEnum.positional_actuator:
+            raise ValueError("Not ActuatorsKindEnum.positional_actuator value")
         return value
 
     @field_validator("id", mode="before")
@@ -180,10 +164,56 @@ class PositionalActuator(ActuatorBase, PositionalActuatorCommand):
     pass
 
 
-class ActuatorsState(BaseModel):
-    servos: list[Servo] = []
-    positional_actuators: list[PositionalActuator] = []
-    robot_id: int
+# Bool sensor related definitions
 
 
+class BoolSensorEnum(IntEnum):
+    """Enum defining bool sensors IDs"""
+
+    BOTTOM_GRIP_LEFT = 0
+    BOTTOM_GRIP_RIGHT = 1
+    TOP_GRIP_LEFT = 2
+    TOP_GRIP_RIGHT = 3
+    MAGNET_LEFT = 4
+    MAGNET_RIGHT = 5
+
+
+class BoolSensor(BaseModel):
+    """Model defining bool sensor state"""
+
+    kind: Literal[ActuatorsKindEnum.bool_sensor] = ActuatorsKindEnum.bool_sensor
+    id: Annotated[
+        BoolSensorEnum,
+        Field(
+            title="Id",
+            description="Bool sensor identifier",
+        ),
+    ]
+    state: Annotated[
+        bool,
+        Field(
+            title="State",
+            description="Bool sensor state",
+        ),
+    ] = False
+
+
+ActuatorState = Servo | PositionalActuator | BoolSensor
 ActuatorCommand = ServoCommand | PositionalActuatorCommand
+
+
+# Actuator limits
+actuator_limits: dict[IntEnum, tuple[int, int]] = {
+    ServoEnum.LXSERVO_LEFT_CART: (400, 950),
+    ServoEnum.LXSERVO_RIGHT_CART: (50, 600),
+    ServoEnum.LXSERVO_ARM_PANEL: (300, 950),
+    PositionalActuatorEnum.MOTOR_BOTTOM_LIFT: (0, 100),
+    PositionalActuatorEnum.MOTOR_TOP_LIFT: (0, 180),
+    PositionalActuatorEnum.ANALOGSERVO_BOTTOM_GRIP_LEFT: (50, 250),
+    PositionalActuatorEnum.ANALOGSERVO_BOTTOM_GRIP_RIGHT: (50, 250),
+    PositionalActuatorEnum.ANALOGSERVO_TOP_GRIP_LEFT: (50, 250),
+    PositionalActuatorEnum.ANALOGSERVO_TOP_GRIP_RIGHT: (50, 250),
+    PositionalActuatorEnum.CART_MAGNET_LEFT: (0, 1),
+    PositionalActuatorEnum.CART_MAGNET_RIGHT: (0, 1),
+    PositionalActuatorEnum.ANALOGSERVO_PAMI: (0, 999),
+}

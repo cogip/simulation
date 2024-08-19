@@ -15,7 +15,7 @@ To prepare SDCards for Raspberry Pi SDCards for robots and beacon, refer to the 
 
 Linux only.
 
-Tested on Ubuntu 23.04 (with Xorg instead of Wayland for proper display of the Monitor).
+Tested on Ubuntu 24.04 (with Xorg instead of Wayland for proper display of the Monitor).
 
 ### Debian packages
 
@@ -81,84 +81,6 @@ pip install -e .[dev]
 
 !!! note "The `dev` optional dependencies include packages used to run Monitor and emulate COGIP tools on the development platform."
 
-`mcu-firmware` and all Python tools can be run on the development PC.
-In this case, we have to create virtual serial ports to simulation the serial link between STM32 and Raspberry Pi:
-
-```bash
-socat pty,raw,echo=0,link=/tmp/ttySTM32 pty,raw,echo=0,link=/tmp/ttyRPI
-```
-
-Native firmware is then run using:
-
-```bash
-make -C submodules/mcu-firmware/applications/cup2023 BOARD=cogip-native PORT="-c /dev/null -c /tmp/ttySTM32" term
-```
-
-!!! note "In RIOT, `-c` option specifies serial ports to use. First port being used for the shell, it is not configurable, so we just pass `/dev/null`."
-
-#### Robot Tools
-
-`Server` is run using:
-
-```bash
-cogip-server
-```
-
-`Dashboard` is run using:
-
-```bash
-cogip-dashboard
-```
-
-`Planner` is run using:
-
-```bash
-cogip-planner
-```
-
-`Copilot` is run using:
-
-```bash
-cogip-copilot -p /tmp/ttyRPI
-```
-
-`Detector` is run using:
-
-```bash
-cogip-detector
-```
-
-`RobotCam` is run using:
-
-```bash
-cogip-robotcam
-```
-
-And finally `Monitor` for robot 1 is launched using:
-
-```bash
-cogip-monitor http://localhost:8091
-```
-
-The `Dashboard` for robot 1 is accessible using a web browser at `http://localhost:8081`.
-
-#### Beacon Tools
-
-`Server` is run using:
-
-```bash
-cogip-server-beacon
-```
-
-`Dashboard` is run using:
-
-```bash
-cogip-dashboard-beacon
-```
-
-The `Beacon Dashboard` is accessible using a web browser at `http://localhost:8080`.
-
-
 ### Linting and Formatting
 
 While installing the `dev` environment, `ruff` and `pre-commit` package have been installed.
@@ -198,6 +120,52 @@ pip install cogip-tools-1.0.0.tar.gz
 
 See [Docker installation instructions](https://docs.docker.com/engine/install/).
 
+### Virtual CAN Interface Setup
+
+`Firmware` communicates with `Copilot` using a CAN interface. In emulation mode, a virtual CAN interface (`vcan0`)
+must be configured on host before running the Compose stack.
+
+Configure `vcan0` using the two following files:
+
+- `/etc/systemd/network/80-vcan.network`
+
+```ini
+[Match]
+Name=vcan0
+
+[CAN]
+BitRate=500000
+DataBitRate=1000000
+SamplePoint=87.5%
+FDMode=yes
+```
+
+- `/etc/systemd/network/vcan0.netdev`
+
+```ini
+[NetDev]
+Name=vcan0
+Kind=vcan
+MTUBytes=72
+Description=Virtual CAN0 network interface
+```
+
+Restart systemd-networkd service to setup:
+```bash
+sudo systemctl restart systemd-networkd
+```
+
+Check `vcan0` is up:
+
+```bash
+$ networkctl | grep vcan0
+  3 vcan0           can      carrier     configured```
+
+$ ip address show dev vcan0
+3: vcan0: <NOARP,UP,LOWER_UP> mtu 72 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/can
+```
+
 ### X Server
 
 The `Monitor` is working with X11 but does not behave correctly with Wayland.
@@ -217,16 +185,13 @@ All variables supported by the tools are forwarded inside Docker containers.
 
 Several profiles are defined to select which containers to run:
 
-- `robot1`: for robot 1 containers
-- `robot2`: for robot 2 containers
-- `monitor1`: for `Monitor` container of robot 1
-- `monitor2`: for `Monitor` container of robot 2
-
-The beacon container is disabled because its services need to be redesigned first.
+- `beacon`: for the beacon container
+- `robotX`: for robot X containers (1 <= X <= 4)
+- `monitorX`: for `Monitor` container of robot X (1 <= X <= 4)
 
 Profiles are set in the `.env` file:
 
-`COMPOSE_PROFILES=robot1,monitor1`
+`COMPOSE_PROFILES=beacon,robot1,robot2`
 
 ### Build Images
 
@@ -239,3 +204,17 @@ Build Docker images:
 Start the Compose stack:
 
 `docker compose up`
+
+### Dashboards Access
+
+The `Beacon Dashboard` (if enabled in `.env`) is accessible using a web browser at `http://localhost:8080`.
+
+The `Dashboard` for robot X (if enabled in `.env`) is accessible using a web browser at `http://localhost:808X`.
+
+### Running Monitor
+
+Instead of running `Monitor` from the Compose stack, it can be launched for robot X (if enabled in `.env`) with:
+
+```bash
+cogip-monitor http://localhost:809X
+```

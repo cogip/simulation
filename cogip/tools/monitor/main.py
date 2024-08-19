@@ -50,6 +50,7 @@ def main_opt(
     win.signal_send_command.connect(controller.new_command)
     win.signal_config_updated.connect(controller.config_updated)
     win.signal_wizard_response.connect(controller.wizard_response)
+    win.signal_actuators_opened.connect(controller.actuators_started)
     win.signal_actuators_closed.connect(controller.actuators_closed)
     win.signal_new_actuator_command.connect(controller.new_actuator_command)
     win.signal_starter_changed.connect(controller.starter_changed)
@@ -82,7 +83,7 @@ def main_opt(
     controller.signal_config_request.connect(win.config_request)
     controller.signal_wizard_request.connect(win.wizard_request)
     controller.signal_close_wizard.connect(win.close_wizard)
-    controller.signal_actuators_state.connect(win.actuators_state)
+    controller.signal_actuator_state.connect(win.actuator_state)
     controller.signal_planner_reset.connect(win.planner_reset)
 
     # Connect Controller signals to GameView slots

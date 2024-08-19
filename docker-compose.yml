@@ -1,18 +1,3 @@
-x-build-console: &build-console
-  build:
-    context: .
-    target: cogip-console
-
-x-build-gui: &build-gui
-  build:
-    context: .
-    target: cogip-gui
-
-x-build-firmware: &build-firmware
-  build:
-    context: .
-    target: cogip-firmware
-
 x-vol-cogip: &vol-cogip
   "./cogip:/src/cogip"
 
@@ -36,26 +21,20 @@ x-extra-hosts-common: &extra-hosts-common
   extra_hosts:
     host.docker.internal: host-gateway
 
-x-socat: &socat
-  <<: *build-console
-  volumes:
-    - *vol-run
-    - *vol-pts
-  command:
-    - /bin/sh
-    - -x
-    - -c
-    - |
-      socat -d -d pty,raw,echo=0,link=/var/run/cogip/ptySTM32-$${ROBOT_ID} pty,raw,echo=0,link=/var/run/cogip/ptyRPI-$${ROBOT_ID} &
-      sleep infinity
+x-build-console: &build-console
+  build:
+    context: .
+    target: cogip-console
 
-x-firmware: &firmware
-  <<: *build-firmware
-  network_mode: "host"
-  environment: &env-firmware
-    FIRMWARE_BOARD: ${FIRMWARE_BOARD:-cogip-native}
-  stdin_open: true
-  tty: true
+x-build-gui: &build-gui
+  build:
+    context: .
+    target: cogip-gui
+
+x-build-firmware: &build-firmware
+  build:
+    context: .
+    target: cogip-firmware
   working_dir: /simulation/submodules/mcu-firmware
   volumes:
     - *vol-run
@@ -66,8 +45,33 @@ x-firmware: &firmware
     - /bin/sh
     - -x
     - -c
+    - make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
+
+x-socat: &socat
+  <<: *build-console
+  volumes:
+    - *vol-run
+    - *vol-pts
+  command:
+    - /bin/sh
+    - -x
+    - -c
     - |
-      applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf $${FIRMWARE_OPTIONS}
+      socat -d pty,raw,echo=0,link=/var/run/cogip/ptySTM32-$${ROBOT_ID} pty,raw,echo=0,link=/var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      sleep infinity
+
+x-firmware: &firmware
+  <<: *build-firmware
+  network_mode: "host"
+  environment: &env-firmware
+    FIRMWARE_BOARD: ${FIRMWARE_BOARD:-cogip-native}
+  stdin_open: true
+  tty: true
+  command:
+    - /bin/sh
+    - -x
+    - -c
+    - applications/$${FIRMWARE_APP}/bin/$${FIRMWARE_BOARD}/$${FIRMWARE_APP}.elf $${FIRMWARE_OPTIONS}
 
 x-robot: &robot
   <<: [*build-console, *volumes-common, *extra-hosts-common]
@@ -225,45 +229,95 @@ services:
     profiles:
       - robot4
 
-  make-firmware:
+  make-firmware-motion-control:
     <<: *build-firmware
-    environment: &env-firmware-robot
+    environment:
       << : *env-firmware
       FIRMWARE_APP: cup2024-robot-motion-control
-    working_dir: /simulation/submodules/mcu-firmware
-    volumes:
-      - ".:/simulation"
     command:
       - /bin/sh
       - -x
       - -c
       - make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
+    profiles:
+      - robot1
+
+  make-firmware-actuators:
+    <<: *build-firmware
+    environment:
+      << : *env-firmware
+      FIRMWARE_APP: cup2024-robot-actuators
+    command:
+      - /bin/sh
+      - -x
+      - -c
+      - make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
+    profiles:
+      - robot1
+
+  make-firmware-motors:
+    <<: *build-firmware
+    environment:
+      << : *env-firmware
+      FIRMWARE_APP: cup2024-robot-motors
+    command:
+      - /bin/sh
+      - -x
+      - -c
+      - make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
+    profiles:
+      - robot1
 
   make-firmware-pami:
     <<: *build-firmware
     environment: &env-firmware-pami
       << : *env-firmware
       FIRMWARE_APP: cup2024-pami
-    working_dir: /simulation/submodules/mcu-firmware
-    volumes:
-      - ".:/simulation"
     command:
       - /bin/sh
       - -x
       - -c
       - make -C applications/$${FIRMWARE_APP} -j$$(nproc) BOARD=$${FIRMWARE_BOARD}
+    profiles:
+      - robot2
+      - robot3
+      - robot4
 
-  firmware1:
+  firmware1-motion-control:
     << : *firmware
-    hostname: firmware1
+    hostname: firmware1-motion-control
     environment:
-      << : *env-firmware-robot
-      ROBOT_ID: 1
+      << : *env-firmware
+      FIRMWARE_APP: cup2024-robot-motion-control
     depends_on:
-      make-firmware:
+      make-firmware-motion-control:
         condition: service_completed_successfully
     profiles:
       - robot1
+
+  # firmware1-actuators:
+  #   << : *firmware
+  #   hostname: firmware1-actuators
+  #   environment:
+  #     << : *env-firmware
+  #     FIRMWARE_APP: cup2024-robot-actuators
+  #   depends_on:
+  #     make-firmware-actuators:
+  #       condition: service_completed_successfully
+  #   profiles:
+  #     - robot1
+
+  # firmware1-motors:
+  #   << : *firmware
+  #   hostname: firmware1-motors
+  #   environment:
+  #     << : *env-firmware
+  #     FIRMWARE_APP: cup2024-robot-motors
+  #   depends_on:
+  #     make-firmware-motors:
+  #       condition: service_completed_successfully
+  #   profiles:
+  #     - robot1
 
   firmware2:
     << : *firmware
