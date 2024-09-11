@@ -12,6 +12,7 @@ class TableEnum(IntEnum):
 
     Training = 0
     Game = 1
+    Sido = 2
 
 
 class Table(BaseModel):
@@ -35,8 +36,11 @@ table_game = Table(x_min=-1000, x_max=1000, y_min=-1500, y_max=1500)
 # Lower-right corner of the full table
 table_training = Table(x_min=-1000, x_max=0, y_min=-1500, y_max=0)
 
+# Lower-right corner of the full table
+table_sido = Table(x_min=-1000, x_max=-1000 + 987, y_min=-1500, y_max=-1500 + 1117)
 
 tables: dict[TableEnum, Table] = {
     TableEnum.Training: table_training,
     TableEnum.Game: table_game,
+    TableEnum.Sido: table_sido,
 }

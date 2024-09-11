@@ -139,6 +139,11 @@ class GameGripFirstActions(Actions):
             self.append(DropInDropoffZoneAction_Bottom(planner, self, 2))
             self.append(PotCaptureAction_LocalMiddle(planner, self))
             self.append(DropInPlanterAction_Test(planner, self))
+        elif self.game_context._table == table.TableEnum.Sido:
+            parking_pose = models.Pose(x=-1000 + 450, y=-1500 + 450, O=90)
+            self.append(DropInDropoffZoneAction_Bottom(planner, self, 2))
+            self.append(PotCaptureAction_LocalMiddle(planner, self))
+            self.append(DropInPlanterAction_Test(planner, self))
         else:
             parking_pose = models.Pose(x=0, y=1500 - 450, O=90)
             self.append(DropInDropoffZoneAction_Top(planner, self, 2))
