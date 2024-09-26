@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="{{ url_for('static', path='css/prod/output.css') }}" />
 </head>
 
-<body class="flex flex-col h-full w-full bg-gray-900 overflow-hidden">
+<body class="flex flex-col h-full w-full bg-zinc-900 overflow-hidden">
   <div class="flex flex-row">
     <div class="w-1/4 text-center h-minus-footer pt-2.5 pr-1 pl-2.5 border-r border-grey-color" id="menu">
       <img src="static/img/cogip-logo.png" class="mx-auto h-10p py-2.5" />
@@ -17,14 +17,14 @@
     </div>
     <div class="w-3/4">
       <button
-        class="relative z-10 mt-3 px-4 py-2 rounded-lg border border-gray-800 hover:bg-gray-800 hover:opacity-70 float-end"
+        class="relative z-10 mt-3 px-4 py-2 rounded-lg border border-gray-800 bg-gray-300 bg-opacity-30 hover:bg-zinc-800 hover:opacity-70 float-end z-60"
         id="buttonRefresh" type="button" onclick="location.reload();">
         <img src="{{ url_for('static', path='img/refresh.svg') }}" />
       </button>
       <canvas id="board" class="mt-2.5 absolute bg-contain"
         style="background-image: url(../static/img/ground2024.png)"></canvas>
       <button
-        class="relative z-10 mt-3 px-4 py-2 rounded-lg border border-gray-800 hover:bg-gray-800 hover:opacity-70 float-end"
+        class="relative z-10 mt-3 px-4 py-2 rounded-lg border border-gray-800 hover:bg-zinc-800 hover:opacity-70 float-end"
         id="buttonCameraModal" type="button" onclick="modalCamera()" data-bs-toggle="modal"
         data-bs-target="#cameraModal">
         <img src="{{ url_for('static', path='img/camera.svg') }}" />
@@ -32,7 +32,7 @@
     </div>
   </div>
 
-  <footer class="mt-auto bg-gray-900 text-grey-color">
+  <footer class="mt-auto bg-zinc-900 text-grey-color mx-2">
     <div class="container-lg pt-2">
       <span class="text-muted float-left" id="connection">
         <pre
@@ -45,7 +45,7 @@
   </footer>
 
   <div id="cameraModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-gray-900 rounded-lg shadow-lg max-w-4xl w-full">
+    <div class="bg-zinc-900 rounded-lg shadow-lg max-w-4xl w-full">
       <div class="p-4 m-auto relative" id="displayFlux">
         <button type="button"
           class="absolute top-4 right-4 bg-transparent text-grey-color text-2xl leading-none hover:text-gray-400 focus:outline-none"
@@ -56,12 +56,12 @@
 
 
   <div id="wizardModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden">
-    <div class="bg-gray-900 rounded-lg shadow-lg w-full max-w-lg">
+    <div id="wizardModalContent" class="bg-zinc-900 rounded-lg shadow-lg w-full max-w-lg">
       <div id="modalHeader" class="border-b border-gray-700 p-2">
         <h5 class="text-lg font-medium text-grey-color" id="wizardModalTitle"></h5>
       </div>
       <div id="modalBody" class="m-4 text-center">
-        <span class="block text-sm font-medium text-grey-color" id="wizardName"></span>
+        <span class="block text-lg font-medium text-grey-color" id="wizardName"></span>
         <input id="wizardInput" type="text" placeholder="" />
       </div>
       <div class="border-t border-gray-700 p-4 flex justify-end">
@@ -75,7 +75,7 @@
 
   <div class="fixed inset-0 z-50 hidden" id="scoreModal">
     <div class="flex h-full w-full p-4 text-center">
-      <div class="w-full p-6 mx-auto bg-gray-900 rounded-lg shadow-lg">
+      <div class="w-full p-6 mx-auto bg-zinc-900 rounded-lg shadow-lg">
         <div class="flex items-center justify-between pb-4 border-b border-gray-600">
           <h5 class="text-lg font-medium text-grey-color">Score</h5>
           <button type="button" class="text-grey-color text-2xl leading-none hover:text-gray-400" aria-label="Close"

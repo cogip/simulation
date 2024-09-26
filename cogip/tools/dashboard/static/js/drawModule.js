@@ -5,27 +5,24 @@ let obstacles = [];
 let robot = new Image();
 let order = new Image();
 
-export function updatePoseCurrent(robot_id, new_pose) {
-  if (robot.src === '') {
-    if (robot_id === 1) {
-      robot.src = "static/img/robot.png";
-    }
-    else {
-      robot.src = "static/img/pami.png";
-    }
+const ROBOT_IMAGES = {
+  1: "static/img/robot.png",
+  2: "static/img/pami.png",
+};
+
+function setRobotImage(imageObj, robotId) {
+  if (imageObj.src === "") {
+    imageObj.src = ROBOT_IMAGES[robotId] || ROBOT_IMAGES[2]; // Default to second image if robotId is not found
   }
+}
+
+export function updatePoseCurrent(robot_id, new_pose) {
+  setRobotImage(robot, robot_id);
   pose_current = new_pose;
 }
 
 export function updatePoseOrder(robot_id, new_pose) {
-  if (order.src === '') {
-    if (robot_id === 1) {
-      order.src = "static/img/robot.png";
-    }
-    else {
-      order.src = "static/img/pami.png";
-    }
-  }
+  setRobotImage(order, robot_id);
   pose_order = new_pose;
 }
 
