@@ -20,7 +20,7 @@ Tested on Ubuntu 24.04 (with Xorg instead of Wayland for proper display of the M
 ### Debian packages
 
 ```bash
-sudo apt install python3 git build-essential
+sudo apt install git build-essential
 ```
 
 ### Git Submodules
@@ -34,14 +34,10 @@ git submodule update --init
 
 ## Manual Method
 
-### Python
-
-Python 3.11+ is required.
-
 ### Debian packages
 
 ```bash
-sudo apt install python3-dev python3-venv libxcb-xinerama0 socat protobuf-compiler build-essential swig cmake pkg-config
+sudo apt install libxcb-xinerama0 socat protobuf-compiler build-essential swig cmake pkg-config
 ```
 
 ### Build mcu-firmware
@@ -66,20 +62,48 @@ make -C submodules/mcu-firmware/applications/cup2023 BOARD=cogip-board-ng
 
 ### Installation
 
-All tools can be install on the development PC.
+All tools can be installed on the development PC.
 
-!!! note "Python 3.11 or more is required."
+!!! note "Python installation is managed by [uv](https://docs.astral.sh/uv), so it is independent from Python version provided by the OS."
 
-To setup a new environment, create a virtual env and install the package in dev mode:
+* Install uv following the
+[official documentation](https://docs.astral.sh/uv/getting-started/installation/), like with the following command:
 
 ```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -U pip wheel setuptools
-pip install -e .[dev]
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-!!! note "The `dev` optional dependencies include packages used to run Monitor and emulate COGIP tools on the development platform."
+!!! note "Read carefully advices to make uv accessible on your PATH."
+
+* Install the required Python version:
+
+```bash
+uv python install
+```
+
+* Create a new virtual environment (it will be automatically used by `uv` commands, no need to source it):
+
+```bash
+uv venv
+```
+
+* Patch Python installation:
+
+!!! note "Note on uv-managed Python installation"
+    This Python version is compiled using clang
+    so uv will use clang by default to build wheels with C/C++ extensions. Some packages are not compatible
+    with clang. `sysconfigpatcher` will revert sysconfig variables to the default values
+    of a Python system installation to use gcc to build wheels."
+
+```bash
+uvx --isolated --from "git+https://github.com/bluss/sysconfigpatcher" sysconfigpatcher $(dirname $(dirname $(readlink .venv/bin/python)))
+```
+
+* Install the package in dev/editable mode (default mode for uv):
+
+```bash
+uv sync
+```
 
 ### Linting and Formatting
 
@@ -88,8 +112,8 @@ While installing the `dev` environment, `ruff` and `pre-commit` package have bee
 To run `ruff` manually, just run:
 
 ```bash
-ruff check [--fix]
-ruff format
+uv run ruff check [--fix]
+uv run ruff format
 ```
 
 To enable pre-commit hooks prevent committing code not respecting linting and formatting rules, run:
@@ -103,15 +127,15 @@ pre-commit install
 To build a source distribution package, use:
 
 ```bash
-python setup.py sdist
+uv build --sdist
 ```
 
-This will produce `dist/cogip-tools-1.0.0.tar.gz`.
+This will produce `dist/cogip_tools-1.0.0.tar.gz`.
 
 This package can be copied to the Raspberry Pi and installed to deploy the Python tools:
 
 ```bash
-pip install cogip-tools-1.0.0.tar.gz
+uv tool install cogip_tools-1.0.0.tar.gz
 ```
 
 ## Docker Method
@@ -216,5 +240,5 @@ The `Dashboard` for robot X (if enabled in `.env`) is accessible using a web bro
 Instead of running `Monitor` from the Compose stack, it can be launched for robot X (if enabled in `.env`) with:
 
 ```bash
-cogip-monitor http://localhost:809X
+uv run cogip-monitor http://localhost:809X
 ```

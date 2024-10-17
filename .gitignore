@@ -5,7 +5,7 @@ __pycache__
 dist
 tests
 *.tree.dot
-venv
+.venv
 site
 raspios/work
 raspios/cogip-tools-*.tar.gz

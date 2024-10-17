@@ -8,8 +8,8 @@ Requires=cogip-server.service
 [Service]
 Type=simple
 Restart=on-failure
-WorkingDirectory=/tmp
-ExecStart=/opt/venv/bin/python3 -m cogip.tools.planner
+WorkingDirectory=/opt
+ExecStart=uv run cogip-planner
 RestartSec=5
 EnvironmentFile=/etc/environment
 

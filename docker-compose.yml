@@ -106,12 +106,12 @@ x-robot: &robot
     - -x
     - -c
     - |
-      cogip-server &
+      uv run cogip-server &
       wait-for-it -t 0 localhost:809$${ROBOT_ID}
-      cogip-planner &
-      cogip-copilot --can-channel vcan0 -b 500000 -B 1000000 &
-      cogip-detector &
-      cogip-dashboard &
+      uv run cogip-planner &
+      uv run cogip-copilot --can-channel vcan0 -b 500000 -B 1000000 &
+      uv run cogip-detector &
+      uv run cogip-dashboard &
       sleep infinity
 
 x-pami: &pami
@@ -145,12 +145,12 @@ x-pami: &pami
     - -x
     - -c
     - |
-      cogip-server &
+      uv run cogip-server &
       wait-for-it -t 0 localhost:809$${ROBOT_ID}
-      cogip-planner &
-      cogip-copilot-pami --serial-port /var/run/cogip/ptyRPI-$${ROBOT_ID} &
-      cogip-detector-pami &
-      cogip-dashboard &
+      uv run cogip-planner &
+      uv run cogip-copilot-pami --serial-port /var/run/cogip/ptyRPI-$${ROBOT_ID} &
+      uv run cogip-detector-pami &
+      uv run cogip-dashboard &
       sleep infinity
 
 x-monitor: &monitor
@@ -166,7 +166,7 @@ x-monitor: &monitor
     - -c
     - |
       wait-for-it -t 0 $${COGIP_SOCKETIO_SERVER_HOST}:$${COGIP_SOCKETIO_SERVER_PORT}
-      cogip-monitor http://$${COGIP_SOCKETIO_SERVER_HOST}:$${COGIP_SOCKETIO_SERVER_PORT} &
+      uv run cogip-monitor http://$${COGIP_SOCKETIO_SERVER_HOST}:$${COGIP_SOCKETIO_SERVER_PORT} &
       sleep infinity
   working_dir: /src
   volumes:
@@ -198,8 +198,8 @@ services:
       - -x
       - -c
       - |
-        cogip-server-beacon &
-        cogip-dashboard-beacon &
+        uv run cogip-server-beacon &
+        uv run cogip-dashboard-beacon &
         sleep infinity
     profiles:
       - beacon

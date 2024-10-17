@@ -143,7 +143,6 @@ sudo sed -i "s/ROBOT_ID/${ROBOT_ID}/" ${MOUNT_DIR}/etc/environment
 sudo sed -i "s/HOSTNAME/${HOSTNAME}/" ${MOUNT_DIR}/etc/environment
 sudo sed -i "s/CUSTOM_ROBOT_WIDTH/${ROBOT_WIDTH}/" ${MOUNT_DIR}/etc/environment
 sudo sed -i "s/CUSTOM_ROBOT_LENGTH/${ROBOT_LENGTH}/" ${MOUNT_DIR}/etc/environment
-sudo cp -f ${MOUNT_DIR}/etc/pip-${PROFILE}.conf ${MOUNT_DIR}/etc/pip.conf
 sudo echo "ROBOT_ID=${ROBOT_ID}" | sudo tee -a ${MOUNT_DIR}/etc/environment 1> /dev/null
 sudo chmod 600 ${MOUNT_DIR}/etc/sudoers.d/*
 sudo chmod 600 ${MOUNT_DIR}/etc/wpa_supplicant/wpa_supplicant-wlan0.conf
