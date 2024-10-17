@@ -11,18 +11,3 @@ RUN update-locale LANG=C
 RUN apt-get update
 RUN apt-get -y dist-upgrade --auto-remove --purge
 RUN apt-get -y clean
-
-# Install Python and minimun packages to build wheels
-RUN apt-get install -y \
-        python3 python3-venv python3-dev \
-        make build-essential libssl-dev zlib1g-dev libbz2-dev \
-        libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev \
-        libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev \
-        git swig cmake pkg-config
-
-# Create a virtual environmnent to respect PEP 668
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:${PATH}"
-
-# Update Python packages
-RUN python3 -m pip install -U pip setuptools wheel
