@@ -8,16 +8,9 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN update-locale LANG=C
 
-# Temporay workaround to allow upgrade of raspi-firmware
-RUN mv /usr/bin/ischroot /usr/bin/ischroot.original && \
-    ln -s /usr/bin/true /usr/bin/ischroot
-
 RUN apt-get update
 RUN apt-get -y dist-upgrade --auto-remove --purge
 RUN apt-get -y clean
-
-RUN rm /usr/bin/ischroot && \
-    mv /usr/bin/ischroot.original /usr/bin/ischroot
 
 # Install Python and minimun packages to build wheels
 RUN apt-get install -y \
