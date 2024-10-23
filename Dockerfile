@@ -1,4 +1,39 @@
-FROM ubuntu:24.04 as cogip-console
+FROM ubuntu:24.04 as uv_base
+
+ENV DEBIAN_FRONTEND noninteractive
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+
+RUN apt-get update \
+ && apt-get -y dist-upgrade --auto-remove --purge \
+ && apt-get -y install curl wait-for-it git socat g++ \
+ && apt-get -y clean
+
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local" sh
+
+# Install Python, version is specified in .python-version, a tmp copy from root directory.
+RUN --mount=type=bind,source=.python-version,target=.python-version \
+    uv python install
+
+# Create a virtual environmnent to respect PEP 668
+RUN uv venv /opt/venv
+ENV VIRTUAL_ENV=/opt/venv
+ENV PATH="/opt/venv/bin:${PATH}"
+
+# Patch sysconfig of uv-managed Python installation. This Python version is compiled using clang
+# so uv will use clang by default to build wheels with C/C++ extensions. Some packages are not compatible
+# with clang. sysconfigpatcher will revert sysconfig variables to the default values
+# of a Python system installation to use gcc to build wheels.
+RUN uv pip install "git+https://github.com/bluss/sysconfigpatcher" \
+ && sysconfigpatcher $(dirname $(dirname $(readlink $(which python)))) \
+ && uv pip uninstall sysconfigpatcher
+
+# Pre-install some Python requirements for COGIP tools
+RUN --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
+    uv pip install -r pyproject.toml
+
+
+FROM uv_base as cogip-console
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -6,25 +41,12 @@ RUN apt-get update && \
     apt-get install -y \
         libgl1 \
         libglib2.0-0 \
-        python3 \
-        python3-pip \
-        python3-venv \
-        git \
         cmake \
-        swig \
-        socat \
-        wait-for-it
+        swig
 
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-RUN python -m pip install -U pip setuptools wheel
-
-ADD requirements.txt requirements-dev.txt pyproject.toml /src/
-RUN python -m pip install -r /src/requirements.txt -r /src/requirements-dev.txt
-
+ADD .python-version pyproject.toml /src/
 ADD cogip /src/cogip
-RUN python -m pip install -e /src[dev]
+RUN uv pip install -e /src[dev]
 
 CMD ["sleep", "infinity"]
 
@@ -47,36 +69,22 @@ RUN apt-get install -y \
         libxcb-xkb1 libxcb-image0 libxcb-render-util0 libxcb-render0 libxcb-util1 \
         libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
 
-FROM ubuntu:24.04 as cogip-firmware
+
+FROM uv_base as cogip-firmware
 
 ENV DEBIAN_FRONTEND noninteractive
 
 RUN apt-get update && \
-        apt-get install -y \
-        g++ \
+    apt-get install -y \
         g++-multilib \
         gcc-arm-none-eabi \
         gcc-multilib \
         gdb-multiarch \
-        git \
         libstdc++-arm-none-eabi-newlib \
         make \
         ncat netcat-openbsd \
         protobuf-compiler \
-        python3 \
-        python3-pip \
-        python3-venv \
         quilt \
-        socat \
-        unzip \
-        wait-for-it
-
-RUN python3 -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-
-RUN python -m pip install -U pip setuptools wheel
-
-ADD requirements.txt /tmp/
-RUN python -m pip install -r /tmp/requirements.txt
+        unzip
 
 CMD ["sleep", "infinity"]
