@@ -8,8 +8,8 @@ Requires=cogip-server-beacon.service
 [Service]
 Type=simple
 Restart=on-failure
-WorkingDirectory=/tmp
-ExecStart=/opt/venv/bin/python3 -m cogip.tools.dashboard_beacon
+WorkingDirectory=/opt
+ExecStart=uv run cogip-dashboard-beacon
 RestartSec=5
 EnvironmentFile=/etc/environment
 

@@ -1,1 +1,1 @@
-source /opt/venv/bin/activate
+source /opt/.venv/bin/activate

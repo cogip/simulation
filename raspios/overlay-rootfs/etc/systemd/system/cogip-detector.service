@@ -8,8 +8,8 @@ After=syslog.target network-online.target
 [Service]
 Type=simple
 Restart=on-failure
-WorkingDirectory=/tmp
-ExecStart=/opt/venv/bin/python3 -m cogip.tools.detector
+WorkingDirectory=/opt
+ExecStart=uv run cogip-detector
 RestartSec=5
 EnvironmentFile=/etc/environment
 
