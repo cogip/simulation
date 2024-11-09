@@ -1,6 +1,6 @@
-FROM ubuntu:24.04 as uv_base
+FROM ubuntu:24.04 AS uv_base
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 RUN apt-get update \
@@ -34,9 +34,7 @@ RUN --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     uv sync --all-extras --no-install-project --frozen
 
-FROM uv_base as cogip-console
-
-ENV DEBIAN_FRONTEND noninteractive
+FROM uv_base AS cogip-console
 
 RUN apt-get update && \
     apt-get install -y \
@@ -53,7 +51,7 @@ RUN uv sync --all-extras --frozen
 CMD ["sleep", "infinity"]
 
 
-FROM cogip-console as cogip-gui
+FROM cogip-console AS cogip-gui
 
 RUN apt-get install -y \
         libegl1 \
@@ -72,9 +70,7 @@ RUN apt-get install -y \
         libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
 
 
-FROM uv_base as cogip-firmware
-
-ENV DEBIAN_FRONTEND noninteractive
+FROM uv_base AS cogip-firmware
 
 RUN apt-get update && \
     apt-get install -y \

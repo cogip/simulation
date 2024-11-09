@@ -1,4 +1,4 @@
-FROM cogip/raspios:base as common
+FROM cogip/raspios:base AS common
 
 # Update all packages
 RUN apt-get update && apt-get -y dist-upgrade && apt-get -y clean
@@ -117,7 +117,7 @@ RUN --mount=type=bind,source=uv.lock,target=uv.lock \
     uv sync --no-dev --no-editable --frozen
 
 
-FROM common as beacon
+FROM common AS beacon
 
 COPY raspios/overlay-rootfs-beacon/ /
 RUN sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf && \
@@ -127,7 +127,7 @@ RUN systemctl enable cogip-server-beacon \
  && systemctl enable cogip-dashboard-beacon
 
 
-FROM common as robot-common
+FROM common AS robot-common
 
 # Enable COGIP services
 RUN systemctl enable cogip-server \
@@ -135,7 +135,7 @@ RUN systemctl enable cogip-server \
  && systemctl enable cogip-planner
 
 
-FROM robot-common as robot
+FROM robot-common AS robot
 
 # Enable openocd and COGIP services
 RUN systemctl enable openocd \
@@ -144,7 +144,7 @@ RUN systemctl enable openocd \
  && systemctl enable cogip-robotcam
 
 
-FROM robot-common as pami
+FROM robot-common AS pami
 
 # Enable openocd and COGIP services
 RUN systemctl enable openocd-pami \

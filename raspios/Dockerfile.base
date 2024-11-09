@@ -4,7 +4,7 @@ USER root
 
 ADD work/rootfs.tar /
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 RUN update-locale LANG=C
 
