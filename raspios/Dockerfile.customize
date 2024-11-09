@@ -80,7 +80,7 @@ RUN systemctl disable userconfig \
 ENTRYPOINT ["/usr/bin/bash"]
 
 # Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local" sh
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local/bin" sh
 
 # Install Python, version is specified in .python-version, a tmp copy from root directory.
 RUN --mount=type=bind,source=.python-version,target=.python-version \

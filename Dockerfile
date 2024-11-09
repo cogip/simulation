@@ -11,7 +11,7 @@ RUN apt-get update \
 WORKDIR /src
 
 # Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local" sh
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local/bin" sh
 
 # Install Python, version is specified in .python-version, a bind mount from root directory.
 RUN --mount=type=bind,source=.python-version,target=.python-version \
@@ -32,7 +32,7 @@ RUN uvx --isolated --from "git+https://github.com/bluss/sysconfigpatcher" syscon
 # Pre-install some Python requirements for COGIP tools
 RUN --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --all-extras --no-install-project --frozen
+    uv sync --no-install-project --frozen
 
 FROM uv_base AS cogip-console
 
@@ -45,7 +45,7 @@ RUN apt-get update && \
 
 ADD .python-version uv.lock pyproject.toml /src/
 ADD cogip /src/cogip
-RUN uv sync --all-extras --frozen
+RUN uv sync --frozen
 
 
 CMD ["sleep", "infinity"]
