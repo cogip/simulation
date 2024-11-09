@@ -43,7 +43,7 @@ RUN apt-get update && \
         cmake \
         swig
 
-ADD .python-version uv.lock pyproject.toml /src/
+ADD .python-version uv.lock pyproject.toml LICENSE /src/
 ADD cogip /src/cogip
 RUN uv sync --frozen
 

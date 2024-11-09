@@ -90,9 +90,18 @@ explicit = true
 [tool.uv.sources]
 ydlidar = { index = "ydlidar" }
 
-
 [tool.scikit-build]
+logging.level = "DEBUG"
 cmake.source-dir = "cogip/cpp"
+build-dir = "build"
+build.verbose = true
+editable.verbose = true
+wheel.packages = ["cogip"]
+wheel.exclude = [
+    "*.pyx",
+    "*.cpp",
+    "*.proto",
+]
 sdist.exclude = [
     "assets",
     "docker-compose.yml",

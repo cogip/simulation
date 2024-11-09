@@ -12,7 +12,11 @@ x-vol-vscode: &vol-vscode
 
 x-volumes-common: &volumes-common
   volumes:
-    - *vol-cogip
+    - "./cogip:/src/cogip"
+    - "./.python-version:/src/.python-version"
+    - "./pyproject.toml:/src/pyproject.toml"
+    - "./uv.lock:/src/uv.lock"
+    - "./LICENSE:/src/LICENSE"
     - *vol-run
     - *vol-pts
     - *vol-vscode
