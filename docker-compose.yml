@@ -474,6 +474,31 @@ services:
     profiles:
       - monitor4
 
+  build_wheel:
+    build:
+      context: .
+      target: uv_base
+    platform: "linux/arm64"
+    command:
+      - /bin/sh
+      - -x
+      - -c
+      - |
+        uv build --wheel
+        chown ${UID:-1000}:${GID:-1000} dist/*_aarch64.whl
+    volumes:
+      - "./cogip:/src/cogip"
+      - "./.python-version:/src/.python-version"
+      - "./pyproject.toml:/src/pyproject.toml"
+      - "./uv.lock:/src/uv.lock"
+      - "./dist:/src/dist"
+      - "./LICENSE:/src/LICENSE"
+      - "./.gitignore:/src/.gitignore"
+      - "build_cache:/src/build"
+    profiles:
+      - build_wheel
+
 volumes:
   vscode:
   run:
+  build_cache:
