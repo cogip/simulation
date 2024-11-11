@@ -239,6 +239,17 @@ Start the Compose stack:
 
 `docker compose up`
 
+Use `--build` option to build images and start the stack:
+
+`docker compose up --build`
+
+### Automatic Restart on Changes
+
+To automatically restart the services on Python source files changes
+or rebuild C++ extensions on C++ source files changes, use the `--watch` option:
+
+`docker compose up --build --watch`
+
 ### Dashboards Access
 
 The `Beacon Dashboard` (if enabled in `.env`) is accessible using a web browser at `http://localhost:8080`.
