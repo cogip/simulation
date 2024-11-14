@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 
 from cogip.models import models
 from cogip.tools.camera.detect import solar_panels_positions
-from .. import actuators, logger
-from ..cameras import get_robot_position, get_solar_panels
-from ..pose import Pose
-from .actions import Action, Actions
+from cogip.tools.planner import actuators, logger
+from cogip.tools.planner.actions.actions import Action, Actions
+from cogip.tools.planner.cameras import get_robot_position, get_solar_panels
+from cogip.tools.planner.pose import Pose
 
 if TYPE_CHECKING:
     from ..planner import Planner

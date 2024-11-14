@@ -2,9 +2,8 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from typing import TYPE_CHECKING, final
 
-from .. import logger
-from ..context import GameContext
-from ..pose import Pose
+from cogip.tools.planner import context, logger
+from cogip.tools.planner.pose import Pose
 
 if TYPE_CHECKING:
     from ..planner import Planner
@@ -22,7 +21,7 @@ class Action:
         self.planner = planner
         self.actions = actions
         self.interruptable = interruptable
-        self.game_context = GameContext()
+        self.game_context = context.GameContext()
         self.poses: list[Pose] = []
         self.before_action_func: Callable[[], Awaitable[None]] | None = None
         self.after_action_func: Callable[[], Awaitable[None]] | None = None
@@ -99,4 +98,4 @@ class Actions(list[Action]):
     def __init__(self, planner: "Planner"):
         super().__init__()
         self.planner = planner
-        self.game_context = GameContext()
+        self.game_context = context.GameContext()

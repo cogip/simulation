@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 
 from cogip.models import artifacts
-from .. import actuators
-from ..pose import Pose
-from . import base_actions
-from .actions import Actions
+from cogip.tools.planner import actuators
+from cogip.tools.planner.actions import base_actions
+from cogip.tools.planner.actions.actions import Actions
+from cogip.tools.planner.pose import Pose
 
 if TYPE_CHECKING:
     from ..planner import Planner
