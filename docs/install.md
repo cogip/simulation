@@ -122,21 +122,31 @@ To enable pre-commit hooks prevent committing code not respecting linting and fo
 pre-commit install
 ```
 
-### Packaging
+### Packaging and Deployment
 
-To build a source distribution package, use:
+This section explains how to build a new binary package and deploy it on a Raspberry Pi.
+
+A Docker Compose service is provided to build a binary distribution package for linux/arm64 platform.
 
 ```bash
-uv build --sdist
+docker compose up --build build_wheel
 ```
 
-This will produce `dist/cogip_tools-1.0.0.tar.gz`.
+This will produce `dist/cogip_tools-1.0.0-cp312-cp312-linux_aarch64.whl`.
 
 This package can be copied to the Raspberry Pi and installed to deploy the Python tools:
 
 ```bash
-uv tool install cogip_tools-1.0.0.tar.gz
+uv pip install cogip_tools-1.0.0-cp312-cp312-linux_aarch64.whl
 ```
+
+!!! warning "Docker image for linux/arm64"
+    The `build_wheel` service is based on a image built from a Ubuntu image. If this image was already pulled for
+    the `linux/amd64` platform, the `linux/arm64` may not be pulled automatically.
+    If the `docker compose` command is failing for this reason, the required image can be pulled manually:
+    ```bash
+    docker pull --platform "linux/arm64" ubuntu:24.04
+    ```
 
 ## Docker Method
 
@@ -228,6 +238,17 @@ Build Docker images:
 Start the Compose stack:
 
 `docker compose up`
+
+Use `--build` option to build images and start the stack:
+
+`docker compose up --build`
+
+### Automatic Restart on Changes
+
+To automatically restart the services on Python source files changes
+or rebuild C++ extensions on C++ source files changes, use the `--watch` option:
+
+`docker compose up --build --watch`
 
 ### Dashboards Access
 

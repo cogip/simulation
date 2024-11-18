@@ -1,4 +1,4 @@
-FROM cogip/raspios:base as common
+FROM cogip/raspios:base AS common
 
 # Update all packages
 RUN apt-get update && apt-get -y dist-upgrade && apt-get -y clean
@@ -80,7 +80,7 @@ RUN systemctl disable userconfig \
 ENTRYPOINT ["/usr/bin/bash"]
 
 # Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local" sh
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local/bin" sh
 
 # Install Python, version is specified in .python-version, a tmp copy from root directory.
 RUN --mount=type=bind,source=.python-version,target=.python-version \
@@ -114,10 +114,11 @@ RUN chmod 600 /etc/ssh/ssh_host_* \
 RUN --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
     --mount=type=bind,source=cogip,target=cogip \
+    --mount=type=bind,source=LICENSE,target=LICENSE \
     uv sync --no-dev --no-editable --frozen
 
 
-FROM common as beacon
+FROM common AS beacon
 
 COPY raspios/overlay-rootfs-beacon/ /
 RUN sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/' /etc/sysctl.conf && \
@@ -127,7 +128,7 @@ RUN systemctl enable cogip-server-beacon \
  && systemctl enable cogip-dashboard-beacon
 
 
-FROM common as robot-common
+FROM common AS robot-common
 
 # Enable COGIP services
 RUN systemctl enable cogip-server \
@@ -135,7 +136,7 @@ RUN systemctl enable cogip-server \
  && systemctl enable cogip-planner
 
 
-FROM robot-common as robot
+FROM robot-common AS robot
 
 # Enable openocd and COGIP services
 RUN systemctl enable openocd \
@@ -144,7 +145,7 @@ RUN systemctl enable openocd \
  && systemctl enable cogip-robotcam
 
 
-FROM robot-common as pami
+FROM robot-common AS pami
 
 # Enable openocd and COGIP services
 RUN systemctl enable openocd-pami \

@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools >= 68.0.0"]
-build-backend = "setuptools.build_meta"
+requires = ["scikit-build-core", "cython", "cython-cmake"]
+build-backend = "scikit_build_core.build"
 
 [project]
 name = "cogip-tools"
@@ -78,6 +78,7 @@ cogip-dashboard-beacon = "cogip.tools.dashboard_beacon.__main__:main"
 cogip-copilot-pami = "cogip.tools.copilot_pami.__main__:main"
 cogip-detector-pami = "cogip.tools.detector_pami.__main__:main"
 cogip-cansend = "cogip.tools.cansend.__main__:main"
+cogip-cpp-example = "cogip.tools.cpp_example.__main__:main"
 
 [tool.uv]
 python-preference = "only-managed"
@@ -90,29 +91,36 @@ explicit = true
 [tool.uv.sources]
 ydlidar = { index = "ydlidar" }
 
-[tool.setuptools.packages.find]
-include = ["cogip*"]
-exclude = ["raspios*", "submodules*"]
-
-[tool.setuptools.package-data]
-"cogip.tools.dashboard" = [
-    "static/css/*",
-    "static/css/purged/*",
-    "static/img/*",
-    "static/js/*",
-    "static/js/external/*",
-    "templates/*"
+[tool.scikit-build]
+logging.level = "DEBUG"
+cmake.source-dir = "cogip/cpp"
+build-dir = "build"
+build.verbose = true
+editable.verbose = true
+wheel.packages = ["cogip"]
+wheel.exclude = [
+    "*.pyx",
+    "*.cpp",
+    "*.proto",
 ]
-"cogip.tools.dashboard_beacon" = [
-    "static/css/*",
-    "static/css/purged/*",
-    "static/img/*",
-    "static/js/*",
-    "static/js/external/*",
-    "templates/*"
+sdist.exclude = [
+    "assets",
+    "docker-compose.yml",
+    "Dockerfile",
+    "docs",
+    ".gitattributes",
+    ".github",
+    ".gitignore",
+    ".gitmodules",
+    "Makefile",
+    "mkdocs.yml",
+    "PKG-INFO",
+    ".pre-commit-config.yaml",
+    "raspios",
+    "submodules",
 ]
-"cogip.tools.camera" = [
-    "cameras/**/params.yaml"
+sdist.include = [
+    "submodules/mcu-firmware/**/*.proto"
 ]
 
 [tool.ruff]

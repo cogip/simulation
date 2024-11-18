@@ -32,7 +32,7 @@ jobs:
         run: uvx --isolated --from "git+https://github.com/bluss/sysconfigpatcher" sysconfigpatcher $(dirname $(dirname $(readlink .venv/bin/python)))
 
       - name: Install the packages
-        run: uv sync --all-extras --dev
+        run: uv sync
 
       - name: Deploy doc
         run: uv run mkdocs gh-deploy --force

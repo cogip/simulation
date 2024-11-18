@@ -1,6 +1,6 @@
-FROM ubuntu:24.04 as uv_base
+FROM ubuntu:24.04 AS uv_base
 
-ENV DEBIAN_FRONTEND noninteractive
+ENV DEBIAN_FRONTEND=noninteractive
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 RUN apt-get update \
@@ -11,7 +11,7 @@ RUN apt-get update \
 WORKDIR /src
 
 # Install uv
-RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local" sh
+RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local/bin" sh
 
 # Install Python, version is specified in .python-version, a bind mount from root directory.
 RUN --mount=type=bind,source=.python-version,target=.python-version \
@@ -32,11 +32,9 @@ RUN uvx --isolated --from "git+https://github.com/bluss/sysconfigpatcher" syscon
 # Pre-install some Python requirements for COGIP tools
 RUN --mount=type=bind,source=uv.lock,target=uv.lock \
     --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --all-extras --no-install-project --frozen
+    uv sync --no-install-project --frozen
 
-FROM uv_base as cogip-console
-
-ENV DEBIAN_FRONTEND noninteractive
+FROM uv_base AS cogip-console
 
 RUN apt-get update && \
     apt-get install -y \
@@ -45,15 +43,15 @@ RUN apt-get update && \
         cmake \
         swig
 
-ADD .python-version uv.lock pyproject.toml /src/
+ADD .python-version uv.lock pyproject.toml LICENSE /src/
 ADD cogip /src/cogip
-RUN uv sync --all-extras --frozen
+RUN uv sync --frozen
 
 
 CMD ["sleep", "infinity"]
 
 
-FROM cogip-console as cogip-gui
+FROM cogip-console AS cogip-gui
 
 RUN apt-get install -y \
         libegl1 \
@@ -72,9 +70,7 @@ RUN apt-get install -y \
         libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxkbcommon-x11-0
 
 
-FROM uv_base as cogip-firmware
-
-ENV DEBIAN_FRONTEND noninteractive
+FROM uv_base AS cogip-firmware
 
 RUN apt-get update && \
     apt-get install -y \
