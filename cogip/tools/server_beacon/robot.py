@@ -5,8 +5,8 @@ import socketio
 import socketio.exceptions
 
 from cogip import logger
+from cogip.tools.planner import actions
 from cogip.tools.planner.positions import StartPosition
-from cogip.tools.planner.strategy import Strategy
 from cogip.tools.planner.table import TableEnum
 
 if TYPE_CHECKING:
@@ -101,14 +101,14 @@ class Robot:
         async def pami_reset():
             for robot_id, robot in self.server.robots.items():
                 if robot.sio.connected:
-                    strategy: Strategy | None = None
+                    strategy: actions.Strategy | None = None
                     match robot_id:
                         case 2:
-                            strategy = Strategy.PAMI2
+                            strategy = actions.Strategy.PAMI2
                         case 3:
-                            strategy = Strategy.PAMI3
+                            strategy = actions.Strategy.PAMI3
                         case 4:
-                            strategy = Strategy.PAMI4
+                            strategy = actions.Strategy.PAMI4
 
                     if strategy:
                         await robot.sio.emit(

@@ -22,14 +22,13 @@ from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.asyncloop import AsyncLoop
 from cogip.utils.singleton import Singleton
 from . import actuators, cameras, logger, pose, sio_events
-from .actions import action_classes, actions
+from .actions import Strategy, action_classes, actions
 from .avoidance.avoidance import AvoidanceStrategy
 from .avoidance.process import avoidance_process
 from .camp import Camp
 from .context import GameContext
 from .positions import StartPosition
 from .properties import Properties
-from .strategy import Strategy
 from .table import TableEnum
 from .wizard import GameWizard
 

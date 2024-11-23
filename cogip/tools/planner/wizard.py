@@ -3,9 +3,9 @@ from typing import TYPE_CHECKING, Any
 from cogip.tools.planner.positions import StartPosition
 from cogip.tools.planner.table import TableEnum
 from cogip.utils.asyncloop import AsyncLoop
+from .actions import Strategy
 from .camp import Camp
 from .context import GameContext
-from .strategy import Strategy
 
 if TYPE_CHECKING:
     from cogip.tools.planner.planner import Planner

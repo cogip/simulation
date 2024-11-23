@@ -7,7 +7,7 @@ from pydantic import TypeAdapter
 
 from cogip import models
 from .. import logger
-from ..strategy import Strategy
+from ..actions import Strategy
 from ..table import Table
 from .avoidance import Avoidance, AvoidanceStrategy
 
