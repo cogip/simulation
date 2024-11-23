@@ -5,8 +5,8 @@ import socketio
 import socketio.exceptions
 
 from cogip import logger
+from cogip.tools.planner.actions import Strategy
 from cogip.tools.planner.positions import StartPosition
-from cogip.tools.planner.strategy import Strategy
 from cogip.tools.planner.table import TableEnum
 
 if TYPE_CHECKING:

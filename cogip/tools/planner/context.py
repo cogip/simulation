@@ -21,12 +21,12 @@ from cogip.models.artifacts import (
 from cogip.models.models import DynObstacleRect
 from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.singleton import Singleton
+from .actions import Strategy
 from .avoidance.avoidance import AvoidanceStrategy
 from .camp import Camp
 from .pose import AdaptedPose, Pose
 from .positions import StartPosition
 from .properties import Properties
-from .strategy import Strategy
 from .table import Table, TableEnum, tables
 
 
