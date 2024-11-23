@@ -29,6 +29,12 @@
         data-bs-target="#cameraModal">
         <img src="{{ url_for('static', path='img/camera.svg') }}" />
       </button>
+      <!-- Nouveau bouton pour ouvrir la modal des graphiques -->
+      <button
+        class="relative z-10 mt-3 px-4 py-2 rounded-lg border border-gray-800 hover:bg-zinc-800 hover:opacity-70 float-end"
+        id="buttonchartModal" type="button" onclick="openChartModal()" data-bs-toggle="modal" data-bs-target="#chartModal">
+        <img src="{{ url_for('static', path='img/graph.svg') }}" />
+      </button>
     </div>
   </div>
 
@@ -90,7 +96,29 @@
     </div>
   </div>
 
+  <!-- Graphic modal -->
+    <div class="fixed inset-0 z-50 hidden" id="chartModal">
+      <div class="flex h-full w-full p-4 text-center">
+        <div class="w-full p-6 mx-auto bg-zinc-900 rounded-lg shadow-lg">
+          <div class="flex items-center justify-between pb-4 border-b border-gray-600">
+            <h5 class="text-lg font-medium text-grey-color">Graphics</h5>
+            <button type="button" class="text-grey-color text-2xl leading-none hover:text-gray-400" aria-label="Close"
+              onclick="closeModal('chartModal')">&times;</button>
+          </div>
+          <div class="flex flex-col gap-6">
+            <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+              <canvas id="distanceChart" width="400" height="80"></canvas>
+            </div>
+            <div class="bg-gray-800 p-4 rounded-lg shadow-md">
+              <canvas id="angleChart" width="400" height="80"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   <script type="text/javascript" src="{{ url_for('static', path='js/external/socket.io.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('static', path='js/external/chart.js') }}"></script>
 
   <script type="module">
     import * as socketModule from "../static/js/socketModule.js";
@@ -98,6 +126,7 @@
     import * as cameraModule from "../static/js/cameraModule.js";
     import * as wizardModule from "../static/js/wizardModule.js";
     import * as scoreModule from "../static/js/scoreModule.js";
+    import * as chartModule from "../static/js/chartModule.js";
     import { virtualKeyboard } from "../static/js/keyboardModule.js";
 
     window.addEventListener("resize", drawModule.resizeCanvas, false);
@@ -105,6 +134,7 @@
     document.addEventListener("DOMContentLoaded", function (event) {
       drawModule.resizeCanvas(); // draw background
       virtualKeyboard.init(); // initialize keyboard
+      chartModule.drawCharts()
 
       const socketioPort = parseInt(window.location.port) + 10
 
@@ -131,6 +161,7 @@
         .on("state", function (robot_id, msg) {
           drawModule.displayMsg(msg); // uses message to display information in bottom page
           drawModule.drawBoardElement(msg); // move robot
+          chartModule.updateCharts(msg);
         })
         .on("path", function (robot_id, msg) {
           drawModule.recordPath(msg);

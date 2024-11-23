@@ -11,9 +11,10 @@
       rel="stylesheet"
       href="{{ url_for('static', path='css/index.css') }}"
     />
+    <link rel="stylesheet" href="{{ url_for('static', path='css/prod/output.css') }}" />
   </head>
 
-  <body class="d-flex flex-column h-100 w-100 bg-dark">
+  <body class="flex flex-col h-full w-full bg-zinc-900 overflow-hidden">
     <ul class="nav nav-tabs" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="beacon-tab" data-bs-toggle="tab" data-bs-target="#beacon" type="button"
