@@ -763,7 +763,7 @@ class Planner:
             {
                 "name": "Choose Strategy",
                 "type": "choice_str",
-                "choices": [e.name for e in Strategy],
+                "choices": [(e.name, "Game" if e.name.startswith("Game") else "Other") for e in Strategy],
                 "value": self.game_context.strategy.name,
             },
         )
