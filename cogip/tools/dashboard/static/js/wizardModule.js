@@ -231,7 +231,11 @@ function formatWizardInput(showInput, typeInput, value, choices) {
     if (typeInput === "checkbox") {
       configureCheckboxInput(wizardInput, value);
     } else if (typeInput === "radio" || typeInput === "select") {
-      configureChoiceInput(typeInput, value, choices);
+      if (groupChoicesByTab(choices)) {
+        createTabbedChoices(groupChoicesByTab(choices), value);
+      } else {
+        configureChoiceInput(typeInput, value, choices);
+      }
     } else if (typeInput === "camp") {
       configureCampInput(value);
     } else {
@@ -272,6 +276,89 @@ function configureChoiceInput(typeInput, value, choices) {
   });
 
   document.getElementById("modalBody").appendChild(choiceZone); // Add choice input to modal body
+}
+
+// Function pour group choice inputs by tag
+function groupChoicesByTab(choices) {
+  if (!Array.isArray(choices) || !choices.some(c => Array.isArray(c))) return null;
+
+  return choices.reduce((acc, choice) => {
+    if (Array.isArray(choice) && choice.length === 2) {
+      const [value, tab] = choice;
+      acc[tab] = acc[tab] || [];
+      acc[tab].push(value);
+    }
+    return acc;
+  }, {});
+}
+
+function createTabbedChoices(groupedChoices, value) {
+  const container = document.createElement("div");
+
+  // Tab creation
+  const tabList = document.createElement("div");
+  setAttributes(tabList, { class: "flex border-b border-gray-300 mb-4" });
+
+  const tabContent = document.createElement("div");
+  setAttributes(tabContent, { id: "tabContent", class: "mt-4" });
+
+  Object.keys(groupedChoices).forEach((tabName, tabIndex) => {
+    // Create button for each tab
+    const tabButton = document.createElement("button");
+    const totalTabs = Object.keys(groupedChoices).length;
+
+    setAttributes(tabButton, {
+      class: `tab-button px-4 py-2 rounded-t-md ${
+        tabIndex === 0 ? "bg-red-cogip" : "bg-grey-100 text-grey-color"
+      }`,
+      "data-tab": tabName,
+      style: `width: ${100 / totalTabs}%;`,
+    });
+    tabButton.textContent = tabName;
+
+    // Add click event
+    tabButton.addEventListener("click", () => {
+      Array.from(tabList.children).forEach((btn) => {
+        btn.classList.remove("bg-red-cogip");
+        btn.classList.add("text-grey-color");
+      });
+      tabButton.classList.add("bg-red-cogip");
+      tabButton.classList.remove("text-grey-color");
+
+      Array.from(tabContent.children).forEach((content) =>
+        content.classList.add("hidden")
+      );
+      document.getElementById(`tab-${tabName}`).classList.remove("hidden");
+    });
+
+    tabList.appendChild(tabButton);
+
+    const tabDiv = document.createElement("div");
+    setAttributes(tabDiv, {
+      id: `tab-${tabName}`,
+      class: `tab-content ${
+        tabIndex === 0 ? "" : "hidden"
+      } pt-2 max-h-[70vh] overflow-y-auto`,
+    });
+
+    groupedChoices[tabName].forEach((choice, index) => {
+      const button = createChoiceButton("radio", choice, value, index);
+      const label = createChoiceLabel(choice, index);
+
+      const choiceWrapper = document.createElement("div");
+      setAttributes(choiceWrapper, { class: "flex items-center mb-2" });
+      choiceWrapper.appendChild(button);
+      choiceWrapper.appendChild(label);
+
+      tabDiv.appendChild(choiceWrapper);
+    });
+
+    tabContent.appendChild(tabDiv);
+  });
+
+  container.appendChild(tabList);
+  container.appendChild(tabContent);
+  document.getElementById("modalBody").appendChild(container); // Add choice input to modal body
 }
 
 // Helper function to create choice buttons (radio or checkbox)
