@@ -16,7 +16,7 @@ def main() -> None:
     """
     Launch COGIP Robot Camera.
 
-    During installation of the simulation tools, `setuptools` is configured
+    During installation of cogip-tools, `setuptools` is configured
     to create the `cogip-robotcam` script using this function as entrypoint.
     """
     settings = Settings()

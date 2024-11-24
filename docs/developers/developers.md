@@ -4,7 +4,7 @@ This documentation provides information for developers who would like to contrib
 to the project.
 It tries to explain how modules are organized and how `PySide6` and `Qt3D` are used.
 
-The simulation tools are developed in Python 3.11+, using [`Pyside6`](https://doc.qt.io/qtforpython-6/contents.html), the Qt for Python package.
+COGIP tools are developed in Python 3.12+, using [`Pyside6`](https://doc.qt.io/qtforpython-6/contents.html), the Qt for Python package.
 
 The 3D view is based on the [`Qt3D framework`](https://doc.qt.io/qt-6/qt3d-overview.html).
 To have a better understanding of the code, it is important to understand Qt concepts

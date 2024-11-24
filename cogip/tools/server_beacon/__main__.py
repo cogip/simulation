@@ -87,7 +87,7 @@ def main():
     """
     Launch COGIP SocketIO beacon server.
 
-    During installation of the simulation tools, `setuptools` is configured
+    During installation of cogip-tools, `setuptools` is configured
     to create the `cogip-server-beacon` script using this function as entrypoint.
     """
     typer.run(main_opt)

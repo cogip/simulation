@@ -109,7 +109,7 @@ def main():
     """
     Launch COGIP Copilot.
 
-    During installation of the simulation tools, `setuptools` is configured
+    During installation of cogip-tools, `setuptools` is configured
     to create the `cogip-copilot` script using this function as entrypoint.
     """
     typer.run(main_opt)

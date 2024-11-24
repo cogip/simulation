@@ -213,7 +213,7 @@ def main():
     """
     Launch COGIP Game Planner.
 
-    During installation of the simulation tools, `setuptools` is configured
+    During installation of cogip-tools, `setuptools` is configured
     to create the `cogip-planner` script using this function as entrypoint.
     """
     typer.run(main_opt)
