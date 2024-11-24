@@ -58,8 +58,8 @@ dev = [
 ]
 
 [project.urls]
-Documentation = "https://cogip.github.io/simulation"
-Repository = "https://github.com/cogip/simulation.git"
+Documentation = "https://cogip.github.io/cogip-tools"
+Repository = "https://github.com/cogip/cogip-tools.git"
 
 [project.scripts]
 cogip-monitor = "cogip.tools.monitor.main:main"

@@ -1,7 +1,7 @@
 site_name: COGIP Tools
 
-repo_name: cogip/simulation
-repo_url: https://github.com/cogip/simulation
+repo_name: cogip/cogip-tools
+repo_url: https://github.com/cogip/cogip-tools
 
 extra_css:
   - index.css

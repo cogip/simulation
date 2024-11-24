@@ -64,7 +64,7 @@ def main():
     """
     Launch COGIP Beacon Dashboard.
 
-    During installation of the simulation tools, `setuptools` is configured
+    During installation of cogip-tools, `setuptools` is configured
     to create the `cogip-dashboard-beacon` script using this function as entrypoint.
     """
     typer.run(main_opt)

@@ -56,7 +56,7 @@ def main():
     """
     Starts the replay viewer.
 
-    During installation of the simulation tools, `setuptools` is configured
+    During installation of cogip-tools, `setuptools` is configured
     to create the `replay` script using this function as entrypoint.
     """
     typer.run(main_opt)

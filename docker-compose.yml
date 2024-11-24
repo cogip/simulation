@@ -57,12 +57,12 @@ x-build-firmware: &build-firmware
   build:
     context: .
     target: cogip-firmware
-  working_dir: /simulation/submodules/mcu-firmware
+  working_dir: /cogip-tools/submodules/mcu-firmware
   volumes:
     - *vol-run
     - *vol-pts
     - *vol-vscode
-    - ".:/simulation"
+    - ".:/cogip-tools"
   command:
     - /bin/sh
     - -x
