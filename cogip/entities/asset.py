@@ -145,20 +145,18 @@ def traverse_tree(node: Qt3DCore.QEntity, next_node_nb: int, fd: TextIO) -> tupl
     next_node_nb += 1
 
     # Insert current node in the tree
-    fd.write('n%03d [label="%s\n%s"] ;\n' % (current_node_nb, node.metaObject().className(), node.objectName()))
+    fd.write(f'n{current_node_nb:03d} [label="{node.metaObject().className()}\n{node.objectName()}"] ;\n')
 
     # Enumerate components
     for comp in node.components():
-        fd.write(
-            'n%03d [shape=box,label="%s\n%s"] ;\n' % (next_node_nb, comp.metaObject().className(), comp.objectName())
-        )
-        fd.write("n%03d -- n%03d [style=dotted];\n" % (current_node_nb, next_node_nb))
+        fd.write(f'n{next_node_nb:03d} [shape=box,label="{comp.metaObject().className()}\n{comp.objectName()}"] ;\n')
+        fd.write(f"n{current_node_nb:03d} -- n{next_node_nb:03d} [style=dotted];\n")
         next_node_nb += 1
 
     # Build tree for children
     for child_node in node.children():
         if isinstance(child_node, Qt3DCore.QEntity):
             child_node_nb, next_node_nb = traverse_tree(child_node, next_node_nb, fd)
-            fd.write("n%03d -- n%03d ;\n" % (current_node_nb, child_node_nb))
+            fd.write(f"n{current_node_nb:03d} -- n{child_node_nb:03d} ;\n")
 
     return current_node_nb, next_node_nb

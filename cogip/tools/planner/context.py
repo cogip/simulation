@@ -21,12 +21,12 @@ from cogip.models.artifacts import (
 from cogip.models.models import DynObstacleRect
 from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.singleton import Singleton
+from . import actions
 from .avoidance.avoidance import AvoidanceStrategy
 from .camp import Camp
 from .pose import AdaptedPose, Pose
 from .positions import StartPosition
 from .properties import Properties
-from .strategy import Strategy
 from .table import Table, TableEnum, tables
 
 
@@ -40,7 +40,7 @@ class GameContext(metaclass=Singleton):
         self.game_duration: int = 90 if self.properties.robot_id == 1 else 100
         self.minimum_score: int = 0
         self.camp = Camp()
-        self.strategy = Strategy.GameSolarFirst
+        self.strategy = actions.Strategy.GameSolarFirst
         self._table = TableEnum.Game
         self.avoidance_strategy = AvoidanceStrategy.VisibilityRoadMapQuadPid
         self.reset()
@@ -70,9 +70,9 @@ class GameContext(metaclass=Singleton):
     @property
     def default_controller(self) -> ControllerEnum:
         match self.strategy:
-            case Strategy.AngularSpeedTest:
+            case actions.Strategy.AngularSpeedTest:
                 return ControllerEnum.ANGULAR_SPEED_TEST
-            case Strategy.LinearSpeedTest:
+            case actions.Strategy.LinearSpeedTest:
                 return ControllerEnum.LINEAR_SPEED_TEST
             case _:
                 return ControllerEnum.QUADPID
@@ -95,7 +95,7 @@ class GameContext(metaclass=Singleton):
                     y=-1285,
                     O=90,
                 )
-                if self.camp.color == Camp.Colors.blue and self.strategy == Strategy.GameSolarFirst:
+                if self.camp.color == Camp.Colors.blue and self.strategy == actions.Strategy.GameSolarFirst:
                     pose.O = 90
                 return pose
             case StartPosition.Opposite:

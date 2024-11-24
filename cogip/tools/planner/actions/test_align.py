@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from . import base_actions
-from .actions import Actions
+from cogip.tools.planner.actions import base_actions
+from cogip.tools.planner.actions.actions import Actions
 
 if TYPE_CHECKING:
     from ..planner import Planner

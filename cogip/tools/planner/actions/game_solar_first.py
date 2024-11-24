@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
 from cogip.models import artifacts, models
-from .. import logger, table
-from . import base_actions
-from .actions import Actions, WaitAction
+from cogip.tools.planner import logger, table
+from cogip.tools.planner.actions import base_actions
+from cogip.tools.planner.actions.actions import Actions, WaitAction
 
 if TYPE_CHECKING:
     from ..planner import Planner

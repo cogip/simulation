@@ -5,12 +5,12 @@ from typing import TYPE_CHECKING
 from cogip import models
 from cogip.models import artifacts
 from cogip.models.actuators import BoolSensorEnum
+from cogip.tools.planner import actuators, logger
+from cogip.tools.planner.actions.actions import Action, Actions
+from cogip.tools.planner.avoidance.avoidance import AvoidanceStrategy
+from cogip.tools.planner.camp import Camp
+from cogip.tools.planner.pose import AdaptedPose, Pose
 from cogip.tools.planner.table import TableEnum
-from .. import actuators, logger
-from ..avoidance.avoidance import AvoidanceStrategy
-from ..camp import Camp
-from ..pose import AdaptedPose, Pose
-from .actions import Action, Actions
 
 if TYPE_CHECKING:
     from ..planner import Planner
