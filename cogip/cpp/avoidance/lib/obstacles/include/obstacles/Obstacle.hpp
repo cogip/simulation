@@ -18,14 +18,6 @@
 #include "cogip_defs/Pose.hpp"
 #include "cogip_defs/Polygon.hpp"
 
-#ifndef OBSTACLE_BOUNDING_BOX_VERTICES
-#  define OBSTACLE_BOUNDING_BOX_VERTICES    6  /**< number of bounding box vertices */
-#endif
-
-#ifndef OBSTACLE_BOUNDING_BOX_MARGIN
-#  define OBSTACLE_BOUNDING_BOX_MARGIN    0.2  /**< bounding box margin in percent of the radius */
-#endif
-
 namespace cogip {
 
 namespace obstacles {
@@ -37,8 +29,9 @@ class Obstacle : public cogip_defs::Polygon  {
 public:
     /// Constructor
     Obstacle(
-        const cogip_defs::Pose &center = {0, 0, 0},///< [in] obstacle center
-        double radius = 0.0                        ///< [in] obstacle circumscribed circle radius
+        const cogip_defs::Pose &center = {0, 0, 0}, ///< [in] obstacle center
+        double radius = 0.0,                        ///< [in] obstacle circumscribed circle radius
+        double bounding_box_margin = 0.2            ///< [in] bounding box margin
         );
 
     /// Destructor
@@ -78,11 +71,19 @@ public:
     /// Enable or disable obstacle.
     void enable(bool enabled) { enabled_ = enabled; };
 
+    /// Get bounding box
+    const BoundingBox& bounding_box() const { return bounding_box_; }
+
 protected:
-    cogip_defs::Pose center_;           ///< obstacle center
-    double radius_;                       ///< obstacle circumscribed circle radius
-    BoundingBox bounding_box_;            ///< Precomputed bounding box for avoidance
-    bool enabled_;                        ///< Obstacle enabled or not
+    cogip_defs::Pose center_;               ///< obstacle center
+    double radius_;                         ///< obstacle circumscribed circle radius
+    BoundingBox bounding_box_;              ///< Precomputed bounding box for avoidance
+    bool enabled_;                          ///< Obstacle enabled or not
+    double bounding_box_margin_;            ///< Margin for the bounding box
+
+private:
+    /// Update bounding box.
+    virtual void update_bounding_box_() = 0;
 };
 
 } // namespace obstacles
