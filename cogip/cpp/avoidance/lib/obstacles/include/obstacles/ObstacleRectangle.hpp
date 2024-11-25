@@ -4,9 +4,8 @@
 // directory for more details.
 
 /// @ingroup     lib_obstacles
-/// @{
-/// @file
-/// @brief       Rectangle obstacle class declaration
+/// @file        ObstacleRectangle.hpp
+/// @brief       Declaration of the ObstacleRectangle class, representing a rectangular obstacle.
 /// @author      Eric Courtois <eric.courtois@gmail.com>
 
 #pragma once
@@ -17,21 +16,29 @@ namespace cogip {
 
 namespace obstacles {
 
-/// A rectangle obstacle which inherits from Polygon.
-/// Rectangle is very similar to Polygon, but it is defined by its center,
-/// angle and lengths to be easier to display in the simulator.
+/// @class ObstacleRectangle
+/// @brief A rectangular obstacle that simplifies the representation of a polygon.
+///
+/// This class provides a simplified way to define rectangular obstacles by specifying
+/// a center pose, orientation, and lengths along the X and Y axes.
 class ObstacleRectangle : public ObstaclePolygon {
 public:
-    /// Constructor
+    /// @brief Constructor for ObstacleRectangle.
+    /// @param center Center pose of the rectangle.
+    /// @param length_x Length of the rectangle along the X-axis.
+    /// @param length_y Length of the rectangle along the Y-axis.
     ObstacleRectangle(
-        const cogip_defs::Pose &center,   ///< [in] center of the rectangle
-        double length_x,                  ///< [in] length on X of the rectangle
-        double length_y                   ///< [in] length on Y of the rectangle
-        );
+        const cogip_defs::Pose &center, ///< [in] Center of the rectangle.
+        double length_x,                ///< [in] Length along the X-axis.
+        double length_y                 ///< [in] Length along the Y-axis.
+    );
 
 private:
-    double length_x_;                     ///< length on X axis when angle = 0
-    double length_y_;                     ///< length on Y axis when angle = 0
+    /// @brief Update the bounding box for the rectangle.
+    void update_bounding_box_() override;
+
+    double length_x_; ///< Length of the rectangle along the X-axis.
+    double length_y_; ///< Length of the rectangle along the Y-axis.
 };
 
 } // namespace obstacles

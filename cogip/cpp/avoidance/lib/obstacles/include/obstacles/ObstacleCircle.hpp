@@ -4,9 +4,8 @@
 // directory for more details.
 
 /// @ingroup     lib_obstacles
-/// @{
-/// @file
-/// @brief       Circle obstacle class declaration
+/// @file        ObstacleCircle.hpp
+/// @brief       Declaration of the ObstacleCircle class, representing a circular obstacle.
 /// @author      Eric Courtois <eric.courtois@gmail.com>
 
 #pragma once
@@ -17,29 +16,39 @@ namespace cogip {
 
 namespace obstacles {
 
-/// Circle obstacle defined by its center and radius
+/// @class ObstacleCircle
+/// @brief Circle obstacle defined by its center and radius.
 class ObstacleCircle : public Obstacle {
 public:
-    /// Constructor
+    /// @brief Constructor.
     ObstacleCircle(
-        const cogip::cogip_defs::Pose &center,   ///< [in] center of the circle
-        double radius                            ///< [in] radius of the circle
-        );
+        const cogip::cogip_defs::Pose &center,  ///< [in] Center of the circle.
+        double radius,                          ///< [in] Radius of the circle.
+        double bounding_box_margin,             ///< [in] Bounding box margin.
+        uint32_t bounding_box_points_number = 8 ///< [in] Number of points for the bounding box.
+    );
 
+    /// @brief Check if a point is inside the circle.
     bool is_point_inside(const cogip_defs::Coords &p) const override;
+
+    /// @brief Check if a segment defined by two points crosses the circle.
     bool is_segment_crossing(const cogip_defs::Coords &a, const cogip_defs::Coords &b) const override;
+
+    /// @brief Find the nearest point on the circle's perimeter to a given point.
     cogip_defs::Coords nearest_point(const cogip_defs::Coords &p) const override;
 
 private:
-    /// Update bounding box.
-    void update_bounding_box();
+    uint32_t bounding_box_points_number_; ///< Number of points to define the bounding box.
 
-    /// Check if a line defined by two points A,B is crossing a circle.
-    /// @return true if (AB) crosses circle, false otherwise
+    /// @brief Update the bounding box.
+    void update_bounding_box_() override;
+
+    /// @brief Check if a line defined by two points crosses the circle.
+    /// @return True if (AB) crosses the circle, false otherwise.
     bool is_line_crossing_circle(
-        const cogip_defs::Coords &a, ///< point A
-        const cogip_defs::Coords &b  ///< point B
-        ) const;
+        const cogip_defs::Coords &a, ///< [in] Point A.
+        const cogip_defs::Coords &b  ///< [in] Point B.
+    ) const;
 };
 
 } // namespace obstacles

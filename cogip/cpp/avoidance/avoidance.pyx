@@ -4,16 +4,17 @@ from libcpp.vector cimport vector
 from libcpp cimport bool
 from cython.operator cimport dereference as deref
 
-cdef extern from "avoidance/Avoidance.hpp" namespace "":
+# External C++ Classes and Functions
+cdef extern from "avoidance/Avoidance.hpp" namespace "cogip::avoidance":
     cdef cppclass Avoidance:
         Avoidance(const ObstaclePolygon& borders)
-        size_t getPathSize()
-        Coords getPathPose(unsigned char index) const
-        void addDynamicObstacle(Obstacle& obstacle)
-        void removeDynamicObstacle(Obstacle& obstacle)
-        void clearDynamicObstacles()
-        bool buildGraph(const Coords& start, const Coords& finish)
-        bool checkRecompute(const Coords& start, const Coords& finish) const
+        size_t get_path_size()
+        Coords get_path_pose(unsigned char index) const
+        void add_dynamic_obstacle(Obstacle& obstacle)
+        void remove_dynamic_obstacle(Obstacle& obstacle)
+        void clear_dynamic_obstacles()
+        bool avoidance(const Coords& start, const Coords& finish)
+        bool check_recompute(const Coords& start, const Coords& finish) const
 
 cdef extern from "obstacles/Obstacle.hpp" namespace "cogip::obstacles":
     cdef cppclass Obstacle:
@@ -32,7 +33,7 @@ cdef extern from "obstacles/ObstaclePolygon.hpp" namespace "cogip::obstacles":
 cdef extern from "obstacles/ObstacleCircle.hpp" namespace "cogip::obstacles":
     cdef cppclass ObstacleCircle(Obstacle):
         ObstacleCircle()  # Default constructor
-        ObstacleCircle(Pose& center, double radius)
+        ObstacleCircle(Pose& center, double radius, double bb_margin, unsigned int bb_points_number)
 
 cdef extern from "cogip_defs/Coords.hpp" namespace "cogip::cogip_defs":
     cdef cppclass Coords:
@@ -52,85 +53,63 @@ cdef extern from "cogip_defs/Pose.hpp" namespace "cogip::cogip_defs":
 # Wrapping Pose class for Python
 cdef class CppPose:
     cdef Pose* c_pose
-    cdef double x, y, O
+
+    def __cinit__(self, double x=0.0, double y=0.0, double O=0.0):
+        """
+        Initialize a Pose object.
+        """
+        self.c_pose = new Pose(x, y, O)
 
     @property
     def x(self):
-        return self.x
+        return self.c_pose.x()
 
     @property
     def y(self):
-        return self.y
+        return self.c_pose.y()
 
     @property
     def O(self):
-        return self.O
-
-    def __cinit__(self):
-        pass
-
-    def __cinit__(self,
-                  x: float,
-                  y: float,
-                  O: float):
-        self.c_pose = new Pose(x, y, 0)
-        self.x = x
-        self.y = y
-        self.O = O
-        pass
+        return self.c_pose.O()
 
     def __dealloc__(self):
+        """
+        Clean up memory for the Pose object.
+        """
         del self.c_pose
 
-# Wrapping Obstacle class for Python
+# Wrapping Obstacle base class
 cdef class CppObstacle:
     cdef Obstacle* c_obstacle
-    cdef double x, y, angle
-
-    def __cinit__(self):
-        pass
 
     def __dealloc__(self):
+        """
+        Clean up memory for the Obstacle object.
+        """
         del self.c_obstacle
 
 # Wrapping ObstacleRectangle for Python
 cdef class CppObstacleRectangle(CppObstacle):
     cdef ObstacleRectangle* c_obstacle_rectangle
 
-    def __cinit__(self,
-                  x: float,
-                  y: float,
-                  angle: float,
-                  length_x: float,
-                  length_y: float):
+    def __cinit__(self, double x, double y, double angle, double length_x, double length_y):
         """
-        Initialize an obstacle rectangle with a list of points (tuples of x, y).
+        Initialize an ObstacleRectangle object.
         """
-        cdef vector[Coords] rectangle_points
-        self.c_obstacle_rectangle = new ObstacleRectangle(
-            Pose(x, y, angle),
-            length_x,
-            length_y)
+        self.c_obstacle_rectangle = new ObstacleRectangle(Pose(x, y, angle), length_x, length_y)
         self.c_obstacle = self.c_obstacle_rectangle
-
-        # Save coordinates
-        self.x = x
-        self.y = y
-        self.angle = angle
 
 # Wrapping ObstaclePolygon for Python
 cdef class CppObstaclePolygon(CppObstacle):
     cdef ObstaclePolygon* c_obstacle_polygon
 
-    def __cinit__(self,
-                  points: list[tuple(float, float)]):
+    def __cinit__(self, list[tuple[float, float]] points):
         """
-        Initialize an obstacle polygon with a list of points (tuples of x, y).
+        Initialize an ObstaclePolygon object with a list of points.
         """
         cdef vector[Coords] polygon_points
         for point in points:
-            x, y = point
-            polygon_points.push_back(Coords(x, y))
+            polygon_points.push_back(Coords(point[0], point[1]))
         self.c_obstacle_polygon = new ObstaclePolygon(polygon_points)
         self.c_obstacle = self.c_obstacle_polygon
 
@@ -138,21 +117,12 @@ cdef class CppObstaclePolygon(CppObstacle):
 cdef class CppObstacleCircle(CppObstacle):
     cdef ObstacleCircle* c_obstacle_circle
 
-    def __cinit__(self,
-                  x: float,
-                  y: float,
-                  angle: float,
-                  radius: float):
+    def __cinit__(self, double x, double y, double angle, double radius, double bb_margin, int bb_points_number):
         """
-        Initialize an obstacle circle with a center and a Radius.
+        Initialize an ObstacleCircle object.
         """
-        self.c_obstacle_circle = new ObstacleCircle(Pose(x, y, angle), radius)
+        self.c_obstacle_circle = new ObstacleCircle(Pose(x, y, angle), radius, bb_margin, bb_points_number)
         self.c_obstacle = self.c_obstacle_circle
-
-        # Save coordinates
-        self.x = x
-        self.y = y
-        self.angle = angle
 
 # Wrapping Avoidance class for Python
 cdef class CppAvoidance:
@@ -160,56 +130,59 @@ cdef class CppAvoidance:
 
     def __cinit__(self, CppObstaclePolygon borders):
         """
-        Initialize Avoidance object with the borders of the area.
+        Initialize an Avoidance object with the area's borders.
         """
         self.c_avoidance = new Avoidance(deref(borders.c_obstacle_polygon))
 
     def __dealloc__(self):
+        """
+        Clean up memory for the Avoidance object.
+        """
         del self.c_avoidance
 
     def get_path_size(self):
         """
-        Get computed avoidance path size including start and stop pose.
+        Return the size of the computed avoidance path.
         """
-        return self.c_avoidance.getPathSize()
+        return self.c_avoidance.get_path_size()
 
     def get_path_pose(self, unsigned int index):
         """
-        Get pose in computed avoidance path.
+        Return the pose at the specified index in the computed avoidance path.
         """
-        cdef Coords pose = self.c_avoidance.getPathPose(index)
-        return CppPose(pose.x(), pose.y(), 0)
+        cdef Coords pose = self.c_avoidance.get_path_pose(index)
+        return (pose.x(), pose.y())
 
     def add_dynamic_obstacle(self, CppObstacle obstacle):
         """
         Add a dynamic obstacle to the avoidance system.
         """
-        self.c_avoidance.addDynamicObstacle(deref(obstacle.c_obstacle))
+        self.c_avoidance.add_dynamic_obstacle(deref(obstacle.c_obstacle))
 
     def remove_dynamic_obstacle(self, CppObstacle obstacle):
         """
         Remove a dynamic obstacle from the avoidance system.
         """
-        self.c_avoidance.removeDynamicObstacle(deref(obstacle.c_obstacle))
+        self.c_avoidance.remove_dynamic_obstacle(deref(obstacle.c_obstacle))
 
     def clear_dynamic_obstacles(self):
         """
         Clear all dynamic obstacles from the avoidance system.
         """
-        self.c_avoidance.clearDynamicObstacles()
+        self.c_avoidance.clear_dynamic_obstacles()
 
-    def build_graph(self, double start_x, double start_y, double finish_x, double finish_y):
+    def avoidance(self, double start_x, double start_y, double finish_x, double finish_y):
         """
-        Build a graph between the start and finish points in the avoidance area.
+        Compute a path from the start to the finish point considering obstacles.
         """
         cdef Coords start = Coords(start_x, start_y)
         cdef Coords finish = Coords(finish_x, finish_y)
-        return self.c_avoidance.buildGraph(start, finish)
+        return self.c_avoidance.avoidance(start, finish)
 
     def check_recompute(self, double start_x, double start_y, double finish_x, double finish_y):
         """
-        Build a graph between the start and finish points in the avoidance area.
+        Check if a recomputation of the avoidance path is necessary.
         """
         cdef Coords start = Coords(start_x, start_y)
         cdef Coords finish = Coords(finish_x, finish_y)
-        return self.c_avoidance.checkRecompute(start, finish)
+        return self.c_avoidance.check_recompute(start, finish)

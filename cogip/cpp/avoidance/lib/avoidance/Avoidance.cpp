@@ -1,9 +1,16 @@
-/* Standard includes */
-#include <math.h>
-#include <stdio.h>
-#include <deque>
+// Copyright (C) 2021 COGIP Robotics association <cogip35@gmail.com>
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
-/* Project includes */
+// Standard includes
+#include <cmath>
+#include <deque>
+#include <iostream>
+#include <map>
+#include <vector>
+
+// Project includes
 #include "avoidance/Avoidance.hpp"
 #include "obstacles/ObstaclePolygon.hpp"
 #include "utils.hpp"
@@ -12,23 +19,72 @@
 #define START_INDEX     0
 #define FINISH_INDEX    1
 
+namespace cogip {
+
+namespace avoidance {
+
 Avoidance::Avoidance(const cogip::obstacles::ObstaclePolygon &borders)
-    : _validPointsCount(0), _isAvoidanceComputed(false), _borders(borders), _logger("Avoidance") {
-        _allObstacles.insert(&_fixedObstacles);
-        _allObstacles.insert(&_dynamicObstacles);
+    : is_avoidance_computed_(false), borders_(borders), logger_("Avoidance") {
+    all_obstacles_.insert(&fixed_obstacles_);
+    all_obstacles_.insert(&dynamic_obstacles_);
 }
 
-bool Avoidance::is_point_in_obstacles(const cogip::cogip_defs::Coords &p, const cogip::obstacles::Obstacle *filter)
+bool Avoidance::avoidance(const cogip::cogip_defs::Coords &start,
+                          const cogip::cogip_defs::Coords &finish) {
+    std::cout << "avoidance: Starting computation" << std::endl;
+
+    // Initialize start and finish poses
+    start_pose_ = start;
+    finish_pose_ = finish;
+    is_avoidance_computed_ = false;
+
+    // Validate that the finish pose is inside borders
+    if (!borders_.is_point_inside(finish_pose_)) {
+        std::cerr << "avoidance: Finish pose is outside the borders!" << std::endl;
+        return false;
+    }
+
+    // Validate that the start and finish poses are not inside any obstacles
+    for (const auto &obstacle_list : all_obstacles_) {
+        for (const auto &obstacle : *obstacle_list) {
+            const auto &current_obstacle = obstacle.get();
+            if (current_obstacle.is_point_inside(finish_pose_)) {
+                std::cerr << "avoidance: Finish pose is inside an obstacle!" << std::endl;
+                return false;
+            }
+            if (current_obstacle.is_point_inside(start_pose_)) {
+                start_pose_ = current_obstacle.nearest_point(start_pose_);
+            }
+        }
+    }
+
+    std::cout << "avoidance: Poses validated" << std::endl;
+
+    // Prepare valid points for pathfinding
+    valid_points_ = {start_pose_, finish_pose_};
+
+    // Build avoidance graph and compute path using Dijkstra
+    std::cout << "avoidance: Building graph and computing path" << std::endl;
+    build_avoidance_graph();
+
+    bool ret = dijkstra();
+    if (ret) {
+        std::cout << "avoidance: Path successfully computed" << std::endl;
+    } else {
+        std::cerr << "avoidance: Failed to compute path" << std::endl;
+    }
+
+    return ret;
+}
+
+bool Avoidance::is_point_in_obstacles(const cogip::cogip_defs::Coords &point, const cogip::obstacles::Obstacle *filter) const
 {
-    for (auto obstacles: _allObstacles) {
-        for (auto obstacle: *obstacles) {
-            if (! obstacle.get().enabled()) {
+    for (const auto &obstacles : all_obstacles_) {
+        for (const auto &obstacle : *obstacles) {
+            if (!obstacle.get().enabled() || &obstacle.get() == filter) {
                 continue;
             }
-            if (filter == &(obstacle.get())) {
-                continue;
-            }
-            if (obstacle.get().is_point_inside(p)) {
+            if (obstacle.get().is_point_inside(point)) {
                 return true;
             }
         }
@@ -36,255 +92,182 @@ bool Avoidance::is_point_in_obstacles(const cogip::cogip_defs::Coords &p, const 
     return false;
 }
 
-void Avoidance::validateObstaclePoints()
+void Avoidance::validate_obstacle_points()
 {
-    for (auto l: _allObstacles) {
-        for (auto obstacleWrapper: *l) {
-            /* Obstacle Polygon */
-            const cogip::obstacles::Obstacle &obstacle = obstacleWrapper.get();
+    for (const auto &list : all_obstacles_) {
+        for (const auto &obstacle_wrapper : *list) {
+            const auto &obstacle = obstacle_wrapper.get();
 
             if (!obstacle.enabled()) {
                 continue;
             }
 
-            /* Check if obstacle center is inside borders */
-            if (!_borders.is_point_inside(obstacle.center())) {
+            if (!borders_.is_point_inside(obstacle.center())) {
                 continue;
             }
 
-            /* Check if the center of this obstacle is not in another obstacle */
-            if (is_point_in_obstacles(obstacle.center(), &obstacle)) {
-                continue;
-            }
-
-            /* Validate bounding box points */
-            for (auto &point: obstacle) {
-                if (!_borders.is_point_inside(point)) {
+            for (const auto &point : obstacle.bounding_box()) {
+                if (!borders_.is_point_inside(point) || is_point_in_obstacles(point, nullptr)) {
                     continue;
                 }
-                if (is_point_in_obstacles(point, nullptr)) {
-                    continue;
-                }
-                /* Found a valid point */
-                _validPoints[_validPointsCount++] = { point.x(), point.y() };
+                valid_points_.emplace_back(point.x(), point.y());
             }
         }
     }
+
+    std::cout << "validate_obstacle_points: number of valid points = " << valid_points_.size() << std::endl;
+    for (const auto &point : valid_points_) {
+        std::cout << "{" << point.x() << ", " << point.y() << "}" << std::endl;
+    }
 }
 
-void Avoidance::buildAvoidanceGraph()
+void Avoidance::build_avoidance_graph()
 {
-    /* Validate all possible points */
-    validateObstaclePoints();
+    std::cout << "build_avoidance_graph: build avoidance graph" << std::endl;
 
-    /* For each segment of the valid points list */
-    for (int p = 0; p < _validPointsCount; p++) {
-        for (int p2 = p + 1; p2 < _validPointsCount; p2++) {
+    validate_obstacle_points();
+    graph_.clear();
+
+    for (size_t i = 0; i < valid_points_.size(); ++i) {
+        for (size_t j = i + 1; j < valid_points_.size(); ++j) {
             bool collide = false;
-            /* Check if that segment crosses a polygon */
-            for (auto l: _allObstacles) {
-                for (auto obstacle: *l) {
-                    if (!obstacle.get().enabled()) {
-                        continue;
-                    }
-                    if (obstacle.get().is_segment_crossing(_validPoints[p], _validPoints[p2])) {
+            for (const auto &list : all_obstacles_) {
+                for (const auto &obstacle : *list) {
+                    if (obstacle.get().enabled() &&
+                        obstacle.get().is_segment_crossing(valid_points_[i], valid_points_[j])) {
                         collide = true;
                         break;
                     }
                 }
             }
-            /* If no collision, both points of the segment are added to
-             * the graph with distance between them */
-            if ((p < MAX_VERTICES) && (p2 < MAX_VERTICES)) {
-                if (!collide) {
-                    _graph[p] |= (1 << p2);
-                    _graph[p2] |= (1 << p);
-                } else {
-                    _graph[p] &= ~(1 << p2);
-                    _graph[p2] &= ~(1 << p);
-                }
+            if (!collide) {
+                double distance = utils::calculate_distance(valid_points_[i], valid_points_[j]);
+                graph_[i][j] = distance;
+                graph_[j][i] = distance;
             }
         }
     }
+
+    print_graph();
 }
 
 bool Avoidance::dijkstra()
 {
-    bool checked[MAX_VERTICES];  /**< List of vertices already checked */
-    double distance[MAX_VERTICES]; /**< Distance of each vertex from the start */
-    uint16_t v;  /**< Current vertex index */
-    uint16_t i;  /**< Index for iterating vertices */
+    constexpr double MAX_DISTANCE = std::numeric_limits<double>::infinity();
+    std::cout << "dijkstra: Compute Dijkstra" << std::endl;
 
-    int parent[MAX_VERTICES];  /**< Parent relationship for path recovery */
-    uint8_t start = START_INDEX;
+    std::map<int, bool> checked;
+    std::map<int, double> distances;
+    std::map<int, int> parents;
 
-    /* Initialize arrays */
-    for (i = 0; i <= _validPointsCount; i++) {
+    int start = START_INDEX;
+    int finish = FINISH_INDEX;
+
+    for (size_t i = 0; i < valid_points_.size(); ++i) {
         checked[i] = false;
-        distance[i] = MAX_DISTANCE;
-        parent[i] = -1;
+        distances[i] = MAX_DISTANCE;
+        parents[i] = -1;
     }
-    _path.clear();
+    path_.clear();
+    distances[start] = 0;
 
-    /* Start point has a weight of 0 */
-    distance[start] = 0;
-    v = start;
-
-    /* If start point has no reachable neighbor, return error */
-    if (_graph[v] == 0) {
-        _isAvoidanceComputed = false;
+    if (graph_.find(start) == graph_.end() || graph_[start].empty()) {
+        std::cerr << "dijkstra: Start pose has no reachable neighbors!" << std::endl;
+        is_avoidance_computed_ = false;
         return false;
     }
 
-    /* Loop until finish point is found or all points are checked */
-    while ((v != FINISH_INDEX) && (!checked[v])) {
-        double min_distance = MAX_DISTANCE;
-
+    int v = start;
+    while ((v != finish) && !checked[v]) {
         checked[v] = true;
 
-        /* Parse all valid points */
-        for (i = 0; i < _validPointsCount; i++) {
-            /* Check if the current valid point is a neighbor */
-            if (_graph[v] & (1 << i)) {
-                double weight = (_validPoints[v].x() - _validPoints[i].x());
-                weight *= (_validPoints[v].x() - _validPoints[i].x());
-                weight += (_validPoints[v].y() - _validPoints[i].y())
-                          * (_validPoints[v].y() - _validPoints[i].y());
-                weight = sqrt(weight);
-
-                if ((weight >= 0) && (distance[i] > (distance[v] + weight))) {
-                    distance[i] = distance[v] + weight;
-                    parent[i] = v;
-                }
+        for (const auto &[neighbor, weight] : graph_[v]) {
+            if (distances[neighbor] > distances[v] + weight) {
+                distances[neighbor] = distances[v] + weight;
+                parents[neighbor] = v;
             }
         }
 
-        /* Select the next vertex with the lowest distance */
-        for (i = 1; i < _validPointsCount; i++) {
-            if ((!checked[i]) && (min_distance > distance[i])) {
-                min_distance = distance[i];
-                v = i;
+        double min_distance = MAX_DISTANCE;
+        for (const auto &[index, distance] : distances) {
+            if (!checked[index] && distance < min_distance) {
+                min_distance = distance;
+                v = index;
             }
         }
-    }
 
-    /* Build child path from start to finish pose by reversing parent path */
-    i = 1;
-    while (parent[i] > 0) {
-        _path.push_front(_validPoints[parent[i]]);
-        i = parent[i];
-    }
-
-    _isAvoidanceComputed = true;
-    printPath();
-    return _isAvoidanceComputed;
-}
-
-size_t Avoidance::getPathSize() const
-{
-    return _path.size();
-}
-
-cogip::cogip_defs::Coords Avoidance::getPathPose(uint8_t index) const
-{
-    // Check if index is within range of _path
-    if (index < _path.size()) {
-        return _path[index];
-    }
-
-    // If index is out of range, throw an exception
-    throw std::out_of_range("Index out of range in Avoidance::getPose");
-}
-
-bool Avoidance::buildGraph(const cogip::cogip_defs::Coords &start, const cogip::cogip_defs::Coords &finish)
-{
-    _startPose = start;
-    _finishPose = finish;
-    _isAvoidanceComputed = false;
-
-    if (!_borders.is_point_inside(_finishPose)) {
-        std::cerr << "Finish pose outside borders !" << std::endl;
-        return false;
-    }
-
-    /* Check that the start and destination are not inside obstacles */
-    for (auto l: _allObstacles) {
-        for (auto obstacle: *l) {
-            if (obstacle.get().is_point_inside(_finishPose)) {
-                std::cerr << "Finish pose inside obstacle !" << std::endl;
-                return false;
-            }
-            if (obstacle.get().is_point_inside(_startPose)) {
-                _startPose = obstacle.get().nearest_point(_startPose);
-            }
+        if (min_distance == MAX_DISTANCE) {
+            std::cerr << "dijkstra: No more points to check!" << std::endl;
+            is_avoidance_computed_ = false;
+            return false;
         }
     }
 
-    _validPointsCount = 0;
-    _validPoints[_validPointsCount++] = _startPose;
-    _validPoints[_validPointsCount++] = _finishPose;
+    _print_parents(parents);
 
-    buildAvoidanceGraph();
-    return dijkstra();
-}
-
-bool Avoidance::checkRecompute(const cogip::cogip_defs::Coords &start, const cogip::cogip_defs::Coords &stop) const
-{
-    //std::lock_guard<std::mutex> lock(_dynamicObstaclesMutex);  // Lock the mutex during access
-
-    for (auto obstacle : _dynamicObstacles) {  // Use the member variable for dynamic obstacles
-        if (!_borders.is_point_inside(obstacle.get().center())) {
-            continue;
-        }
-        if (obstacle.get().is_segment_crossing(start, stop)) {
-            return true;
-        }
+    int current = finish;
+    while (current != -1 && current != start) {
+        path_.push_front(valid_points_[current]);
+        current = parents[current];
     }
-    return false;
+
+    is_avoidance_computed_ = true;
+    print_path();
+    return true;
 }
 
-void Avoidance::printPath()
-{
-    std::cout << "[" << std::endl;
-    if (_isAvoidanceComputed) {
+void Avoidance::add_dynamic_obstacle(cogip::obstacles::Obstacle &obstacle) {
+    std::lock_guard<std::mutex> lock(dynamic_obstacles_mutex_);
+    dynamic_obstacles_.push_back(obstacle);
+}
 
-        for (auto p: _path) {
-            std::cout << "{\"x\":" << p.x() << ",\"y\":" << p.y() << "}," << std::endl;
+void Avoidance::remove_dynamic_obstacle(cogip::obstacles::Obstacle &obstacle) {
+    std::lock_guard<std::mutex> lock(dynamic_obstacles_mutex_);
+    dynamic_obstacles_.erase(
+        std::remove_if(dynamic_obstacles_.begin(), dynamic_obstacles_.end(),
+                       [&obstacle](auto &o) { return &o.get() == &obstacle; }),
+        dynamic_obstacles_.end());
+}
+
+void Avoidance::clear_dynamic_obstacles() {
+    std::lock_guard<std::mutex> lock(dynamic_obstacles_mutex_);
+    dynamic_obstacles_.clear();
+}
+
+void Avoidance::print_graph() const {
+    for (const auto &[node, edges] : graph_) {
+        std::cout << "Point " << node << " -> { ";
+        for (const auto &[neighbor, distance] : edges) {
+            std::cout << "(" << neighbor << ": " << distance << ") ";
         }
+        std::cout << "}" << std::endl;
     }
-    std::cout << "]" << std::endl;
 }
 
-const cogip::obstacles::ObstaclePolygon& Avoidance::getBorders() const
-{
-    return _borders;
+void Avoidance::print_path() const {
+    std::cout << "Path (size = " << path_.size() << "): ";
+    for (const auto &coords : path_) {
+        std::cout << "(" << coords.get().x() << ", " << coords.get().y() << ") ";
+    }
+    std::cout << std::endl;
 }
 
-void Avoidance::setBorders(const cogip::obstacles::ObstaclePolygon &newBorders)
-{
-    _borders = newBorders;
+void Avoidance::_print_parents(const std::map<int, int> &parents) {
+    std::cout << "Parents: ";
+    for (const auto &[child, parent] : parents) {
+        std::cout << "(" << child << ", " << parent << ") ";
+    }
+    std::cout << std::endl;
 }
 
-void Avoidance::addDynamicObstacle(cogip::obstacles::Obstacle &obstacle) {
-    std::lock_guard<std::mutex> lock(_dynamicObstaclesMutex);
-    _dynamicObstacles.push_back(obstacle);
+const cogip::obstacles::ObstaclePolygon &Avoidance::borders() const {
+    return borders_;
 }
 
-void Avoidance::removeDynamicObstacle(cogip::obstacles::Obstacle &obstacle) {
-    std::lock_guard<std::mutex> lock(_dynamicObstaclesMutex);
-
-    _dynamicObstacles.erase(
-        // std::remove_if() move at the end of the list all elements that need to be deleted
-        std::remove_if(_dynamicObstacles.begin(), _dynamicObstacles.end(),
-                       // lambda to compare list elements
-                       [&obstacle](std::reference_wrapper<cogip::obstacles::Obstacle> &o) {
-                           return &o.get() == &obstacle;
-                       }),
-        _dynamicObstacles.end()
-    );
+void Avoidance::set_borders(const cogip::obstacles::ObstaclePolygon &new_borders) {
+    borders_ = new_borders;
 }
 
-void Avoidance::clearDynamicObstacles() {
-    std::lock_guard<std::mutex> lock(_dynamicObstaclesMutex);
-    _dynamicObstacles.clear();
-}
+} // namespace avoidance
+
+} // namespace cogip

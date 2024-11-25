@@ -1,24 +1,22 @@
-/// Copyright (C) 2021 COGIP Robotics association <cogip35@gmail.com>
-///
-/// This file is subject to the terms and conditions of the GNU Lesser
-/// General Public License v2.1. See the file LICENSE in the top level
-/// directory for more details.
+// Copyright (C) 2021 COGIP Robotics association <cogip35@gmail.com>
+// This file is subject to the terms and conditions of the GNU Lesser
+// General Public License v2.1. See the file LICENSE in the top level
+// directory for more details.
 
 /// @defgroup    lib_avoidance Avoidance module
 /// @ingroup     lib
 /// @brief       Avoidance module
 ///
-/// Avoidance is split in 2 steps:
-///   1. avoidance_build_graph(): build graph of avoidance path to reach finish
-///      pose, including obstacles avoidance.
-///   2. avoidance_get_pose(): get intermediate pose in avoidance computed path.
+/// The Avoidance module is responsible for computing paths that avoid obstacles.
+/// It operates in two main phases:
+/// 1. **Graph Building:** Use `avoidance()` to create a graph representing valid paths.
+/// 2. **Path Retrieval:** Access specific poses in the computed path using `get_path_pose()`.
 ///
-/// Direct segment to reach final position can be checked to see if it becomes
-/// free of obstacles with avoidance_check_recompute()
+/// The module can also periodically check if a direct path to the destination becomes available using `check_recompute()`.
 ///
 /// @{
 /// @file
-/// @brief       Public API for avoidance module
+/// @brief       Public API for the Avoidance module.
 /// @author      Gilles DOFFE <g.doffe@gmail.com>
 
 #pragma once
@@ -26,6 +24,7 @@
 /// Standard includes
 #include <cstdint>
 #include <deque>
+#include <map>
 #include <mutex>
 #include <set>
 
@@ -34,111 +33,120 @@
 #include "obstacles/ObstaclePolygon.hpp"
 #include "logger/Logger.hpp"
 
+namespace cogip {
 
-/// @brief Class handling avoidance algorithm and graph management
+namespace avoidance {
+
+/// @brief Class managing the avoidance algorithm and graph representation.
 class Avoidance
 {
 public:
-    static const uint8_t MAX_VERTICES = 64; ///< Maximum number of vertices in the graph
-    static const uint32_t MAX_DISTANCE = UINT32_MAX; ///< Maximum distance value used for Dijkstra's algorithm
+    static constexpr uint32_t max_distance = UINT32_MAX; ///< Maximum distance used for Dijkstra's algorithm.
 
-    /// @brief Constructor that takes obstacle borders as input
-    ///
-    /// @param borders The obstacle polygon defining the boundaries of the avoidance area
+    /// @brief Constructor initializing the avoidance system with obstacle borders.
+    /// @param borders The polygon defining the boundaries of the avoidance area.
     Avoidance(const cogip::obstacles::ObstaclePolygon &borders);
 
     /// @brief Checks if a point is inside any obstacle.
-    /// @param p Point coordinates to check.
-    /// @param filter Optional obstacle filter. If null, checks all obstacles.
-    /// @return true if the point is inside an obstacle, false otherwise.
-    bool is_point_in_obstacles(const cogip::cogip_defs::Coords &p, const cogip::obstacles::Obstacle *filter);
+    /// @param point The coordinates of the point to check.
+    /// @param filter Optional filter to specify a subset of obstacles. Checks all if null.
+    /// @return True if the point is inside an obstacle, false otherwise.
+    bool is_point_in_obstacles(const cogip::cogip_defs::Coords &point, const cogip::obstacles::Obstacle *filter = nullptr) const;
 
-    /// @brief Get computed avoidance path size.
-    ///
-    /// @return Number of pose in the path, start and stop pose included
-    size_t getPathSize() const;
+    /// @brief Retrieves the size of the computed avoidance path.
+    /// @return The number of poses in the path, including start and finish.
+    size_t get_path_size() const;
 
-    /// @brief Get pose at given index in the avoidance path
-    ///
-    /// @param index Pose index in the avoidance path
-    /// @return cogip::cogip_defs::Coords Coordinates of the pose
-    cogip::cogip_defs::Coords getPathPose(uint8_t index) const;
+    /// @brief Retrieves the pose at a specific index in the computed path.
+    /// @param index The index of the pose in the path.
+    /// @return The coordinates of the pose at the given index.
+    cogip::cogip_defs::Coords get_path_pose(uint8_t index) const;
 
-    /// @brief Build avoidance graph between start and finish points
-    /// @param start Start position
-    /// @param finish Finish position
-    /// @return true if graph building is successful, false otherwise
-    bool buildGraph(const cogip::cogip_defs::Coords &start, const cogip::cogip_defs::Coords &finish);
+    /// @brief Builds the avoidance graph between the start and finish positions.
+    /// @param start The starting position.
+    /// @param finish The finishing position.
+    /// @return True if the graph was successfully built, false otherwise.
+    bool avoidance(const cogip::cogip_defs::Coords &start, const cogip::cogip_defs::Coords &finish);
 
-    /// @brief Check if avoidance recomputation is needed
-    /// @param start Start position
-    /// @param stop End position
-    /// @return true if recomputation is needed, false otherwise
-    bool checkRecompute(const cogip::cogip_defs::Coords &start, const cogip::cogip_defs::Coords &stop) const;
+    /// @brief Checks whether recomputation of the path is necessary.
+    /// @param start The starting position.
+    /// @param stop The stopping position.
+    /// @return True if recomputation is needed, false otherwise.
+    bool check_recompute(const cogip::cogip_defs::Coords &start, const cogip::cogip_defs::Coords &stop) const;
 
-    /// @brief Print the computed path for debugging purposes
-    void printPath();
+    /// @brief Retrieves the current obstacle borders.
+    /// @return A constant reference to the obstacle polygon defining the borders.
+    const cogip::obstacles::ObstaclePolygon& borders() const;
 
-    /// @brief Get the current obstacle borders
-    /// @return const cogip::obstacles::ObstaclePolygon& Current borders
-    const cogip::obstacles::ObstaclePolygon& getBorders() const;
+    /// @brief Updates the obstacle borders with a new polygon.
+    /// @param new_borders The new polygon defining the borders of the avoidance area.
+    void set_borders(const cogip::obstacles::ObstaclePolygon &new_borders);
 
-    /// @brief Set new obstacle borders
-    /// @param newBorders The new obstacle polygon for the avoidance area
-    void setBorders(const cogip::obstacles::ObstaclePolygon &newBorders);
+    /// @brief Adds a fixed obstacle to the list of obstacles.
+    /// @param obstacle The obstacle to add.
+    void add_fixed_obstacle(cogip::obstacles::Obstacle &obstacle);
 
-    /// @brief Adds a fixed obstacle to the list
-    /// @param obstacle A reference to the obstacle to add
-    void addFixedObstacle(cogip::obstacles::Obstacle &obstacle);
+    /// @brief Removes a specific fixed obstacle from the list.
+    /// @param obstacle The obstacle to remove.
+    void remove_fixed_obstacle(cogip::obstacles::Obstacle &obstacle);
 
-    /// @brief Removes a specific fixed obstacle from the list
-    /// @param obstacle A reference to the obstacle to remove
-    void removeFixedObstacle(cogip::obstacles::Obstacle &obstacle);
+    /// @brief Clears all fixed obstacles.
+    void clear_fixed_obstacles();
 
-    /// @brief Clears the list of fixed obstacles
-    void clearFixedObstacles();
+    /// @brief Adds a dynamic obstacle to the list of obstacles.
+    /// @param obstacle The dynamic obstacle to add.
+    void add_dynamic_obstacle(cogip::obstacles::Obstacle &obstacle);
 
-    /// @brief Adds a dynamic obstacle to the list
-    /// @param obstacle A reference to the obstacle to add
-    void addDynamicObstacle(cogip::obstacles::Obstacle &obstacle);
+    /// @brief Removes a specific dynamic obstacle from the list.
+    /// @param obstacle The dynamic obstacle to remove.
+    void remove_dynamic_obstacle(cogip::obstacles::Obstacle &obstacle);
 
-    /// @brief Removes a specific dynamic obstacle from the list
-    /// @param obstacle A reference to the obstacle to remove
-    void removeDynamicObstacle(cogip::obstacles::Obstacle &obstacle);
-
-    /// @brief Clears the list of dynamic obstacles
-    void clearDynamicObstacles();
+    /// @brief Clears all dynamic obstacles.
+    void clear_dynamic_obstacles();
 
 private:
-    cogip::cogip_defs::Coords _validPoints[MAX_VERTICES]; ///< Array of valid points for graph vertices
-    uint8_t _validPointsCount; ///< Number of valid points in the graph
-    uint64_t _graph[MAX_VERTICES]; ///< Graph of valid segments between points, represented as bitmaps
+    std::vector<cogip::cogip_defs::Coords> valid_points_; ///< List of valid points for graph vertices.
+    std::map<uint64_t, std::map<uint64_t, double>> graph_; ///< Graph representation using adjacency lists.
 
-    cogip::cogip_defs::Coords _startPose; ///< Start pose for the avoidance path
-    cogip::cogip_defs::Coords _finishPose; ///< Finish pose for the avoidance path
+    cogip::cogip_defs::Coords start_pose_;  ///< The starting pose for path computation.
+    cogip::cogip_defs::Coords finish_pose_; ///< The finishing pose for path computation.
 
-    std::deque<cogip::cogip_defs::Coords> _path; ///< Indexes of valid points from the start to the finish in the computed path
-    bool _isAvoidanceComputed; ///< Flag indicating if the avoidance path has been successfully computed
+    std::deque<std::reference_wrapper<cogip::cogip_defs::Coords>> path_; ///< Path from start to finish.
+    bool is_avoidance_computed_; ///< Flag indicating whether the path has been computed.
 
-    cogip::obstacles::ObstaclePolygon _borders; ///< Borders of the avoidance area, used to define the boundaries
+    cogip::obstacles::ObstaclePolygon borders_; ///< The polygon defining the borders of the avoidance area.
 
-    std::vector<std::reference_wrapper<cogip::obstacles::Obstacle>> _fixedObstacles; ///< Fixed obstacles list
-    std::vector<std::reference_wrapper<cogip::obstacles::Obstacle>> _dynamicObstacles; ///< Dynamic obstacles list
-    std::set<std::vector<std::reference_wrapper<cogip::obstacles::Obstacle>> const *> _allObstacles;  ///< List of all obstacle lists
+    std::vector<std::reference_wrapper<cogip::obstacles::Obstacle>> fixed_obstacles_; ///< List of fixed obstacles.
+    std::vector<std::reference_wrapper<cogip::obstacles::Obstacle>> dynamic_obstacles_; ///< List of dynamic obstacles.
+    std::set<std::vector<std::reference_wrapper<cogip::obstacles::Obstacle>> const *> all_obstacles_; ///< Set of all obstacles.
 
-    std::mutex _dynamicObstaclesMutex; ///< Dynamic obstacles list protection mutex
+    std::mutex dynamic_obstacles_mutex_; ///< Mutex for protecting the dynamic obstacle list.
 
-    Logger _logger; ///< Logger object
+    Logger logger_; ///< Logger instance for logging.
 
-    /// @brief Validate obstacle points for building the graph
-    void validateObstaclePoints();
+    /// @brief Validates the obstacle points and ensures they can be used for graph building.
+    void validate_obstacle_points();
 
-    /// @brief Build the avoidance graph using the validated points
-    void buildAvoidanceGraph();
+    /// @brief Builds the avoidance graph using the validated points.
+    void build_avoidance_graph();
 
-    /// @brief Apply the Dijkstra algorithm on the graph to find the shortest path
-    /// @return true if the algorithm successfully finds a path, false otherwise
+    /// @brief Prints the graph for debugging purposes.
+    void print_graph() const;
+
+    /// @brief Prints the computed path for debugging purposes.
+    void print_path() const;
+
+    /// @brief Prints the parent map used in pathfinding algorithms.
+    /// @param parent The map of parent nodes.
+    static void _print_parents(const std::map<int, int>& parent);
+
+    /// @brief Executes Dijkstra's algorithm on the graph to find the shortest path.
+    /// @return True if a path was found, false otherwise.
     bool dijkstra();
 };
+
+} // namespace avoidance
+
+} // namespace cogip
 
 /// @}

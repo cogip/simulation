@@ -14,7 +14,6 @@ set(SOURCES
     ${CMAKE_SOURCE_DIR}/avoidance/lib/avoidance/Avoidance.cpp
     ${CMAKE_SOURCE_DIR}/avoidance/lib/cogip_defs/Coords.cpp
     ${CMAKE_SOURCE_DIR}/avoidance/lib/obstacles/ObstacleCircle.cpp
-    ${CMAKE_SOURCE_DIR}/avoidance/lib/obstacles/Obstacle.cpp
     ${CMAKE_SOURCE_DIR}/avoidance/lib/obstacles/ObstaclePolygon.cpp
     ${CMAKE_SOURCE_DIR}/avoidance/lib/obstacles/ObstacleRectangle.cpp
     ${CMAKE_SOURCE_DIR}/avoidance/lib/path/Pose.cpp

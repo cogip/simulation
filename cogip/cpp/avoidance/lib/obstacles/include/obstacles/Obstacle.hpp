@@ -6,25 +6,16 @@
 /// @ingroup     lib_obstacles
 /// @{
 /// @file
-/// @brief       Polygon obstacle class declaration
+/// @brief       Polygon obstacle class declaration for collision detection and avoidance.
+/// @details     Defines an abstract base class representing polygonal obstacles.
+///              Includes methods to check for point inclusion, segment intersection,
+///              and nearest point calculations.
 /// @author      Eric Courtois <eric.courtois@gmail.com>
-
 #pragma once
 
-// System includes
 #include <cstdint>
-
-// Project includes
 #include "cogip_defs/Pose.hpp"
 #include "cogip_defs/Polygon.hpp"
-
-#ifndef OBSTACLE_BOUNDING_BOX_VERTICES
-#  define OBSTACLE_BOUNDING_BOX_VERTICES    6  /**< number of bounding box vertices */
-#endif
-
-#ifndef OBSTACLE_BOUNDING_BOX_MARGIN
-#  define OBSTACLE_BOUNDING_BOX_MARGIN    0.2  /**< bounding box margin in percent of the radius */
-#endif
 
 namespace cogip {
 
@@ -32,57 +23,65 @@ namespace obstacles {
 
 using BoundingBox = cogip_defs::Polygon;
 
-/// An obstacle used to detect and avoid collisions.
-class Obstacle : public cogip_defs::Polygon  {
+/// @class Obstacle
+/// @brief Represents a generic polygonal obstacle for collision detection and avoidance.
+class Obstacle : public cogip_defs::Polygon {
 public:
-    /// Constructor
-    Obstacle(
-        const cogip_defs::Pose &center = {0, 0, 0},///< [in] obstacle center
-        double radius = 0.0                        ///< [in] obstacle circumscribed circle radius
-        );
+    /// @brief Default constructor.
+    Obstacle() = default;
 
-    /// Destructor
-    virtual ~Obstacle() {};
+    /// @brief Constructor for initializing an obstacle with a center, radius, and bounding box margin.
+    /// @param center The center position and orientation of the obstacle.
+    /// @param radius The radius of the obstacle.
+    /// @param bounding_box_margin The margin to apply around the bounding box.
+    Obstacle(
+        const cogip_defs::Pose &center,
+        double radius,
+        double bounding_box_margin
+    ) :
+        center_(center),
+        radius_(radius),
+        bounding_box_margin_(bounding_box_margin),
+        enabled_(true) {}
+
 
     /// Check if the given point is inside the obstacle.
-    /// @return true if point is inside, false otherwise
-    virtual bool is_point_inside(
-        const cogip_defs::Coords &p       ///< [in] point to check
-        ) const = 0;
+    virtual bool is_point_inside(const cogip_defs::Coords &p) const = 0;
 
     /// Check if a segment defined by two points A,B is crossing an obstacle.
-    /// @return true if [AB] crosses obstacle, false otherwise
-    virtual bool is_segment_crossing(
-        const cogip_defs::Coords &a,      ///< [in] point A
-        const cogip_defs::Coords &b       ///< [in] point B
-        ) const = 0;
+    virtual bool is_segment_crossing(const cogip_defs::Coords &a, const cogip_defs::Coords &b) const = 0;
 
-    /// Find the nearest point of obstacle perimeter from given point.
-    /// @return position of nearest point
-    virtual cogip_defs::Coords nearest_point(
-        const cogip_defs::Coords &p       ///< [in] point to check
-        ) const = 0;
+    /// Find the nearest point of obstacle perimeter from a given point.
+    virtual cogip_defs::Coords nearest_point(const cogip_defs::Coords &p) const = 0;
 
-    /// Return obstacle center.
-    const cogip_defs::Pose &center() const { return center_; };
+    /// @brief Return obstacle center.
+    inline const cogip_defs::Pose &center() const { return center_; }
 
-    /// Set obstacle center.
-    void set_center(cogip_defs::Pose &center);
+    /// @brief Set obstacle center.
+    void set_center(const cogip_defs::Pose &center) { center_ = center; }
 
-    /// Return obstacle circumscribed circle radius.
-    double radius() const { return radius_; };
+    /// @brief Return obstacle circumscribed circle radius.
+    inline double radius() const { return radius_; }
 
-    /// Return true if obstacle is enabled, false otherwise.
-    bool enabled() const { return enabled_; };
+    /// @brief Return true if the obstacle is enabled, false otherwise.
+    inline bool enabled() const { return enabled_; }
 
-    /// Enable or disable obstacle.
-    void enable(bool enabled) { enabled_ = enabled; };
+    /// @brief Enable or disable the obstacle.
+    void enable(bool enabled) { enabled_ = enabled; }
+
+    /// @brief Get the bounding box.
+    inline const BoundingBox &bounding_box() const { return bounding_box_; }
 
 protected:
-    cogip_defs::Pose center_;           ///< obstacle center
-    double radius_;                       ///< obstacle circumscribed circle radius
-    BoundingBox bounding_box_;            ///< Precomputed bounding box for avoidance
-    bool enabled_;                        ///< Obstacle enabled or not
+    cogip_defs::Pose center_;                ///< Obstacle center.
+    double radius_;                          ///< Obstacle circumscribed circle radius.
+    BoundingBox bounding_box_;               ///< Precomputed bounding box for avoidance.
+    bool enabled_ = true;                    ///< Obstacle enabled or not.
+    double bounding_box_margin_ = 0.2;       ///< Margin for the bounding box.
+
+private:
+    /// Update bounding box.
+    virtual void update_bounding_box_() = 0;
 };
 
 } // namespace obstacles
