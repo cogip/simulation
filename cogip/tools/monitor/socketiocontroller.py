@@ -284,7 +284,7 @@ class SocketioController(QtCore.QObject):
             self.signal_new_robot_pose_order.emit(robot_id, pose)
 
         @self.sio.on("state", namespace="/dashboard")
-        def on_state(robot_id: int, data: dict[str, Any]) -> None:
+        def on_state(data: dict[str, Any]) -> None:
             """
             Callback on robot state message.
             """
@@ -300,12 +300,12 @@ class SocketioController(QtCore.QObject):
             self.signal_new_robot_path.emit(robot_id, path)
 
         @self.sio.on("obstacles", namespace="/dashboard")
-        def on_obstacles(data):
+        def on_obstacles(robot_id: int, data):
             """
             Callback on obstacles message.
             """
             obstacles = TypeAdapter(models.DynObstacleList).validate_python(data)
-            self.signal_new_dyn_obstacles.emit(obstacles)
+            self.signal_new_dyn_obstacles.emit(robot_id, obstacles)
 
         @self.sio.on("add_robot", namespace="/monitor")
         def on_add_robot(robot_id: int, virtual: bool) -> None:
