@@ -92,6 +92,20 @@ bool Avoidance::is_point_in_obstacles(const cogip::cogip_defs::Coords &point, co
     return false;
 }
 
+bool Avoidance::check_recompute(const cogip::cogip_defs::Coords &start,
+                                const cogip::cogip_defs::Coords &stop) const
+{
+    for (auto obstacle : dynamic_obstacles_) {
+        if (!borders_.is_point_inside(obstacle.get().center())) {
+            continue;
+        }
+        if (obstacle.get().is_segment_crossing(start, stop)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 void Avoidance::validate_obstacle_points()
 {
     for (const auto &list : all_obstacles_) {
@@ -128,8 +142,8 @@ void Avoidance::build_avoidance_graph()
     validate_obstacle_points();
     graph_.clear();
 
-    for (size_t i = 0; i < valid_points_.size(); ++i) {
-        for (size_t j = i + 1; j < valid_points_.size(); ++j) {
+    for (size_t i = 0; i < valid_points_.size(); i++) {
+        for (size_t j = i + 1; j < valid_points_.size(); j++) {
             bool collide = false;
             for (const auto &list : all_obstacles_) {
                 for (const auto &obstacle : *list) {
@@ -163,7 +177,7 @@ bool Avoidance::dijkstra()
     int start = START_INDEX;
     int finish = FINISH_INDEX;
 
-    for (size_t i = 0; i < valid_points_.size(); ++i) {
+    for (size_t i = 0; i < valid_points_.size(); i++) {
         checked[i] = false;
         distances[i] = MAX_DISTANCE;
         parents[i] = -1;
@@ -214,6 +228,17 @@ bool Avoidance::dijkstra()
     is_avoidance_computed_ = true;
     print_path();
     return true;
+}
+
+cogip::cogip_defs::Coords Avoidance::get_path_pose(uint8_t index) const
+{
+    // Check if index is within range of _path
+    if (index < get_path_size()) {
+        return path_[index];
+    }
+
+    // If index is out of range, throw an exception
+    throw std::out_of_range("Index out of range in Avoidance::getPose");
 }
 
 void Avoidance::add_dynamic_obstacle(cogip::obstacles::Obstacle &obstacle) {

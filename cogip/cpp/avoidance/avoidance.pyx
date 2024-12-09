@@ -8,7 +8,7 @@ from cython.operator cimport dereference as deref
 cdef extern from "avoidance/Avoidance.hpp" namespace "cogip::avoidance":
     cdef cppclass Avoidance:
         Avoidance(const ObstaclePolygon& borders)
-        size_t get_path_size()
+        size_t get_path_size() const
         Coords get_path_pose(unsigned char index) const
         void add_dynamic_obstacle(Obstacle& obstacle)
         void remove_dynamic_obstacle(Obstacle& obstacle)
@@ -151,7 +151,7 @@ cdef class CppAvoidance:
         Return the pose at the specified index in the computed avoidance path.
         """
         cdef Coords pose = self.c_avoidance.get_path_pose(index)
-        return (pose.x(), pose.y())
+        return CppPose(pose.x(), pose.y(), 0)
 
     def add_dynamic_obstacle(self, CppObstacle obstacle):
         """

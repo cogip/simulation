@@ -55,7 +55,7 @@ public:
 
     /// @brief Retrieves the size of the computed avoidance path.
     /// @return The number of poses in the path, including start and finish.
-    size_t get_path_size() const;
+    size_t get_path_size() const { return path_.size(); }
 
     /// @brief Retrieves the pose at a specific index in the computed path.
     /// @param index The index of the pose in the path.
