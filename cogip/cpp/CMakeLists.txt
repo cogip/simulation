@@ -7,15 +7,13 @@ set(CMAKE_CXX_STANDARD 17)
 # Python packages
 find_package(Python COMPONENTS Interpreter Development REQUIRED)
 
-# Find Cython .cmake files
+# Configure support for C++ extensions using Cython binding
 file(GLOB_RECURSE FIND_CYTHON_CMAKE_FILE "${PROJECT_SOURCE_DIR}/*Cython.cmake")
 get_filename_component(FIND_CYTHON_CMAKE_DIR "${FIND_CYTHON_CMAKE_FILE}" DIRECTORY)
-list( APPEND CMAKE_MODULE_PATH ${FIND_CYTHON_CMAKE_DIR} )
-# Cython packages
+list(APPEND CMAKE_MODULE_PATH ${FIND_CYTHON_CMAKE_DIR})
 find_package(Cython MODULE REQUIRED VERSION 3.1.0)
 include(UseCython)
-
-# Include directories
 include_directories(${PYTHON_INCLUDE_DIRS})
 
-add_subdirectory(example)
+# Add C++ extensions
+add_subdirectory(cython_example)
