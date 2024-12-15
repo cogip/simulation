@@ -17,7 +17,7 @@ RUN curl -LsSf https://astral.sh/uv/install.sh | env UV_INSTALL_DIR="/usr/local/
 RUN --mount=type=bind,source=.python-version,target=.python-version \
     uv python install
 
-# Create a virtual environmnent to respect PEP 668
+# Create a virtual environment to respect PEP 668
 RUN uv venv
 
 # Required because mcu-firmware is not compatible with uv
@@ -41,7 +41,8 @@ RUN apt-get update && \
         libgl1 \
         libglib2.0-0 \
         cmake \
-        swig
+        swig \
+        libserial-dev
 
 ADD .python-version uv.lock pyproject.toml LICENSE /src/
 ADD cogip /src/cogip

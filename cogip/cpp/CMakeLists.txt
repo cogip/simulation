@@ -29,3 +29,4 @@ find_package(nanobind CONFIG REQUIRED)
 # Add C++ extensions
 add_subdirectory(cython_example)
 add_subdirectory(nanobind_example)
+add_subdirectory(lidar_ld19)
