@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import json
 import threading
 import time
 from pathlib import Path
@@ -89,6 +90,18 @@ def start_plot(lidar_points: NDArray):
 
 
 def start_server(lidar_points: NDArray):
+    lidar_data_filename = Path("lidar_data.json")
+    # if not lidar_data_filename.exists():
+    #     print("Error: JSON file does not exist.")
+    #     return
+    # try:
+    #     fake_data: list = json.loads(lidar_data_filename.read_text())
+    # except Exception as exc:
+    #     print(f"Error: failed to parse JSON file ({exc})")
+    #     return
+    lidar_data_file = lidar_data_filename.open("w")
+    lidar_data_file.write("[\n")
+
     asgi_app.mount("/static", StaticFiles(directory=Path(__file__).with_name("static")), name="static")
     templates = Jinja2Templates(directory=Path(__file__).with_name("templates"))
 
@@ -99,11 +112,18 @@ def start_server(lidar_points: NDArray):
     @asgi_app.get("/data", response_class=JSONResponse)
     def get_data():
         data = lidar_points.tolist()
+        lidar_data_file.write("  " + json.dumps(data) + ",\n")
+
+        # data = fake_data.pop(0)
+        # fake_data.append(data)
+
         return JSONResponse(content=data)
 
     try:
         asgi_server.run()
     except KeyboardInterrupt:
+        lidar_data_file.write("]\n")
+        lidar_data_file.close()
         pass
 
 
