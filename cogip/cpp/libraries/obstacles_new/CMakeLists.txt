@@ -12,11 +12,13 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/cogip/cpp/libraries/utils/include
     ${PROJECT_SOURCE_DIR}/cogip/cpp/libraries/models/include
+    ${PROJECT_SOURCE_DIR}/cogip/cpp/libraries/geometry/include
 )
 target_link_libraries(
     obstacles_new_cpp
     PUBLIC
     models_cpp
+    geometry_cpp
 )
 
 # Generate library with source code and binding.

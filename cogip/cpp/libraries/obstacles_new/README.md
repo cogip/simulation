@@ -79,3 +79,7 @@ then removes the two square roots. Sixteen vertices at most, no square root.
 Flat vertices pass, a convex polygon being allowed a redundant one. An outline
 that crosses itself slips through: it turns the same way throughout while
 looping around twice.
+
+The test itself, along with the winding normalisation that goes with it, lives
+in the [`geometry`](../geometry) library — it is a property of an outline, not
+of an obstacle, and it belongs where it can be checked on its own.
