@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 270 165" xmlns="http://www.w3.org/2000/svg">
+  <!-- One measurement answers every question: how far is the query from the
+       outline. The radius is the only thing it is ever compared against. -->
+  <rect width="100%" height="100%" fill="#ffffff"/>
+  <g font-family="sans-serif" font-size="11" fill="#334455">
+    <rect x="70" y="55" width="70" height="50" fill="#cfd8e8"
+          stroke="#cfd8e8" stroke-width="44" stroke-linejoin="round"/>
+    <rect x="70" y="55" width="70" height="50" fill="none"
+          stroke="#334455" stroke-width="1.5" stroke-dasharray="5 4"/>
+
+    <line x1="105" y1="55" x2="105" y2="33" stroke="#334455" stroke-width="1"/>
+    <line x1="99" y1="33" x2="111" y2="33" stroke="#334455" stroke-width="1"/>
+    <text x="110" y="49">r</text>
+
+    <line x1="140" y1="80" x2="205" y2="80" stroke="#cc3333" stroke-width="1.2"/>
+    <circle cx="140" cy="80" r="2.5" fill="#334455"/>
+    <circle cx="205" cy="80" r="3.5" fill="#cc3333"/>
+    <text x="168" y="74" fill="#cc3333">d</text>
+
+    <text x="42" y="145" fill="#667788">distance_squared_to_convex_polygon</text>
+    <text x="135" y="159" text-anchor="middle">d &#8804; r &#8658; the point is inside</text>
+  </g>
+</svg>

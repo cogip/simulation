@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 320 175" xmlns="http://www.w3.org/2000/svg">
+  <!-- The box compares against the bounding box of the segment, four
+       comparisons and no multiplication. It over-reports, never under-reports. -->
+  <rect width="100%" height="100%" fill="#ffffff"/>
+  <g font-family="sans-serif" font-size="10" fill="#334455">
+    <rect x="80" y="45" width="90" height="70" fill="none"
+          stroke="#8fa3c0" stroke-width="1" stroke-dasharray="4 3"/>
+    <polygon points="125,45 170,80 148,115 102,115 80,80" fill="#cfd8e8"
+             stroke="#334455" stroke-width="1.5"/>
+
+    <line x1="60" y1="25" x2="200" y2="25" stroke="#2a8855" stroke-width="2"/>
+    <text x="208" y="28" fill="#2a8855">box says no</text>
+    <text x="208" y="40" fill="#667788">skipped, and it really misses</text>
+
+    <line x1="150" y1="130" x2="215" y2="55" stroke="#e0a030" stroke-width="2"/>
+    <text x="208" y="100" fill="#e0a030">box says maybe</text>
+    <text x="208" y="112" fill="#667788">tested, and it misses</text>
+
+    <line x1="55" y1="80" x2="195" y2="80" stroke="#cc3333" stroke-width="2"/>
+    <text x="208" y="74" fill="#cc3333">box says maybe</text>
+    <text x="208" y="86" fill="#667788">tested, and it hits</text>
+
+    <text x="125" y="160" text-anchor="middle">a filter may over-report, never under-report</text>
+  </g>
+</svg>

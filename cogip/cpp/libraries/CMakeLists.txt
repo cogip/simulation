@@ -1,5 +1,6 @@
 add_subdirectory(logger)
 add_subdirectory(models)
+add_subdirectory(geometry)
 add_subdirectory(obstacles)
 add_subdirectory(obstacles_new)
 add_subdirectory(shared_memory)

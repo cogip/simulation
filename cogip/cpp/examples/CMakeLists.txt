@@ -1,4 +1,5 @@
 add_subdirectory(cython_example)
+add_subdirectory(geometry_example)
 add_subdirectory(logger_example)
 add_subdirectory(nanobind_example)
 add_subdirectory(obstacles_new_example)

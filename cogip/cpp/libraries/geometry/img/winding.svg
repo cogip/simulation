@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 400 175" xmlns="http://www.w3.org/2000/svg">
+  <!-- Every predicate reads the sign of a cross product as inside or outside,
+       which only holds for one winding. It is fixed once, when the outline is
+       stored, so the queries never have to care. -->
+  <rect width="100%" height="100%" fill="#ffffff"/>
+  <defs>
+    <marker id="w-tip" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="5" markerHeight="5" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#334455"/>
+    </marker>
+  </defs>
+  <g font-family="sans-serif" font-size="10" fill="#334455">
+    <polygon points="45,50 125,50 125,110 45,110" fill="#cfd8e8"
+             stroke="#334455" stroke-width="1.5"/>
+    <line x1="55" y1="110" x2="115" y2="110" stroke="#334455" stroke-width="1.4"
+          marker-end="url(#w-tip)"/>
+    <line x1="125" y1="100" x2="125" y2="60" stroke="#334455" stroke-width="1.4"
+          marker-end="url(#w-tip)"/>
+    <text x="85" y="140" text-anchor="middle" fill="#2a8855">signed area &gt; 0</text>
+    <text x="85" y="154" text-anchor="middle" fill="#667788">counter-clockwise, kept</text>
+
+    <text x="200" y="84" text-anchor="middle" font-size="14">&#8594;</text>
+    <text x="200" y="102" text-anchor="middle" font-size="9"
+          fill="#667788">reversed</text>
+
+    <polygon points="275,50 355,50 355,110 275,110" fill="#cfd8e8"
+             stroke="#334455" stroke-width="1.5"/>
+    <line x1="285" y1="50" x2="345" y2="50" stroke="#334455" stroke-width="1.4"
+          marker-end="url(#w-tip)"/>
+    <line x1="355" y1="60" x2="355" y2="100" stroke="#334455" stroke-width="1.4"
+          marker-end="url(#w-tip)"/>
+    <text x="315" y="140" text-anchor="middle" fill="#cc3333">signed area &lt; 0</text>
+    <text x="315" y="154" text-anchor="middle" fill="#667788">clockwise, reversed in place</text>
+  </g>
+</svg>
