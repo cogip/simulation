@@ -1,0 +1,9 @@
+# Force the onboard wired NIC to eth0, whatever the board calls it (the Pi5 RP1
+# MAC enumerates as end0, the Pi4 as eth0). Applied by udev at boot so the beacon
+# static config (00-eth0.network, dnsmasq, iptables) is board-agnostic, like the
+# wlan0 rename. No effect on a board whose wired NIC is already eth0.
+[Match]
+OriginalName=end0
+
+[Link]
+Name=eth0
