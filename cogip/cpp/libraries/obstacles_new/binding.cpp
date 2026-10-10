@@ -3,6 +3,10 @@
 // General Public License v2.1. See the file LICENSE in the top level directory.
 
 #include "obstacles_new/Obstacle.hpp"
+#include "obstacles_new/ObstacleList.hpp"
+#include "obstacles_new/obstacle_list.hpp"
+
+#include "models/binding.hpp"
 
 #include <nanobind/nanobind.h>
 #include <nanobind/stl/pair.h>
@@ -18,6 +22,8 @@ using namespace nb::literals;
 namespace cogip {
 
 namespace obstacles_new {
+
+using ObstacleIterator = models::NbSharedArrayIterator<Obstacle, ObstacleList>;
 
 NB_MODULE(obstacles_new, m) {
     nb::module_::import_("cogip.cpp.libraries.models");
@@ -88,6 +94,69 @@ NB_MODULE(obstacles_new, m) {
         .def("__len__", &Obstacle::point_count, "Return the number of outline vertices")
         .def("__getitem__", &Obstacle::point, nb::rv_policy::copy, "Get an outline vertex", "index"_a)
         .def("__repr__", [](const Obstacle& obj) {
+            std::ostringstream oss;
+            oss << obj;
+            return oss.str();
+        });
+
+    m.attr("OBSTACLE_LIST_SIZE_MAX") = OBSTACLE_LIST_SIZE_MAX;
+
+    // Bind ObstacleIterator class.
+    nb::class_<ObstacleIterator>(m, "ObstacleIterator")
+        .def("__next__", &ObstacleIterator::next, "Get the next element")
+        .def("__iter__", [](ObstacleIterator& self) -> ObstacleIterator& {
+            return self;
+        }, "Return itself");
+
+    // Bind obstacle_list_t struct.
+    // Like obstacle_t, the elems array is not exposed: reading it goes through ObstacleList.
+    nb::class_<obstacle_list_t>(m, "ObstacleListT")
+        .def(nb::init<>(), "Default constructor for obstacle_list_t")
+        .def_ro("count", &obstacle_list_t::count, "Number of valid obstacles")
+        .def("__repr__", [](const obstacle_list_t& obj) {
+            std::ostringstream oss;
+            oss << obj;
+            return oss.str();
+        });
+
+    // Bind ObstacleList class.
+    // getIndex() is left out: it compares an Obstacle against an obstacle_t, which has no operator
+    // for it. Being a template member, it is never instantiated as long as nothing calls it.
+    nb::class_<ObstacleList>(m, "ObstacleList")
+        .def(nb::init<obstacle_list_t*>(), "Constructor with existing data", "data"_a = nullptr)
+        .def("clear", &ObstacleList::clear, "Drop every obstacle")
+        .def("size", &ObstacleList::size, "Return the number of obstacles")
+        .def("max_size", &ObstacleList::max_size, "Return the capacity")
+        // The three appends are the only way in: each hands the slot to the matching factory, so a
+        // list can never hold an outline that is wound the wrong way or is not convex.
+        .def(
+            "append_circle", &ObstacleList::append_circle,
+            "Append a disc and return its index",
+            "x"_a, "y"_a, "radius"_a)
+        .def(
+            "append_rectangle", &ObstacleList::append_rectangle,
+            "Append a rectangle and return its index",
+            "x"_a, "y"_a, "angle"_a, "length_x"_a, "length_y"_a)
+        .def(
+            "append_polygon",
+            [](ObstacleList& self, const std::vector<std::pair<double, double>>& points) {
+                std::vector<models::coords_t> coords;
+                coords.reserve(points.size());
+                for (const auto& point : points) {
+                    coords.push_back(models::coords_t{point.first, point.second});
+                }
+                return self.append_polygon(coords.data(), coords.size());
+            },
+            "Append a convex polygon from a list of (x, y) tuples and return its index",
+            "points"_a)
+        .def("get", &ObstacleList::get, "Get an obstacle", "index"_a)
+        .def("__getitem__", &ObstacleList::operator[], "Get an obstacle", "index"_a)
+        .def("__len__", &ObstacleList::size, "Return the number of obstacles")
+        .def(
+            "__iter__",
+            [](ObstacleList& self) { return ObstacleIterator(self, 0); },
+            "Return an iterator object")
+        .def("__repr__", [](ObstacleList& obj) {
             std::ostringstream oss;
             oss << obj;
             return oss.str();

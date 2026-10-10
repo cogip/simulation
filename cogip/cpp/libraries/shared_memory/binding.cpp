@@ -22,6 +22,8 @@ namespace shared_memory {
 NB_MODULE(shared_memory, m) {
     auto models_module = nb::module_::import_("cogip.cpp.libraries.models");
     auto obstacles_module = nb::module_::import_("cogip.cpp.libraries.obstacles");
+    auto obstacles_new_module = nb::module_::import_("cogip.cpp.libraries.obstacles_new");
+    auto graph_module = nb::module_::import_("cogip.cpp.libraries.graph");
 
     nb::class_<shared_data_t>(m, "SharedData")
         .def(nb::init<>())
@@ -42,6 +44,8 @@ NB_MODULE(shared_memory, m) {
         .value("DetectorObstacles", LockName::DetectorObstacles)
         .value("MonitorObstacles", LockName::MonitorObstacles)
         .value("Obstacles", LockName::Obstacles)
+        .value("ObstaclesNew", LockName::ObstaclesNew)
+        .value("Graph", LockName::Graph)
         .value("AvoidanceBlocked", LockName::AvoidanceBlocked)
         .value("AvoidancePath", LockName::AvoidancePath)
         .value("SimCameraData", LockName::SimCameraData)
@@ -137,6 +141,21 @@ NB_MODULE(shared_memory, m) {
              "Get ObstacleCircleList object wrapping the shared memory circle_obstacles structure.")
         .def("get_rectangle_obstacles", &SharedMemory::getRectangleObstacles, nb::rv_policy::reference_internal,
              "Get ObstacleRectangleList object wrapping the shared memory rectangle_obstacles structure.")
+        .def("get_obstacles_new", &SharedMemory::getObstaclesNew, nb::rv_policy::reference_internal,
+             "Get ObstacleList object wrapping the shared memory obstacles_new structure.")
+        // The five structures below are handed to graph.Graph, which borrows them. They are
+        // returned as references into the segment rather than as copies, so the graph is built in
+        // place and read back without one either.
+        .def("get_obstacles_new_data", &SharedMemory::getObstaclesNewData, nb::rv_policy::reference_internal,
+             "Get the shared memory obstacles_new structure, as graph.Graph borrows it.")
+        .def("get_graph_params", &SharedMemory::getGraphParams, nb::rv_policy::reference_internal,
+             "Get the shared memory graph_params structure.")
+        .def("get_graph_nodes", &SharedMemory::getGraphNodes, nb::rv_policy::reference_internal,
+             "Get the shared memory graph_nodes structure.")
+        .def("get_graph_edges", &SharedMemory::getGraphEdges, nb::rv_policy::reference_internal,
+             "Get the shared memory graph_edges structure.")
+        .def("get_graph_hulls", &SharedMemory::getGraphHulls, nb::rv_policy::reference_internal,
+             "Get the shared memory graph_hulls structure.")
         .def("get_properties", &SharedMemory::getProperties, nb::rv_policy::reference_internal,
              "Get the shared properties.")
         .def_prop_rw("avoidance_exiting", &SharedMemory::getAvoidanceExiting, &SharedMemory::setAvoidanceExiting,

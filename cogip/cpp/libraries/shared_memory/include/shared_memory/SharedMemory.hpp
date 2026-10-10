@@ -10,6 +10,7 @@
 #include "models/PoseOrderList.hpp"
 #include "obstacles/ObstacleCircleList.hpp"
 #include "obstacles/ObstacleRectangleList.hpp"
+#include "obstacles_new/ObstacleList.hpp"
 
 #include <memory>
 #include <string>
@@ -74,6 +75,26 @@ public:
     /// Retrieves a pointer to the shared memory rectangle_obstacles structure.
     obstacles::ObstacleRectangleList* getRectangleObstacles() { return rectangle_obstacles_; }
 
+    /// Retrieves a pointer to the ObstacleList object wrapping the shared memory obstacles_new structure.
+    obstacles_new::ObstacleList* getObstaclesNew() { return obstacles_new_; }
+
+    /// Retrieves a pointer to the shared memory obstacles_new structure.
+    ///
+    /// The raw structure rather than its wrapper, because this is what graph::Graph borrows.
+    obstacles_new::obstacle_list_t* getObstaclesNewData() { return &data_->obstacles_new; }
+
+    /// Retrieves a pointer to the shared memory graph_params structure.
+    graph::graph_params_t* getGraphParams() { return &data_->graph_params; }
+
+    /// Retrieves a pointer to the shared memory graph_nodes structure.
+    graph::node_list_t* getGraphNodes() { return &data_->graph_nodes; }
+
+    /// Retrieves a pointer to the shared memory graph_edges structure.
+    graph::edge_list_t* getGraphEdges() { return &data_->graph_edges; }
+
+    /// Retrieves a pointer to the shared memory graph_hulls structure.
+    graph::hull_list_t* getGraphHulls() { return &data_->graph_hulls; }
+
     /// Retrieves a reference to the shared properties structure.
     shared_properties_t& getProperties() { return data_->properties; }
 
@@ -118,6 +139,7 @@ private:
     models::CircleList* monitor_obstacles_;  ///< Pointer to the CircleList object wrapping the shared memory monitor_obstacles structure.
     obstacles::ObstacleCircleList* circle_obstacles_;  ///< Pointer to the ObstacleCircleList object wrapping the shared memory circle_obstacles structure.
     obstacles::ObstacleRectangleList* rectangle_obstacles_;  ///< Pointer to the ObstacleRectangleList object wrapping the shared memory rectangle_obstacles structure.
+    obstacles_new::ObstacleList* obstacles_new_;  ///< Pointer to the ObstacleList object wrapping the shared memory obstacles_new structure.
     models::PoseOrder* avoidance_new_pose_order_;  ///< Pointer to the PoseOrder object for the new pose order in avoidance.
     models::PoseOrder* avoidance_pose_order_;  ///< Pointer to the PoseOrder object for the current pose order in avoidance.
     models::PoseOrderList* avoidance_path_;  ///< Pointer to the PoseOrderList object for the avoidance path.

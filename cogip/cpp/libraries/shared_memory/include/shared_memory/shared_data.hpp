@@ -10,6 +10,8 @@
 #include "models/pose_buffer.hpp"
 #include "obstacles/obstacle_circle_list.hpp"
 #include "obstacles/obstacle_polygon_list.hpp"
+#include "obstacles_new/obstacle_list.hpp"
+#include "graph/graph_types.hpp"
 #include "shared_properties.hpp"
 
 #include <cstdint>
@@ -35,6 +37,11 @@ typedef struct {
     models::circle_list_t monitor_obstacles;   ///< The obstacles from monitor.
     obstacles::obstacle_circle_list_t circle_obstacles;  ///< The circle obstacles from planner.
     obstacles::obstacle_polygon_list_t rectangle_obstacles;  ///< The rectangle obstacles from planner.
+    obstacles_new::obstacle_list_t obstacles_new;  ///< The obstacles in the unified representation.
+    graph::graph_params_t graph_params;  ///< Parameters of the next visibility graph build.
+    graph::node_list_t graph_nodes;  ///< Nodes of the visibility graph.
+    graph::edge_list_t graph_edges;  ///< Edges of the visibility graph, as node index pairs.
+    graph::hull_list_t graph_hulls;  ///< Sampled inflated obstacle outlines. Display only.
     shared_properties_t properties;  ///< Shared properties.
     bool avoidance_exiting;  ///< True if the avoidance process is exiting, false otherwise
     bool avoidance_has_new_pose_order;  ///< True if the avoidance process should use the new pose order property, false otherwise
@@ -64,6 +71,8 @@ enum class LockName {
     DetectorObstacles, ///< Lock for the obstacles from detector.
     MonitorObstacles,  ///< Lock for the obstacles from the monitor.
     Obstacles,    ///< Lock for the circle obstacles from planner.
+    ObstaclesNew, ///< Lock for the obstacles in the unified representation.
+    Graph,        ///< Lock for the visibility graph and the parameters it was built from.
     AvoidanceBlocked,  ///< Lock blocked event from avoidance.
     AvoidancePath,     ///< Lock for the new avoidance path event from avoidance.
     SimCameraData      ///< Lock for the simulated camera data.
@@ -78,6 +87,8 @@ static std::map<LockName, std::string> lock2str = {
     { LockName::DetectorObstacles, "DetectorObstacles" },
     { LockName::MonitorObstacles, "MonitorObstacles" },
     { LockName::Obstacles, "Obstacles" },
+    { LockName::ObstaclesNew, "ObstaclesNew" },
+    { LockName::Graph, "Graph" },
     { LockName::AvoidanceBlocked, "AvoidanceBlocked" },
     { LockName::AvoidancePath, "AvoidancePath" },
     { LockName::SimCameraData, "SimCameraData" },

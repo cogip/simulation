@@ -14,12 +14,17 @@ target_include_directories(
     ${PROJECT_SOURCE_DIR}/cogip/cpp/libraries/utils/include
     ${PROJECT_SOURCE_DIR}/cogip/cpp/libraries/models/include
     ${PROJECT_SOURCE_DIR}/cogip/cpp/libraries/obstacles/include
+    ${PROJECT_SOURCE_DIR}/cogip/cpp/libraries/geometry/include
+    ${PROJECT_SOURCE_DIR}/cogip/cpp/libraries/obstacles_new/include
+    ${PROJECT_SOURCE_DIR}/cogip/cpp/libraries/graph/include
 )
 target_link_libraries(
     shared_memory_cpp
     PUBLIC
     models_cpp
     obstacles_cpp
+    obstacles_new_cpp
+    graph_cpp
 )
 
 # Generate library with source code and binding.
@@ -44,7 +49,7 @@ nanobind_add_stub(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/__init__.pyi
     MARKER_FILE ${CMAKE_CURRENT_BINARY_DIR}/py.typed
     PYTHON_PATH ${CMAKE_BINARY_DIR}
-    DEPENDS models_stub obstacles_stub
+    DEPENDS models_stub obstacles_stub obstacles_new_stub graph_stub
     VERBOSE
     INSTALL_TIME
 )

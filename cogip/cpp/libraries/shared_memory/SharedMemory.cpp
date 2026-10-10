@@ -62,6 +62,7 @@ SharedMemory::SharedMemory(const std::string& name, bool owner):
     monitor_obstacles_ = new models::CircleList(&data_->monitor_obstacles);
     circle_obstacles_ = new obstacles::ObstacleCircleList(&data_->circle_obstacles);
     rectangle_obstacles_ = new obstacles::ObstacleRectangleList(&data_->rectangle_obstacles);
+    obstacles_new_ = new obstacles_new::ObstacleList(&data_->obstacles_new);
     avoidance_new_pose_order_ = new models::PoseOrder(&data_->avoidance_new_pose_order);
     avoidance_pose_order_ = new models::PoseOrder(&data_->avoidance_pose_order);
     avoidance_path_ = new models::PoseOrderList(&data_->avoidance_path);
@@ -70,6 +71,7 @@ SharedMemory::SharedMemory(const std::string& name, bool owner):
 }
 
 SharedMemory::~SharedMemory() {
+    delete obstacles_new_;
     delete rectangle_obstacles_;
     delete circle_obstacles_;
     delete monitor_obstacles_;

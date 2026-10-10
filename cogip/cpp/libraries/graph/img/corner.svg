@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 430 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- One corner of an outline, and the two things sampled there: the exact inflated
+       boundary, and the circumscribed ring the graph nodes sit on. Generated from the
+       formula in Graph.hpp, so the drawing cannot drift from it. -->
+  <rect width="100%" height="100%" fill="#ffffff"/>
+  <g font-family="sans-serif" font-size="10" fill="#334455">
+
+    <!-- the outline, exact. Only the corner is drawn; the body runs off the figure. -->
+    <path d="M 46.0,0.0 L 46.0,106.0
+             L 152.0,106.0 L 152.0,0.0 Z"
+          fill="#eef1f6"/>
+    <polyline points="46.0,106.0 152.0,106.0 152.0,0.0"
+              fill="none" stroke="#334455" stroke-width="2"/>
+    <text x="56" y="96">outline P</text>
+
+    <!-- the inflated boundary, exact: two straight sections and one arc -->
+    <path d="M 46.0,158.0 L 152.0,158.0
+             A 52.0,52.0 0 0 0 204.0,106.0
+             L 204.0,0.0"
+          fill="none" stroke="#2a8855" stroke-width="2"/>
+
+    <!-- the ring the nodes sit on: every chord tangent, never secant -->
+    <polyline points="46.0,167.0 168.3,167.0 196.7,150.7 213.0,122.3 213.0,0.0" fill="none" stroke="#cc3333" stroke-width="1.6"/>
+    <g fill="#2a8855">
+      <circle cx="152.0" cy="158.0" r="2"/><circle cx="178.0" cy="151.0" r="2"/><circle cx="197.0" cy="132.0" r="2"/><circle cx="204.0" cy="106.0" r="2"/>
+    </g>
+    <g fill="#cc3333">
+      <circle cx="168.3" cy="167.0" r="3.5"/><circle cx="196.7" cy="150.7" r="3.5"/><circle cx="213.0" cy="122.3" r="3.5"/>
+    </g>
+
+    <!-- the sweep, and the radius of one sample -->
+    <line x1="152.0" y1="106.0" x2="152.0" y2="158.0"
+          stroke="#8899aa" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="152.0" y1="106.0" x2="204.0" y2="106.0"
+          stroke="#8899aa" stroke-width="1" stroke-dasharray="3 3"/>
+    <path d="M 152.0,130.0
+             A 24,24 0 0 0 176.0,106.0"
+          fill="none" stroke="#8899aa" stroke-width="1"/>
+    <text x="172.3" y="133.3"
+          fill="#8899aa">&#916;</text>
+    <line x1="152.0" y1="106.0" x2="196.7" y2="150.7"
+          stroke="#cc3333" stroke-width="1"/>
+    <text x="176.6"
+          y="130.6" fill="#cc3333">&#961;</text>
+
+    <!-- what each colour claims -->
+    <text x="252" y="42" fill="#8899aa">&#916; = turn at the vertex, &#948; = &#916; / N</text>
+    <text x="252" y="62" fill="#2a8855">exact boundary, radius R</text>
+    <text x="252" y="76" fill="#2a8855">where each chord touches it</text>
+    <text x="252" y="96" fill="#cc3333">nodes, &#961; = (R + c) / cos(&#948; / 2)</text>
+    <text x="252" y="110" fill="#667788">drawn with N = 3</text>
+    <text x="252" y="136" fill="#667788">Both ends of the ring sit at</text>
+    <text x="252" y="150" fill="#667788">R + c from the side they meet,</text>
+    <text x="252" y="164" fill="#667788">so the straight sections need</text>
+    <text x="252" y="178" fill="#667788">no samples of their own.</text>
+  </g>
+</svg>
