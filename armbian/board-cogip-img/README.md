@@ -132,3 +132,21 @@ The hook keeps only the logic; the actual `config.txt` lines live in overlay dat
 files (`usr/local/lib/cogip-config/<role>.txt`, `robot` or `beacon`), staged into
 the rootfs by the overlay and picked by `COGIP_TARGET`. The hook appends the right
 one and removes the staging dir so it does not ship.
+
+## Pinned bootloader EEPROM
+
+Armbian's `rpi-eeprom` package ships a stale (2023) bootloader image, and any run
+of `rpi-eeprom-update` (apt trigger, manual, or its service) stages a DOWNGRADE of
+the Pi EEPROM, which can break Pi5 boot. So the package is purged
+(`BOARD_PURGE_PACKAGES` in `customize.d/board-rpi4b.sh`) and the bootloader version
+is instead frozen to a chosen release.
+
+`lib/eeprom.sh` pins a release tag + `pieeprom` file per SoC (Pi4 `bcm2711`, Pi5
+`bcm2712`), fetches the blobs from `raspberrypi/rpi-eeprom` into
+`.cache/eeprom/<tag>/` (a present file is not re-downloaded), generates
+`pieeprom.sig` (the unsigned `sha256` + `ts` + `target-soc` format), and stages the
+trio into the per-target base overlay. The board hook drops `recovery.bin` +
+`pieeprom.upd` + `pieeprom.sig` into `/boot/firmware`; the bootROM flashes that
+image once at first boot, then renames `recovery.bin` to `recovery.000` (one-shot,
+pre-OS), so the running system never touches the EEPROM. Bumping the pinned version
+(edit the tag + date in `lib/eeprom.sh`) busts the base cache.

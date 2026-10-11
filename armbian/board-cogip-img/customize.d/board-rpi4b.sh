@@ -16,8 +16,9 @@ BOARD_MASK_UNITS="rpi-eeprom-update.service rpi-resize.service"
 BOARD_GPIO_SWD=1                                         # openocd rpi-cogip.cfg = Pi bcm2835gpio bitbang
 # Armbian's rpi-eeprom ships a stale bootloader image (2023): any run of
 # rpi-eeprom-update (apt trigger, manual, or the service we mask) would DOWNGRADE
-# the Pi EEPROM, which can break Pi5 boot. The EEPROM is managed out of band, so
-# drop the package entirely; masking the service alone does not stop apt/manual.
+# the Pi EEPROM, which can break Pi5 boot. Drop the package entirely (masking the
+# service alone does not stop apt/manual); the bootloader version is instead
+# pinned via lib/eeprom.sh and flashed once at first boot (hook below).
 BOARD_PURGE_PACKAGES="rpi-eeprom"
 
 # --- Armbian hook: COGIP peripheral overlays in config.txt ---
@@ -55,6 +56,19 @@ function pre_umount_final_image__zzz_cogip_peripherals() {
     fi
 
     rm -rf "${MOUNT}/usr/local/lib/cogip-config"
+
+    # Pinned bootloader EEPROM (staged by lib/eeprom.sh for this target's soc).
+    # Dropping recovery.bin + pieeprom.upd + pieeprom.sig into the boot partition
+    # makes the bootROM flash the chosen version once at first boot, then rename
+    # recovery.bin -> recovery.000 (one-shot, pre-OS). rpi-eeprom is purged, so
+    # nothing in the running system ever touches the EEPROM again.
+    local eep="${MOUNT}/usr/local/lib/cogip-eeprom"
+    if [[ -f "${eep}/recovery.bin" && -f "${eep}/pieeprom.upd" ]]; then
+        display_alert "COGIP: staging pinned EEPROM" "rpi4b" "info"
+        cp "${eep}/recovery.bin" "${eep}/pieeprom.upd" "${eep}/pieeprom.sig" \
+            "${MOUNT}/boot/firmware/"
+    fi
+    rm -rf "${eep}"
 }
 
 # --- Armbian hook: build the downstream (legacy) unicam instead of upstream ---

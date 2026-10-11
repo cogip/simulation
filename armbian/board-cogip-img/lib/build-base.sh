@@ -31,6 +31,8 @@ cogip_source_hash() {
         # invalidates the base. BOARD is already in the base image name.
         printf 'armbian %s %s %s\n' "${RELEASE}" "${BRANCH}" "${ARMBIAN_REF:-}"
         git -C "${ARMBIAN_BUILD_DIR}" rev-parse HEAD 2>/dev/null || true
+        # Pinned bootloader EEPROM version (RPi), so bumping it rebuilds the base.
+        cogip_eeprom_hash 2>/dev/null || true
     } | sha256sum | cut -d' ' -f1
 }
 
@@ -68,6 +70,10 @@ _cogip_stage_base_overlay() {
     fi
     mkdir -p "${UP}/overlay/etc/cogip"
     printf 'COGIP_TARGET=%s\n' "${TARGET}" > "${UP}/overlay/etc/cogip/base.conf"
+
+    # Fetch + stage the pinned bootloader EEPROM (RPi only); the board hook drops
+    # it into /boot/firmware so the bootROM flashes it once at first boot.
+    cogip_stage_eeprom
 
     # Stage the board + target fragments where customize-image.sh sources them
     # (${FRAG}=/usr/local/lib/cogip-build); customize removes them at the end so

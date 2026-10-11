@@ -12,3 +12,5 @@ board-cogip-img/wpa_supplicant.conf
 board-cogip-img/wpa_supplicant-wlan0.conf
 # Operator authorized_keys drop-in (baked into root for passwordless ssh).
 board-cogip-img/authorized_keys
+# Fetched + cached Pi bootloader EEPROM blobs (pinned in lib/eeprom.sh).
+board-cogip-img/.cache/

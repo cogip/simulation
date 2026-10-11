@@ -25,6 +25,7 @@ BEACON_IP="${BEACON_IP:-192.168.2.100}"    # base addr; ROBOT_ID adds to the las
 source "${SCRIPT_DIR}/lib/derive.sh"
 source "${SCRIPT_DIR}/lib/build-base.sh"
 source "${SCRIPT_DIR}/lib/provision.sh"
+source "${SCRIPT_DIR}/lib/eeprom.sh"
 
 cogip_derive   # -> TARGET CLASS CLASS_LC SUFFIX HOSTNAME IP_PREFIX IP_LAST COGIP_IP
 
