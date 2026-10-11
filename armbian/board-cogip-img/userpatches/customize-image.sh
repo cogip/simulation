@@ -77,7 +77,7 @@ TARGET="${COGIP_TARGET:-${TARGET}}"
 # Board + target fragments (staged by build.sh). The board frag sets CONSOLE_TTY
 # / BOARD_MASK_UNITS / BOARD_GPIO_SWD; the target frag sets TARGET_PACKAGES +
 # enable_services().
-CONSOLE_TTY=""; BOARD_MASK_UNITS=""; BOARD_GPIO_SWD=""; TARGET_PACKAGES=""; TARGET_BACKPORTS_PACKAGES=""
+CONSOLE_TTY=""; BOARD_MASK_UNITS=""; BOARD_GPIO_SWD=""; BOARD_PURGE_PACKAGES=""; TARGET_PACKAGES=""; TARGET_BACKPORTS_PACKAGES=""
 [ -f "${FRAG}/board-${BOARD}.sh" ] && . "${FRAG}/board-${BOARD}.sh" \
     || echo "WARNING: no board fragment customize.d/board-${BOARD}.sh" >&2
 . "${FRAG}/target-${TARGET}.sh"
@@ -142,6 +142,9 @@ systemctl enable rsyslog.service 2>/dev/null || true
 
 # Drop desktop/cloud bloat if the base pulled any in (harmless if absent).
 apt-get purge -y --auto-remove network-manager cloud-init apparmor avahi-daemon 2>/dev/null || true
+# Board-specific removals (e.g. rpi-eeprom, whose stale image would downgrade the
+# Pi bootloader); harmless if the package is absent.
+[ -n "${BOARD_PURGE_PACKAGES}" ] && apt-get purge -y --auto-remove ${BOARD_PURGE_PACKAGES} 2>/dev/null || true
 
 # The PyPI `lgpio` wheel links the system liblgpio (it does NOT bundle it), and
 # liblgpio-dev is an RPi OS package absent from Debian (bookworm and trixie). So

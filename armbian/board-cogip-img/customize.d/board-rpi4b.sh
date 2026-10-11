@@ -14,6 +14,11 @@
 CONSOLE_TTY="ttyAMA0"                                    # PL011 GPIO14/15, freed by disable-bt
 BOARD_MASK_UNITS="rpi-eeprom-update.service rpi-resize.service"
 BOARD_GPIO_SWD=1                                         # openocd rpi-cogip.cfg = Pi bcm2835gpio bitbang
+# Armbian's rpi-eeprom ships a stale bootloader image (2023): any run of
+# rpi-eeprom-update (apt trigger, manual, or the service we mask) would DOWNGRADE
+# the Pi EEPROM, which can break Pi5 boot. The EEPROM is managed out of band, so
+# drop the package entirely; masking the service alone does not stop apt/manual.
+BOARD_PURGE_PACKAGES="rpi-eeprom"
 
 # --- Armbian hook: COGIP peripheral overlays in config.txt ---
 # Runs at pre_umount_final_image, AFTER the bcm2711 family writes config.txt with
