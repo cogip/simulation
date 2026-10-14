@@ -58,6 +58,7 @@ class GameContext:
         self.front_crates = [None, None, None, None]
         self.back_crates = [None, None, None, None]
         self.create_artifacts()
+        self.create_ninja_areas()
         self.create_fixed_obstacles()
         self.create_actuators_states()
 
@@ -92,13 +93,13 @@ class GameContext:
         pose = AdaptedPose(x=x, y=y, O=angle)
         if angle is None:
             self.pantries[pantry_id] = Pantry(
-                **pose.model_dump(include={"x", "y"}),
+                **pose.model_dump(include={"x", "y", "is_adapted"}),
                 id=pantry_id,
                 enabled=enabled,
             )
         else:
             self.pantries[pantry_id] = Pantry(
-                **pose.model_dump(include={"x", "y", "O"}),
+                **pose.model_dump(include={"x", "y", "O", "is_adapted"}),
                 id=pantry_id,
                 enabled=enabled,
             )
@@ -113,13 +114,13 @@ class GameContext:
             pose = AdaptedPose(x=x, y=y, O=angle)
             if angle is None:
                 self.collection_areas[collection_area_id] = CollectionArea(
-                    **pose.model_dump(include={"x", "y"}),
+                    **pose.model_dump(include={"x", "y", "is_adapted"}),
                     id=collection_area_id,
                     enabled=enabled and self.shared_properties.robot_id == 1,
                 )
             else:
                 self.collection_areas[collection_area_id] = CollectionArea(
-                    **pose.model_dump(include={"x", "y", "O"}),
+                    **pose.model_dump(include={"x", "y", "O", "is_adapted"}),
                     id=collection_area_id,
                     enabled=enabled and self.shared_properties.robot_id == 1,
                 )
@@ -172,6 +173,7 @@ class GameContext:
             length=600,
             width=450,
             id=FixedObstacleID.OppositeNest,
+            enabled=self.shared_properties.robot_id == 2,
         )
 
         # Table
@@ -179,7 +181,7 @@ class GameContext:
             x=-225 if self.shared_properties.table == TableEnum.Game else -725,
             y=0 if self.shared_properties.table == TableEnum.Game else -750,
             length=3000 if self.shared_properties.table == TableEnum.Game else 1500,
-            width=1550 if self.shared_properties.table == TableEnum.Game else 550,
+            width=1510 if self.shared_properties.table == TableEnum.Game else 510,
             id=FixedObstacleID.Table,
             enabled=self.shared_properties.robot_id == 2,
         )
@@ -191,6 +193,57 @@ class GameContext:
             width=200,
             id=FixedObstacleID.CratesFromGranary,
             enabled=self.shared_properties.robot_id == 1 and self.shared_properties.table == TableEnum.Game,
+        )
+
+    def create_ninja_areas(self):
+        # Area 1
+        pose = AdaptedPose(x=725, y=-400, O=0)
+        self.collection_areas[CollectionAreaID.NinjaArea1] = CollectionArea(
+            **pose.model_dump(include={"x", "y", "O", "is_adapted"}),
+            id=CollectionAreaID.NinjaArea1,
+            length=150,
+            width=100,
+            enabled=self.shared_properties.robot_id == 2,
+        )
+
+        # Area 2
+        pose = AdaptedPose(x=820, y=-200, O=0)
+        self.collection_areas[CollectionAreaID.NinjaArea2] = CollectionArea(
+            **pose.model_dump(include={"x", "y", "O", "is_adapted"}),
+            id=CollectionAreaID.NinjaArea2,
+            length=140,
+            width=100,
+            enabled=self.shared_properties.robot_id == 2,
+        )
+
+        # Deposit
+        pose = AdaptedPose(x=675, y=-250, O=0)
+        self.collection_areas[CollectionAreaID.NinjaDeposit] = CollectionArea(
+            **pose.model_dump(include={"x", "y", "O", "is_adapted"}),
+            id=CollectionAreaID.NinjaDeposit,
+            length=160,
+            width=200,
+            enabled=False,
+        )
+
+        # Drop zone
+        pose = AdaptedPose(x=675, y=-700, O=0)
+        self.collection_areas[CollectionAreaID.NinjaDropZone] = CollectionArea(
+            **pose.model_dump(include={"x", "y", "O", "is_adapted"}),
+            id=CollectionAreaID.NinjaDropZone,
+            length=150,
+            width=100,
+            enabled=False,
+        )
+
+        # Crates zone
+        pose = AdaptedPose(x=675, y=-790, O=0)
+        self.collection_areas[CollectionAreaID.NinjaCratesZone] = CollectionArea(
+            **pose.model_dump(include={"x", "y", "O", "is_adapted"}),
+            id=CollectionAreaID.NinjaCratesZone,
+            length=150,
+            width=150,
+            enabled=False,
         )
 
     def create_actuators_states(self):

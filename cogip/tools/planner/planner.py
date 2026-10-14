@@ -61,6 +61,7 @@ class Planner:
         obstacle_radius: int,
         obstacle_bb_margin: float,
         obstacle_bb_vertices: int,
+        table_limits_margin_extra: float,
         obstacle_updater_interval: float,
         path_refresh_interval: float,
         starter_pin: int | None,
@@ -92,6 +93,8 @@ class Planner:
             obstacle_radius: Radius of a dynamic obstacle (in mm)
             obstacle_bb_margin: Obstacle bounding box margin in percent of the radius
             obstacle_bb_vertices: Number of obstacle bounding box vertices
+            table_limits_margin_extra: Extra margin added to the table-limits inset, as a fraction
+                of the robot half-size
             obstacle_updater_interval: Interval between each send of obstacles to dashboards (in seconds)
             path_refresh_interval: Interval between each update of robot paths (in seconds)
             starter_pin: GPIO pin connected to the starter
@@ -148,6 +151,7 @@ class Planner:
         self.shared_properties.obstacle_radius = obstacle_radius
         self.shared_properties.obstacle_bb_margin = obstacle_bb_margin
         self.shared_properties.obstacle_bb_vertices = obstacle_bb_vertices
+        self.shared_properties.table_limits_margin_extra = table_limits_margin_extra
         self.shared_properties.obstacle_updater_interval = obstacle_updater_interval
         self.shared_properties.path_refresh_interval = path_refresh_interval
         self.shared_properties.bypass_detector = bypass_detector
@@ -179,6 +183,10 @@ class Planner:
         self._pose_order: pose.Pose | None = None
         self.pose_reached: bool = True
         self.blocked_counter: int = 0
+        # Background task spawned by the final action (e.g. NinjaAtTableAction's
+        # post-pose arm oscillation) that must outlive game_end but be cancelled
+        # on the next reset.
+        self.final_action_task: asyncio.Task | None = None
         self.controller = self.default_controller
         self.game_wizard = GameWizard(self)
         self.event_manager = EventManager(self)
@@ -362,6 +370,13 @@ class Planner:
         """
         Only reset context and strategy.
         """
+        if self.final_action_task and not self.final_action_task.done():
+            self.final_action_task.cancel()
+            try:
+                await self.final_action_task
+            except (asyncio.CancelledError, Exception):
+                pass
+        self.final_action_task = None
         self.game_context.reset()
         self.playing = False
         with self.starter_release_lock:
@@ -584,22 +599,23 @@ class Planner:
             shared_lock.finish_reading()
 
             if not self.shared_properties.disable_fixed_obstacles:
+                # Add artifact obstacles
+                for collection_area in self.game_context.collection_areas.values():
+                    if not collection_area.enabled:
+                        continue
+                    if not table.contains(collection_area, margin):
+                        continue
+                    self.shared_rectangle_obstacles.append(
+                        x=collection_area.x,
+                        y=collection_area.y,
+                        angle=collection_area.O,
+                        length_x=collection_area.length + self.shared_properties.robot_width,
+                        length_y=collection_area.width + self.shared_properties.robot_width,
+                        bounding_box_margin=margin,
+                        id=collection_area.id.value,
+                    )
+
                 if self.robot_id == 1:
-                    # Add artifact obstacles
-                    for collection_area in self.game_context.collection_areas.values():
-                        if not collection_area.enabled:
-                            continue
-                        if not table.contains(collection_area, margin):
-                            continue
-                        self.shared_rectangle_obstacles.append(
-                            x=collection_area.x,
-                            y=collection_area.y,
-                            angle=collection_area.O,
-                            length_x=collection_area.length + self.shared_properties.robot_width,
-                            length_y=collection_area.width + self.shared_properties.robot_width,
-                            bounding_box_margin=margin,
-                            id=collection_area.id.value,
-                        )
                     for pantry in self.game_context.pantries.values():
                         if not pantry.enabled:
                             continue

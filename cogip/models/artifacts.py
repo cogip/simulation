@@ -13,6 +13,10 @@ class FixedObstacleID(IntEnum):
     OppositeNest = auto()
     Table = auto()
     CratesFromGranary = auto()
+    NinjaCrate1 = auto()
+    NinjaCrate2 = auto()
+    NinjaCrate3 = auto()
+    NinjaCrate4 = auto()
 
 
 class FixedObstacle(Vertex):
@@ -39,6 +43,11 @@ class CollectionAreaID(IntEnum):
     OppositeBottomSide = auto()
     OppositeTopSide = auto()
     OppositeCenter = auto()
+    NinjaArea1 = auto()
+    NinjaArea2 = auto()
+    NinjaDeposit = auto()
+    NinjaDropZone = auto()
+    NinjaCratesZone = auto()
 
 
 class CollectionArea(Pose):

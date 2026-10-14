@@ -28,7 +28,7 @@ class GameApprovalStrategy(Strategy):
         self.append(DropCratesAction(planner, self, PantryID.LocalBottom, next(self.priority)))
         self.append(DropCratesAction(planner, self, PantryID.LocalCenter, next(self.priority)))
 
-        self.append(RunAwayAction(planner, self, AdaptedPose(x=-730, y=-1150, O=0).pose))
+        self.append(RunAwayAction(planner, self))
         self.append(ParkingAction(planner, self, AdaptedPose(x=740, y=-1095, O=0).pose))
 
 
