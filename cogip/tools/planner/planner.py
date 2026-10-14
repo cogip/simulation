@@ -599,22 +599,23 @@ class Planner:
             shared_lock.finish_reading()
 
             if not self.shared_properties.disable_fixed_obstacles:
+                # Add artifact obstacles
+                for collection_area in self.game_context.collection_areas.values():
+                    if not collection_area.enabled:
+                        continue
+                    if not table.contains(collection_area, margin):
+                        continue
+                    self.shared_rectangle_obstacles.append(
+                        x=collection_area.x,
+                        y=collection_area.y,
+                        angle=collection_area.O,
+                        length_x=collection_area.length + self.shared_properties.robot_width,
+                        length_y=collection_area.width + self.shared_properties.robot_width,
+                        bounding_box_margin=margin,
+                        id=collection_area.id.value,
+                    )
+
                 if self.robot_id == 1:
-                    # Add artifact obstacles
-                    for collection_area in self.game_context.collection_areas.values():
-                        if not collection_area.enabled:
-                            continue
-                        if not table.contains(collection_area, margin):
-                            continue
-                        self.shared_rectangle_obstacles.append(
-                            x=collection_area.x,
-                            y=collection_area.y,
-                            angle=collection_area.O,
-                            length_x=collection_area.length + self.shared_properties.robot_width,
-                            length_y=collection_area.width + self.shared_properties.robot_width,
-                            bounding_box_margin=margin,
-                            id=collection_area.id.value,
-                        )
                     for pantry in self.game_context.pantries.values():
                         if not pantry.enabled:
                             continue
