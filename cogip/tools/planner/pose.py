@@ -55,9 +55,29 @@ class AdaptedPose(Pose):
     during initialization.
     So to define static positions in actions, we can use this class to set pose related
     to the default camp, and if the camp changes, the pose will be adapted on reset.
+
+    The camp adaptation is a reflection (an involution): applying it twice cancels
+    out. Building an AdaptedPose from a pose that is already adapted would mirror it
+    a second time and silently move it to the wrong camp, so it is rejected.
     """
 
     _camp: ClassVar[Camp] = Camp()
+
+    def __init__(self, pose: Pose | None = None, /, **kwargs):
+        source_adapted = (
+            isinstance(pose, AdaptedPose)
+            or (pose is not None and getattr(pose, "is_adapted", False))
+            or kwargs.get("is_adapted", False)
+        )
+        if source_adapted:
+            raise TypeError(
+                "AdaptedPose cannot be built from an already-adapted pose (double camp mirror); "
+                "pass raw (default-camp) coordinates or a non-adapted Pose"
+            )
+        if pose is not None:
+            kwargs = {**pose.model_dump(), **kwargs}
+        kwargs["is_adapted"] = True
+        super().__init__(**kwargs)
 
     @field_validator("y")
     @classmethod

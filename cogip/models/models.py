@@ -91,9 +91,11 @@ class Pose(Vertex):
         x: X position
         y: Y position
         O: Rotation
+        is_adapted: whether the coordinates are already expressed in the selected camp frame
     """
 
     O: float | None = 0.0  # noqa
+    is_adapted: bool = False
 
 
 class Speed(BaseModel):

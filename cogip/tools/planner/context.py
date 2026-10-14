@@ -92,13 +92,13 @@ class GameContext:
         pose = AdaptedPose(x=x, y=y, O=angle)
         if angle is None:
             self.pantries[pantry_id] = Pantry(
-                **pose.model_dump(include={"x", "y"}),
+                **pose.model_dump(include={"x", "y", "is_adapted"}),
                 id=pantry_id,
                 enabled=enabled,
             )
         else:
             self.pantries[pantry_id] = Pantry(
-                **pose.model_dump(include={"x", "y", "O"}),
+                **pose.model_dump(include={"x", "y", "O", "is_adapted"}),
                 id=pantry_id,
                 enabled=enabled,
             )
@@ -113,13 +113,13 @@ class GameContext:
             pose = AdaptedPose(x=x, y=y, O=angle)
             if angle is None:
                 self.collection_areas[collection_area_id] = CollectionArea(
-                    **pose.model_dump(include={"x", "y"}),
+                    **pose.model_dump(include={"x", "y", "is_adapted"}),
                     id=collection_area_id,
                     enabled=enabled and self.shared_properties.robot_id == 1,
                 )
             else:
                 self.collection_areas[collection_area_id] = CollectionArea(
-                    **pose.model_dump(include={"x", "y", "O"}),
+                    **pose.model_dump(include={"x", "y", "O", "is_adapted"}),
                     id=collection_area_id,
                     enabled=enabled and self.shared_properties.robot_id == 1,
                 )

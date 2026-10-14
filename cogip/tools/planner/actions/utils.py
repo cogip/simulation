@@ -2,6 +2,7 @@ import math
 from typing import TYPE_CHECKING
 
 from cogip import models
+from cogip.tools.planner.pose import AdaptedPose
 
 if TYPE_CHECKING:
     from ..planner import Planner
@@ -22,7 +23,20 @@ def get_relative_pose(
         front_offset: The offset in the direction of the reference's front.
         side_offset: The offset in the direction of the reference's side. Positive is to the left.
         angular_offset: The angular offset in degrees.
+
+    If the reference is camp-adapted (is_adapted), the side and angular offsets are
+    mirrored to the camp too (front is radial, untouched). The result keeps the
+    reference's is_adapted tag.
     """
+    adapted = getattr(reference_pose, "is_adapted", False)
+    if adapted:
+        # Reference already in camp coordinates. Mirror the lateral and angular
+        # offsets through the same camp transform used for y and angles: identity
+        # in blue, reflection in yellow. front is radial and survives untouched.
+        camp = AdaptedPose._camp
+        side_offset = camp.adapt_y(side_offset)
+        angular_offset = camp.adapt_angle(angular_offset)
+
     # This function calculates a new pose relative to a reference pose.
     new_x = (
         reference_pose.x
@@ -36,7 +50,9 @@ def get_relative_pose(
     )
     # Normalize the angle to be between 0 and 360 degrees
     new_angle = (reference_pose.O + angular_offset) % 360
-    return models.Pose(x=new_x, y=new_y, O=new_angle)
+
+    # Carry the camp tag so the result is not mirrored again.
+    return models.Pose(x=new_x, y=new_y, O=new_angle, is_adapted=adapted)
 
 
 async def set_countdown_color(planner: "Planner", color: "str"):
