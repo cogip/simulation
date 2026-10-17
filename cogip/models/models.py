@@ -406,10 +406,10 @@ class EmergencyStopStatus(BaseModel):
     Model representing the emergency stop button status.
 
     Attributes:
-        emergency_stop: Emergency stop button status (True = released, False = engaged)
+        emergency_stop_engaged: Emergency stop button status (True = engaged, False = released)
     """
 
-    emergency_stop: bool = False
+    emergency_stop_engaged: bool = False
 
 
 class PowerSourceStatus(BaseModel):
