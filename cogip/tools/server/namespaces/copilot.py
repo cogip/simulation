@@ -1,11 +1,12 @@
 from typing import Any
 
 import socketio
+from pydantic import BaseModel
 from socketio.exceptions import ConnectionRefusedError
 
 from cogip import models
 from .. import logger, server
-from ..context import Context
+from ..context import POWER_SUPPLY_STATE_NAMES, Context
 
 
 class CopilotNamespace(socketio.AsyncNamespace):
@@ -35,6 +36,12 @@ class CopilotNamespace(socketio.AsyncNamespace):
         self.context.copilot_sid = None
         self.context.shell_menu = None
         await self.emit("copilot_disconnected", namespace="/planner")
+
+        # Power supply states are unknown without copilot
+        for name in POWER_SUPPLY_STATE_NAMES:
+            setattr(self.context, name, None)
+            await self.emit(name, (self.context.robot_id, None), namespace="/dashboard")
+
         logger.info("Copilot disconnected.")
 
     async def on_reset(self, sid) -> None:
@@ -129,3 +136,47 @@ class CopilotNamespace(socketio.AsyncNamespace):
         """
         logger.debug(f"[copilot => telemetry] Telemetry Data: {telemetry}")
         await self.emit("telemetry_data", telemetry, namespace="/telemetry")
+
+    async def _forward_power_supply_state(self, name: str, state: BaseModel) -> None:
+        """
+        Store a power supply state and forward it to dashboards if it changed.
+
+        Note:
+            The power supply board resends some states periodically.
+        """
+        if state == getattr(self.context, name):
+            return
+        setattr(self.context, name, state)
+        await self.emit(name, (self.context.robot_id, state.model_dump()), namespace="/dashboard")
+
+    async def on_emergency_stop_status(self, sid, status: dict[str, Any]) -> None:
+        """
+        Callback on emergency_stop_status message from copilot.
+        Forward to dashboards.
+        """
+        await self._forward_power_supply_state(
+            "emergency_stop_status", models.EmergencyStopStatus.model_validate(status)
+        )
+
+    async def on_power_source_status(self, sid, status: dict[str, Any]) -> None:
+        """
+        Callback on power_source_status message from copilot.
+        Forward to dashboards.
+        """
+        await self._forward_power_supply_state("power_source_status", models.PowerSourceStatus.model_validate(status))
+
+    async def on_power_rails_status(self, sid, status: dict[str, Any]) -> None:
+        """
+        Callback on power_rails_status message from copilot.
+        Forward to dashboards.
+        """
+        await self._forward_power_supply_state("power_rails_status", models.PowerRailsStatus.model_validate(status))
+
+    async def on_power_rails_measures(self, sid, measures: dict[str, Any]) -> None:
+        """
+        Callback on power_rails_measures message from copilot.
+        Forward to dashboards.
+        """
+        await self._forward_power_supply_state(
+            "power_rails_measures", models.PowerRailsMeasures.model_validate(measures)
+        )

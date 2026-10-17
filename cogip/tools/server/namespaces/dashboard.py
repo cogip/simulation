@@ -3,7 +3,7 @@ from typing import Any
 import socketio
 
 from .. import logger, server
-from ..context import Context
+from ..context import POWER_SUPPLY_STATE_NAMES, Context
 
 
 class DashboardNamespace(socketio.AsyncNamespace):
@@ -25,6 +25,11 @@ class DashboardNamespace(socketio.AsyncNamespace):
 
         if self.context.shell_menu:
             await self.emit("shell_menu", (self.context.robot_id, self.context.shell_menu.model_dump()), to=sid)
+
+        # Power supply states are only sent on change, so replay the last ones
+        for name in POWER_SUPPLY_STATE_NAMES:
+            if (state := getattr(self.context, name)) is not None:
+                await self.emit(name, (self.context.robot_id, state.model_dump()), to=sid)
 
         if self.context.virtual_planner:
             await self.emit("virtual", (self.context.robot_id, self.context.virtual), to=sid)
@@ -60,6 +65,9 @@ class DashboardNamespace(socketio.AsyncNamespace):
                     self.context.tool_menus[self.context.current_tool_menu].model_dump(),
                     namespace="/dashboard",
                 )
+            elif self.context.current_tool_menu == "root" and cmd == "power_supply":
+                # Power supply states are already sent to all dashboards, only open the popup on the sender
+                await self.emit("power_supply", to=sid)
             else:
                 split_ns = self.context.current_tool_menu.split("/")
                 namespace = split_ns.pop(0)
