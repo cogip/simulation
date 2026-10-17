@@ -56,6 +56,9 @@ class Server:
         self.context = context.Context()
         self.context.robot_id = int(os.environ["ROBOT_ID"])
         self.root_menu = models.ShellMenu(name="Root Menu", entries=[])
+        if self.context.robot_id == 1:
+            # Only robot 1 has a power supply board, handled by DashboardNamespace.on_tool_cmd
+            self.root_menu.entries.append(models.MenuEntry(cmd="power_supply", desc="Power Supply"))
         self.context.tool_menus["root"] = self.root_menu
         self.context.current_tool_menu = "root"
         self.dashboard_updater_loop = AsyncLoop(

@@ -97,6 +97,9 @@
             <pre id="state_robot"></pre>
             <pre id="order_robot"></pre>
           </span>
+          {% if robot_id == 1 %}
+          <span class="text-muted text-sm" id="emergencyStop">Emergency stop</span>
+          {% endif %}
           <span class="text-muted text-sm z-10" id="starter">
             <label>
               <input type="checkbox" class="checked:accent-red-cogip checked:border-red-cogip" onclick="return false;"> Starter
@@ -146,6 +149,64 @@
       </div>
     </div>
   </div>
+
+  {% if robot_id == 1 %}
+  <div id="powerSupplyModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 hidden">
+    <div class="bg-zinc-900 rounded-lg shadow-lg">
+      <div class="flex items-center justify-between p-4 border-b border-gray-600">
+        <h5 class="text-lg font-medium text-grey-color">Power Supply</h5>
+        <button type="button" class="text-grey-color text-2xl leading-none hover:text-gray-400" aria-label="Close"
+          onclick="closeModal('powerSupplyModal')">&times;</button>
+      </div>
+      <div class="flex items-start gap-8 p-4 text-grey-color">
+        <div>
+          <h5 class="text-lg font-medium text-left mb-2">Status</h5>
+          <table>
+            <tr>
+              <td class="border border-gray-300 px-4 py-2">Emergency stop</td>
+              <td class="border border-gray-300 px-4 py-2" id="powerEmergencyStop">—</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 px-4 py-2">Battery</td>
+              <td class="border border-gray-300 px-4 py-2" id="powerBattery">—</td>
+            </tr>
+            <tr>
+              <td class="border border-gray-300 px-4 py-2">DC supply</td>
+              <td class="border border-gray-300 px-4 py-2" id="powerDcSupply">—</td>
+            </tr>
+          </table>
+        </div>
+        <div>
+          <h5 class="text-lg font-medium text-left mb-2">Rails</h5>
+          <table>
+            <tr>
+              <th class="border border-gray-300 px-4 py-2 font-medium">Rail</th>
+              <th class="border border-gray-300 px-4 py-2 font-medium">Power good</th>
+              <th class="border border-gray-300 px-4 py-2 font-medium">Voltage (V)</th>
+              <th class="border border-gray-300 px-4 py-2 font-medium">Current (mA)</th>
+              <th class="border border-gray-300 px-4 py-2 font-medium">Power (W)</th>
+            </tr>
+            {% for rail, label in [("p3V3", "3.3V"), ("p5V0", "5.0V"), ("p7V5", "7.5V"), ("pxVx", "Variable"), ("p12V0", "12V")] %}
+            <tr>
+              <td class="border border-gray-300 px-4 py-2">{{ label }}</td>
+              <td class="border border-gray-300 px-4 py-2" id="rail_{{ rail }}_pgood">
+                {%- if rail == "p12V0" -%}
+                <img class="inline mr-2 w-[20px]" src="static/img/check_green_circle.svg" />OK
+                {%- else -%}
+                —
+                {%- endif -%}
+              </td>
+              <td class="border border-gray-300 px-4 py-2" id="rail_{{ rail }}_voltage">—</td>
+              <td class="border border-gray-300 px-4 py-2" id="rail_{{ rail }}_current">—</td>
+              <td class="border border-gray-300 px-4 py-2" id="rail_{{ rail }}_power">—</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 
   {% if robot_id != 0 %}
   <div class="fixed inset-0 z-50 hidden" id="scoreModal">
@@ -220,6 +281,7 @@
     import * as configModule from "../static/js/configModule.js";
     import * as scoreModule from "../static/js/scoreModule.js";
     import * as countdownModule from "../static/js/countdownModule.js";
+    import * as powerSupplyModule from "../static/js/powerSupplyModule.js";
     import { virtualKeyboard } from "../static/js/keyboardModule.js";
 
     window.addEventListener("resize", drawModule.resizeCanvas, false);
@@ -284,6 +346,25 @@
       document.querySelector("#starter input")?.addEventListener("click", function () {
         socket.emit("starter_changed", this.checked);
       });
+
+      // Only robot 1 has a power supply board
+      if (robotId === 1) {
+        // Registered synchronously so the states replayed by the server on connection are not missed
+        socket.on("power_supply", powerSupplyModule.openPowerSupplyModal);
+        socket.on("emergency_stop_status", function (robot_id, msg) {
+          powerSupplyModule.updateEmergencyStop(msg);
+        });
+        socket.on("power_source_status", function (robot_id, msg) {
+          powerSupplyModule.updatePowerSource(msg);
+        });
+        socket.on("power_rails_status", function (robot_id, msg) {
+          powerSupplyModule.updatePowerRailsStatus(msg);
+        });
+        socket.on("power_rails_measures", function (robot_id, msg) {
+          powerSupplyModule.updatePowerRailsMeasures(msg);
+        });
+        socket.on("disconnect", powerSupplyModule.reset);
+      }
 
       if (robotId !== 0) {
         import("../static/js/scoreModule.js").then((scoreModule) => {
