@@ -1,10 +1,11 @@
 import time
+from functools import partial
 from threading import Thread
 from typing import Any
 
 import polling2
 import socketio
-from pydantic import TypeAdapter, ValidationError
+from pydantic import BaseModel, TypeAdapter, ValidationError
 from PySide6 import QtCore
 from PySide6.QtCore import Signal as QtSignal
 from PySide6.QtCore import Slot as QtSlot
@@ -44,6 +45,12 @@ class SocketioClient(QtCore.QObject):
             Qt signal emitted to forward wizard requests
         signal_starter_changed:
             Qt signal emitted the starter state has changed
+        signal_emergency_stop_changed:
+            Qt signal emitted when the emergency stop state has changed (None if unknown)
+        signal_power_supply_request:
+            Qt signal emitted to open the power supply window
+        signal_power_supply_state_changed:
+            Qt signal emitted when a power supply state has changed (event name, state or None if unknown)
         signal_soft_reset:
             Qt signal emitted on soft reset request
         signal_servo_changed:
@@ -63,6 +70,9 @@ class SocketioClient(QtCore.QObject):
     signal_wizard_request: QtSignal = QtSignal(dict)
     signal_close_wizard: QtSignal = QtSignal()
     signal_starter_changed: QtSignal = QtSignal(bool)
+    signal_emergency_stop_changed: QtSignal = QtSignal(object)
+    signal_power_supply_request: QtSignal = QtSignal()
+    signal_power_supply_state_changed: QtSignal = QtSignal(str, object)
     signal_soft_reset: QtSignal = QtSignal()
     signal_servo_changed: QtSignal = QtSignal(str, float)
     signal_lift_changed: QtSignal = QtSignal(str, float)
@@ -157,6 +167,30 @@ class SocketioClient(QtCore.QObject):
     @QtSlot(bool)
     def starter_changed(self, pushed: bool):
         self.sio.emit("starter_changed", pushed, namespace="/dashboard")
+
+    def _on_power_supply_state(
+        self,
+        name: str,
+        model: type[BaseModel],
+        robot_id: int,
+        data: dict[str, Any] | None,
+    ) -> None:
+        """
+        Callback on power supply state messages, named after the event that carries them.
+
+        Arguments:
+            name: Name of the event carrying the state
+            model: Model used to validate the state
+            robot_id: Robot ID
+            data: State, or None if unknown
+        """
+        if data is not None:
+            try:
+                data = model.model_validate(data).model_dump()
+            except ValidationError as exc:
+                logger.warning(f"Failed to decode {name}: {exc}")
+                return
+        self.signal_power_supply_state_changed.emit(name, data)
 
     def register_events(self):
         """
@@ -314,6 +348,34 @@ class SocketioClient(QtCore.QObject):
             Change the state of a starter.
             """
             self.signal_starter_changed.emit(pushed)
+
+        @self.sio.on("emergency_stop_status", namespace="/dashboard")
+        def on_emergency_stop_status(robot_id: int, data: dict[str, bool] | None) -> None:
+            """
+            Change the state of the emergency stop button.
+            """
+            if data is None:
+                self.signal_emergency_stop_changed.emit(None)
+                return
+            try:
+                status = models.EmergencyStopStatus.model_validate(data)
+                self.signal_emergency_stop_changed.emit(status.emergency_stop_engaged)
+            except ValidationError as exc:
+                logger.warning(f"Failed to decode emergency stop status: {exc}")
+
+        @self.sio.on("power_supply", namespace="/dashboard")
+        def on_power_supply() -> None:
+            """
+            Open the power supply window.
+            """
+            self.signal_power_supply_request.emit()
+
+        for name, model in (
+            ("power_source_status", models.PowerSourceStatus),
+            ("power_rails_status", models.PowerRailsStatus),
+            ("power_rails_measures", models.PowerRailsMeasures),
+        ):
+            self.sio.on(name, partial(self._on_power_supply_state, name, model), namespace="/dashboard")
 
         @self.sio.on("soft_reset", namespace="/dashboard")
         def on_soft_reset() -> None:

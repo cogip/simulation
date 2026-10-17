@@ -89,6 +89,10 @@ def main_opt(
     view3d_qml.setProperty("view3DBackend", view3d_backend)
     root.setProperty("isConnected", False)
     root.setProperty("starterChecked", False)
+    root.setProperty("emergencyStopEngaged", None)
+    # Last power supply states, named after the events that carry them
+    power_supply_states: dict[str, dict[str, Any] | None] = {}
+    root.setProperty("powerSupplyStates", power_supply_states)
     root.setProperty("socketClient", sio_client)
     root.setProperty("toolMenu", {"name": "", "entries": []})
     obstacle_storage = ObstacleStorage()
@@ -106,6 +110,9 @@ def main_opt(
             if not connected:
                 root.setProperty("toolMenu", {"name": "", "entries": []})
                 root.setProperty("starterChecked", False)
+                root.setProperty("emergencyStopEngaged", None)
+                power_supply_states.clear()
+                root.setProperty("powerSupplyStates", {})
                 QtCore.QMetaObject.invokeMethod(
                     root,
                     "closeAllConfigWindows",
@@ -154,6 +161,24 @@ def main_opt(
     def handle_starter_changed(pushed: bool) -> None:
         QtCore.QTimer.singleShot(0, lambda: root.setProperty("starterChecked", pushed))
 
+    def handle_emergency_stop_changed(engaged: bool | None) -> None:
+        QtCore.QTimer.singleShot(0, lambda: root.setProperty("emergencyStopEngaged", engaged))
+
+    def handle_power_supply_request() -> None:
+        QtCore.QMetaObject.invokeMethod(
+            root,
+            "openPowerSupplyWindow",
+            QtCore.Qt.ConnectionType.QueuedConnection,
+        )
+
+    def handle_power_supply_state_changed(name: str, state: dict[str, Any] | None) -> None:
+        def update_state() -> None:
+            power_supply_states[name] = state
+            # Assign a copy so that QML bindings are notified
+            root.setProperty("powerSupplyStates", dict(power_supply_states))
+
+        QtCore.QTimer.singleShot(0, update_state)
+
     def handle_soft_reset() -> None:
         view3d_backend.handle_robot_path([])
         view3d_backend.update_training_borders_visibility()
@@ -168,6 +193,9 @@ def main_opt(
     sio_client.signal_wizard_request.connect(handle_wizard_request)
     sio_client.signal_close_wizard.connect(handle_close_wizard)
     sio_client.signal_starter_changed.connect(handle_starter_changed)
+    sio_client.signal_emergency_stop_changed.connect(handle_emergency_stop_changed)
+    sio_client.signal_power_supply_request.connect(handle_power_supply_request)
+    sio_client.signal_power_supply_state_changed.connect(handle_power_supply_state_changed)
     sio_client.signal_soft_reset.connect(handle_soft_reset)
 
     sio_client.start()

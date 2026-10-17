@@ -8,6 +8,7 @@ import QtQuick.Window
 Rectangle {
     id: statusFooter
 
+    property var emergencyStopEngaged: null
     property bool isConnected: false
     property var liveRobotNode: null
     property var orderRobotNode: null
@@ -251,6 +252,53 @@ Rectangle {
                             width: rowContent.implicitWidth
                             y: rowContent.implicitHeight
                         }
+                    }
+                }
+            }
+        }
+
+        Rectangle {
+            id: emergencyStopRect
+
+            Layout.preferredHeight: parent.implicitHeight
+            Layout.preferredWidth: emergencyStopLabelText.implicitWidth
+            border.color: "#555555"
+            border.width: 1
+            color: "transparent"
+            objectName: "emergencyStopIndicator"
+            radius: 2
+
+            Column {
+                anchors.fill: parent
+                anchors.margins: 0
+                spacing: 0
+
+                Label {
+                    id: emergencyStopLabelText
+
+                    bottomPadding: 2
+                    color: "white"
+                    font.bold: true
+                    font.pixelSize: 14
+                    horizontalAlignment: Text.AlignHCenter
+                    leftPadding: 6
+                    rightPadding: 6
+                    text: "Emergency stop"
+                    topPadding: 2
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                Item {
+                    height: starterCheckbox.implicitHeight
+                    width: emergencyStopRect.width
+
+                    // Grey while unknown, red when engaged, green when released
+                    Rectangle {
+                        anchors.centerIn: parent
+                        color: typeof statusFooter.emergencyStopEngaged !== "boolean" ? "#7f8c8d" : statusFooter.emergencyStopEngaged ? "#c0392b" : "#27ae60"
+                        height: 12
+                        radius: 6
+                        width: 12
                     }
                 }
             }

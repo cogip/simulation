@@ -11,9 +11,11 @@ ApplicationWindow {
     id: window
 
     property var configWindows: ({})
+    property var emergencyStopEngaged: null
     property bool isConnected: false
     property url lastObstacleFile: ""
     property var obstacleStorage: null
+    property var powerSupplyStates: ({})
     property var socketClient: null
     property bool starterChecked: false
     property var toolMenu: ({
@@ -173,6 +175,12 @@ ApplicationWindow {
         loadObstaclesDialog.open();
     }
 
+    function openPowerSupplyWindow() {
+        powerSupplyWindow.show();
+        powerSupplyWindow.raise();
+        powerSupplyWindow.requestActivate();
+    }
+
     function openSaveObstaclesDialog() {
         setupDialogDefaults(saveObstaclesDialog, false);
         saveObstaclesDialog.open();
@@ -266,6 +274,7 @@ ApplicationWindow {
     footer: Footer {
         id: statusBar
 
+        emergencyStopEngaged: window.emergencyStopEngaged
         isConnected: window.isConnected
         liveRobotNode: scene.liveRobotNode
         objectName: "statusBar"
@@ -456,6 +465,13 @@ ApplicationWindow {
             objectName: "Scene"
             socketClient: window.socketClient
         }
+    }
+
+    PowerSupplyWindow {
+        id: powerSupplyWindow
+
+        emergencyStopEngaged: window.emergencyStopEngaged
+        states: window.powerSupplyStates
     }
 
     Connections {

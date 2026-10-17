@@ -6,6 +6,7 @@ LidarRayNode 1.0 LidarRayNode.qml
 Obstacle 1.0 Obstacle.qml
 ObstacleWindow 1.0 ObstacleWindow.qml
 Polyline3D 1.0 Polyline3D.qml
+PowerSupplyWindow 1.0 PowerSupplyWindow.qml
 Scene 1.0 Scene.qml
 SideMenu 1.0 SideMenu.qml
 Wizard 1.0 Wizard.qml
