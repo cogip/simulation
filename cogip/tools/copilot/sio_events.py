@@ -13,12 +13,15 @@ from cogip.protobuf import (
     PB_ActuatorCommand,
     PB_ActuatorInit,
     PB_Controller,
+    PB_ParameterDefinitionRequest,
     PB_ParameterGetRequest,
+    PB_ParameterListRequest,
     PB_ParameterResetRequest,
     PB_ParameterSetRequest,
     PB_PathPose,
     PB_SpeedOrder,
 )
+from cogip.utils.fnv1a import fnv1a_hash
 from . import copilot, logger
 
 
@@ -182,17 +185,41 @@ class SioEvents(socketio.AsyncClientNamespace):
         logger.info("[SIO] Brake")
         await self.copilot.pbcom.send_can_message(copilot.brake_uuid, None)
 
+    async def on_get_parameter_groups(self):
+        """
+        Callback on get_parameter_groups.
+        Send back the parameter registries announced by the firmware.
+        """
+        logger.info("[SIO] Get parameter groups")
+        await self.emit("parameter_groups", list(self.copilot.parameter_groups.values()))
+
+    async def on_list_parameters(self, name: str):
+        """
+        Callback on list_parameters.
+        Forward to firmware, the board owning the registry sends the key hash of each parameter.
+        """
+        logger.info(f"[SIO] List parameters: {name}")
+        pb_list_request = PB_ParameterListRequest(group_hash=fnv1a_hash(name))
+        await self.copilot.pbcom.send_can_message(copilot.parameter_list_uuid, pb_list_request)
+
+    async def on_get_parameter_definition(self, key_hash: int):
+        """
+        Callback on get_parameter_definition.
+        Forward to firmware, the board owning the parameter sends its definition.
+        """
+        logger.info(f"[SIO] Get parameter definition: 0x{key_hash:08x}")
+        pb_definition_request = PB_ParameterDefinitionRequest(key_hash=key_hash)
+        await self.copilot.pbcom.send_can_message(copilot.parameter_definition_uuid, pb_definition_request)
+
     async def on_get_parameter_value(self, data: dict[str, Any]):
         """
         Callback on get_parameter_value.
         Forward to firmware.
         """
         logger.info(f"[SIO] Get parameter: {data}")
-
         parameter = FirmwareParameter.model_validate(data)
         pb_get_request = PB_ParameterGetRequest()
         parameter.pb_copy(pb_get_request)
-
         await self.copilot.pbcom.send_can_message(copilot.parameter_get_uuid, pb_get_request)
 
     async def on_set_parameter_value(self, data: dict[str, Any]):
@@ -201,11 +228,9 @@ class SioEvents(socketio.AsyncClientNamespace):
         Forward to firmware.
         """
         logger.info(f"[SIO] Set parameter: {data}")
-
         parameter = FirmwareParameter.model_validate(data)
         pb_set_request = PB_ParameterSetRequest()
         parameter.pb_copy(pb_set_request)
-
         await self.copilot.pbcom.send_can_message(copilot.parameter_set_uuid, pb_set_request)
 
     async def on_reset_parameter_value(self, data: dict[str, Any]):
@@ -214,11 +239,9 @@ class SioEvents(socketio.AsyncClientNamespace):
         Forward to firmware.
         """
         logger.info(f"[SIO] Reset parameter: {data}")
-
         parameter = FirmwareParameter.model_validate(data)
         pb_reset_request = PB_ParameterResetRequest()
         parameter.pb_copy(pb_reset_request)
-
         await self.copilot.pbcom.send_can_message(copilot.parameter_reset_uuid, pb_reset_request)
 
     async def on_telemetry_enable(self, data: dict[str, Any] | None = None):

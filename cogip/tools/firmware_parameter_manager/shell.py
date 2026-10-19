@@ -1,50 +1,32 @@
-"""Interactive REPL for the firmware parameter manager.
+"""Interactive shell for the firmware parameter manager.
 
-Provides tab-completed `get` / `set` / `reset` / `reset-all` / `list` commands
-over the firmware parameters declared in a sectioned YAML schema. The shell is
-fully driven by the :class:`FirmwareParameterSchema` it receives; no parameter
-name or section title is hardcoded here.
+Provides tab-completed `list` / `get` / `set` / `reset` / `reset-all` commands
+over the parameters discovered from the firmware.
 """
 
-from __future__ import annotations
 import asyncio
 import readline
 import shlex
-from collections.abc import Iterable
 
 from pydantic import ValidationError
 
-from cogip.models import FirmwareParameterSchema
-from cogip.models.firmware_parameter import (
-    FirmwareParameter,
-    FirmwareParameterNotFound,
-    FirmwareParameterValidationFailed,
-)
+from cogip.models import FirmwareParameter
 from cogip.utils.console_ui import ConsoleUI
 from .firmware_parameter_manager import FirmwareParameterManager
 
-type ParameterValue = float | int | bool
-type ParameterResult = ParameterValue | Exception
-
 PROMPT = "fw-param> "
-
-COMMANDS: tuple[str, ...] = ("list", "get", "set", "reset", "reset-all", "help", "exit", "quit")
-NAME_COMMANDS: frozenset[str] = frozenset({"get", "set", "reset"})
-
-DEFAULT_TIMEOUT = 2.0
-
-UNAVAILABLE = "<unavailable>"
-TIMEOUT = "<timeout>"
+COMMANDS = ("list", "get", "set", "reset", "reset-all", "help", "exit", "quit")
+NAME_COMMANDS = ("get", "set", "reset")
+TIMEOUT = 2.0
 
 
-def parse_value(parameter: FirmwareParameter, raw_value: str) -> ParameterValue:
-    """Convert a string to the type expected by the firmware parameter."""
+def parse_value(parameter: FirmwareParameter, raw_value: str) -> float | int | bool:
+    """Convert a string to the type of a parameter."""
     match parameter.value_obj.type:
         case "bool":
-            lowered = raw_value.strip().lower()
-            if lowered in {"1", "true", "yes", "on"}:
+            if raw_value.lower() in ("1", "true", "yes", "on"):
                 return True
-            if lowered in {"0", "false", "no", "off"}:
+            if raw_value.lower() in ("0", "false", "no", "off"):
                 return False
             raise ValueError(f"invalid bool value: {raw_value!r}")
         case "float" | "double":
@@ -53,127 +35,83 @@ def parse_value(parameter: FirmwareParameter, raw_value: str) -> ParameterValue:
             return int(raw_value)
 
 
-def format_value(parameter: FirmwareParameter) -> str:
-    type_name = parameter.value_obj.type
-    if type_name in ("float", "double"):
-        return f"{parameter.value:g}"
-    return str(parameter.value)
+def format_value(value: float | int | bool | Exception) -> str:
+    if isinstance(value, Exception):
+        return f"<{type(value).__name__}>"
+    if isinstance(value, float):
+        return f"{value:g}"
+    return str(value)
 
 
 class ParameterCompleter:
-    """readline completer for `<command> [<param>] ...`."""
+    """readline completer for `<command> [<parameter>]`."""
 
-    def __init__(self, names: Iterable[str]) -> None:
-        self._names: list[str] = sorted(names)
-        self._matches: list[str] = []
-
-    def update_names(self, names: Iterable[str]) -> None:
-        self._names = sorted(names)
+    def __init__(self, manager: FirmwareParameterManager):
+        self.manager = manager
+        self.matches: list[str] = []
 
     def __call__(self, text: str, state: int) -> str | None:
         if state == 0:
-            buffer = readline.get_line_buffer()
-            begidx = readline.get_begidx()
-            tokens_before = buffer[:begidx].split()
-            if not tokens_before:
-                pool: Iterable[str] = COMMANDS
-            elif tokens_before[0] in NAME_COMMANDS and len(tokens_before) == 1:
-                pool = self._names
+            tokens = readline.get_line_buffer()[: readline.get_begidx()].split()
+            if not tokens:
+                words = COMMANDS
+            elif tokens[0] in NAME_COMMANDS and len(tokens) == 1:
+                words = self.manager.parameters
             else:
-                pool = ()
-            self._matches = [c for c in pool if c.startswith(text)]
-        if state < len(self._matches):
-            return self._matches[state]
-        return None
+                words = ()
+            self.matches = [word for word in words if word.startswith(text)]
+        return self.matches[state] if state < len(self.matches) else None
 
 
-# Configure the readline binding once at import time so it is in place before
-# any other UI activity (rich's Progress display in particular) touches the
-# terminal. Only the completer instance is swapped at run-time.
-#
-# Python's `readline` module may be backed by either GNU readline or libedit
-# (the latter is common on macOS and on some Linux Python builds). The two
-# disagree on init-file syntax: GNU readline takes "tab: complete", libedit
-# takes "bind ^I rl_complete". Without this branch tab completion silently
-# does nothing on libedit systems.
-readline.set_completer_delims(" \t\n")
-if "libedit" in (readline.__doc__ or ""):
-    readline.parse_and_bind("bind ^I rl_complete")
-else:
-    readline.parse_and_bind("tab: complete")
+async def _list(manager: FirmwareParameterManager, ui: ConsoleUI) -> None:
+    """Discover the parameters, then show the value and range of each one, by registry."""
+    await manager.discover(TIMEOUT)
+    if not manager.registries:
+        ui.show_warning("no parameter registry discovered")
+        return
 
+    names = list(manager.parameters)
+    values = await asyncio.gather(
+        *(manager.get_parameter_value(name, TIMEOUT) for name in names),
+        return_exceptions=True,
+    )
+    results = dict(zip(names, values))
 
-def _install_readline(completer: ParameterCompleter) -> None:
-    readline.set_completer(completer)
-
-
-async def _query_one(manager: FirmwareParameterManager, name: str) -> tuple[str, ParameterResult]:
-    try:
-        return name, await manager.get_parameter_value(name, timeout=DEFAULT_TIMEOUT)
-    except Exception as exc:
-        return name, exc
-
-
-async def _snapshot(manager: FirmwareParameterManager, ui: ConsoleUI) -> tuple[dict[str, ParameterResult], set[str]]:
-    """Query every parameter live and return (results, available_names)."""
-    names = [p.name for p in manager.parameter_group]
-    results: dict[str, ParameterResult] = {}
-    tracker = ui.create_progress_tracker()
-    tracker.start("[info]Querying firmware[/]", total=len(names))
-    try:
-        tasks = [asyncio.create_task(_query_one(manager, n)) for n in names]
-        done = 0
-        for fut in asyncio.as_completed(tasks):
-            name, result = await fut
-            results[name] = result
-            done += 1
-            tracker.update(completed=done)
-    finally:
-        tracker.stop()
-
-    available = {name for name, result in results.items() if not isinstance(result, FirmwareParameterNotFound)}
-    return results, available
-
-
-def _format_snapshot_value(parameter: FirmwareParameter, result: ParameterResult) -> str:
-    if isinstance(result, FirmwareParameterNotFound):
-        return UNAVAILABLE
-    if isinstance(result, TimeoutError):
-        return TIMEOUT
-    if isinstance(result, Exception):
-        return f"<error: {type(result).__name__}>"
-    return format_value(parameter)
-
-
-def _show_snapshot(
-    ui: ConsoleUI,
-    schema: FirmwareParameterSchema,
-    results: dict[str, ParameterResult],
-) -> None:
-    """Render every section as a single compact table separated by dividers."""
     table = ui.create_table(
         columns=[
             ("Parameter", {"style": "label", "no_wrap": True}),
             ("Value", {"style": "value", "justify": "right", "no_wrap": True}),
+            ("Range", {"style": "muted", "no_wrap": True}),
         ],
     )
-    for index, section in enumerate(schema.sections):
-        if not section.parameters:
-            continue
+    for index, (registry_name, registry) in enumerate(manager.registries.items()):
         if index > 0:
             table.add_section()
-        table.add_row(f"[phase]{section.title}[/]", "")
-        for parameter in section.parameters:
+        table.add_row(f"[phase]{registry_name}[/]", "", "")
+        for parameter in registry:
             table.add_row(
                 f"  {parameter.name}",
-                _format_snapshot_value(parameter, results[parameter.name]),
+                format_value(results[parameter.name]),
+                f"[{format_value(parameter.value_obj.min)}, {format_value(parameter.value_obj.max)}]",
             )
     ui.print(table)
 
 
+async def _reset_all(manager: FirmwareParameterManager, ui: ConsoleUI) -> None:
+    names = list(manager.parameters)
+    errors = await asyncio.gather(
+        *(manager.reset_parameter_value(name, TIMEOUT) for name in names),
+        return_exceptions=True,
+    )
+    for name, error in zip(names, errors):
+        if error:
+            ui.show_error(f"{name}: {error}")
+    ui.show_success(f"{errors.count(None)}/{len(names)} parameters reset")
+
+
 def _show_help(ui: ConsoleUI) -> None:
     ui.show_panel(
-        "[label]list[/]                       refresh and re-display every parameter\n"
+        "[label]list[/]                       discover and display every parameter\n"
         "[label]get <name>[/]                 read the current value from firmware\n"
         "[label]set <name> <value>[/]         write a new value\n"
         "[label]reset <name>[/]               restore the compile-time default\n"
@@ -184,131 +122,56 @@ def _show_help(ui: ConsoleUI) -> None:
     )
 
 
-def _report_command_error(ui: ConsoleUI, exc: Exception) -> None:
-    if isinstance(exc, TimeoutError):
-        ui.show_error("timeout — no response from firmware")
-    elif isinstance(exc, FirmwareParameterValidationFailed):
-        ui.show_error("rejected by firmware (read-only or out-of-bounds)")
-    elif isinstance(exc, FirmwareParameterNotFound):
-        ui.show_error("unknown to firmware (parameter not in CAN registry)")
-    elif isinstance(exc, ValidationError):
-        ui.show_error(f"invalid value: {exc.errors()[0]['msg']}")
-    elif isinstance(exc, ValueError | KeyError):
-        ui.show_error(str(exc))
-    else:
-        ui.show_error(f"{type(exc).__name__}: {exc}")
-
-
-async def _cmd_get(manager: FirmwareParameterManager, ui: ConsoleUI, name: str) -> None:
-    parameter = manager.parameter_group.get(name)
-    await manager.get_parameter_value(name, timeout=DEFAULT_TIMEOUT)
-    ui.show_key_value_table([(parameter.name, format_value(parameter))])
-
-
-async def _cmd_set(manager: FirmwareParameterManager, ui: ConsoleUI, name: str, raw_value: str) -> None:
-    parameter = manager.parameter_group.get(name)
-    typed_value = parse_value(parameter, raw_value)
-    await manager.set_parameter_value(name, typed_value, timeout=DEFAULT_TIMEOUT)
-    ui.show_success(f"{name} = {format_value(parameter)}")
-
-
-async def _cmd_reset(manager: FirmwareParameterManager, ui: ConsoleUI, name: str) -> None:
-    await manager.reset_parameter_value(name, timeout=DEFAULT_TIMEOUT)
-    ui.show_success(f"{name} reset to default")
-
-
-async def _cmd_reset_all(manager: FirmwareParameterManager, ui: ConsoleUI) -> None:
-    results = await manager.reset_all_parameters(timeout=DEFAULT_TIMEOUT)
-    table = ui.create_table(
-        columns=[
-            ("Parameter", {"style": "label", "no_wrap": True}),
-            ("Status", {"justify": "right", "no_wrap": True}),
-        ],
-    )
-    for name, error in results.items():
-        status = "[success]OK[/]" if error is None else f"[error]{type(error).__name__}[/]"
-        table.add_row(name, status)
-    ui.print(table)
-
-
-async def _dispatch(
-    line: str,
-    manager: FirmwareParameterManager,
-    ui: ConsoleUI,
-    schema: FirmwareParameterSchema,
-    completer: ParameterCompleter,
-) -> bool:
-    """Run a single command line. Returns False if the shell should exit."""
+async def _run_command(manager: FirmwareParameterManager, ui: ConsoleUI, line: str) -> None:
+    """Run a command line and report its error, if any."""
     try:
         tokens = shlex.split(line)
-    except ValueError as exc:
-        ui.show_error(f"parse error: {exc}")
-        return True
-    if not tokens:
-        return True
+        if not tokens:
+            return
 
-    cmd, *args = tokens
-
-    match cmd:
-        case "exit" | "quit":
-            return False
-        case "help":
-            _show_help(ui)
-        case "list":
-            results, available = await _snapshot(manager, ui)
-            _show_snapshot(ui, schema, results)
-            completer.update_names(available)
-        case "reset-all":
-            await _cmd_reset_all(manager, ui)
-        case "get" | "set" | "reset":
-            await _run_name_command(cmd, args, manager, ui)
-        case _:
-            ui.show_error(f"unknown command: {cmd!r}. Type 'help' for the list.")
-    return True
-
-
-async def _run_name_command(cmd: str, args: list[str], manager: FirmwareParameterManager, ui: ConsoleUI) -> None:
-    """Execute one of the single-parameter commands (`get`/`set`/`reset`)."""
-    if not args:
-        ui.show_error(f"{cmd}: missing parameter name")
-        return
-    name = args[0]
-    if name not in manager.parameter_group:
-        ui.show_error(f"unknown parameter: {name!r}")
-        return
-
-    try:
-        match cmd, args:
-            case "get", [_]:
-                await _cmd_get(manager, ui, name)
-            case "set", [_, value]:
-                await _cmd_set(manager, ui, name, value)
-            case "reset", [_]:
-                await _cmd_reset(manager, ui, name)
-            case "set", _:
-                ui.show_error("usage: set <name> <value>")
+        match tokens:
+            case ["list"]:
+                await _list(manager, ui)
+            case ["get", name]:
+                value = await manager.get_parameter_value(name, TIMEOUT)
+                ui.show_key_value_table([(name, format_value(value))])
+            case ["set", name, raw_value]:
+                value = parse_value(manager.parameters[name], raw_value)
+                await manager.set_parameter_value(name, value, TIMEOUT)
+                ui.show_success(f"{name} = {format_value(value)}")
+            case ["reset", name]:
+                await manager.reset_parameter_value(name, TIMEOUT)
+                ui.show_success(f"{name} reset to default")
+            case ["reset-all"]:
+                await _reset_all(manager, ui)
+            case ["help"]:
+                _show_help(ui)
             case _:
-                ui.show_error(f"{cmd} takes a single parameter name")
+                ui.show_error(f"invalid command: {line.strip()!r}. Type 'help' for the list.")
+    except KeyError as exc:
+        ui.show_error(f"unknown parameter: {exc.args[0]!r}")
+    except ValidationError as exc:
+        ui.show_error(f"invalid value: {exc.errors()[0]['msg']}")
     except Exception as exc:
-        _report_command_error(ui, exc)
+        ui.show_error(str(exc))
 
 
-async def run(
-    manager: FirmwareParameterManager,
-    ui: ConsoleUI,
-    schema: FirmwareParameterSchema,
-) -> None:
+async def run(manager: FirmwareParameterManager, ui: ConsoleUI) -> None:
     """Run the interactive shell until the user exits."""
-    all_names = [parameter.name for section in schema.sections for parameter in section.parameters]
-    completer = ParameterCompleter(all_names)
-    _install_readline(completer)
+    # Python's readline may be backed by libedit (macOS), which takes another binding syntax
+    readline.set_completer_delims(" \t\n")
+    if "libedit" in (readline.__doc__ or ""):
+        readline.parse_and_bind("bind ^I rl_complete")
+    else:
+        readline.parse_and_bind("tab: complete")
+    readline.set_completer(ParameterCompleter(manager))
 
     ui.show_panel(
         "Firmware parameter manager — interactive shell.\n"
-        "Type [label]list[/] to query every parameter, [label]help[/] for the full command list, "
-        "[label]Tab[/] to complete.",
+        "Type [label]help[/] for the command list, [label]Tab[/] to complete.",
         title="firmware-parameter-manager",
     )
+    await _run_command(manager, ui, "list")
 
     while True:
         try:
@@ -319,5 +182,6 @@ async def run(
         except KeyboardInterrupt:
             ui.print()
             continue
-        if not await _dispatch(line, manager, ui, schema, completer):
+        if line.strip() in ("exit", "quit"):
             break
+        await _run_command(manager, ui, line)

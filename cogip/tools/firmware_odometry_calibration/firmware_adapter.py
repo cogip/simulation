@@ -37,7 +37,7 @@ class FirmwareAdapter:
     PARAM_LEFT_WHEEL_DIAMETER = "left_wheel_diameter_mm"
     PARAM_LEFT_POLARITY = "qdec_left_polarity"
     PARAM_RIGHT_POLARITY = "qdec_right_polarity"
-    PARAM_ENCODER_RESOLUTION = "encoder_wheels_resolution_pulses"
+    PARAM_ENCODER_RESOLUTION = "encoder_resolution_pulses"
 
     # Telemetry keys for encoder values
     TELEMETRY_LEFT_ENCODER = "encoder_left"

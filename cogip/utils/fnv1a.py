@@ -2,6 +2,28 @@
 
 from functools import cache
 
+FNV_OFFSET_BASIS = 0x811C9DC5
+FNV_PRIME = 0x01000193
+
+
+def fnv1a_hash_bytes(data: bytes) -> int:
+    """
+    Compute FNV-1a 32-bit hash of bytes.
+
+    Args:
+        data: The bytes to hash.
+
+    Returns:
+        32-bit FNV-1a hash value.
+    """
+    hash_value = FNV_OFFSET_BASIS
+
+    for byte in data:
+        hash_value ^= byte
+        hash_value = (hash_value * FNV_PRIME) & 0xFFFFFFFF
+
+    return hash_value
+
 
 @cache
 def fnv1a_hash(string: str) -> int:
@@ -22,13 +44,4 @@ def fnv1a_hash(string: str) -> int:
         >>> hex(fnv1a_hash("parameter"))
         '0x100b'
     """
-    FNV_OFFSET_BASIS = 0x811C9DC5
-    FNV_PRIME = 0x01000193
-
-    hash_value = FNV_OFFSET_BASIS
-
-    for byte in string.encode("utf-8"):
-        hash_value ^= byte
-        hash_value = (hash_value * FNV_PRIME) & 0xFFFFFFFF
-
-    return hash_value
+    return fnv1a_hash_bytes(string.encode("utf-8"))

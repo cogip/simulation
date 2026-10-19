@@ -1,9 +1,6 @@
 from .firmware_parameter import (  # noqa
     FirmwareParameter,
     FirmwareParameterNotFound,
-    FirmwareParameterSchema,
-    FirmwareParameterSection,
-    FirmwareParametersGroup,
     FirmwareParameterValidationFailed,
 )
 from .firmware_telemetry import (  # noqa

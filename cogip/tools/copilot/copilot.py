@@ -1,9 +1,11 @@
 import asyncio
 import time
 import traceback
+from functools import partial
 
 import socketio
 from google.protobuf.json_format import MessageToDict
+from google.protobuf.message import Message
 from pydantic import TypeAdapter
 
 from cogip import models
@@ -15,7 +17,10 @@ from cogip.models.actuators import ActuatorsKindEnum, ActuatorState
 from cogip.protobuf import (
     PB_ActuatorState,
     PB_EmergencyStopStatus,
+    PB_ParameterDefinition,
     PB_ParameterGetResponse,
+    PB_ParameterGroup,
+    PB_ParameterListResponse,
     PB_ParameterResetResponse,
     PB_ParameterSetResponse,
     PB_PathPose,
@@ -58,6 +63,11 @@ telemetry_disable_uuid: int = 0x3009
 telemetry_data_uuid: int = 0x300A
 parameter_reset_uuid: int = 0x300B
 parameter_reset_response_uuid: int = 0x300C
+parameter_group_uuid: int = 0x300D
+parameter_list_uuid: int = 0x300E
+parameter_list_response_uuid: int = 0x300F
+parameter_definition_uuid: int = 0x3010
+parameter_definition_response_uuid: int = 0x3011
 # Game: 0x4000 - 0x4FFF
 game_start_uuid: int = 0x4001
 game_end_uuid: int = 0x4002
@@ -98,6 +108,9 @@ class Copilot:
         self.shared_avoidance_path_lock: WritePriorityLock | None = None
         self.new_path_event_task: asyncio.Task | None = None
 
+        # Parameter registries announced by the firmware boards, by registry name
+        self.parameter_groups: dict[str, dict] = {}
+
         self.sio = socketio.AsyncClient(logger=False)
         self.sio_events = SioEvents(self)
         self.sio.register_namespace(self.sio_events)
@@ -110,9 +123,20 @@ class Copilot:
             intermediate_pose_reached_uuid: self.handle_intermediate_pose_reached,
             actuator_state_uuid: self.handle_actuator_state,
             blocked_uuid: self.handle_blocked,
-            parameter_get_response_uuid: self.handle_parameter_get_response,
-            parameter_set_response_uuid: self.handle_parameter_set_response,
-            parameter_reset_response_uuid: self.handle_parameter_reset_response,
+            parameter_get_response_uuid: partial(
+                self.handle_parameter_message, PB_ParameterGetResponse, "get_parameter_response"
+            ),
+            parameter_set_response_uuid: partial(
+                self.handle_parameter_message, PB_ParameterSetResponse, "set_parameter_response"
+            ),
+            parameter_reset_response_uuid: partial(
+                self.handle_parameter_message, PB_ParameterResetResponse, "reset_parameter_response"
+            ),
+            parameter_group_uuid: self.handle_parameter_group,
+            parameter_list_response_uuid: partial(
+                self.handle_parameter_message, PB_ParameterListResponse, "list_parameters_response"
+            ),
+            parameter_definition_response_uuid: self.handle_parameter_definition,
             telemetry_data_uuid: self.handle_telemetry_data,
             emergency_stop_status_uuid: self.handle_emergency_stop_status,
             power_source_status_uuid: self.handle_power_source_status,
@@ -282,73 +306,61 @@ class Copilot:
             await self.sio_events.emit("blocked")
 
     @pb_exception_handler
-    async def handle_parameter_get_response(self, message: bytes | None = None):
+    async def handle_parameter_message(self, message_type: type[Message], event: str, message: bytes | None = None):
         """
-        Handle parameter get response from firmware.
+        Handle parameter message from firmware, in response to a request.
 
-        Forward response to the firmware_parameter_manager.
+        Forward message to the firmware_parameter_manager.
         """
-        pb_response = PB_ParameterGetResponse()
+        pb_message = message_type()
 
         if message:
-            await self.loop.run_in_executor(None, pb_response.ParseFromString, message)
+            await self.loop.run_in_executor(None, pb_message.ParseFromString, message)
 
-        response = MessageToDict(
-            pb_response,
+        data = MessageToDict(
+            pb_message,
             always_print_fields_with_no_presence=True,
             preserving_proto_field_name=True,
             use_integers_for_enums=True,
         )
-        logger.info(f"[CAN] get_response: {response}")
+        logger.info(f"[CAN] {event}: {data}")
 
         if self.sio_events.connected:
-            await self.sio_events.emit("get_parameter_response", response)
+            await self.sio_events.emit(event, data)
 
     @pb_exception_handler
-    async def handle_parameter_set_response(self, message: bytes | None = None):
+    async def handle_parameter_definition(self, message: bytes | None = None):
         """
-        Handle parameter set response from firmware.
+        Handle parameter definition from firmware, in response to a definition request.
 
-        Forward response to the firmware_parameter_manager.
+        Forward it as a FirmwareParameter to the firmware_parameter_manager:
+        MessageToDict would round a float bound of -FLT_MAX out of the float range.
         """
-        pb_response = PB_ParameterSetResponse()
+        pb_definition = PB_ParameterDefinition()
 
         if message:
-            await self.loop.run_in_executor(None, pb_response.ParseFromString, message)
+            await self.loop.run_in_executor(None, pb_definition.ParseFromString, message)
 
-        response = MessageToDict(
-            pb_response,
-            always_print_fields_with_no_presence=True,
-            preserving_proto_field_name=True,
-            use_integers_for_enums=True,
-        )
-        logger.info(f"[CAN] set_response: {response}")
+        parameter = models.FirmwareParameter.from_definition(pb_definition)
+        logger.info(f"[CAN] parameter_definition: {parameter}")
 
         if self.sio_events.connected:
-            await self.sio_events.emit("set_parameter_response", response)
+            await self.sio_events.emit("parameter_definition", parameter.model_dump(by_alias=True))
 
     @pb_exception_handler
-    async def handle_parameter_reset_response(self, message: bytes | None = None):
+    async def handle_parameter_group(self, message: bytes | None = None):
         """
-        Handle parameter reset response from firmware.
+        Handle parameter registry announce from firmware, sent on copilot connection.
 
-        Forward response to the firmware_parameter_manager.
+        Keep it for the firmware_parameter_manager, which gets the announces when it starts.
         """
-        pb_response = PB_ParameterResetResponse()
+        pb_group = PB_ParameterGroup()
 
         if message:
-            await self.loop.run_in_executor(None, pb_response.ParseFromString, message)
+            await self.loop.run_in_executor(None, pb_group.ParseFromString, message)
 
-        response = MessageToDict(
-            pb_response,
-            always_print_fields_with_no_presence=True,
-            preserving_proto_field_name=True,
-            use_integers_for_enums=True,
-        )
-        logger.info(f"[CAN] reset_response: {response}")
-
-        if self.sio_events.connected:
-            await self.sio_events.emit("reset_parameter_response", response)
+        self.parameter_groups[pb_group.name] = MessageToDict(pb_group, preserving_proto_field_name=True)
+        logger.info(f"[CAN] parameter_group: {self.parameter_groups[pb_group.name]}")
 
     @pb_exception_handler
     async def handle_telemetry_data(self, message: bytes | None = None):

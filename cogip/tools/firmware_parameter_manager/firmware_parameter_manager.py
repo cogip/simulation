@@ -1,54 +1,47 @@
 import asyncio
+from typing import Any
 
 import socketio
 
-from cogip.models import FirmwareParametersGroup
+from cogip.models import FirmwareParameter
+from cogip.protobuf import PB_ParameterGroup
+from cogip.utils.fnv1a import fnv1a_hash_bytes
 from . import logger
 from .sio_events import SioEvents
 
 
 class FirmwareParameterManager:
     """
-    Manager to handle firmware parameter requests/responses via SocketIO through copilot.
-    Uses asyncio.Future to correlate requests with their responses.
+    Manager to access the firmware parameters via SocketIO through copilot.
 
-    This class is designed to be embedded into another Socket.IO client (e.g., Planner,
-    Monitor, or any tool that needs firmware parameter access). It registers its own
-    namespace (/parameters) on the provided client, allowing the host tool to manage
-    the connection lifecycle while benefiting from firmware parameter functionality.
+    This class is designed to be embedded into another Socket.IO client. It registers its own
+    namespace (/parameters) on the provided client, the host tool manages the connection.
 
-    Note on concurrent usage: The correlation mechanism uses parameter hashes (FNV-1a)
-    to match responses to requests. This makes the system naturally resilient to multiple
-    clients making concurrent requests - each client maintains its own pending requests
-    dictionary and only resolves its own Futures. However, this usage pattern is not
-    recommended as it may lead to unpredictable firmware behavior and debugging complexity.
-    Prefer having a single client handle firmware parameters at a time.
+    The parameters are discovered with `discover()`: each board announces its parameter
+    registry to copilot, which keeps it, then the manager lists the key hashes of each registry
+    and gets the definition of each parameter.
+    Requests address a parameter by the FNV-1a hash of its name, and their responses are
+    matched to them by this hash.
     """
 
-    def __init__(
-        self,
-        sio: socketio.AsyncClient,
-        parameter_group: FirmwareParametersGroup,
-    ):
+    def __init__(self, sio: socketio.AsyncClient):
         """
-        Initialize the FirmwareParameterManager.
-
         Args:
             sio: External Socket.IO client on which to register the /parameters namespace.
-                 The host client is responsible for connection management.
-            parameter_group: The firmware parameters to manage
         """
         self.sio = sio
-        self.parameter_group = parameter_group
-
         self.sio_events = SioEvents(self)
         self.sio.register_namespace(self.sio_events)
 
-        # Dictionary to store Futures waiting for responses
-        # Key: firmware parameter hash (int), Value: asyncio.Future
-        self.pending_get_requests: dict[int, asyncio.Future] = {}
-        self.pending_set_requests: dict[int, asyncio.Future] = {}
-        self.pending_reset_requests: dict[int, asyncio.Future] = {}
+        # Discovered parameters, by registry and by name
+        self.registries: dict[str, list[FirmwareParameter]] = {}
+        self.parameters: dict[str, FirmwareParameter] = {}
+
+        # Futures of the requests waiting for their response, by response event and key hash
+        self.pending_requests: dict[tuple[str, int], asyncio.Future] = {}
+
+        # Key hashes received for the registry being listed
+        self.key_hashes: asyncio.Queue[int] | None = None
 
     @property
     def namespace(self) -> str:
@@ -60,231 +53,150 @@ class FirmwareParameterManager:
         """Check if the namespace is connected and ready."""
         return self.sio_events.connected
 
-    async def get_parameter_value(
-        self,
-        parameter_name: str,
-        timeout: float = 1,
-    ) -> float | int | bool:
+    async def discover(self, timeout: float = 1) -> None:
         """
-        Sends a get_firmware_parameter request and waits for the response.
+        Discovers the parameters of the registries announced by the firmware.
 
-        Args:
-            parameter_name: Name of the firmware parameter to retrieve
-            timeout: Timeout in seconds (default: 1)
-
-        Returns:
-            The firmware parameter value (float, int, or bool) after pydantic validation
+        A registry whose parameters are not received as announced is left out.
 
         Raises:
-            KeyError: If the firmware parameter name is not found in the firmware parameter group
-            TimeoutError: If no response is received within the timeout
+            TimeoutError: If copilot does not send the announced registries within the timeout
         """
-        # Validate that firmware parameter exists in the group
-        parameter = self.parameter_group.get(parameter_name)
+        groups: list[PB_ParameterGroup] = await self._request(
+            "get_parameter_groups", None, "parameter_groups", 0, timeout
+        )
 
-        # Create a Future for this request
-        future = asyncio.Future()
+        self.registries = {}
+        for group in groups:
+            try:
+                self.registries[group.name] = await self._discover_registry(group, timeout)
+            except (TimeoutError, ValueError) as exc:
+                logger.warning(f"Firmware parameter registry '{group.name}' left out: {exc}")
 
-        # Store pending request for response correalation
-        parameter_hash = hash(parameter)
-        self.pending_get_requests[parameter_hash] = future
+        self.parameters = {parameter.name: parameter for registry in self.registries.values() for parameter in registry}
 
-        try:
-            logger.info(f"[firmware_parameter => server] get: {parameter}")
-            await self.sio.emit("get_parameter_value", parameter.model_dump(by_alias=True), namespace="/parameters")
-
-            logger.info(f"Sent get_parameter request for hash: 0x{parameter_hash:08x}")
-
-            # Wait for the response with timeout
-            response = await asyncio.wait_for(future, timeout=timeout)
-
-            # Update parameter with response data (pydantic validation happens here)
-            parameter.pb_read(response)
-
-            # Return the validated value
-            return parameter.value
-
-        except TimeoutError:
-            # Clean up on timeout
-            if not future.done():
-                future.cancel()
-
-            self.pending_get_requests.pop(parameter_hash, None)
-            logger.error(f"Timeout waiting for get_firmware_parameter response (hash: 0x{parameter_hash:08x})")
-            raise TimeoutError(f"No response received for firmware parameter hash 0x{parameter_hash:08x}")
-
-        except Exception as exc:
-            # Clean up on error
-            if not future.done():
-                future.cancel()
-
-            self.pending_get_requests.pop(parameter_hash, None)
-            logger.error(f"Error in get_parameter: {exc}")
-            raise
-
-    async def set_parameter_value(
-        self,
-        parameter_name: str,
-        value: int | float | bool,
-        timeout: float = 1,
-    ) -> None:
+    async def get_parameter_value(self, name: str, timeout: float = 1) -> float | int | bool:
         """
-        Sends a set_firmware_parameter request and waits for the response.
-
-        Args:
-            parameter_name: Name of the firmware parameter to modify
-            value: Value to set (int, float, or bool)
-            timeout: Timeout in seconds (default: 1)
-
-        Returns:
-            True if the firmware parameter was successfully written
+        Gets the value of a parameter from the firmware.
 
         Raises:
-            KeyError: If the firmware parameter name is not found in the firmware parameter group
-            ValidationError: If the value type doesn't match the firmware parameter type or is invalid
+            KeyError: If the parameter has not been discovered
             TimeoutError: If no response is received within the timeout
         """
-        # Validate that firmware parameter exists in the group
-        parameter = self.parameter_group.get(parameter_name)
+        parameter = self.parameters[name]
 
-        # Set the new value (pydantic validation happens here)
+        response = await self._request(
+            "get_parameter_value",
+            parameter.model_dump(by_alias=True),
+            "get_parameter_response",
+            hash(parameter),
+            timeout,
+        )
+        parameter.pb_read(response)
+
+        return parameter.value
+
+    async def set_parameter_value(self, name: str, value: float | int | bool, timeout: float = 1) -> None:
+        """
+        Sets the value of a parameter in the firmware.
+
+        Raises:
+            KeyError: If the parameter has not been discovered
+            ValidationError: If the value does not match the parameter type or range
+            FirmwareParameterValidationFailed: If the firmware rejects the value
+            TimeoutError: If no response is received within the timeout
+        """
+        parameter = self.parameters[name]
         parameter.value = value
 
-        # Create a Future for this request
-        future = asyncio.Future()
+        response = await self._request(
+            "set_parameter_value",
+            parameter.model_dump(by_alias=True),
+            "set_parameter_response",
+            hash(parameter),
+            timeout,
+        )
+        parameter.pb_read(response)
 
-        # Store pending request for response correalation
-        parameter_hash = hash(parameter)
-        self.pending_set_requests[parameter_hash] = future
-
-        try:
-            logger.info(f"[firmware_parameter => server] set: {parameter}")
-            await self.sio.emit("set_parameter_value", parameter.model_dump(by_alias=True), namespace="/parameters")
-
-            logger.info(f"Sent set_parameter request for hash: 0x{parameter_hash:08x}")
-
-            # Wait for the response with timeout
-            response = await asyncio.wait_for(future, timeout=timeout)
-
-            # Update parameter with response data (pydantic validation happens here)
-            parameter.pb_read(response)
-
-        except TimeoutError:
-            # Clean up on timeout
-            if not future.done():
-                future.cancel()
-
-            self.pending_set_requests.pop(parameter_hash, None)
-            logger.error(f"Timeout waiting for set_firmware_parameter response (hash: 0x{parameter_hash:08x})")
-            raise TimeoutError(f"No response received for firmware parameter hash 0x{parameter_hash:08x}")
-
-        except Exception as exc:
-            # Clean up on error
-            if not future.done():
-                future.cancel()
-
-            self.pending_set_requests.pop(parameter_hash, None)
-            logger.error(f"Error in set_parameter: {exc}")
-            raise
-
-    async def reset_parameter_value(
-        self,
-        parameter_name: str,
-        timeout: float = 1,
-    ) -> None:
+    async def reset_parameter_value(self, name: str, timeout: float = 1) -> None:
         """
-        Sends a reset_firmware_parameter request and waits for the response.
-
-        The firmware restores the parameter to its default value.
-
-        Args:
-            parameter_name: Name of the firmware parameter to reset
-            timeout: Timeout in seconds (default: 1)
+        Resets a parameter to its default value in the firmware.
 
         Raises:
-            KeyError: If the firmware parameter name is not found in the firmware parameter group
+            KeyError: If the parameter has not been discovered
             FirmwareParameterValidationFailed: If the firmware rejects the reset
-            FirmwareParameterNotFound: If the firmware does not know this parameter
             TimeoutError: If no response is received within the timeout
         """
-        # Validate that firmware parameter exists in the group
-        parameter = self.parameter_group.get(parameter_name)
+        parameter = self.parameters[name]
 
-        # Create a Future for this request
-        future = asyncio.Future()
+        response = await self._request(
+            "reset_parameter_value",
+            parameter.model_dump(by_alias=True),
+            "reset_parameter_response",
+            hash(parameter),
+            timeout,
+        )
+        parameter.pb_read(response)
 
-        # Store pending request for response correalation
-        parameter_hash = hash(parameter)
-        self.pending_reset_requests[parameter_hash] = future
+    async def _discover_registry(self, group: PB_ParameterGroup, timeout: float) -> list[FirmwareParameter]:
+        """
+        Lists the key hashes of a registry, in registry order, then gets the definition of each parameter.
+
+        Registries are listed one at a time, since a list response does not tell its registry.
+
+        Raises:
+            TimeoutError: If a key hash or a definition is not received within the timeout
+            ValueError: If the key hashes received do not match the registry hash
+        """
+        self.key_hashes = asyncio.Queue()
 
         try:
-            logger.info(f"[firmware_parameter => server] reset: {parameter}")
-            await self.sio.emit("reset_parameter_value", parameter.model_dump(by_alias=True), namespace="/parameters")
+            await self.sio.emit("list_parameters", group.name, namespace=self.namespace)
+            key_hashes = [await asyncio.wait_for(self.key_hashes.get(), timeout) for _ in range(group.count)]
+        finally:
+            self.key_hashes = None
 
-            logger.info(f"Sent reset_parameter request for hash: 0x{parameter_hash:08x}")
+        # The firmware hashes the little-endian key hashes, in registry order
+        if fnv1a_hash_bytes(b"".join(key_hash.to_bytes(4, "little") for key_hash in key_hashes)) != group.registry_hash:
+            raise ValueError("key hashes received do not match the registry hash")
 
-            # Wait for the response with timeout
-            response = await asyncio.wait_for(future, timeout=timeout)
-
-            # Validate status (raises on VALIDATION_FAILED / NOT_FOUND)
-            parameter.pb_read(response)
-
-        except TimeoutError:
-            # Clean up on timeout
-            if not future.done():
-                future.cancel()
-
-            self.pending_reset_requests.pop(parameter_hash, None)
-            logger.error(f"Timeout waiting for reset_firmware_parameter response (hash: 0x{parameter_hash:08x})")
-            raise TimeoutError(f"No response received for firmware parameter hash 0x{parameter_hash:08x}")
-
-        except Exception as exc:
-            # Clean up on error
-            if not future.done():
-                future.cancel()
-
-            self.pending_reset_requests.pop(parameter_hash, None)
-            logger.error(f"Error in reset_parameter: {exc}")
-            raise
-
-    async def reset_all_parameters(
-        self,
-        timeout: float = 1,
-    ) -> dict[str, Exception | None]:
-        """
-        Resets every firmware parameter declared in the loaded YAML group.
-
-        Each reset is dispatched concurrently. Failures do not interrupt the others;
-        they are returned in the result dict.
-
-        Args:
-            timeout: Per-parameter timeout in seconds (default: 1)
-
-        Returns:
-            A dict mapping each parameter name to None on success, or to the raised
-            exception on failure.
-        """
-        names = [parameter.name for parameter in self.parameter_group]
-        results = await asyncio.gather(
-            *(self.reset_parameter_value(name, timeout) for name in names),
-            return_exceptions=True,
+        return list(
+            await asyncio.gather(
+                *(
+                    self._request("get_parameter_definition", key_hash, "parameter_definition", key_hash, timeout)
+                    for key_hash in key_hashes
+                )
+            )
         )
-        return {name: (result if isinstance(result, Exception) else None) for name, result in zip(names, results)}
 
-    def cleanup(self):
+    async def _request(
+        self,
+        event: str,
+        data: dict[str, Any] | int | None,
+        response_event: str,
+        key_hash: int,
+        timeout: float,
+    ) -> Any:
         """
-        Cleans up all pending Futures.
-        """
-        for future in self.pending_get_requests.values():
-            if not future.done():
-                future.cancel()
-        for future in self.pending_set_requests.values():
-            if not future.done():
-                future.cancel()
-        for future in self.pending_reset_requests.values():
-            if not future.done():
-                future.cancel()
+        Sends a request and waits for its response, matched by response event and key hash.
 
-        self.pending_get_requests.clear()
-        self.pending_set_requests.clear()
-        self.pending_reset_requests.clear()
+        Raises:
+            TimeoutError: If no response is received within the timeout
+        """
+        future = asyncio.get_running_loop().create_future()
+        self.pending_requests[response_event, key_hash] = future
+
+        try:
+            await self.sio.emit(event, data, namespace=self.namespace)
+            return await asyncio.wait_for(future, timeout)
+        except TimeoutError:
+            raise TimeoutError(f"No {response_event} received") from None
+        finally:
+            self.pending_requests.pop((response_event, key_hash), None)
+
+    def resolve(self, response_event: str, key_hash: int, response: Any) -> None:
+        """Resolves the Future of the request waiting for this response."""
+        future = self.pending_requests.get((response_event, key_hash))
+
+        if future and not future.done():
+            future.set_result(response)

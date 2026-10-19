@@ -1,16 +1,16 @@
-import asyncio
 from typing import TYPE_CHECKING, Any
 
-import polling2
 import socketio
 from google.protobuf.json_format import ParseDict
 
+from cogip.models import FirmwareParameter
 from cogip.protobuf import (
     PB_ParameterGetResponse,
+    PB_ParameterGroup,
+    PB_ParameterListResponse,
     PB_ParameterResetResponse,
     PB_ParameterSetResponse,
 )
-from . import logger
 
 if TYPE_CHECKING:
     from .firmware_parameter_manager import FirmwareParameterManager
@@ -27,85 +27,40 @@ class SioEvents(socketio.AsyncClientNamespace):
         self.connected = False
 
     async def on_connect(self):
-        """
-        On connection to cogip-server.
-        """
-        await asyncio.to_thread(
-            polling2.poll,
-            lambda: self.client.connected is True,
-            step=1,
-            poll_forever=True,
-        )
-        logger.info("Connected to cogip-server")
-        await self.emit("connected")
-
         self.connected = True
 
-    async def on_disconnect(self) -> None:
-        """
-        On disconnection from cogip-server.
-        """
-        logger.info("Disconnected from cogip-server")
+    async def on_disconnect(self):
         self.connected = False
 
-    async def on_connect_error(self, data: dict[str, Any]) -> None:
+    async def on_parameter_groups(self, data: list[dict[str, Any]]):
         """
-        On connection error, check if a firmware parameter manager is already connected and exit,
-        or retry connection.
+        Handle the parameter registries announced by the firmware, kept by copilot.
         """
-        if isinstance(data, dict) and "message" in data:
-            message = data["message"]
-        else:
-            message = data
-        logger.error(f"Connection to cogip-server failed: {message}")
+        groups = [ParseDict(group, PB_ParameterGroup()) for group in data]
+        self.manager.resolve("parameter_groups", 0, groups)
+
+    async def on_list_parameters_response(self, data: dict[str, Any]):
+        """
+        Handle the key hash of a listed parameter, ignored if no registry is being listed by this client.
+        """
+        if self.manager.key_hashes is not None:
+            self.manager.key_hashes.put_nowait(ParseDict(data, PB_ParameterListResponse()).key_hash)
+
+    async def on_parameter_definition(self, data: dict[str, Any]):
+        """
+        Handle the definition of a parameter, matched to its request by key hash.
+        """
+        parameter = FirmwareParameter.model_validate(data)
+        self.manager.resolve("parameter_definition", hash(parameter), parameter)
 
     async def on_get_parameter_response(self, data: dict[str, Any]):
-        """
-        Handle get_parameter_response from copilot.
-        Resolve the pending Future with the response.
-        """
         response = ParseDict(data, PB_ParameterGetResponse())
-
-        logger.info(f"[SIO] Received get_response for firmware parameter hash: 0x{response.key_hash:08x}")
-
-        # Retrieve the Future corresponding to this request
-        if response.key_hash in self.manager.pending_get_requests:
-            future = self.manager.pending_get_requests.pop(response.key_hash)
-            if not future.done():
-                future.set_result(response)
-        else:
-            logger.warning(f"No pending request found for firmware parameter hash: 0x{response.key_hash:08x}")
+        self.manager.resolve("get_parameter_response", response.key_hash, response)
 
     async def on_set_parameter_response(self, data: dict[str, Any]):
-        """
-        Handle set_parameter_response from copilot.
-        Resolve the pending Future with the response.
-        """
         response = ParseDict(data, PB_ParameterSetResponse())
-
-        logger.info(f"[SIO] Received set_response for firmware parameter hash: 0x{response.key_hash:08x}")
-
-        # Retrieve the Future corresponding to this request
-        if response.key_hash in self.manager.pending_set_requests:
-            future = self.manager.pending_set_requests.pop(response.key_hash)
-            if not future.done():
-                future.set_result(response)
-        else:
-            logger.warning(f"No pending request found for firmware parameter hash: 0x{response.key_hash:08x}")
+        self.manager.resolve("set_parameter_response", response.key_hash, response)
 
     async def on_reset_parameter_response(self, data: dict[str, Any]):
-        """
-        Handle reset_parameter_response from copilot.
-        Resolve the pending Future with the response.
-        """
         response = ParseDict(data, PB_ParameterResetResponse())
-
-        logger.info(f"[SIO] Received reset_response for firmware parameter hash: 0x{response.key_hash:08x}")
-
-        # Retrieve the Future corresponding to this request
-        if response.key_hash in self.manager.pending_reset_requests:
-            future = self.manager.pending_reset_requests.pop(response.key_hash)
-            if not future.done():
-                future.set_result(response)
-        else:
-            logger.warning(f"No pending request found for firmware parameter hash: 0x{response.key_hash:08x}")
+        self.manager.resolve("reset_parameter_response", response.key_hash, response)

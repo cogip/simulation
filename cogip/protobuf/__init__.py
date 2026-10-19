@@ -13,12 +13,17 @@ from .PB_PathPose_pb2 import PB_PathPose  # noqa
 from .PB_Actuators_pb2 import PB_PositionalActuatorCommand  # noqa
 from .PB_Actuators_pb2 import PB_ActuatorCommand, PB_ActuatorInit, PB_ActuatorState  # noqa
 from .PB_Controller_pb2 import PB_ControllerEnum, PB_Controller  # noqa
-from .PB_ParameterCommands_pb2 import (
+from .PB_ParameterCommands_pb2 import PB_ParameterStatus  # noqa
+from .PB_ParameterRegistry_pb2 import (
+    PB_ParameterGroup,
+    PB_ParameterListRequest,
+    PB_ParameterListResponse,
+    PB_ParameterDefinitionRequest,
+    PB_ParameterDefinition,
     PB_ParameterGetRequest,
     PB_ParameterSetRequest,
     PB_ParameterGetResponse,
     PB_ParameterSetResponse,
-    PB_ParameterStatus,
     PB_ParameterResetRequest,
     PB_ParameterResetResponse,
 )  # noqa

@@ -25,7 +25,6 @@ from cogip.models import (
     CalibrationResult,
     CalibrationState,
     EncoderDeltas,
-    FirmwareParametersGroup,
     OdometryParameters,
 )
 from cogip.tools.firmware_parameter_manager.firmware_parameter_manager import FirmwareParameterManager
@@ -52,13 +51,12 @@ class OdometryCalibration:
     - User interaction via ConsoleUI
     """
 
-    def __init__(self, server_url: str, parameters_group: FirmwareParametersGroup):
+    def __init__(self, server_url: str):
         """
         Initialize the calibration controller.
 
         Args:
             server_url: URL of the cogip-server
-            parameters_group: Firmware parameters configuration
         """
         self.server_url = server_url
         self.console = ConsoleUI()
@@ -72,7 +70,7 @@ class OdometryCalibration:
         self.sio.register_namespace(self.sio_ns)
 
         # Managers (they register their own namespaces)
-        self.param_manager = FirmwareParameterManager(self.sio, parameters_group)
+        self.param_manager = FirmwareParameterManager(self.sio)
         self.telemetry_manager = FirmwareTelemetryManager(self.sio)
 
         # Firmware adapter for motion control
@@ -103,6 +101,8 @@ class OdometryCalibration:
             await asyncio.sleep(0.1)
 
         self.console.show_success("Connected to cogip-server")
+
+        await self.param_manager.discover()
 
         # Enable telemetry
         await self.telemetry_manager.enable()

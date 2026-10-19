@@ -1,18 +1,20 @@
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
     NonNegativeInt,
-    RootModel,
     Strict,
     StrictBool,
     StrictFloat,
     StrictInt,
+    ValidationInfo,
+    field_validator,
 )
 
 from cogip.protobuf import (
+    PB_ParameterDefinition,
     PB_ParameterGetRequest,
     PB_ParameterGetResponse,
     PB_ParameterResetRequest,
@@ -25,78 +27,96 @@ from cogip.utils.fnv1a import fnv1a_hash
 
 
 class FirmwareParameterValidationFailed(Exception):
-    """Exception raised when firmware parameter validation fails.
-
-    This exception is raised when a firmware parameter value does not meet
-    the validation constraints defined for that parameter value range on the embedded side.
-    """
-
-    pass
+    """Exception raised when the firmware rejects a parameter value (out of range or read-only)."""
 
 
 class FirmwareParameterNotFound(Exception):
-    """Exception raised when a requested firmware parameter is not found.
-
-    This exception is raised when trying to access or modify a firmware parameter
-    that does not exist in the parameter registry on the embedded side.
-    """
-
-    pass
+    """Exception raised when the firmware does not know a parameter."""
 
 
 class FirmwareParameterBase(BaseModel):
-    """Base firmware parameter type"""
+    """Base firmware parameter value, with the range accepted by the firmware.
+
+    Subclasses declare `min` and `max` before `content`, so that the range is known
+    when the content is validated.
+    """
 
     model_config = ConfigDict(validate_assignment=True)
+
+    @field_validator("content", check_fields=False)
+    @classmethod
+    def check_range(cls, content: Any, info: ValidationInfo) -> Any:
+        """Reject a content outside the range accepted by the firmware."""
+        minimum = info.data.get("min")
+        maximum = info.data.get("max")
+
+        if content is not None and minimum is not None and maximum is not None and not minimum <= content <= maximum:
+            raise ValueError(f"{content} out of range [{minimum}, {maximum}]")
+
+        return content
 
 
 class FirmwareParameterFloat(FirmwareParameterBase):
     """Float firmware parameter value."""
 
     type: Literal["float"] = "float"
-    content: StrictFloat
+    min: StrictFloat
+    max: StrictFloat
+    content: StrictFloat | None = None
 
 
 class FirmwareParameterDouble(FirmwareParameterBase):
     """Double firmware parameter value."""
 
     type: Literal["double"] = "double"
-    content: StrictFloat
+    min: StrictFloat
+    max: StrictFloat
+    content: StrictFloat | None = None
 
 
 class FirmwareParameterInt32(FirmwareParameterBase):
     """Signed 32-bit integer firmware parameter value."""
 
     type: Literal["int32"] = "int32"
-    content: StrictInt
+    min: StrictInt
+    max: StrictInt
+    content: StrictInt | None = None
 
 
 class FirmwareParameterUInt32(FirmwareParameterBase):
     """Unsigned 32-bit integer firmware parameter value."""
 
     type: Literal["uint32"] = "uint32"
-    content: Annotated[NonNegativeInt, Strict()]
+    min: Annotated[NonNegativeInt, Strict()]
+    max: Annotated[NonNegativeInt, Strict()]
+    content: Annotated[NonNegativeInt, Strict()] | None = None
 
 
 class FirmwareParameterInt64(FirmwareParameterBase):
     """Signed 64-bit integer firmware parameter value."""
 
     type: Literal["int64"] = "int64"
-    content: StrictInt
+    min: StrictInt
+    max: StrictInt
+    content: StrictInt | None = None
 
 
 class FirmwareParameterUInt64(FirmwareParameterBase):
     """Unsigned 64-bit integer firmware parameter value."""
 
     type: Literal["uint64"] = "uint64"
-    content: Annotated[NonNegativeInt, Strict()]
+    min: Annotated[NonNegativeInt, Strict()]
+    max: Annotated[NonNegativeInt, Strict()]
+    content: Annotated[NonNegativeInt, Strict()] | None = None
 
 
 class FirmwareParameterBool(FirmwareParameterBase):
     """Boolean firmware parameter value."""
 
     type: Literal["bool"] = "bool"
-    content: StrictBool
+    min: StrictBool
+    max: StrictBool
+    content: StrictBool | None = None
 
 
 # Discriminated union of all firmware parameter value types
@@ -112,12 +132,11 @@ FirmwareParameterValueType = (
 
 
 class FirmwareParameter(BaseModel):
-    """Firmware parameter model with discriminated union for type-safe values.
+    """Firmware parameter, as defined by the firmware.
 
     Attributes:
-        name: The firmware parameter name
-        value: The firmware parameter content value (float, int, or bool)
-        value_obj: The firmware parameter value object with its type
+        name: The firmware parameter name, its FNV-1a hash addresses the firmware requests
+        value_obj: The firmware parameter value object, with its type and accepted range
     """
 
     model_config = ConfigDict(validate_assignment=True)
@@ -128,184 +147,55 @@ class FirmwareParameter(BaseModel):
     def __hash__(self):
         return fnv1a_hash(self.name)
 
-    @property
-    def value(self) -> float | int | bool:
-        """Get the firmware parameter content value.
+    @classmethod
+    def from_definition(cls, definition: PB_ParameterDefinition) -> "FirmwareParameter":
+        """Create a firmware parameter from its definition, its value stays unknown until read.
 
-        Returns:
-            The actual content value (float, int, or bool)
+        The type is given by the oneof field set in the bounds.
         """
+        which_field = definition.min.WhichOneof("value")
+
+        return cls.model_validate(
+            {
+                "name": definition.name,
+                "value": {
+                    "type": which_field.removesuffix("_value"),
+                    "min": getattr(definition.min, which_field),
+                    "max": getattr(definition.max, which_field),
+                },
+            }
+        )
+
+    @property
+    def value(self) -> float | int | bool | None:
+        """Get the firmware parameter content value, None until read from the firmware."""
         return self.value_obj.content
 
     @value.setter
     def value(self, content: float | int | bool) -> None:
-        """Set the firmware parameter content value.
-
-        Args:
-            content: The new content value to set
-
-        Note:
-            The type of the firmware parameter remains unchanged. The content must be
-            compatible with the existing parameter type.
-        """
+        """Set the firmware parameter content value, validated against its type and range."""
         self.value_obj.content = content
 
-    def pb_copy(self, message: PB_ParameterSetRequest | PB_ParameterGetRequest | PB_ParameterResetRequest) -> None:
+    def pb_copy(self, message: PB_ParameterGetRequest | PB_ParameterSetRequest | PB_ParameterResetRequest) -> None:
         """Copy values to Protobuf message"""
         message.key_hash = hash(self)
 
         if isinstance(message, PB_ParameterSetRequest):
             setattr(message.value, f"{self.value_obj.type}_value", self.value_obj.content)
 
-    def pb_read(
-        self,
-        message: PB_ParameterSetResponse | PB_ParameterGetResponse | PB_ParameterResetResponse,
-    ) -> None:
-        """Read values from Protobuf message and update firmware parameter content.
-
-        Args:
-            message: The ParameterSetResponse, ParameterGetResponse or ParameterResetResponse
-                containing the value or status to read
+    def pb_read(self, message: PB_ParameterGetResponse | PB_ParameterSetResponse | PB_ParameterResetResponse) -> None:
+        """Read the value of a get response, or the status of a set or reset response.
 
         Raises:
-            ValueError: If the key_hash doesn't match the firmware parameter name or no value set
-            FirmwareParameterValidationFailed: If firmware parameter validation failed on the embedded side
-            FirmwareParameterReadOnly: If firmware parameter is read-only on the embedded side
-            FirmwareParameterNotFound: If firmware parameter not found on the embedded side
+            FirmwareParameterValidationFailed: If the firmware rejected the value
+            FirmwareParameterNotFound: If the firmware does not know the parameter
         """
+        if isinstance(message, PB_ParameterGetResponse):
+            self.value_obj.content = getattr(message.value, message.value.WhichOneof("value"))
+            return
 
-        # Verify that the name matches
-        if message.key_hash != hash(self):
-            raise ValueError(f"Key hash mismatch: expected '{hash(self)}', got '{message.key_hash}'")
-
-        if isinstance(message, PB_ParameterSetResponse | PB_ParameterResetResponse):
-            # Check status and raise appropriate exceptions
-            match message.status:
-                case PB_ParameterStatus.VALIDATION_FAILED:
-                    raise FirmwareParameterValidationFailed(f"Firmware parameter '{self.name}' validation failed")
-                case PB_ParameterStatus.NOT_FOUND:
-                    raise FirmwareParameterNotFound(f"Firmware parameter '{self.name}' not found in registry")
-                case PB_ParameterStatus.SUCCESS:
-                    pass  # Operation succeeded, nothing to do
-        elif isinstance(message, PB_ParameterGetResponse):
-            # Get the name of the field defined in the oneof
-            which_field = message.value.WhichOneof("value")
-
-            if which_field is None:
-                raise ValueError("No value set in ParameterGetResponse, firmware parameter not found")
-
-            # Get the value of the active field
-            content = getattr(message.value, which_field)
-
-            # Update the firmware parameter content
-            self.value_obj.content = content
-
-
-class FirmwareParameterSection(BaseModel):
-    """A named group of firmware parameters used for display purposes.
-
-    Sections only carry presentation metadata (title + ordered list of parameters);
-    they do not change how parameters are addressed on the firmware side.
-    """
-
-    title: str
-    parameters: list[FirmwareParameter]
-
-
-class FirmwareParameterSchema(BaseModel):
-    """Top-level schema for a sectioned firmware parameter YAML.
-
-    Wraps a list of :class:`FirmwareParameterSection`. Use :meth:`group` to
-    obtain a flat :class:`FirmwareParametersGroup` for use with the
-    FirmwareParameterManager (the same FirmwareParameter instances are shared,
-    so updates propagate transparently).
-    """
-
-    sections: list[FirmwareParameterSection]
-
-    def group(self) -> "FirmwareParametersGroup":
-        """Return a flat parameter group sharing the same FirmwareParameter instances."""
-        flat = [parameter for section in self.sections for parameter in section.parameters]
-        return FirmwareParametersGroup(root=flat)
-
-
-class FirmwareParametersGroup(RootModel):
-    """Container for a group of firmware parameters with name-based access.
-
-    This class manages a collection of firmware parameters and provides convenient
-    get/set methods using firmware parameter names.
-
-    The model directly represents a list of FirmwareParameter objects.
-    """
-
-    root: Annotated[list[FirmwareParameter], Field(default_factory=list)]
-
-    def model_post_init(self, __context) -> None:
-        """Build index after initialization."""
-        super().model_post_init(__context)
-        self._rebuild_index()
-
-    def _rebuild_index(self) -> None:
-        """Rebuild the internal index for firmware parameter name lookup."""
-        self._index: dict[str, int] = {param.name: idx for idx, param in enumerate(self.root)}
-
-    def get(self, name: str) -> FirmwareParameter:
-        """Get a firmware parameter by its name.
-
-        Args:
-            name: The firmware parameter name
-
-        Returns:
-            The FirmwareParameter object
-
-        Raises:
-            KeyError: If the firmware parameter name is not found
-        """
-        if name not in self._index:
-            raise KeyError(f"Firmware parameter '{name}' not found")
-        return self.root[self._index[name]]
-
-    def __contains__(self, name: str) -> bool:
-        """Check if a firmware parameter name exists in the list.
-
-        Args:
-            name: The firmware parameter name to check
-
-        Returns:
-            True if the firmware parameter exists, False otherwise
-        """
-        return name in self._index
-
-    def __getitem__(self, name: str) -> float | int | bool:
-        """Get a firmware parameter's value using bracket notation.
-
-        Args:
-            name: The firmware parameter name
-
-        Returns:
-            The firmware parameter's content value
-
-        Raises:
-            KeyError: If the firmware parameter name is not found
-        """
-        return self.get(name).value
-
-    def __setitem__(self, name: str, value: float | int | bool) -> None:
-        """Set a firmware parameter's value using bracket notation.
-
-        Args:
-            name: The firmware parameter name
-            value: The new content value
-
-        Raises:
-            KeyError: If the firmware parameter name is not found
-        """
-        self.get(name).value = value
-
-    def __len__(self) -> int:
-        """Return the number of firmware parameters in the list."""
-        return len(self.root)
-
-    def __iter__(self):
-        """Iterate over all firmware parameters."""
-        return iter(self.root)
+        match message.status:
+            case PB_ParameterStatus.VALIDATION_FAILED:
+                raise FirmwareParameterValidationFailed(f"Firmware rejected '{self.name}' (out of range or read-only)")
+            case PB_ParameterStatus.NOT_FOUND:
+                raise FirmwareParameterNotFound(f"Firmware does not know '{self.name}'")

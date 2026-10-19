@@ -130,6 +130,30 @@ class CopilotNamespace(socketio.AsyncNamespace):
         logger.info(f"[copilot => parameters] Reset response: {response}")
         await self.emit("reset_parameter_response", response, namespace="/parameters")
 
+    async def on_parameter_groups(self, sid, groups: list[dict[str, Any]]) -> None:
+        """
+        Callback on parameter_groups message from copilot.
+        Forward to firmware parameter manager.
+        """
+        logger.info(f"[copilot => parameters] Parameter groups: {groups}")
+        await self.emit("parameter_groups", groups, namespace="/parameters")
+
+    async def on_list_parameters_response(self, sid, response: dict[str, Any]) -> None:
+        """
+        Callback on list_parameters_response message from copilot.
+        Forward to firmware parameter manager.
+        """
+        logger.info(f"[copilot => parameters] List response: {response}")
+        await self.emit("list_parameters_response", response, namespace="/parameters")
+
+    async def on_parameter_definition(self, sid, definition: dict[str, Any]) -> None:
+        """
+        Callback on parameter_definition message from copilot.
+        Forward to firmware parameter manager.
+        """
+        logger.info(f"[copilot => parameters] Parameter definition: {definition}")
+        await self.emit("parameter_definition", definition, namespace="/parameters")
+
     async def on_telemetry_data(self, sid, telemetry: dict[str, Any]) -> None:
         """
         Callback on telemetry_data message from copilot.
