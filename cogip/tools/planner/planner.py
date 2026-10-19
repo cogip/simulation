@@ -624,7 +624,7 @@ class Planner:
                     self.shared_rectangle_obstacles.append(
                         x=fixed_obstacle.x,
                         y=fixed_obstacle.y,
-                        angle=0,
+                        angle=fixed_obstacle.O,
                         length_x=fixed_obstacle.width + self.shared_properties.robot_width,
                         length_y=fixed_obstacle.length + self.shared_properties.robot_width,
                         bounding_box_margin=margin,

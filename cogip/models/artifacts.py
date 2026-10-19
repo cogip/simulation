@@ -1,6 +1,6 @@
 from enum import IntEnum, auto
 
-from .models import Pose, Vertex
+from .models import Pose
 
 
 class FixedObstacleID(IntEnum):
@@ -15,7 +15,7 @@ class FixedObstacleID(IntEnum):
     CratesFromGranary = auto()
 
 
-class FixedObstacle(Vertex):
+class FixedObstacle(Pose):
     """
     Model for fixed obstacles.
     """

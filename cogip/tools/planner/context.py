@@ -148,6 +148,7 @@ class GameContext:
         self.fixed_obstacles[FixedObstacleID.Granary] = FixedObstacle(
             x=775,
             y=0,
+            O=0,
             length=1800,
             width=450,
             id=FixedObstacleID.Granary,
@@ -159,6 +160,7 @@ class GameContext:
             **AdaptedPose(
                 x=775 if self.shared_properties.table == TableEnum.Game else -225,
                 y=-1200,
+                O=0,
             ).model_dump(include={"x", "y"}),
             length=600,
             width=450,
@@ -168,7 +170,7 @@ class GameContext:
 
         # Opposite Nest
         self.fixed_obstacles[FixedObstacleID.OppositeNest] = FixedObstacle(
-            **AdaptedPose(x=775, y=1200).model_dump(include={"x", "y"}),
+            **AdaptedPose(x=775, y=1200, O=0).model_dump(include={"x", "y", "O"}),
             length=600,
             width=450,
             id=FixedObstacleID.OppositeNest,
@@ -178,6 +180,7 @@ class GameContext:
         self.fixed_obstacles[FixedObstacleID.Table] = FixedObstacle(
             x=-225 if self.shared_properties.table == TableEnum.Game else -725,
             y=0 if self.shared_properties.table == TableEnum.Game else -750,
+            O=0,
             length=3000 if self.shared_properties.table == TableEnum.Game else 1500,
             width=1550 if self.shared_properties.table == TableEnum.Game else 550,
             id=FixedObstacleID.Table,
@@ -186,7 +189,7 @@ class GameContext:
 
         # Crates from granary
         self.fixed_obstacles[FixedObstacleID.CratesFromGranary] = FixedObstacle(
-            **AdaptedPose(x=475, y=-700).model_dump(include={"x", "y"}),
+            **AdaptedPose(x=475, y=-700, O=0).model_dump(include={"x", "y", "O"}),
             length=150,
             width=200,
             id=FixedObstacleID.CratesFromGranary,
