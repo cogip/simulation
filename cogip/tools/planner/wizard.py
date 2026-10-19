@@ -3,13 +3,13 @@ import re
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Any
 
+from cogip.models import Camp
 from cogip.tools.planner.avoidance.avoidance import AvoidanceStrategy
 from cogip.tools.planner.start_positions import StartPositionEnum
 from cogip.tools.planner.table import TableEnum
 from cogip.utils.asyncloop import AsyncLoop
 from . import logger
 from .actions import StrategyEnum, strategy_classes
-from .camp import Camp
 
 if TYPE_CHECKING:
     from cogip.tools.planner.planner import Planner

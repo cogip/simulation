@@ -3,9 +3,8 @@ from typing import TYPE_CHECKING
 import httpx
 from pydantic import TypeAdapter
 
-from cogip.models import CameraExtrinsicParameters, Pose
+from cogip.models import CameraExtrinsicParameters, Camp, Pose
 from . import logger
-from .camp import Camp
 
 if TYPE_CHECKING:
     from .planner import Planner

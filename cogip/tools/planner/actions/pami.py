@@ -3,12 +3,12 @@ from typing import TYPE_CHECKING
 
 from colorzero import Color
 
+from cogip.models import Camp
 from cogip.models.artifacts import Pantry, PantryID
 from cogip.tools.planner.actions.action import Action
 from cogip.tools.planner.actions.strategy import Strategy
 from cogip.tools.planner.actions.utils import set_countdown_color
 from cogip.tools.planner.avoidance.avoidance import AvoidanceStrategy
-from cogip.tools.planner.camp import Camp
 from cogip.tools.planner.pose import AdaptedPose, Pose
 from cogip.tools.planner.table import TableEnum
 

@@ -5,7 +5,7 @@ import socketio
 from socketio.exceptions import ConnectionRefusedError
 from uvicorn.main import Server as UvicornServer
 
-from cogip.tools.planner.camp import Camp
+from cogip.models import Camp
 from cogip.tools.planner.start_positions import StartPositionEnum
 from cogip.tools.planner.table import TableEnum
 from . import logger, namespaces

@@ -4,11 +4,10 @@ import math
 from typing import TYPE_CHECKING, Literal
 
 from cogip.cpp.libraries.models import MotionDirection
-from cogip.models import models
+from cogip.models import Camp, models
 from cogip.models.artifacts import Pantry, PantryID
 from cogip.tools.planner import actuators, logger
 from cogip.tools.planner.actions.utils import get_relative_pose
-from cogip.tools.planner.camp import Camp
 from cogip.tools.planner.pose import Pose
 
 if TYPE_CHECKING:

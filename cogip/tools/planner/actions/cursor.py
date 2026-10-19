@@ -3,12 +3,12 @@ import functools
 from typing import TYPE_CHECKING
 
 from cogip.cpp.libraries.models import MotionDirection
+from cogip.models import Camp
 from cogip.models.artifacts import CollectionAreaID
 from cogip.tools.planner import actuators
 from cogip.tools.planner.actions.action import Action
 from cogip.tools.planner.actions.action_align import AlignTopCornerAction
 from cogip.tools.planner.actions.strategy import Strategy
-from cogip.tools.planner.camp import Camp
 from cogip.tools.planner.pose import AdaptedPose
 
 if TYPE_CHECKING:

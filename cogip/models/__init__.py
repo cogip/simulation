@@ -1,3 +1,4 @@
+from .camp import Camp  # noqa
 from .firmware_parameter import (  # noqa
     FirmwareParameter,
     FirmwareParameterNotFound,

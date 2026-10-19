@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from cogip import models
 from cogip.cpp.libraries.models import MotionDirection
+from cogip.models import Camp
 from cogip.models.artifacts import CollectionArea, CollectionAreaID
 from cogip.tools.planner import actuators
 from cogip.tools.planner.actions import crates_utils
@@ -14,7 +15,6 @@ from cogip.tools.planner.actions.crate_analysis import CrateAnalyzer
 from cogip.tools.planner.actions.strategy import Strategy
 from cogip.tools.planner.actions.utils import get_relative_pose
 from cogip.tools.planner.cameras import get_crates_position, get_robot_position
-from cogip.tools.planner.camp import Camp
 from cogip.tools.planner.pose import AdaptedPose, Pose
 from cogip.tools.planner.table import TableEnum
 

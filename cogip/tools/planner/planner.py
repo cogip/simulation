@@ -30,6 +30,7 @@ from cogip.cpp.libraries.models import PoseOrderList as SharedPoseOrderList
 from cogip.cpp.libraries.obstacles import ObstacleCircleList as SharedObstacleCircleList
 from cogip.cpp.libraries.obstacles import ObstacleRectangleList as SharedObstacleRectangleList
 from cogip.cpp.libraries.shared_memory import LockName, SharedMemory, SharedProperties, WritePriorityLock
+from cogip.models import Camp
 from cogip.models.actuators import ActuatorState
 from cogip.tools.copilot.controller import ControllerEnum
 from cogip.utils.asyncloop import AsyncLoop
@@ -37,7 +38,6 @@ from . import actuators, cameras, logger, pose, sio_events
 from .actions import StrategyEnum, action, strategy, strategy_classes
 from .avoidance.avoidance import AvoidanceStrategy
 from .avoidance.process import avoidance_process
-from .camp import Camp
 from .context import GameContext
 from .event_manager import EventManager
 from .properties import properties_schema

@@ -2,7 +2,7 @@ from typing import Any
 
 import socketio
 
-from cogip.tools.planner.camp import Camp
+from cogip.models import Camp
 from cogip.tools.planner.table import TableEnum
 from .. import logger, server
 from ..menu import menu

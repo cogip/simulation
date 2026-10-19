@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from cogip import models
 from cogip.cpp.libraries.obstacles import ObstacleCircle, ObstacleRectangle
+from cogip.models import Camp
 from cogip.models.artifacts import Pantry, PantryID
 from cogip.models.models import MotionDirection
 from cogip.tools.planner import actuators
@@ -16,7 +17,6 @@ from cogip.tools.planner.actions.drop_crates import DropCratesAction
 from cogip.tools.planner.actions.strategy import Strategy
 from cogip.tools.planner.actions.utils import get_relative_pose
 from cogip.tools.planner.cameras import get_crates_position
-from cogip.tools.planner.camp import Camp
 from cogip.tools.planner.pose import Pose
 
 if TYPE_CHECKING:

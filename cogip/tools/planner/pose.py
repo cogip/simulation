@@ -3,8 +3,8 @@ from typing import ClassVar, final
 
 from pydantic import field_validator
 
+from cogip.models import Camp
 from cogip.models.models import PathPose
-from .camp import Camp
 
 
 class Pose(PathPose):

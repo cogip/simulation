@@ -11,7 +11,7 @@ from fastapi.responses import StreamingResponse
 from uvicorn.main import Server as UvicornServer
 
 from cogip import logger
-from cogip.tools.planner.camp import Camp
+from cogip.models import Camp
 from .settings import Settings
 
 
