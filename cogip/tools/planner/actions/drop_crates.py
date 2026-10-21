@@ -71,6 +71,7 @@ class DropCratesAction(Action):
         approach_pose = Pose(
             x=x,
             y=y,
+            mirrored=True,
             max_speed_linear=100,
             max_speed_angular=100,
             motion_direction=MotionDirection.FORWARD_ONLY if self.side == "front" else MotionDirection.BACKWARD_ONLY,
@@ -122,6 +123,7 @@ class DropCratesAction(Action):
                     x=pose_current.x,
                     y=pose_current.y,
                     O=target_angle,
+                    mirrored=True,
                     max_speed_angular=50,
                     after_pose_func=self.after_fix_orientation,
                 )

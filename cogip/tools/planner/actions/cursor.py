@@ -9,7 +9,7 @@ from cogip.tools.planner import actuators
 from cogip.tools.planner.actions.action import Action
 from cogip.tools.planner.actions.action_align import AlignTopCornerAction
 from cogip.tools.planner.actions.strategy import Strategy
-from cogip.tools.planner.pose import AdaptedPose
+from cogip.tools.planner.pose import Pose
 
 if TYPE_CHECKING:
     from ..planner import Planner
@@ -74,7 +74,7 @@ class CursorAction(Action):
             self.lift_mid = functools.partial(actuators.front_lift_mid, self.planner)
 
         # Approach
-        approach_pose = AdaptedPose(
+        approach_pose = Pose(
             x=self.x,
             y=self.y_approach,
             O=self.orientation,
@@ -88,7 +88,7 @@ class CursorAction(Action):
         self.logger.info(f"{self.name}: approach: {approach_pose.pose}")
 
         # Start
-        start_pose = AdaptedPose(
+        start_pose = Pose(
             x=self.x,
             y=self.y_start,
             O=self.orientation,
@@ -102,7 +102,7 @@ class CursorAction(Action):
         self.logger.info(f"{self.name}: start: {start_pose.pose}")
 
         # End
-        end_pose = AdaptedPose(
+        end_pose = Pose(
             x=self.x,
             y=self.y_end,
             O=self.orientation,

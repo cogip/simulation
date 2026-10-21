@@ -9,7 +9,7 @@ from cogip.tools.planner.actions.action import Action
 from cogip.tools.planner.actions.strategy import Strategy
 from cogip.tools.planner.actions.utils import set_countdown_color
 from cogip.tools.planner.avoidance.avoidance import AvoidanceStrategy
-from cogip.tools.planner.pose import AdaptedPose, Pose
+from cogip.tools.planner.pose import Pose
 from cogip.tools.planner.table import TableEnum
 
 if TYPE_CHECKING:
@@ -55,7 +55,7 @@ class Pami3Action(Action):
 
         self.start_pose = self.pose_current.model_copy()
 
-        pose1 = AdaptedPose(
+        pose1 = Pose(
             x=self.start_pose.x,
             y=-1425,
             max_speed_linear=70,
@@ -70,6 +70,7 @@ class Pami3Action(Action):
         pose2 = Pose(
             x=self.pantry.x,
             y=self.pantry.y,
+            mirrored=True,
             max_speed_linear=100,
             max_speed_angular=100,
             bypass_final_orientation=True,
@@ -159,7 +160,7 @@ class Pami4Action(Action):
 
         self.start_pose = self.pose_current.model_copy()
 
-        pose1 = AdaptedPose(
+        pose1 = Pose(
             x=self.start_pose.x,
             y=-1245,
             max_speed_linear=70,
@@ -171,7 +172,7 @@ class Pami4Action(Action):
         self.poses.append(pose1)
         self.logger.info(f"{self.name}: pose1: x={pose1.x: 5.2f} y={pose1.y: 5.2f} O={pose1.O: 3.2f}°")
 
-        pose2 = AdaptedPose(
+        pose2 = Pose(
             x=680,
             y=-1245,
             O=180,
@@ -186,7 +187,7 @@ class Pami4Action(Action):
         self.poses.append(pose2)
         self.logger.info(f"{self.name}: pose2: x={pose2.x: 5.2f} y={pose2.y: 5.2f} O={pose2.O: 3.2f}°")
 
-        pose3 = AdaptedPose(
+        pose3 = Pose(
             x=450,
             y=-1245,
             max_speed_linear=100,
@@ -203,6 +204,7 @@ class Pami4Action(Action):
         pose4 = Pose(
             x=self.pantry.x + 20,
             y=self.pantry.y,
+            mirrored=True,
             max_speed_linear=100,
             max_speed_angular=100,
             bypass_final_orientation=True,
@@ -301,7 +303,7 @@ class Pami5Action(Action):
 
         self.start_pose = self.pose_current.model_copy()
 
-        pose1 = AdaptedPose(
+        pose1 = Pose(
             x=self.start_pose.x,
             y=-1115,
             max_speed_linear=70,
@@ -313,7 +315,7 @@ class Pami5Action(Action):
         self.poses.append(pose1)
         self.logger.info(f"{self.name}: pose1: x={pose1.x: 5.2f} y={pose1.y: 5.2f} O={pose1.O: 3.2f}°")
 
-        pose2 = AdaptedPose(
+        pose2 = Pose(
             x=680,
             y=-1115,
             O=180,
@@ -328,7 +330,7 @@ class Pami5Action(Action):
         self.poses.append(pose2)
         self.logger.info(f"{self.name}: pose2: x={pose2.x: 5.2f} y={pose2.y: 5.2f} O={pose2.O: 3.2f}°")
 
-        pose3 = AdaptedPose(
+        pose3 = Pose(
             x=450,
             y=-1115,
             max_speed_linear=100,
@@ -345,6 +347,7 @@ class Pami5Action(Action):
         pose4 = Pose(
             x=self.pantry.x,
             y=self.pantry.y,
+            mirrored=True,
             max_speed_linear=100,
             max_speed_angular=100,
             bypass_final_orientation=True,
@@ -447,7 +450,7 @@ class Pami6Action(Action):
 
         self.start_pose = self.pose_current.model_copy()
 
-        pose1 = AdaptedPose(
+        pose1 = Pose(
             x=self.start_pose.x,
             y=-1065,
             max_speed_linear=70,
@@ -459,7 +462,7 @@ class Pami6Action(Action):
         self.poses.append(pose1)
         self.logger.info(f"{self.name}: pose1: x={pose1.x: 5.2f} y={pose1.y: 5.2f} O={pose1.O: 3.2f}°")
 
-        pose2 = AdaptedPose(
+        pose2 = Pose(
             x=680,
             y=-985,
             O=180,
@@ -474,7 +477,7 @@ class Pami6Action(Action):
         self.poses.append(pose2)
         self.logger.info(f"{self.name}: pose2: x={pose2.x: 5.2f} y={pose2.y: 5.2f} O={pose2.O: 3.2f}°")
 
-        pose3 = AdaptedPose(
+        pose3 = Pose(
             x=450,
             y=-985,
             max_speed_linear=100,
@@ -488,9 +491,10 @@ class Pami6Action(Action):
         self.poses.append(pose3)
         self.logger.info(f"{self.name}: pose3: x={pose3.x: 5.2f} y={pose3.y: 5.2f} O={pose3.O: 3.2f}°")
 
-        pose4 = AdaptedPose(
+        pose4 = Pose(
             x=self.pantry.x,
             y=self.pantry.y,
+            mirrored=True,
             max_speed_linear=100,
             max_speed_angular=100,
             bypass_final_orientation=True,

@@ -10,7 +10,7 @@ from cogip.tools.planner.actions.action import Action
 from cogip.tools.planner.actions.strategy import Strategy
 from cogip.tools.planner.avoidance.avoidance import AvoidanceStrategy
 from cogip.tools.planner.cameras import get_robot_position
-from cogip.tools.planner.pose import AdaptedPose, Pose
+from cogip.tools.planner.pose import Pose
 from cogip.tools.planner.table import TableEnum
 
 if TYPE_CHECKING:
@@ -65,6 +65,7 @@ class AlignTopCornerAction(Action):
             x=1100,
             y=self.start_position.y,
             O=180,
+            mirrored=True,
             max_speed_linear=10,
             max_speed_angular=10,
             motion_direction=MotionDirection.BACKWARD_ONLY,
@@ -90,6 +91,7 @@ class AlignTopCornerAction(Action):
             x=1000 - self.border_offset,
             y=pose_current.y,
             O=180,
+            mirrored=True,
         )
         if self.planner.shared_properties.table == TableEnum.Training:
             new_pose_current.x -= 1000
@@ -102,6 +104,7 @@ class AlignTopCornerAction(Action):
             x=self.start_position.x,
             y=pose_current.y,
             O=90 if Camp().color == Camp.Colors.blue else -90,
+            mirrored=True,
             max_speed_linear=20,
             max_speed_angular=20,
             motion_direction=MotionDirection.FORWARD_ONLY,
@@ -119,7 +122,7 @@ class AlignTopCornerAction(Action):
         pose_current = self.planner.pose_current
 
         # Align side
-        pose = AdaptedPose(
+        pose = Pose(
             x=pose_current.x,
             y=-1600,
             O=90,
@@ -140,13 +143,13 @@ class AlignTopCornerAction(Action):
     async def after_align_side(self):
         self.logger.info(f"{self.name}: after_align_side")
         pose_current = self.planner.pose_current
-        new_pose_current = AdaptedPose(
+        new_pose_current = models.Pose(
             x=pose_current.x,
             y=-1500 + self.border_offset,
             O=90,
         )
         self.planner.shared_pose_current_buffer.push(new_pose_current.x, new_pose_current.y, new_pose_current.O)
-        await self.planner.sio_ns.emit("pose_start", new_pose_current.pose.model_dump())
+        await self.planner.sio_ns.emit("pose_start", new_pose_current.model_dump())
         await asyncio.sleep(0.5)
 
         # Step forward from side
@@ -154,6 +157,7 @@ class AlignTopCornerAction(Action):
             x=pose_current.x,
             y=self.start_position.y,
             O=90 if Camp().color == Camp.Colors.blue else -90,
+            mirrored=True,
             max_speed_linear=20,
             max_speed_angular=20,
             motion_direction=MotionDirection.FORWARD_ONLY,
@@ -174,6 +178,7 @@ class AlignTopCornerAction(Action):
             x=self.final_pose.x,
             y=self.final_pose.y,
             O=self.final_pose.O,
+            mirrored=True,
             max_speed_linear=50,
             max_speed_angular=50,
             motion_direction=MotionDirection.BIDIRECTIONAL,
@@ -232,7 +237,7 @@ class AlignTopCornerCameraAction(AlignTopCornerAction):
 
     async def init_start_pose(self):
         # On start, the robot is inside the Top start area, oriented toward the Aruco tag (only useful for simulation).
-        init_pose = AdaptedPose(
+        init_pose = models.Pose(
             x=550 + self.planner.shared_properties.robot_length / 2,
             y=-1050 - self.planner.shared_properties.robot_width / 2,
             O=110,
@@ -240,9 +245,9 @@ class AlignTopCornerCameraAction(AlignTopCornerAction):
         if self.planner.shared_properties.table == TableEnum.Training:
             init_pose.x -= 1000
 
-        self.logger.info(f"{self.name}: Emitting initial pose for camera detection: {init_pose.pose}")
+        self.logger.info(f"{self.name}: Emitting initial pose for camera detection: {init_pose}")
         self.planner.shared_pose_current_buffer.push(init_pose.x, init_pose.y, init_pose.O)
-        await self.planner.sio_ns.emit("pose_start", init_pose.pose.model_dump())
+        await self.planner.sio_ns.emit("pose_start", init_pose.model_dump())
         await asyncio.sleep(0.5)
 
         current_pose = await get_robot_position(self.planner)
@@ -250,11 +255,11 @@ class AlignTopCornerCameraAction(AlignTopCornerAction):
             self.logger.info(f"{self.name}: Camera detected pose: {current_pose}")
         else:
             self.logger.warning(f"{self.name}: No camera detection, using default start pose")
-            current_pose = AdaptedPose(
+            current_pose = models.Pose(
                 x=550 + self.planner.shared_properties.robot_length / 2,
                 y=-1050 - self.planner.shared_properties.robot_width / 2,
                 O=90,
-            ).pose
+            )
             if self.planner.shared_properties.table == TableEnum.Training:
                 current_pose.x -= 1000
         self.planner.shared_pose_current_buffer.push(current_pose.x, current_pose.y, current_pose.O)

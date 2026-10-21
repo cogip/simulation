@@ -35,6 +35,7 @@ def transform_to_table_frame(pose_robot_frame: models.Pose, robot_pose: models.P
         x=robot_pose.x + pose_robot_frame.x * cos_robot - pose_robot_frame.y * sin_robot,
         y=robot_pose.y + pose_robot_frame.x * sin_robot + pose_robot_frame.y * cos_robot,
         O=robot_pose.O + pose_robot_frame.O,
+        mirrored=True,
     )
 
 
@@ -107,6 +108,7 @@ class StealPantryAction(Action):
             x=x,
             y=y,
             O=0,
+            mirrored=True,
             max_speed_linear=100,
             max_speed_angular=100,
             motion_direction=MotionDirection.FORWARD_ONLY,
@@ -150,6 +152,7 @@ class StealPantryAction(Action):
                 x=pose_current.x,
                 y=pose_current.y,
                 O=angle_to_pantry,
+                mirrored=True,
                 max_speed_linear=100,
                 max_speed_angular=100,
                 motion_direction=MotionDirection.BIDIRECTIONAL,

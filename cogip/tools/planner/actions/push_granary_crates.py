@@ -8,7 +8,7 @@ from cogip.tools.planner import actuators
 from cogip.tools.planner.actions.action import Action
 from cogip.tools.planner.actions.action_align import AlignTopCornerAction
 from cogip.tools.planner.actions.strategy import Strategy
-from cogip.tools.planner.pose import AdaptedPose
+from cogip.tools.planner.pose import Pose
 from cogip.tools.planner.table import TableEnum
 
 if TYPE_CHECKING:
@@ -66,7 +66,7 @@ class PushGranaryCratesAction(Action):
             self.lift_up = functools.partial(actuators.back_lift_up, self.planner)
 
         # Approach
-        approach_pose = AdaptedPose(
+        approach_pose = Pose(
             x=self.x,
             y=self.approach_y,
             O=self.orientation,
@@ -83,7 +83,7 @@ class PushGranaryCratesAction(Action):
         )
 
         # Push
-        push_pose = AdaptedPose(
+        push_pose = Pose(
             x=self.x,
             y=self.push_y,
             O=self.orientation,
@@ -100,7 +100,7 @@ class PushGranaryCratesAction(Action):
         self.logger.info(f"{self.name}: push: x={push_pose.x: 5.2f} y={push_pose.y: 5.2f} O={push_pose.O: 3.2f}°")
 
         # Step back
-        step_back_pose = AdaptedPose(
+        step_back_pose = Pose(
             x=self.x,
             y=self.step_back_y,
             O=self.orientation,

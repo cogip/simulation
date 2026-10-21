@@ -49,7 +49,9 @@ async def get_robot_position(planner: "Planner") -> Pose | None:
             if response.status_code != 200:
                 logger.warning(f"Request robot_position: Failed: {response.status_code}: {response.text}")
                 return None
-            return Pose.model_validate(response.json())
+            robot_pose: dict = response.json()
+            robot_pose["mirrored"] = True
+            return Pose.model_validate(robot_pose)
         except httpx.HTTPError as exc:
             logger.error(f"Request robot_position: HTTP Exception: {exc}")
             return None
@@ -68,7 +70,10 @@ async def get_crates_position(planner: "Planner", in_table_coords: bool = False)
             if response.status_code != 200:
                 logger.warning(f"Request crates_position: Failed: {response.status_code}: {response.text}")
                 return []
-            crates_data: list[tuple[int, Pose]] = TypeAdapter(list[tuple[int, Pose]]).validate_python(response.json())
+            response_data: list[tuple[int, dict]] = response.json()
+            for crate in response_data:
+                crate[1]["mirrored"] = True
+            crates_data: list[tuple[int, Pose]] = TypeAdapter(list[tuple[int, Pose]]).validate_python(response_data)
             return crates_data
         except httpx.HTTPError as exc:
             logger.error(f"Request crates_position: HTTP Exception: {exc}")

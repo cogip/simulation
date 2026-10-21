@@ -307,7 +307,7 @@ class Planner:
         Get the current pose of the robot.
         """
         pose = self.shared_pose_current_buffer.last
-        return models.Pose(x=pose.x, y=pose.y, O=pose.angle)
+        return models.Pose(x=pose.x, y=pose.y, O=pose.angle, mirrored=True)
 
     async def start(self):
         """

@@ -2,6 +2,7 @@ import asyncio
 import functools
 from typing import TYPE_CHECKING
 
+from cogip import models
 from cogip.cpp.libraries.models import MotionDirection
 from cogip.models import Camp
 from cogip.tools.planner import actuators
@@ -9,7 +10,7 @@ from cogip.tools.planner.actions.action import Action
 from cogip.tools.planner.actions.action_align import AlignTopCornerAction
 from cogip.tools.planner.actions.strategy import Strategy
 from cogip.tools.planner.cameras import get_robot_position
-from cogip.tools.planner.pose import AdaptedPose, Pose
+from cogip.tools.planner.pose import Pose
 from cogip.tools.planner.table import TableEnum
 
 if TYPE_CHECKING:
@@ -88,7 +89,7 @@ class CaptureGranaryAction(Action):
         await self.init_start_pose()
 
         # Approach
-        approach_pose = AdaptedPose(
+        approach_pose = Pose(
             x=self.align_granary_border_x - self.shift_approach,
             y=self.y,
             O=0 if self.side == "front" else 180,
@@ -105,7 +106,7 @@ class CaptureGranaryAction(Action):
         )
 
         # Align
-        align_pose = AdaptedPose(
+        align_pose = Pose(
             x=self.align_granary_border_x + 20,
             y=self.y,
             O=0 if self.side == "front" else 180,
@@ -122,7 +123,7 @@ class CaptureGranaryAction(Action):
         self.logger.info(f"{self.name}: align: x={align_pose.x: 5.2f} y={align_pose.y: 5.2f} O={align_pose.O: 3.2f}°")
 
         # Capture
-        capture_pose = AdaptedPose(
+        capture_pose = Pose(
             x=self.align_granary_border_x - self.shift_capture,
             y=self.y,
             O=0 if self.side == "front" else 180,
@@ -139,7 +140,7 @@ class CaptureGranaryAction(Action):
         )
 
         # Step back
-        step_back_pose = AdaptedPose(
+        step_back_pose = Pose(
             x=self.align_granary_border_x - self.shift_step_back,
             y=self.y,
             O=0 if self.side == "front" else 180,
@@ -178,15 +179,16 @@ class CaptureGranaryAction(Action):
     async def after_align(self):
         self.logger.info(f"{self.name}: after_align")
         pose_current = self.planner.pose_current
-        new_pose_current = Pose(
+        new_pose_current = models.Pose(
             x=self.align_granary_border_x,
             y=pose_current.y,
             O=0 if self.side == "front" else 180,
+            mirrored=True,
         )
         if self.planner.shared_properties.table == TableEnum.Training:
             new_pose_current.x -= 1000
         self.planner.shared_pose_current_buffer.push(new_pose_current.x, new_pose_current.y, new_pose_current.O)
-        await self.planner.sio_ns.emit("pose_start", new_pose_current.pose.model_dump())
+        await self.planner.sio_ns.emit("pose_start", new_pose_current.model_dump())
         await asyncio.sleep(0.5)
 
     async def before_capture(self):
@@ -241,7 +243,7 @@ class CaptureGranaryCameraAction(CaptureGranaryAction):
             self.logger.info(f"{self.name}: Camera detected pose: {current_pose}")
         else:
             self.logger.warning(f"{self.name}: No camera detection, using default start pose")
-            current_pose = AdaptedPose(
+            current_pose = Pose(
                 x=550 + self.planner.shared_properties.robot_length / 2,
                 y=-1050 - self.planner.shared_properties.robot_width / 2,
                 O=90,

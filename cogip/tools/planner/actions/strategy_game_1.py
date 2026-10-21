@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from cogip import models
 from cogip.models.artifacts import CollectionAreaID, PantryID
 from cogip.tools.planner.actions.action_align import AlignTopCornerAction
 from cogip.tools.planner.actions.action_parking import ParkingAction, RunAwayAction
@@ -7,7 +8,6 @@ from cogip.tools.planner.actions.capture_crates import CaptureCratesAction
 from cogip.tools.planner.actions.cursor import CursorAction
 from cogip.tools.planner.actions.drop_crates import DropCratesAction
 from cogip.tools.planner.actions.strategy import Strategy
-from cogip.tools.planner.pose import AdaptedPose
 
 if TYPE_CHECKING:
     from ..planner import Planner
@@ -34,7 +34,7 @@ class Game1Strategy(Strategy):
         self.append(DropCratesAction(planner, self, PantryID.LocalBottom, next(self.priority)))
 
         self.append(RunAwayAction(planner, self))
-        self.append(ParkingAction(planner, self, AdaptedPose(x=740, y=-1205, O=0).pose))
+        self.append(ParkingAction(planner, self, models.Pose(x=740, y=-1205, O=0)))
 
 
 class Game1AlignStrategy(Game1Strategy):

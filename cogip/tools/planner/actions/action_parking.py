@@ -6,7 +6,7 @@ from cogip.cpp.libraries.models import MotionDirection
 from cogip.tools.planner import actuators
 from cogip.tools.planner.actions.action import Action
 from cogip.tools.planner.actions.strategy import Strategy
-from cogip.tools.planner.pose import AdaptedPose, Pose
+from cogip.tools.planner.pose import Pose
 
 if TYPE_CHECKING:
     from ..planner import Planner
@@ -31,8 +31,8 @@ class RunAwayAction(Action):
         self.planner.pose_order = None
         await self.planner.sio_ns.emit("brake")
 
-        pose_bottom = AdaptedPose(x=-630, y=-1240, O=0)
-        pose_top = AdaptedPose(x=130, y=-480, O=-90)
+        pose_bottom = models.Pose(x=-630, y=-1240, O=0)
+        pose_top = models.Pose(x=130, y=-480, O=-90)
         pose_current = self.pose_current
         if pose_current.x > 200 or pose_current.y > -650:
             pose = pose_top
@@ -40,9 +40,7 @@ class RunAwayAction(Action):
             pose = pose_bottom
 
         self.pose = Pose(
-            x=pose.x,
-            y=pose.y,
-            O=pose.O,
+            **pose.model_dump(),
             max_speed_linear=100,
             max_speed_angular=100,
             motion_direction=MotionDirection.BIDIRECTIONAL,
@@ -87,9 +85,7 @@ class ParkingAction(Action):
         await self.planner.sio_ns.emit("brake")
 
         self.pose = Pose(
-            x=self.parking_pose.x,
-            y=self.parking_pose.y,
-            O=self.parking_pose.O,
+            **self.parking_pose.model_dump(),
             max_speed_linear=100,
             max_speed_angular=100,
             motion_direction=MotionDirection.BIDIRECTIONAL,

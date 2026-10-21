@@ -8,7 +8,7 @@ from cogip.tools.planner.actions.action import Action
 from cogip.tools.planner.actions.strategy import Strategy
 from cogip.tools.planner.actions.utils import set_countdown_color
 from cogip.tools.planner.avoidance.avoidance import AvoidanceStrategy
-from cogip.tools.planner.pose import AdaptedPose
+from cogip.tools.planner.pose import Pose
 from cogip.tools.planner.table import TableEnum
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ class NinjaAction(Action):
 
         self.start_pose = self.pose_current.model_copy()
 
-        pose1 = AdaptedPose(
+        pose1 = Pose(
             x=self.start_pose.x,
             y=-700,
             O=0,
@@ -47,7 +47,7 @@ class NinjaAction(Action):
         )
         self.poses.append(pose1)
 
-        pose2 = AdaptedPose(
+        pose2 = Pose(
             x=825,
             y=-700,
             O=0,
@@ -60,7 +60,7 @@ class NinjaAction(Action):
         )
         self.poses.append(pose2)
 
-        pose3 = AdaptedPose(
+        pose3 = Pose(
             x=860,
             y=-700,
             O=-90,

@@ -56,6 +56,7 @@ class TestRectangleAlternatingAction(Action):
                 x=x,
                 y=y,
                 O=angle,
+                mirrored=True,
                 max_speed_linear=self.linear_speed,
                 max_speed_angular=self.angular_speed,
                 motion_direction=direction,
@@ -70,6 +71,7 @@ class TestRectangleAlternatingAction(Action):
             x=self.start_x,
             y=self.start_y,
             O=self.angle,
+            mirrored=True,
         )
         await self.planner.set_pose_start(pose_init)
         self.planner.pose_reached = False

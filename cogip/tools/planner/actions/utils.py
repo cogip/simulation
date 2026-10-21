@@ -17,12 +17,23 @@ def get_relative_pose(
     """
     Get a new pose relative to the reference pose with the specified linear and angular offsets.
 
+    If the reference is already mirrored, the side and angular offsets are
+    mirrored to the camp too (front is radial, untouched). The result is also mirrored.
+
     Args:
         reference_pose: The reference pose.
         front_offset: The offset in the direction of the reference's front.
         side_offset: The offset in the direction of the reference's side. Positive is to the left.
         angular_offset: The angular offset in degrees.
     """
+    if reference_pose.mirrored:
+        # Reference already in camp coordinates. Mirror the lateral and angular
+        # offsets through the same camp transform used for y and angles: identity
+        # in blue, reflection in yellow. front is radial and survives untouched.
+        camp = models.Camp()
+        side_offset = camp.adapt_y(side_offset)
+        angular_offset = camp.adapt_angle(angular_offset)
+
     # This function calculates a new pose relative to a reference pose.
     new_x = (
         reference_pose.x
@@ -36,7 +47,7 @@ def get_relative_pose(
     )
     # Normalize the angle to be between 0 and 360 degrees
     new_angle = (reference_pose.O + angular_offset) % 360
-    return models.Pose(x=new_x, y=new_y, O=new_angle)
+    return models.Pose(x=new_x, y=new_y, O=new_angle, mirrored=reference_pose.mirrored)
 
 
 async def set_countdown_color(planner: "Planner", color: "str"):

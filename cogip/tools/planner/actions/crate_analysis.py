@@ -112,7 +112,7 @@ class CrateAnalyzer:
                 # Found a valid group
                 crates = [lc[3] for lc in local_coords]
                 sorted_ids = [lc[2] for lc in local_coords]
-                group_pose = models.Pose(x=centroid_x, y=centroid_y, O=avg_angle)
+                group_pose = models.Pose(x=centroid_x, y=centroid_y, O=avg_angle, mirrored=True)
 
                 # Calculate score (number of bad crates)
                 bad_count = sum(1 for cid in sorted_ids if cid == self.bad_crate_id)

@@ -8,14 +8,16 @@ an exception being raised if impossible.
 """
 
 import math
+from typing import Annotated, ClassVar
 
 import numpy as np
 from numpy.typing import ArrayLike
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 
 from cogip.cpp.libraries.models import MotionDirection
 from cogip.cpp.libraries.models import Pose as SharedPose
 from cogip.cpp.libraries.models import PoseOrder as SharedPoseOrder
+from cogip.models import Camp
 from cogip.protobuf import PB_PathPose, PB_SpeedOrder
 
 
@@ -85,15 +87,35 @@ class Vertex(BaseModel):
 
 class Pose(Vertex):
     """
-    A position of the robot.
+    A position on the table.
+
+    The pose will be mirrored according to the Camp color by default (i.e., if `mirrored` is None).
+    In this case, `mirrored` will be set to True after construction.
+    If `mirrored` is not `None`, the given parameters do not need further adaptation.
+
+    **Warning:**
+        All Poses must be recreated if the Camp color changes, as the mirroring depends on it.
 
     Attributes:
         x: X position
         y: Y position
         O: Rotation
+        mirrored: Whether the pose should be mirrored according to the Camp color (default: None)
     """
 
     O: float | None = 0.0  # noqa
+    mirrored: bool | None = None
+    _camp: ClassVar[Camp] = Camp()
+
+    @model_validator(mode="after")
+    def validate_parameters(self):
+        if self.mirrored is not None:
+            return self
+        self.y = self._camp.adapt_y(self.y)
+        if self.O is not None:
+            self.O = self._camp.adapt_angle(self.O)
+        self.mirrored = True
+        return self
 
 
 class Speed(BaseModel):
@@ -143,6 +165,7 @@ class PathPose(Pose):
         x: X coordinate
         y: Y coordinate
         O: 0-orientation
+        mirrored: Whether the pose should be mirrored according to the Camp color (default: None)
         max_speed_linear: max linear speed in percentage of the robot max linear speed
         max_speed_angular: max angular speed in percentage of the robot max angular speed
         motion_direction: motion direction mode (bidirectional, forward_only, or backward_only)
@@ -220,6 +243,7 @@ class PathPose(Pose):
             x=shared_pose.x,
             y=shared_pose.y,
             O=shared_pose.angle,  # noqa
+            mirrored=True,
         )
         if isinstance(shared_pose, SharedPoseOrder):
             path_pose.max_speed_linear = shared_pose.max_speed_linear
@@ -333,8 +357,8 @@ class RobotState(BaseModel):
         path: Computed path
     """
 
-    pose_current: Pose = Pose()
-    pose_order: Pose = Pose()
+    pose_current: Annotated[Pose, Field(default_factory=Pose)]
+    pose_order: Annotated[Pose, Field(default_factory=Pose)]
     cycle: int = 0
     speed_current: Speed = Speed()
     speed_order: Speed = Speed()

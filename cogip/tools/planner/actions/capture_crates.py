@@ -15,7 +15,7 @@ from cogip.tools.planner.actions.crate_analysis import CrateAnalyzer
 from cogip.tools.planner.actions.strategy import Strategy
 from cogip.tools.planner.actions.utils import get_relative_pose
 from cogip.tools.planner.cameras import get_crates_position, get_robot_position
-from cogip.tools.planner.pose import AdaptedPose, Pose
+from cogip.tools.planner.pose import Pose
 from cogip.tools.planner.table import TableEnum
 
 if TYPE_CHECKING:
@@ -117,6 +117,7 @@ class CaptureCratesAction(Action):
                 x=approach_pose.x,
                 y=approach_pose.y,
                 O=(approach_pose.O + 180) % 360,
+                mirrored=True,
                 max_speed_linear=30,
                 max_speed_angular=30,
                 motion_direction=MotionDirection.BIDIRECTIONAL,
@@ -293,7 +294,7 @@ class CaptureCratesCameraAction(CaptureCratesAction):
             self.logger.info(f"{self.name}: Camera detected pose: {current_pose}")
         else:
             self.logger.warning(f"{self.name}: No camera detection, using default start pose")
-            current_pose = AdaptedPose(
+            current_pose = Pose(
                 x=550 + self.planner.shared_properties.robot_length / 2,
                 y=-1050 - self.planner.shared_properties.robot_width / 2,
                 O=90,
@@ -372,7 +373,7 @@ class CaptureAndDropCratesCameraAction(CaptureAndDropCratesAction):
             self.logger.info(f"{self.name}: Camera detected pose: {current_pose}")
         else:
             self.logger.warning(f"{self.name}: No camera detection, using default start pose")
-            current_pose = AdaptedPose(
+            current_pose = Pose(
                 x=550 + self.planner.shared_properties.robot_length / 2,
                 y=-1050 - self.planner.shared_properties.robot_width / 2,
                 O=90,

@@ -15,7 +15,6 @@ from cogip.models.artifacts import (
     collection_areas,
     pantries,
 )
-from cogip.tools.planner.pose import AdaptedPose
 from cogip.tools.planner.table import TableEnum
 
 
@@ -89,19 +88,13 @@ class GameContext:
             or (self.shared_properties.table == TableEnum.Training and training)
             or self.shared_properties.robot_id >= 2
         )
-        pose = AdaptedPose(x=x, y=y, O=angle)
-        if angle is None:
-            self.pantries[pantry_id] = Pantry(
-                **pose.model_dump(include={"x", "y"}),
-                id=pantry_id,
-                enabled=enabled,
-            )
-        else:
-            self.pantries[pantry_id] = Pantry(
-                **pose.model_dump(include={"x", "y", "O"}),
-                id=pantry_id,
-                enabled=enabled,
-            )
+        self.pantries[pantry_id] = Pantry(
+            x=x,
+            y=y,
+            O=angle,
+            id=pantry_id,
+            enabled=enabled,
+        )
 
     def create_artifacts(self):
         self.collection_areas = {}
@@ -110,19 +103,13 @@ class GameContext:
             enabled = self.shared_properties.table == TableEnum.Game or (
                 self.shared_properties.table == TableEnum.Training and training
             )
-            pose = AdaptedPose(x=x, y=y, O=angle)
-            if angle is None:
-                self.collection_areas[collection_area_id] = CollectionArea(
-                    **pose.model_dump(include={"x", "y"}),
-                    id=collection_area_id,
-                    enabled=enabled and self.shared_properties.robot_id == 1,
-                )
-            else:
-                self.collection_areas[collection_area_id] = CollectionArea(
-                    **pose.model_dump(include={"x", "y", "O"}),
-                    id=collection_area_id,
-                    enabled=enabled and self.shared_properties.robot_id == 1,
-                )
+            self.collection_areas[collection_area_id] = CollectionArea(
+                x=x,
+                y=y,
+                O=angle,
+                id=collection_area_id,
+                enabled=enabled and self.shared_properties.robot_id == 1,
+            )
 
         self.pantries = {}
         for pantry_id in pantries.keys():
@@ -157,11 +144,9 @@ class GameContext:
 
         # Nest
         self.fixed_obstacles[FixedObstacleID.Nest] = FixedObstacle(
-            **AdaptedPose(
-                x=775 if self.shared_properties.table == TableEnum.Game else -225,
-                y=-1200,
-                O=0,
-            ).model_dump(include={"x", "y"}),
+            x=775 if self.shared_properties.table == TableEnum.Game else -225,
+            y=-1200,
+            O=0,
             length=600,
             width=450,
             id=FixedObstacleID.Nest,
@@ -170,7 +155,9 @@ class GameContext:
 
         # Opposite Nest
         self.fixed_obstacles[FixedObstacleID.OppositeNest] = FixedObstacle(
-            **AdaptedPose(x=775, y=1200, O=0).model_dump(include={"x", "y", "O"}),
+            x=775,
+            y=1200,
+            O=0,
             length=600,
             width=450,
             id=FixedObstacleID.OppositeNest,
@@ -189,7 +176,9 @@ class GameContext:
 
         # Crates from granary
         self.fixed_obstacles[FixedObstacleID.CratesFromGranary] = FixedObstacle(
-            **AdaptedPose(x=475, y=-700, O=0).model_dump(include={"x", "y", "O"}),
+            x=475,
+            y=-700,
+            O=0,
             length=150,
             width=200,
             id=FixedObstacleID.CratesFromGranary,
@@ -199,4 +188,4 @@ class GameContext:
     def create_actuators_states(self):
         self.positional_actuator_states: dict[PositionalActuatorEnum, PositionalActuator] = {}
         self.bool_sensor_states: dict[BoolSensorEnum, BoolSensor] = {id: BoolSensor(id=id) for id in BoolSensorEnum}
-        self.emulated_actuator_states: set[PositionalActuatorEnum] = {}
+        self.emulated_actuator_states: set[PositionalActuatorEnum] = set()
